@@ -6,6 +6,7 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -41,11 +42,13 @@ public class Appointment {
     @Column(nullable = false)
     private AppointmentStatus status;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
+    @ToString.Exclude
     @JoinColumn(nullable = false)
     private Doctor doctor;
 
     @ManyToOne
+    @ToString.Exclude
     @JoinColumn(nullable = false)
     private Patient patient;
 

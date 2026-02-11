@@ -15,19 +15,30 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
-@Transactional
 public class InsuranceServiceImpl implements InsuranceService {
     
     private final InsuranceRepository insuranceRepository;
     private final PatientRepository patientRepository;
     
     @Override
+    @Transactional
     public Patient assignInsuranceToPatient(Insurance insurance, Long patientId) {
         Patient patient = patientRepository.findById(patientId)
                 .orElseThrow(() -> new EntityNotFoundException("Patient not found with id: " + patientId));
         
         patient.setInsurance(insurance);
-        return patient;
+        insurance.setPatient(patient); // Ensure bidirectional consistency
 
+        return patient;
+    }
+
+    @Override
+    @Transactional
+    public Patient disassociatePatientFromInsurance(Long patientId) {
+        Patient patient = patientRepository.findById(patientId).orElseThrow(() -> new EntityNotFoundException("Patient not found with id: " + patientId));
+        
+        patient.setInsurance(null);
+
+        return patient;
     }
 }

@@ -1,5 +1,6 @@
 package com.hms.entity;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -37,7 +38,7 @@ public class Doctor {
     private String email;
 
     @OneToMany(mappedBy = "doctor")
-    private List<Appointment> Appointment;
+    private List<Appointment> Appointments = new ArrayList<>();
 
     @ManyToMany(mappedBy = "doctors")
     private Set<Department> departments = new HashSet<>();

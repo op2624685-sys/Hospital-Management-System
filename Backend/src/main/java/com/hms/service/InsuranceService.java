@@ -7,4 +7,6 @@ public interface InsuranceService {
 
     Patient assignInsuranceToPatient(Insurance insurance, Long patientId);
 
+    Patient disassociatePatientFromInsurance(Long patientId);
+
 }
