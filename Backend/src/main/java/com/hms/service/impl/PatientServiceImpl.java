@@ -63,7 +63,7 @@ public class PatientServiceImpl implements PatientService {
     }
 
     @Override
-    public String deletePatient(Long id) {
+    public String deletePatientById(Long id) {
         Patient patient = patientRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Patient not found with id: " + id));
         patientRepository.delete(patient);

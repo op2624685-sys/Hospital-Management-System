@@ -20,5 +20,5 @@ public interface PatientService {
 
     PatientDto updatePatientById(PatientRequest patientRequest);
 
-    String deletePatient(Long id);
+    String deletePatientById(Long id);
 }
