@@ -11,8 +11,9 @@ import com.hms.entity.Patient;
 @Repository
 public interface PatientRepository extends JpaRepository<Patient, Long> {
 
-    Patient findByName(String name);
-    List<Patient> findByNameOrBirthDate(String name, LocalDate birthDate);
+    List<Patient> findByName(String name);
+
+    List<Patient> findByNameAndBirthDate(String name, LocalDate birthDate);
 
 
 }
