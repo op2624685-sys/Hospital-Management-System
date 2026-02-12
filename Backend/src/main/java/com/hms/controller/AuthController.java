@@ -1,0 +1,37 @@
+package com.hms.controller;
+
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.hms.dto.Request.LoginRequestDto;
+import com.hms.dto.Request.SignupRequestDto;
+import com.hms.dto.Response.LoginResponseDto;
+import com.hms.dto.Response.SignupResponseDto;
+import com.hms.security.AuthService;
+
+import lombok.RequiredArgsConstructor;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+
+
+@RestController
+@RequestMapping("/auth")
+@RequiredArgsConstructor
+public class AuthController {
+
+    private final AuthService authService;
+
+    @PostMapping("/login")
+    public ResponseEntity<LoginResponseDto> login(@RequestBody LoginRequestDto loginRequestDto) {
+        return ResponseEntity.ok(authService.login(loginRequestDto));
+    }
+
+    @PostMapping("/signup")
+    public ResponseEntity<SignupResponseDto> signup(@RequestBody SignupRequestDto signupRequestDto) {
+        return ResponseEntity.ok(authService.login(signupRequestDto));
+    }
+    
+
+}
