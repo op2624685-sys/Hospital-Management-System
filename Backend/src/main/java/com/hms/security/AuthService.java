@@ -4,6 +4,7 @@ import org.modelmapper.ModelMapper;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.hms.dto.Request.LoginRequestDto;
@@ -23,6 +24,7 @@ public class AuthService {
     private final AuthUtil authUtil;
     private final UserRepository userRepository;
     private final ModelMapper modelMapper;
+    private final PasswordEncoder passwordEncoder;
 
     public LoginResponseDto login(LoginRequestDto loginRequestDto) {
         
@@ -40,7 +42,7 @@ public class AuthService {
         
         user = userRepository.save(User.builder()
                 .username(signupRequestDto.getUsername())
-                .password(signupRequestDto.getPassword())
+                .password(passwordEncoder.encode(signupRequestDto.getPassword()))
                 .build()
         );
 
