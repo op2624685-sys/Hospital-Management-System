@@ -25,12 +25,12 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<LoginResponseDto> login(@RequestBody LoginRequestDto loginRequestDto) {
-        return ResponseEntity.ok(authService.login(loginRequestDto));
+        return ResponseEntity.status(200).body(authService.login(loginRequestDto));
     }
 
     @PostMapping("/signup")
     public ResponseEntity<SignupResponseDto> signup(@RequestBody SignupRequestDto signupRequestDto) {
-        return ResponseEntity.ok(authService.login(signupRequestDto));
+        return ResponseEntity.status(201).body(authService.signup(signupRequestDto));
     }
     
 
