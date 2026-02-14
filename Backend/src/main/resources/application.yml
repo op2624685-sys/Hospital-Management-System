@@ -1,8 +1,10 @@
-spring.security.oauth2.client:
-    registration:
-        google:
-            client-id: sdkjfsdncusn
-            client-secret: sdjniwklvm
-        github:
-            client-id: pwflmcpalksadc
-            client-secret: onnaloenowej
+# Here we define the OAuth verification details
+
+# spring.security.oauth2.client:
+#     registration:
+#         google:
+#             client-id: sdkjfsdncusn
+#             client-secret: sdjniwklvm
+#         github:
+#             client-id: pwflmcpalksadc
+#             client-secret: onnaloenowej

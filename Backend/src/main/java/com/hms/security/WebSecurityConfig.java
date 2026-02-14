@@ -23,14 +23,16 @@ public class WebSecurityConfig {
                 .sessionManagement(
                         sessionConfig -> sessionConfig.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/v1/auth/public/**", "/api/v1/auth/**").permitAll()
+                        .requestMatchers("/public/**", "/auth/**").permitAll()
                         .anyRequest().authenticated())
-                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
-                .oauth2Login(oAuth2 -> oAuth2
-                        .failureHandler((request, response, exception) -> {
-                            log.error("OAuth2 error: {}", exception.getMessage());
-                        }));
-        // .formLogin(Customizer.withDefaults()); // Configure form login with default
+                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+
+                // .oauth2Login(oAuth2 -> oAuth2                            //these are for google and github [OAuth] login
+                //         .failureHandler((request, response, exception) -> {
+                //             log.error("OAuth2 error: {}", exception.getMessage());
+                //         }));
+
+              //.formLogin(Customizer.withDefaults());       // Configure form login with default
         // settings
         return httpSecurity.build();
     }
