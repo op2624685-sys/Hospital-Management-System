@@ -8,6 +8,7 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import com.hms.entity.type.BloodGroupType;
+import com.hms.entity.type.GenderType;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -25,6 +26,7 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -42,6 +44,7 @@ import lombok.ToString;
         @Index(name = "idx_patient_birth_date", columnList = "birth_date")
     }
 )
+@Builder
 public class Patient {
 
     @Id
@@ -55,7 +58,7 @@ public class Patient {
     private LocalDate birthDate;
 
     @Column(nullable = false)
-    private String gender;
+    private GenderType gender;
     
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)

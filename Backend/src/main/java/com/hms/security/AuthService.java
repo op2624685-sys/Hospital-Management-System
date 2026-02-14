@@ -12,9 +12,10 @@ import org.springframework.stereotype.Service;
 import com.hms.dto.Request.LoginRequestDto;
 import com.hms.dto.Request.SignupRequestDto;
 import com.hms.dto.Response.LoginResponseDto;
-import com.hms.dto.Response.SignupResponseDto;
+import com.hms.entity.Patient;
 import com.hms.entity.User;
 import com.hms.entity.type.RoleType;
+import com.hms.repository.PatientRepository;
 import com.hms.repository.UserRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -28,6 +29,7 @@ public class AuthService {
     private final UserRepository userRepository;
     private final ModelMapper modelMapper;
     private final PasswordEncoder passwordEncoder;
+    private final PatientRepository patientRepository;
 
     public LoginResponseDto login(LoginRequestDto loginRequestDto) {
         
@@ -39,18 +41,38 @@ public class AuthService {
         return new LoginResponseDto(token, user.getId());
     }
 
-    public SignupResponseDto signup(SignupRequestDto signupRequestDto) {
+    public User signup(SignupRequestDto signupRequestDto) {
         User user = userRepository.findByUsername(signupRequestDto.getUsername()).orElse(null);
         if (user != null) throw new IllegalArgumentException("User already exists");
         
-        user = userRepository.save(User.builder()
-                .username(signupRequestDto.getUsername())
-                .password(passwordEncoder.encode(signupRequestDto.getPassword()))
-                .roles(Set.of(RoleType.PATIENT))
-                .build()
-        );
 
-        return modelMapper.map(user, SignupResponseDto.class);
+        //# This is made with using modelMapper !!!!
+
+        // user = userRepository.save(User.builder()
+        //         .username(signupRequestDto.getUsername())
+        //         .password(passwordEncoder.encode(signupRequestDto.getPassword()))
+        //         .roles(Set.of(RoleType.PATIENT))
+        //         .build()
+        // );
+        // return modelMapper.map(user, SignupResponseDto.class);
+
+
+        user = User.builder()
+            .username(signupRequestDto.getUsername())
+            .password(passwordEncoder.encode(signupRequestDto.getPassword()))
+            .roles(Set.of(RoleType.PATIENT))
+            .build();
+        user = userRepository.save(user);
+
+        Patient patient = Patient.builder()
+            .name(signupRequestDto.getName())
+            .email(signupRequestDto.getEmail())
+            .gender(signupRequestDto.getGender())
+            .user(user)
+            .build();
+        patientRepository.save(patient);
+
+        return user;
     }
 
 }
