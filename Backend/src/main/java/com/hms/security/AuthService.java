@@ -1,5 +1,7 @@
 package com.hms.security;
 
+import java.util.Set;
+
 import org.modelmapper.ModelMapper;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -12,6 +14,7 @@ import com.hms.dto.Request.SignupRequestDto;
 import com.hms.dto.Response.LoginResponseDto;
 import com.hms.dto.Response.SignupResponseDto;
 import com.hms.entity.User;
+import com.hms.entity.type.RoleType;
 import com.hms.repository.UserRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -43,6 +46,7 @@ public class AuthService {
         user = userRepository.save(User.builder()
                 .username(signupRequestDto.getUsername())
                 .password(passwordEncoder.encode(signupRequestDto.getPassword()))
+                .roles(Set.of(RoleType.PATIENT))
                 .build()
         );
 
