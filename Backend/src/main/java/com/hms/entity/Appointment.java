@@ -2,6 +2,8 @@ package com.hms.entity;
 
 import java.time.LocalDateTime;
 
+import com.hms.entity.type.AppointmentStatusType;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -40,7 +42,7 @@ public class Appointment {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private AppointmentStatus status;
+    private AppointmentStatusType status;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @ToString.Exclude

@@ -2,7 +2,7 @@ package com.hms.dto;
 
 import java.time.LocalDate;
 
-import com.hms.entity.BloodGroup;
+import com.hms.entity.type.BloodGroupType;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -17,6 +17,6 @@ public class PatientDto {
     private String name;
     private LocalDate birthDate;
     private String gender;
-    private BloodGroup bloodGroup;
+    private BloodGroupType bloodGroup;
     private String email;
 }

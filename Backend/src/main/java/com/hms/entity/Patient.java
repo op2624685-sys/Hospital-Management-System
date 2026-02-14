@@ -7,6 +7,8 @@ import java.util.List;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
+import com.hms.entity.type.BloodGroupType;
+
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -56,7 +58,7 @@ public class Patient {
     
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private BloodGroup bloodGroup;
+    private BloodGroupType bloodGroup;
     
     @Column(unique = true, nullable = false)
     private String email;

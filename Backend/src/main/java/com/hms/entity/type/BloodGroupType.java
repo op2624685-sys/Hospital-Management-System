@@ -1,6 +1,6 @@
-package com.hms.entity;
+package com.hms.entity.type;
 
-public enum BloodGroup {
+public enum BloodGroupType {
 
     A_POSITIVE,
     A_NEGATIVE,

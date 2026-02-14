@@ -2,7 +2,7 @@ package com.hms.dto;
 
 import java.time.LocalDateTime;
 
-import com.hms.entity.AppointmentStatus;
+import com.hms.entity.type.AppointmentStatusType;
 
 import lombok.*;
 
@@ -14,7 +14,7 @@ public class AppointmentDto {
     private Long id;
     private LocalDateTime appointmentTime;
     private String reason;
-    private AppointmentStatus status;
+    private AppointmentStatusType status;
     private PatientDto patient;
     private DoctorDto doctor;
 
