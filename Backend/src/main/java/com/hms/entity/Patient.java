@@ -20,6 +20,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.MapsId;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
@@ -62,6 +63,10 @@ public class Patient {
     
     @Column(unique = true, nullable = false)
     private String email;
+
+    @OneToOne
+    @MapsId      // this annotation is used to map the primary key of the user table to the patient table
+    private User user;
 
     @CreationTimestamp
     @Column(nullable = false,updatable = false)
