@@ -11,7 +11,7 @@ import lombok.*;
 @NoArgsConstructor
 public class AppointmentDto {
 
-    private Long id;
+    private String name;
     private LocalDateTime appointmentTime;
     private String reason;
     private AppointmentStatusType status;

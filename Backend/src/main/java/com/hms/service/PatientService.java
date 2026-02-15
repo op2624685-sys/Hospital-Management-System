@@ -21,4 +21,6 @@ public interface PatientService {
     PatientDto updatePatientById(PatientRequest patientRequest);
 
     String deletePatientById(Long id);
+
+    PatientDto getAllPatients(Integer pageNumber, Integer pageSize);
 }

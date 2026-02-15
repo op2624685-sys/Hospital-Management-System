@@ -77,4 +77,10 @@ public class PatientServiceImpl implements PatientService {
         return modelMapper.map(updatedPatient, PatientDto.class);
     }
 
+    @Override
+    public PatientDto getAllPatients(Integer pageNumber, Integer pageSize) {
+        List<Patient> patients = patientRepository.findAll();
+        return modelMapper.map(patients, PatientDto.class);
+    }
+
 }

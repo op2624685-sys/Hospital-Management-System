@@ -1,7 +1,11 @@
 package com.hms.service.impl;
 
+import java.util.List;
+
+import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
+import com.hms.dto.AppointmentDto;
 import com.hms.entity.Appointment;
 import com.hms.entity.Doctor;
 import com.hms.entity.Patient;
@@ -20,6 +24,7 @@ public class AppointmentServiceImpl implements AppointmentService {
     private final AppointmentRepository appointmentRepository;
     private final PatientRepository patientRepository;
     private final DoctorRepository doctorRepository;
+    private final ModelMapper modelMapper;
 
     @Override
     @Transactional
@@ -48,5 +53,17 @@ public class AppointmentServiceImpl implements AppointmentService {
         newDoctor.getAppointments().add(appointment); // Ensure bidirectional consistency
 
         return appointmentRepository.save(appointment);
+    }
+
+    @Override
+    public List<AppointmentDto> getAllAppointmentsOfDoctor(Long doctorId) {
+        Doctor doctor = doctorRepository.findById(doctorId)
+                .orElseThrow(() -> new RuntimeException("Doctor not found with id: " + doctorId));
+
+        List<Appointment> appointments = appointmentRepository.findByDoctor(doctor);
+        return appointments
+                .stream()
+                .map(appointment -> modelMapper.map(appointment, AppointmentDto.class))
+                .toList();
     }
 }
