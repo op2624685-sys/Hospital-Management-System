@@ -1,6 +1,6 @@
 package com.hms.dto.Request;
 
-public class AppointmentRequest {
+public class AppointmentRequestDto {
     
     
 }
