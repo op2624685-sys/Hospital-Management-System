@@ -1,8 +1,10 @@
 import React from 'react'
+import { Link } from 'react-router-dom'
+import Signup from './Signup'
 
 const Login = () => {
     return (
-        <div>
+        <div className='h-screen flex items-center justify-center bg-cover' style={{"backgroundImage": "url('https://images.unsplash.com/photo-1545569341-9eb8b30979d9?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D')"}}>
             <div className='bg-[#74cee4]-100 border border-blue-300 rounded-md p-8 shadow-lg backdrop-filter backdrop-blur-lg bg-opacity-30 relative '>
                 <h1 className='text-4xl font-bold text-center p-3 mb-6'>Login</h1>
                 <form action="">
@@ -16,7 +18,13 @@ const Login = () => {
                     </div>
                     <button type="submit" className='w-full mb-4 mt-6 text-[18px] rounded bg-blue-500 py-2 hover:bg-blue-600 transition-colors duration-300 active:scale-90'>Login</button>
                 </form>
-
+                <div>
+                    <Link to="/login/forgotpassword" className='text-[11px] font-bold'>Forgot Password*</Link>
+                </div>
+                <div>
+                    <Link to="/signup" className='text-[12px]'>  
+                    Don't have an account? <span className='font-bold'>Sign Up </span></Link>
+                </div>
 
             </div>
         </div>
