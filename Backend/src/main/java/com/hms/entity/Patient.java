@@ -7,6 +7,7 @@ import java.util.List;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.hms.entity.type.BloodGroupType;
 import com.hms.entity.type.GenderType;
 
@@ -25,6 +26,7 @@ import jakarta.persistence.MapsId;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -54,12 +56,17 @@ public class Patient {
     @Column(nullable = false, length = 50)
     private String name;
 
+    @JsonProperty("birth_date")
+    @NotNull(message = "Birth date is required")
     @Column(nullable = false)
     private LocalDate birthDate;
 
-    @Column(nullable = false)
+    @NotNull(message = "Gender is required")
+    @Enumerated(EnumType.STRING)
+    @Column(name = "gender", nullable = false)
     private GenderType gender;
     
+    @NotNull(message = "Blood group is required")
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private BloodGroupType bloodGroup;

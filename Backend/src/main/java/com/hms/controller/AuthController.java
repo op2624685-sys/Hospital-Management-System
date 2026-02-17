@@ -6,9 +6,10 @@ import org.springframework.web.bind.annotation.RestController;
 import com.hms.dto.Request.LoginRequestDto;
 import com.hms.dto.Request.SignupRequestDto;
 import com.hms.dto.Response.LoginResponseDto;
-import com.hms.entity.User;
+import com.hms.dto.Response.SignupResponseDto;
 import com.hms.security.AuthService;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.http.ResponseEntity;
@@ -29,7 +30,7 @@ public class AuthController {
     }
 
     @PostMapping("/signup")
-    public ResponseEntity<User> signup(@RequestBody SignupRequestDto signupRequestDto) {
+    public ResponseEntity<SignupResponseDto> signup(@RequestBody @Valid SignupRequestDto signupRequestDto) {
         return ResponseEntity.status(201).body(authService.signup(signupRequestDto));
     }
     

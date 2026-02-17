@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import com.hms.dto.Request.LoginRequestDto;
 import com.hms.dto.Request.SignupRequestDto;
 import com.hms.dto.Response.LoginResponseDto;
+import com.hms.dto.Response.SignupResponseDto;
 import com.hms.entity.Patient;
 import com.hms.entity.User;
 import com.hms.entity.type.RoleType;
@@ -41,7 +42,7 @@ public class AuthService {
         return new LoginResponseDto(token, user.getId());
     }
 
-    public User signup(SignupRequestDto signupRequestDto) {
+    public SignupResponseDto signup(SignupRequestDto signupRequestDto) {
         User user = userRepository.findByUsername(signupRequestDto.getUsername()).orElse(null);
         if (user != null) throw new IllegalArgumentException("User already exists");
         
@@ -67,12 +68,18 @@ public class AuthService {
         Patient patient = Patient.builder()
             .name(signupRequestDto.getName())
             .email(signupRequestDto.getEmail())
+            .birthDate(signupRequestDto.getBirthDate())
+            .bloodGroup(signupRequestDto.getBloodGroup())
             .gender(signupRequestDto.getGender())
             .user(user)
             .build();
         patientRepository.save(patient);
 
-        return user;
+        return SignupResponseDto.builder()
+        .id(user.getId())
+        .username(user.getUsername())
+        .roles(user.getRoles())
+        .build();
     }
 
 }

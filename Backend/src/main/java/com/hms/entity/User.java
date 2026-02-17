@@ -9,6 +9,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.hms.entity.type.RoleType;
 
 import jakarta.persistence.ElementCollection;
@@ -42,6 +43,8 @@ public class User implements UserDetails{
 
     @JoinColumn(unique = true)
     private String username;
+
+    @JsonIgnore
     private String password;
 
     @ElementCollection(fetch = FetchType.EAGER)
