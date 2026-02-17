@@ -1,6 +1,7 @@
 package com.hms.entity;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -80,7 +81,7 @@ public class Patient {
 
     @CreationTimestamp
     @Column(nullable = false,updatable = false)
-    private LocalDate createdAt;
+    private LocalDateTime createdAt = LocalDateTime.now();
 
     @UpdateTimestamp
     @Column(nullable = false)
