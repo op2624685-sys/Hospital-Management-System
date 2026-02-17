@@ -5,16 +5,18 @@ import Signup from './pages/Signup'
 import ForgotPassword from './pages/ForgotPassword'
 import { Route, Routes } from 'react-router-dom'
 import Home from './pages/Home'
+import AdminDashboard from './pages/AdminDashboard'
 
 const App = () => {
   return (
     <div>
-    <Routes>
+    {/* <Routes>
       <Route path="/" element={<Home />} />
       <Route path="/login" element={<Login />} />
       <Route path="/signup" element={<Signup />} />
       <Route path='/login/forgotpassword' element={<ForgotPassword />} />
-    </Routes>
+    </Routes> */}
+    <AdminDashboard />
     </div>
   )
 }
