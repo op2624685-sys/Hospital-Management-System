@@ -17,6 +17,7 @@ const Login = () => {
             });
 
             alert("Login successful!");
+            window.location.href = '/';
 
             console.log(response.data);
 
