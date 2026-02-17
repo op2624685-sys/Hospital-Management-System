@@ -1,34 +1,96 @@
-import React from 'react'
-import { Link } from 'react-router-dom'
-import Signup from './Signup'
+import React, { useState } from 'react';
+import API from '../api/api';
+import { Link } from 'react-router-dom';
 
 const Login = () => {
+
+    const [username, setUsername] = useState('');
+    const [password, setPassword] = useState('');
+
+    const handleLogin = async (e) => {
+        e.preventDefault();
+
+        try {
+            const response = await API.post('/auth/login', {
+                username: username,
+                password: password
+            });
+
+            alert("Login successful!");
+
+            console.log(response.data);
+
+            // If backend returns JWT token
+            if (response.data.token) {
+                localStorage.setItem("token", response.data.token);
+            }
+
+        } catch (error) {
+            alert("Login failed");
+            console.error(error);
+        }
+    };
+
     return (
-        <div className='h-screen flex items-center justify-center bg-cover' style={{"backgroundImage": "url('https://images.unsplash.com/photo-1545569341-9eb8b30979d9?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D')"}}>
+        <div className='h-screen flex items-center justify-center bg-cover'
+            style={{ backgroundImage: "url('https://images.unsplash.com/photo-1545569341-9eb8b30979d9')" }}>
+
             <div className='bg-[#74cee4]-100 border border-blue-300 rounded-md p-8 shadow-lg backdrop-filter backdrop-blur-lg bg-opacity-30 relative '>
+
                 <h1 className='text-4xl font-bold text-center p-3 mb-6'>Login</h1>
-                <form action="">
+
+                {/* CONNECT FORM HERE */}
+                <form onSubmit={handleLogin}>
+
                     <div className='relative my-4'>
-                        <input type="text" className='block w-72 py-2.5 px-0 text-sm text-white bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:focus:border-blur-500 focus:outline-none focus:ring-0 focus:text-white focus:border-blue-500 peer' placeholder='' name="username" id="username" />
-                        <label htmlFor="username" className='absolute text-sm duration-300 transform -translate scale-75 top-3 -z-10 origin-left peer-focus:left-0 peer-focus:text-blue-500 peer-focus:dark:text-blue-400 peer-placeholder-shown:scale-100 peer-focus:scale-75 peer-focus:-translate-y-6'>Username</label>
+                        <input
+                            type="text"
+                            className='block w-72 py-2.5 px-0 text-sm text-white bg-transparent border-0 border-b-2 border-gray-300 appearance-none focus:outline-none focus:ring-0 focus:text-white focus:border-blue-500 peer'
+                            value={username}
+                            onChange={(e) => setUsername(e.target.value)}
+                            required
+                        />
+                        <label className='absolute text-sm duration-300 transform -translate scale-75 top-3 -z-10 origin-left peer-focus:text-blue-500'>
+                            Username
+                        </label>
                     </div>
+
                     <div className='relative my-4'>
-                        <input type="password" className='block w-72 py-2.5 px-0 text-sm text-white bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:focus:border-blur-500 focus:outline-none focus:ring-0 focus:text-white focus:border-blue-500 peer' placeholder='' name="password" id="password" />
-                        <label htmlFor="password" className='absolute text-sm duration-300 transform -translate scale-75 top-3 -z-10 origin-left peer-focus:left-0 peer-focus:text-blue-500 peer-focus:dark:text-blue-400 peer-placeholder-shown:scale-100 peer-focus:scale-75 peer-focus:-translate-y-6'>Password</label>
+                        <input
+                            type="password"
+                            className='block w-72 py-2.5 px-0 text-sm text-white bg-transparent border-0 border-b-2 border-gray-300 appearance-none focus:outline-none focus:ring-0 focus:text-white focus:border-blue-500 peer'
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            required
+                        />
+                        <label className='absolute text-sm duration-300 transform -translate scale-75 top-3 -z-10 origin-left peer-focus:text-blue-500'>
+                            Password
+                        </label>
                     </div>
-                    <button type="submit" className='w-full mb-4 mt-6 text-[18px] rounded bg-blue-500 py-2 hover:bg-blue-600 transition-colors duration-300 active:scale-90'>Login</button>
+
+                    <button
+                        type="submit"
+                        className='w-full mb-4 mt-6 text-[18px] rounded bg-blue-500 py-2 hover:bg-blue-600 transition-colors duration-300 active:scale-90'>
+                        Login
+                    </button>
+
                 </form>
+
                 <div>
-                    <Link to="/login/forgotpassword" className='text-[11px] font-bold'>Forgot Password*</Link>
+                    <Link to="/forgotpassword" className='text-[11px] font-bold'>
+                        Forgot Password*
+                    </Link>
                 </div>
+
                 <div>
-                    <Link to="/signup" className='text-[12px]'>  
-                    Don't have an account? <span className='font-bold'>Sign Up </span></Link>
+                    <Link to="/signup" className='text-[12px]'>
+                        Don't have an account? <span className='font-bold'>Sign Up</span>
+                    </Link>
                 </div>
 
             </div>
         </div>
-    )
-}
+    );
+};
 
-export default Login
+export default Login;
