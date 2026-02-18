@@ -7,12 +7,14 @@ const Header = () => {
     <header className='flex justify-between items-center py-6'>
       <h1 className='text-3xl font-bold text-orange-400'>DELTACARE</h1>
       <nav className='space-x-10'>
-        <a href="#" className='text-white hover:text-gray-300'>Appointment</a>
-        <a href="#" className='text-white hover:text-gray-300'>Services</a>
-        <a href="#" className='text-white hover:text-gray-300'>Departments</a>
-        <a href="#" className='text-white hover:text-gray-300'>About us</a>
-        <a href="#" className='text-white hover:text-gray-300'>Doctors</a>
-        <a href="#" className='text-white hover:text-gray-300'>Branches</a>
+        <RouterLink to="/" className='text-white hover:text-gray-300'>Home</RouterLink>
+        <RouterLink to="/appointment" className='text-white hover:text-gray-300'>Appointment</RouterLink>
+        <RouterLink to="/doctors" className='text-white hover:text-gray-300'>Doctor</RouterLink>
+        <RouterLink to="/branches" className='text-white hover:text-gray-300'>Branches</RouterLink>
+        <RouterLink to="/departments" className='text-white hover:text-gray-300'>Departments</RouterLink>
+        <RouterLink to="/services" className='text-white hover:text-gray-300'>Services</RouterLink>
+        <RouterLink to="/about" className='text-white hover:text-gray-300'>About Us</RouterLink>
+        <RouterLink to="/contact" className='text-white hover:text-gray-300'>Contact Us</RouterLink>
       </nav>
       <RouterLink to="/login" className='bg-orange-500 text-white py-2 px-4 rounded-lg hover:bg-orange-600'><LogIn />Login</RouterLink>
     </header>
