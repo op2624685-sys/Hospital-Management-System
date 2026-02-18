@@ -4,7 +4,7 @@ import AppointmentBooking from '../components/AppointmentBooking'
 
 const Appointment = () => {
   return (
-    <div className='px-20 py-5'>
+    <div className='mt-20 px-20 py-5'>
       <Header />
       <div className='flex justify-center items-center m-10 px-30'>
         <div className='section-1 flex flex-col m-10 p-12 h-150 w-1/2 '>
