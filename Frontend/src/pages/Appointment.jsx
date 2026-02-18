@@ -5,8 +5,8 @@ const Appointment = () => {
   return (
     <div>
       <Header />
-      <div className='flex justify-center items-center'>
-      <div className='section-1 flex flex-col mx-5 my-8 p-6 bg-amber-200'>
+      <div className='flex justify-center items-center m-10 px-30'>
+      <div className='section-1 flex flex-col m-10 p-6 h-150 w-1/2 bg-amber-200'>
         <h1 className='text-3xl'>Reserve Your Spot</h1>
         <p>Secure your preferred time slot by booking in advance. Our simple appointment system allows you to plan ahead and avoid waiting in line, so you can focus on what matters most.</p>
       </div>
