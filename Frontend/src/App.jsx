@@ -6,6 +6,7 @@ import ForgotPassword from './pages/AuthPages/ForgotPassword'
 import { Route, Routes } from 'react-router-dom'
 import Home from './pages/Home'
 import Appointment from './pages/Appointment'
+import Doctor from './pages/Doctor'
 
 const App = () => {
   return (
@@ -13,6 +14,7 @@ const App = () => {
     <Routes>
       <Route path="/" element={<Home />} />
       <Route path='/appointment' element={<Appointment />} />
+      <Route path='/doctors' element={<Doctor />} />
       <Route path="/login" element={<Login />} />
       <Route path="/signup" element={<Signup />} />
       <Route path='/login/forgotpassword' element={<ForgotPassword />} />
