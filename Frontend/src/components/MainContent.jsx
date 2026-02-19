@@ -3,7 +3,7 @@ import { PhoneCall, Hospital } from 'lucide-react';
 
 const MainContent = () => {
   return (
-    <main className='grow flex flex-col justify-center m-3 p-4 md:flex-row '>
+    <main className='grow flex flex-col justify-center mt-5 py-20 md:flex-row '>
       <div className='p-10'>
         <h2 className='text-[100px] font-semibold text-orange-300 mb-4 leading-tight'>
           The trusted &<br />
