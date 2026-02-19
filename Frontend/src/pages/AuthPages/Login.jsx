@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import API from '../../api/api';
 import { Link } from 'react-router-dom';
+import { ToastContainer, toast, Bounce } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const Login = () => {
 
@@ -16,18 +18,17 @@ const Login = () => {
                 password: password
             });
 
-            alert("Login successful!");
-            window.location.href = '/';
-
             console.log(response.data);
 
             // If backend returns JWT token
             if (response.data.token) {
                 localStorage.setItem("token", response.data.token);
+                toast.success("Login successful!");
+                window.location.href = '/';
             }
 
         } catch (error) {
-            alert("Login failed");
+            toast.warn("Login failed!");
             console.error(error);
         }
     };
@@ -76,6 +77,20 @@ const Login = () => {
                     </button>
 
                 </form>
+                
+                        <ToastContainer
+                            position="top-right"
+                            autoClose={5000}
+                            hideProgressBar={false}
+                            newestOnTop={false}
+                            closeOnClick={false}
+                            rtl={false}
+                            pauseOnFocusLoss
+                            draggable
+                            pauseOnHover
+                            theme="light"
+                            transition={Bounce}
+                        />
 
                 <div>
                     <Link to="/forgotpassword" className='text-[11px] font-bold'>
