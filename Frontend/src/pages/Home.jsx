@@ -50,7 +50,6 @@ const Home = () => {
       <img
         className='fixed h-screen w-full top-0 right-0 opacity-70'
         src="https://i.pinimg.com/736x/0e/35/f0/0e35f02109614b1eed3422055c9307d6.jpg"
-        alt=""
       />
 
       <div ref={zoomIn} className='relative min-h-screen will-change-transform'>
