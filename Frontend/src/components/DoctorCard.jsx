@@ -2,7 +2,7 @@ import React from 'react'
 
 const DoctorCard = () => {
     return (
-        <div className='card m-2 h-70 w-45 rounded-2xl bg-amber-50'>
+        <div className='card m-2 h-70 w-45 rounded-2xl bg-gray-100'>
             <div className="logo flex justify-center items-center mt-4">
                 <img className='h-25 w-22 rounded-full' src="https://images.unsplash.com/photo-1622253692010-333f2da6031d?q=80&w=764&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" />
             </div>
