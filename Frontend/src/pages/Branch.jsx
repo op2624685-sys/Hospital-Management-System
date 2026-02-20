@@ -9,7 +9,7 @@ const Branch = () => {
       <Header />
       <div className='flex justify-center items-center mt-10 px-20'>
         <div className='section-1 flex flex-col m-10 p-2 h-150 w-1/2 bg-transparent '>
-          <h2 className='text-8xl font-semibold mb-2'>Find My Branch Near You</h2>
+          <h2 className='text-8xl font-semibold mb-2'>Find Our Branch Near You</h2>
           <p className='text-xl mt-6'>Locate our hospitals across the country with ease. View brach addresses, contact, information and operating hours to plan your visit.</p>
         </div>
         <div className='section-2 m-10 p-8 h-170 w-2/3 bg-transparent border-2 border-black rounded-2xl'>
