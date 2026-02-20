@@ -4,11 +4,17 @@ import java.util.List;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.hms.dto.DoctorDto;
 import com.hms.dto.Request.DoctorRequest;
+import com.hms.dto.Request.OnBoardDoctorRequestDto;
+import com.hms.dto.Response.DoctorResponseDto;
 import com.hms.entity.Doctor;
+import com.hms.entity.User;
+import com.hms.entity.type.RoleType;
 import com.hms.repository.DoctorRepository;
+import com.hms.repository.UserRepository;
 import com.hms.service.DoctorService;
 
 import lombok.RequiredArgsConstructor;
@@ -18,6 +24,7 @@ import lombok.RequiredArgsConstructor;
 public class DoctorServiceImpl implements DoctorService {
 
     private final DoctorRepository doctorRepository;
+    private final UserRepository userRepository;
     private final ModelMapper modelMapper;
 
     @Override
@@ -60,9 +67,24 @@ public class DoctorServiceImpl implements DoctorService {
         return "Doctor deleted successfully with id: " + id;
     }
 
-    
-    
+    @Override
+    @Transactional
+    public DoctorResponseDto onBoardNewDoctor(OnBoardDoctorRequestDto onBoardDoctorRequestDto) {
+        User user = userRepository.findById(onBoardDoctorRequestDto.getUserId()).orElseThrow();
 
-    
+        if (doctorRepository.existsById(onBoardDoctorRequestDto.getUserId())) {
+            throw new IllegalArgumentException("Already a doctor");
+        }
+
+        Doctor doctor = Doctor.builder()
+                .name(onBoardDoctorRequestDto.getName())
+                .specialization(onBoardDoctorRequestDto.getSpecialization())
+                .user(user)
+                .build();
+
+            user.getRoles().add(RoleType.DOCTOR);
+
+            return modelMapper.map(doctorRepository.save(doctor), DoctorResponseDto.class);
+    }
 
 }

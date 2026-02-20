@@ -4,6 +4,8 @@ import java.util.List;
 
 import com.hms.dto.DoctorDto;
 import com.hms.dto.Request.DoctorRequest;
+import com.hms.dto.Request.OnBoardDoctorRequestDto;
+import com.hms.dto.Response.DoctorResponseDto;
 
 public interface DoctorService {
 
@@ -16,5 +18,7 @@ public interface DoctorService {
     DoctorDto createNewDoctor(DoctorRequest doctorRequest);
 
     String deleteDoctorById(Long id);
+
+    DoctorResponseDto onBoardNewDoctor(OnBoardDoctorRequestDto onBoardDoctorRequestDto);
 
 }

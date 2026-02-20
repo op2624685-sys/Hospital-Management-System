@@ -2,7 +2,7 @@ package com.hms.security;
 
 import java.util.Set;
 
-import org.modelmapper.ModelMapper;
+// import org.modelmapper.ModelMapper;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -28,7 +28,7 @@ public class AuthService {
     private final AuthenticationManager authenticationManager;
     private final AuthUtil authUtil;
     private final UserRepository userRepository;
-    private final ModelMapper modelMapper;
+    // private final ModelMapper modelMapper;
     private final PasswordEncoder passwordEncoder;
     private final PatientRepository patientRepository;
 
@@ -48,7 +48,6 @@ public class AuthService {
         
 
         //# This is made with using modelMapper !!!!
-
         // user = userRepository.save(User.builder()
         //         .username(signupRequestDto.getUsername())
         //         .password(passwordEncoder.encode(signupRequestDto.getPassword()))
