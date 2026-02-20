@@ -3,9 +3,8 @@ import { LogIn } from 'lucide-react';
 import { Link as RouterLink } from 'react-router-dom';
 
 const Header = () => {
-
   return (
-    <header className='navbar flex justify-between top-0 left-0 fixed w-full items-center py-6 px-10'>
+    <header className='navbar flex justify-between top-0 left-0 fixed w-full items-center py-6 px-10 z-9999 '>
       <RouterLink to="/">
         <h1 className='text-3xl font-bold text-orange-400'>DELTACARE</h1>
       </RouterLink>
@@ -19,7 +18,9 @@ const Header = () => {
         <RouterLink to="/about" className='text-blue-600 hover:text-gray-300'>About Us</RouterLink>
         <RouterLink to="/contact" className='text-blue-600 hover:text-gray-300'>Contact Us</RouterLink>
       </nav>
-      <RouterLink to="/login" className='bg-orange-500 text-white py-2 px-4 rounded-lg hover:bg-orange-600'><LogIn />Login</RouterLink>
+      <RouterLink to="/login" className='flex items-center gap-2 bg-orange-500 text-white py-2 px-4 rounded-lg hover:bg-orange-600'>
+        <LogIn size={16} />Login
+      </RouterLink>
     </header>
   );
 };
