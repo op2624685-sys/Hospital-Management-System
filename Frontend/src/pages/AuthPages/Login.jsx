@@ -37,7 +37,7 @@ const Login = () => {
         <div className='h-screen flex items-center justify-center bg-cover'
             style={{ backgroundImage: "url('https://images.unsplash.com/photo-1545569341-9eb8b30979d9')" }}>
 
-            <div className='bg-[#74cee4]-100 border border-blue-300 rounded-md p-8 shadow-lg backdrop-filter backdrop-blur-lg bg-opacity-30 relative '>
+            <div className='border-2 border-black rounded-xl p-8 shadow-lg backdrop-filter backdrop-blur-lg bg-opacity-30 relative '>
 
                 <h1 className='text-4xl font-bold text-center p-3 mb-6'>Login</h1>
 
@@ -69,15 +69,25 @@ const Login = () => {
                             Password
                         </label>
                     </div>
-
                     <button
                         type="submit"
                         className='w-full mb-4 mt-6 text-[18px] rounded bg-blue-500 py-2 hover:bg-blue-600 transition-colors duration-300 active:scale-90'>
                         Login
                     </button>
-
                 </form>
-                
+
+                <div>
+                    <Link to="/forgotpassword" className='text-[11px] font-bold'>
+                        Forgot Password*
+                    </Link>
+                </div>
+                <div>
+                    <Link to="/signup" className='text-[12px]'>
+                        Don't have an account? <span className='font-bold'>Sign Up</span>
+                    </Link>
+                </div>
+
+            </div>
                         <ToastContainer
                             position="top-right"
                             autoClose={5000}
@@ -91,20 +101,6 @@ const Login = () => {
                             theme="light"
                             transition={Bounce}
                         />
-
-                <div>
-                    <Link to="/forgotpassword" className='text-[11px] font-bold'>
-                        Forgot Password*
-                    </Link>
-                </div>
-
-                <div>
-                    <Link to="/signup" className='text-[12px]'>
-                        Don't have an account? <span className='font-bold'>Sign Up</span>
-                    </Link>
-                </div>
-
-            </div>
         </div>
     );
 };
