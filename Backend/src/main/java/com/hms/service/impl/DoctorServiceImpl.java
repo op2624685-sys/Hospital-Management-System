@@ -79,6 +79,7 @@ public class DoctorServiceImpl implements DoctorService {
         Doctor doctor = Doctor.builder()
                 .name(onBoardDoctorRequestDto.getName())
                 .specialization(onBoardDoctorRequestDto.getSpecialization())
+                .email(onBoardDoctorRequestDto.getEmail())
                 .user(user)
                 .build();
 
