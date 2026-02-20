@@ -1,4 +1,4 @@
-import React  from 'react';
+import React from 'react';
 import { LogIn } from 'lucide-react';
 import { Link as RouterLink } from 'react-router-dom';
 
@@ -6,7 +6,9 @@ const Header = () => {
 
   return (
     <header className='navbar flex justify-between top-0 left-0 fixed w-full items-center py-6 px-10'>
-      <h1 className='text-3xl font-bold text-orange-400'>DELTACARE</h1>
+      <RouterLink to="/">
+        <h1 className='text-3xl font-bold text-orange-400'>DELTACARE</h1>
+      </RouterLink>
       <nav className='space-x-10'>
         <RouterLink to="/" className='text-blue-600 hover:text-gray-300'>Home</RouterLink>
         <RouterLink to="/appointment" className='text-blue-600 hover:text-gray-300'>Appointment</RouterLink>
