@@ -25,7 +25,6 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
     private final UserRepository userRepository;
     private final AuthUtil authUtil;
-
     private final HandlerExceptionResolver handlerExceptionResolver;
 
     @Override
