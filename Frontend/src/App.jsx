@@ -9,6 +9,7 @@ import Appointment from './pages/Appointment'
 import Doctor from './pages/Doctor'
 import Branch from './pages/Branch'
 import Department from './pages/Department'
+import Services from './pages/Services'
 import EmergencyDepartment from './components/EmergencyDepartment'
 import Cardiology from './components/Cardiology'
 import Neurology from './components/Neurology'
@@ -24,6 +25,7 @@ const App = () => {
       <Route path='/appointment' element={<Appointment />} />
       <Route path='/doctors' element={<Doctor />} />
       <Route path='/branches' element={<Branch />} />
+      <Route path='/services' element={<Services />} />
       {/* departments page link */}
       <Route path='departments' element={<Department />} />
       <Route path='departments/emergency' element={<EmergencyDepartment />} />
@@ -32,6 +34,7 @@ const App = () => {
       <Route path='departments/orthopedics' element={<Orthopedics />} />
       <Route path='departments/pediatrics' element={<Pediatrics />} />
       <Route path='departments/radiology' element={<Radiology />} />
+
       {/* Auth pages link */}
       <Route path="/login" element={<Login />} />
       <Route path="/signup" element={<Signup />} />
