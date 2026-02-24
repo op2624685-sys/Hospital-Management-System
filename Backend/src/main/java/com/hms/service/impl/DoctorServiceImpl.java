@@ -6,7 +6,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.hms.dto.DoctorDto;
-import com.hms.dto.Request.DoctorRequest;
 import com.hms.dto.Request.OnBoardDoctorRequestDto;
 import com.hms.dto.Response.DoctorResponseDto;
 import com.hms.entity.Doctor;
@@ -51,13 +50,6 @@ public class DoctorServiceImpl implements DoctorService {
     }
 
     @Override
-    public DoctorDto createNewDoctor(DoctorRequest doctorRequest) {
-        Doctor doctor = modelMapper.map(doctorRequest, Doctor.class);
-        Doctor savedDoctor = doctorRepository.save(doctor);
-        return modelMapper.map(savedDoctor, DoctorDto.class);
-    }
-
-    @Override
     public String deleteDoctorById(Long id) {
         Doctor doctor = doctorRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Doctor not found with id: " + id));
@@ -67,7 +59,7 @@ public class DoctorServiceImpl implements DoctorService {
 
     @Override
     @Transactional
-    @PreAuthorize("hasRole('ADMIN') OR (hasRole('DOCTOR')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'DOCTOR')")
     public DoctorResponseDto onBoardNewDoctor(OnBoardDoctorRequestDto onBoardDoctorRequestDto) {
         User user = userRepository.findById(onBoardDoctorRequestDto.getUserId()).orElseThrow();
 
