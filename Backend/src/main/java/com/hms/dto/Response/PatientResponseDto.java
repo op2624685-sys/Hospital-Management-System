@@ -14,5 +14,6 @@ public class PatientResponseDto {
     private String birthDate;
     private String gender;
     private String bloodGroup;
+    private String email;
     
 }

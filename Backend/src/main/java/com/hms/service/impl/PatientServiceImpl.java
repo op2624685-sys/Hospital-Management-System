@@ -2,16 +2,16 @@ package com.hms.service.impl;
 
 import java.time.LocalDate;
 import java.util.List;
-
+import java.util.stream.Collectors;
 import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
-
 import com.hms.dto.PatientDto;
 import com.hms.dto.Request.PatientRequest;
+import com.hms.dto.Response.PatientResponseDto;
 import com.hms.entity.Patient;
 import com.hms.repository.PatientRepository;
 import com.hms.service.PatientService;
-
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -78,9 +78,11 @@ public class PatientServiceImpl implements PatientService {
     }
 
     @Override
-    public PatientDto getAllPatients(Integer pageNumber, Integer pageSize) {
-        List<Patient> patients = patientRepository.findAll();
-        return modelMapper.map(patients, PatientDto.class);
+    public List<PatientResponseDto> getAllPatients(Integer pageNumber, Integer pageSize) {
+        return patientRepository.findAllPatients(PageRequest.of(pageNumber, pageSize))
+                .stream()
+                .map(patient -> modelMapper.map(patient, PatientResponseDto.class))
+                .collect(Collectors.toList());
     }
 
 }

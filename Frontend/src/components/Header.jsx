@@ -1,8 +1,13 @@
 import React from 'react';
-import { LogIn } from 'lucide-react';
+import { LogIn, LogOut } from 'lucide-react';
 import { Link as RouterLink } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 
 const Header = () => {
+  const {isLoggedIn, logout} = useAuth();
+
+  console.log("Navbar render, isLoggedIn =", isLoggedIn);
+
   return (
     <header className='navbar flex justify-between top-0 left-0 fixed w-full items-center py-6 px-10 z-9999 '>
       <RouterLink to="/">
@@ -18,9 +23,17 @@ const Header = () => {
         <RouterLink to="/about" className='text-blue-600 hover:text-gray-300'>About Us</RouterLink>
         <RouterLink to="/contact" className='text-blue-600 hover:text-gray-300'>Contact Us</RouterLink>
       </nav>
+
+      {isLoggedIn ? (
+        <button onClick={logout} className='flex items-center gap-2 bg-orange-500 text-white py-2 px-4 rounded-lg hover:bg-orange-600'>
+          <LogOut size={16} />Logout
+        </button>
+      ) : (
       <RouterLink to="/login" className='flex items-center gap-2 bg-orange-500 text-white py-2 px-4 rounded-lg hover:bg-orange-600'>
         <LogIn size={16} />Login
       </RouterLink>
+      )}
+
     </header>
   );
 };

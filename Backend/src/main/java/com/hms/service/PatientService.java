@@ -5,6 +5,7 @@ import java.util.List;
 
 import com.hms.dto.PatientDto;
 import com.hms.dto.Request.PatientRequest;
+import com.hms.dto.Response.PatientResponseDto;
 
 public interface PatientService {
 
@@ -22,5 +23,5 @@ public interface PatientService {
 
     String deletePatientById(Long id);
 
-    PatientDto getAllPatients(Integer pageNumber, Integer pageSize);
+    List<PatientResponseDto> getAllPatients(Integer pageNumber, Integer pageSize);
 }

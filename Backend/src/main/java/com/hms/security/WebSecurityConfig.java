@@ -37,7 +37,8 @@ public class WebSecurityConfig {
                         exceptionHandlingConfigurer.accessDeniedHandler((request, response, accessDeniedException) -> {
                                 handlerExceptionResolver.resolveException(request, response, null, accessDeniedException);
                             }));
-                //these are for google and github [OAuth] login !!!
+
+                //      These are for google and github [OAuth] login !!!
                 // .oauth2Login(oAuth2 -> oAuth2                            
                 //        .failureHandler((request, response, exception) -> {
                 //            log.error("OAuth2 error: {}", exception.getMessage());
