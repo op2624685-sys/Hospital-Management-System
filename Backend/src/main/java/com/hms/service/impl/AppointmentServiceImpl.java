@@ -1,12 +1,11 @@
 package com.hms.service.impl;
 
 import java.util.List;
-
+import java.util.stream.Collectors;
 import org.modelmapper.ModelMapper;
 import org.springframework.security.access.annotation.Secured;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
-
-import com.hms.dto.AppointmentDto;
 import com.hms.dto.CreateAppointmentRequestDto;
 import com.hms.dto.Response.AppointmentResponseDto;
 import com.hms.entity.Appointment;
@@ -17,7 +16,6 @@ import com.hms.repository.AppointmentRepository;
 import com.hms.repository.DoctorRepository;
 import com.hms.repository.PatientRepository;
 import com.hms.service.AppointmentService;
-
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -69,14 +67,13 @@ public class AppointmentServiceImpl implements AppointmentService {
     }
 
     @Override
-    public List<AppointmentDto> getAllAppointmentsOfDoctor(Long doctorId) {
-        Doctor doctor = doctorRepository.findById(doctorId)
-                .orElseThrow(() -> new RuntimeException("Doctor not found with id: " + doctorId));
+    @PreAuthorize("hasRole('ADMIN') OR (hasRole('DOCTOR') AND #doctorId == authentication.principal.id)")
+    public List<AppointmentResponseDto> getAllAppointmentsOfDoctor(Long doctorId) {
+        Doctor doctor = doctorRepository.findById(doctorId).orElseThrow();
 
-        List<Appointment> appointments = appointmentRepository.findByDoctor(doctor);
-        return appointments
+        return doctor.getAppointments()
                 .stream()
-                .map(appointment -> modelMapper.map(appointment, AppointmentDto.class))
-                .toList();
+                .map(appointment -> modelMapper.map(appointment, AppointmentResponseDto.class))
+                .collect(Collectors.toList());
     }
 }

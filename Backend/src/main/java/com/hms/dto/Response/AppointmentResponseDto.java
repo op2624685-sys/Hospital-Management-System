@@ -1,5 +1,9 @@
 package com.hms.dto.Response;
 
+import java.time.LocalDateTime;
+
+import com.hms.entity.type.AppointmentStatusType;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -10,6 +14,9 @@ import lombok.NoArgsConstructor;
 public class AppointmentResponseDto {
     
     private Long id;
-    private String time;
-    private String status;
+    private LocalDateTime appointmentTime;
+    private String reason;
+    private DoctorResponseDto doctor;
+    private AppointmentStatusType status;
+    private PatientResponseDto patient;
 }

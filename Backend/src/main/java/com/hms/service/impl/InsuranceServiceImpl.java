@@ -7,7 +7,6 @@ import com.hms.entity.Patient;
 import com.hms.repository.InsuranceRepository;
 import com.hms.repository.PatientRepository;
 import com.hms.service.InsuranceService;
-
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
