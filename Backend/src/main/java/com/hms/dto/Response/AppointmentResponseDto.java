@@ -10,8 +10,6 @@ import lombok.NoArgsConstructor;
 public class AppointmentResponseDto {
     
     private Long id;
-    private String date;
     private String time;
     private String status;
-    
 }

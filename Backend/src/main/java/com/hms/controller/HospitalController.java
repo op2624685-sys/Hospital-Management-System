@@ -20,6 +20,6 @@ public class HospitalController {
 
     @GetMapping("/doctors")
     public ResponseEntity<List<DoctorDto>> getAllDoctors() {
-        return ResponseEntity.ok().body(doctorService.getAllDoctors());
+        return ResponseEntity.ok(doctorService.getAllDoctors());
     }
 }

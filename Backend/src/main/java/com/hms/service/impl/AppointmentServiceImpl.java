@@ -12,6 +12,7 @@ import com.hms.dto.Response.AppointmentResponseDto;
 import com.hms.entity.Appointment;
 import com.hms.entity.Doctor;
 import com.hms.entity.Patient;
+import com.hms.entity.type.AppointmentStatusType;
 import com.hms.repository.AppointmentRepository;
 import com.hms.repository.DoctorRepository;
 import com.hms.repository.PatientRepository;
@@ -46,6 +47,7 @@ public class AppointmentServiceImpl implements AppointmentService {
                 .appointmentTime(createAppointmentRequestDto.getAppointmentTime())
                 .build();
 
+        appointment.setStatus(AppointmentStatusType.PENDING);
         appointment.setPatient(patient);
         appointment.setDoctor(doctor);
         patient.getAppointments().add(appointment); // to maintain consistency
