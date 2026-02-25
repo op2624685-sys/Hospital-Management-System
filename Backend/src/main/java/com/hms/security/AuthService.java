@@ -8,7 +8,6 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
 import com.hms.dto.Request.LoginRequestDto;
 import com.hms.dto.Request.SignupRequestDto;
 import com.hms.dto.Response.LoginResponseDto;
@@ -18,7 +17,6 @@ import com.hms.entity.User;
 import com.hms.entity.type.RoleType;
 import com.hms.repository.PatientRepository;
 import com.hms.repository.UserRepository;
-
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -39,7 +37,8 @@ public class AuthService {
         );
         User user = (User) authentication.getPrincipal();
         String token = authUtil.generateAccessToken(user);
-        return new LoginResponseDto(token, user.getId());
+
+        return new LoginResponseDto(token, user.getId(), user.getRoles());
     }
 
     public SignupResponseDto signup(SignupRequestDto signupRequestDto) {

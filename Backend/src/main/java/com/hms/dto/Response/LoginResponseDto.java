@@ -1,5 +1,7 @@
 package com.hms.dto.Response;
 
+import java.util.Set;
+import com.hms.entity.type.RoleType;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -9,6 +11,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class LoginResponseDto {
 
-    String token;
-    Long userId;
+    private String token;
+    private Long userId;
+    private Set<RoleType> roles;
 }
