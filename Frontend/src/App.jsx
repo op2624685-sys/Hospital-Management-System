@@ -18,13 +18,16 @@ import Neurology from './components/Neurology'
 import Orthopedics from './components/Orthopedics'
 import Pediatrics from './components/Pediatrics'
 import Radiology from './components/Radiology'
+import CheckAppointments from './pages/CheckAppointments'
 
 const App = () => {
   return (
     <div>
     <Routes>
       <Route path="/" element={<Home />} />
+      {/* appointment page link */}
       <Route path='/appointment' element={<Appointment />} />
+      <Route path='/appointment/check' element={<CheckAppointments />} />
       <Route path='/doctors' element={<Doctor />} />
       <Route path='/branches' element={<Branch />} />
       <Route path='/services' element={<Services />} />
