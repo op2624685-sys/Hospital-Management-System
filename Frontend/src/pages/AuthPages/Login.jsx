@@ -3,9 +3,10 @@ import API from '../../api/api';
 import { Link } from 'react-router-dom';
 import { ToastContainer, toast, Bounce } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-
+import { useAuth } from '../../context/AuthContext';
 const Login = () => {
 
+    const { login } = useAuth();
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
 
@@ -18,11 +19,14 @@ const Login = () => {
                 password: password
             });
 
-            console.log(response.data);
-
             // If backend returns JWT token
             if (response.data.token) {
                 localStorage.setItem("token", response.data.token);
+                localStorage.setItem("userId", response.data.userId);
+                localStorage.setItem("roles", JSON.stringify(response.data.roles));
+
+                login(response.data);
+
                 toast.success("Login successful!");
                 window.location.href = '/';
             }

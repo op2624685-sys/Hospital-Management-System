@@ -1,26 +1,36 @@
-import { createContext, useContext, useState, useEffect } from "react";
+import { createContext, useContext, useState } from "react";
 
 const AuthContext = createContext();
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useAuth = () => useContext(AuthContext);
 
 export const AuthProvider = ({ children }) => {
   const [isLoggedIn, setIsLoggedIn] = useState(
-    () => localStorage.getItem("isLoggedIn") === "true"
+    () => localStorage.getItem("token") !== null
   );
 
-  const login = () => {
+  const [user, setUser] = useState(() => ({
+    id: localStorage.getItem("userId"),
+    roles: JSON.parse(localStorage.getItem("roles") || "[]"),
+  }))
+
+  const login = (data) => {
     setIsLoggedIn(true);
-    localStorage.setItem("isLoggedIn", "true");
+    setUser({ id: data.id, roles: data.roles });
   };
 
   const logout = () => {
     setIsLoggedIn(false);
+    setUser(null);
+    localStorage.removeItem("token");
+    localStorage.removeItem("userId");
+    localStorage.removeItem("roles");
     localStorage.removeItem("isLoggedIn");
   };
 
   return (
-    <AuthContext.Provider value={{ isLoggedIn, login, logout }}>
+    <AuthContext.Provider value={{ isLoggedIn, login, logout, user }}>
       {children}
     </AuthContext.Provider>
   );
