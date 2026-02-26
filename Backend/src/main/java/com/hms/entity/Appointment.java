@@ -1,6 +1,7 @@
 package com.hms.entity;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 import com.hms.entity.type.AppointmentStatusType;
 
@@ -14,6 +15,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.PrePersist;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -33,6 +35,16 @@ public class Appointment {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Column(nullable = false, unique = true, updatable = false)
+    private String appointmentId;
+
+    @PrePersist
+    public void generateAppointmentId() {
+        if (appointmentId == null) {
+            appointmentId = UUID.randomUUID().toString();
+        }
+    }
 
     @Column(nullable = false)
     private LocalDateTime appointmentTime;

@@ -9,7 +9,7 @@ public class DoctorDto {
 
     private Long id;
     private String name;
-    private String speciality;
+    private String specialization;
     private String email;
     private DepartmentDto department;
 }

@@ -9,6 +9,8 @@ public interface AppointmentService{
 
     Appointment reAssignAppointmentToAnotherDoctor(Long appointmentId, Long newDoctorId);
 
+    AppointmentResponseDto getAppointmentByAppointmentId(String appointmentId);
+
     List<AppointmentResponseDto> getAllAppointmentsOfDoctor(Long doctorId);
 
     AppointmentResponseDto createNewAppointment(CreateAppointmentRequestDto createAppointmentRequestDto);
