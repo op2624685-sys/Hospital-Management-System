@@ -112,7 +112,7 @@ const AppointmentDetails = () => {
                 <div className='bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden'>
 
                     {/* Card Header */}
-                    <div className='bg-gradient-to-r from-blue-500 to-blue-600 px-8 py-6'>
+                    <div className='bg-linear-to-r from-blue-500 to-blue-600 px-8 py-6'>
                         <div className='flex justify-between items-center'>
                             <div>
                                 <p className='text-blue-100 text-xs'>Appointment Reference</p>
@@ -259,7 +259,7 @@ const AppointmentDetails = () => {
                                 Print
                             </button>
                             <button
-                                onClick={() => navigate('/appointments/check')}
+                                onClick={() => navigate('/appointment/check')}
                                 className='flex-1 bg-blue-500 text-white py-3 rounded-xl hover:bg-blue-600 transition-colors font-medium text-sm'>
                                 Check Status
                             </button>

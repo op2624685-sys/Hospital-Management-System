@@ -29,7 +29,7 @@ const App = () => {
       {/* appointment page link */}
       <Route path='/appointment' element={<Appointment />} />
       <Route path='/appointment/check' element={<CheckAppointments />} />
-      <Route path='/appointments/:appointmentId' element={<AppointmentDetails />} />
+      <Route path='/appointment/:appointmentId' element={<AppointmentDetails />} />
       <Route path='/doctors' element={<Doctor />} />
       <Route path='/branches' element={<Branch />} />
       <Route path='/services' element={<Services />} />
