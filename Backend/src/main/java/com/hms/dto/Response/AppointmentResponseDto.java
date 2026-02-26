@@ -13,7 +13,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class AppointmentResponseDto {
     
-    private Long id;
+    private String appointmentId;
     private LocalDateTime appointmentTime;
     private String reason;
     private DoctorResponseDto doctor;

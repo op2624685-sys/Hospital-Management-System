@@ -13,6 +13,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
@@ -27,6 +28,11 @@ public class PatientController {
      @PostMapping("/appointments")
     public ResponseEntity<AppointmentResponseDto> createNewAppointment(@RequestBody CreateAppointmentRequestDto createAppointmentRequestDto) {
         return ResponseEntity.status(HttpStatus.CREATED).body(appointmentService.createNewAppointment(createAppointmentRequestDto));
+    }
+
+    @GetMapping("/appointments/check/{appointmentId}")
+    public ResponseEntity<AppointmentResponseDto> getAppointmentByAppointmentId(@PathVariable String appointmentId) {
+        return ResponseEntity.ok(appointmentService.getAppointmentByAppointmentId(appointmentId));
     }
     
     @GetMapping("/profile")
