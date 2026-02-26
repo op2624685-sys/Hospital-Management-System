@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, } from "react";
 import Header from "../components/Header";
 
 const Contact = () => {
@@ -8,112 +8,311 @@ const Contact = () => {
     phone: "",
     message: "",
   });
+  const [submitted, setSubmitted] = useState(false);
+  const [focused, setFocused] = useState(null);
 
   const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
+    setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    alert("Message Submitted Successfully!");
-    setFormData({ name: "", email: "", phone: "", message: "" });
+    setSubmitted(true);
+    setTimeout(() => {
+      setSubmitted(false);
+      setFormData({ name: "", email: "", phone: "", message: "" });
+    }, 3000);
   };
 
-  return (
-    <div className="mt-20 px-6 md:px-20">
-      <Header />
+  const inputClass = (field) => `
+    w-full pl-11 pr-4 py-3 bg-white/50 border rounded-xl text-sm
+    focus:outline-none focus:bg-white transition-all duration-300 placeholder-gray-400
+    ${focused === field
+      ? 'border-emerald-400 shadow-sm shadow-emerald-100'
+      : 'border-white/60'
+    }
+  `;
 
-      <div className="text-center my-10">
-        <h1 className="text-8xl font-bold text-black">Contact Us</h1>
-        <p className="mt-4 text-gray-600">
-          Get in touch with us for appointments, queries, or emergencies.
-        </p>
+  return (
+    <div className='min-h-screen relative overflow-hidden'>
+
+      {/* ── Full Page Background ── */}
+      <div className='fixed inset-0 bg-linear-to-br from-emerald-50 via-teal-50 to-mint-50 -z-10'
+        style={{ background: 'linear-gradient(135deg, #ecfdf5 0%, #f0fdfa 40%, #f0fdf4 70%, #dcfce7 100%)' }}>
       </div>
 
-      <div className="grid md:grid-cols-2 gap-10 my-16">
-        {/* Contact Info */}
-        <div className="bg-blue-50 p-6 rounded-lg shadow">
-          <h2 className="text-2xl font-semibold text-black mb-6">
-            Contact Information
-          </h2>
-          <p className="mt-4 text-gray-600">
-            📍 123 Health Street, Delhi, India
-          </p>
-          <p className="mt-2 text-gray-600">
-            📞 +91 98765 43210
-          </p>
-          <p className="mt-2 text-gray-600">
-            📧 info@hospital.com
-          </p>
-          <p className="mt-2 text-gray-600">
-            🕒 Open 24/7
-          </p>
+      {/* ── Floating Background Blobs ── */}
+      <div className='fixed top-20 left-10 w-96 h-96 bg-emerald-200 rounded-full blur-3xl opacity-30 -z-10 animate-pulse'></div>
+      <div className='fixed bottom-20 right-10 w-80 h-80 bg-teal-200 rounded-full blur-3xl opacity-30 -z-10 animate-pulse'
+        style={{ animationDelay: '1s' }}></div>
+      <div className='fixed top-1/2 left-1/2 w-64 h-64 bg-green-100 rounded-full blur-3xl opacity-40 -z-10'></div>
+      <div className='fixed top-10 right-1/3 w-48 h-48 bg-mint-100 rounded-full blur-2xl opacity-20 -z-10'
+        style={{ background: '#ccfbf1' }}></div>
 
-          <div className="mt-6 bg-red-100 p-4 rounded">
-            <p className="text-red-600 font-semibold">
-              🚨 Emergency? Call Now: +91 98765 43210
-            </p>
+      {/* ── Floating Decorative Cards ── */}
+      {/* Top left mini card */}
+      <div className='fixed top-32 left-8 bg-white/40 backdrop-blur-md border border-white/60 rounded-2xl p-4 shadow-lg -z-5 hidden xl:block'>
+        <p className='text-xs font-bold text-emerald-700'>🟢 Online Support</p>
+        <p className='text-xs text-gray-500 mt-0.5'>Available 24/7</p>
+      </div>
+
+      {/* Bottom left mini card */}
+      <div className='fixed bottom-32 left-8 bg-white/40 backdrop-blur-md border border-white/60 rounded-2xl p-4 shadow-lg -z-5 hidden xl:block'>
+        <p className='text-xs font-bold text-teal-700'>⚡ Fast Response</p>
+        <p className='text-xs text-gray-500 mt-0.5'>Within 24 hours</p>
+      </div>
+
+      {/* Top right mini card */}
+      <div className='fixed top-32 right-8 bg-white/40 backdrop-blur-md border border-white/60 rounded-2xl p-4 shadow-lg -z-5 hidden xl:block'>
+        <p className='text-xs font-bold text-green-700'>🏥 DELTACARE</p>
+        <p className='text-xs text-gray-500 mt-0.5'>Trusted by 10k+</p>
+      </div>
+
+      {/* Bottom right mini card */}
+      <div className='fixed bottom-32 right-8 bg-white/40 backdrop-blur-md border border-white/60 rounded-2xl p-4 shadow-lg -z-5 hidden xl:block'>
+        <p className='text-xs font-bold text-emerald-700'>⭐ 4.9 Rating</p>
+        <p className='text-xs text-gray-500 mt-0.5'>10k+ reviews</p>
+      </div>
+
+      <Header />
+
+      {/* ── Main Content ── */}
+      <div className='min-h-screen flex flex-col items-center justify-center px-6 py-32'>
+
+        {/* ── Page Title ── */}
+        <div className='text-center mb-14'>
+          <span className='inline-flex items-center gap-2 bg-white/60 backdrop-blur-sm border border-emerald-200 text-emerald-600 text-xs font-bold px-4 py-2 rounded-full uppercase tracking-widest mb-5'>
+            <span className='w-2 h-2 bg-emerald-400 rounded-full animate-pulse'></span>
+            We're Here For You
+          </span>
+          <h1 className='text-7xl font-black text-gray-800 leading-none mb-4'>
+            Let{' '}
+            <span className='text-transparent bg-clip-text bg-linear-to-r from-emerald-500 to-teal-500'>
+              Us Help
+            </span>
+          </h1>
+          <p className='text-gray-500 text-lg max-w-lg mx-auto leading-relaxed'>
+            Our dedicated team is ready to assist you with
+            appointments, queries, or any medical emergency.
+          </p>
+        </div>
+
+        {/* ── Emergency Banner ── */}
+        <div className='w-full max-w-4xl mb-10'>
+          <div className='bg-white/50 backdrop-blur-md border border-red-100 rounded-2xl px-6 py-4 flex items-center justify-between shadow-sm'>
+            <div className='flex items-center gap-3'>
+              <div className='w-10 h-10 bg-red-100 rounded-xl flex items-center justify-center text-lg'>
+                🚨
+              </div>
+              <div>
+                <p className='font-bold text-gray-800 text-sm'>Medical Emergency?</p>
+                <p className='text-xs text-gray-500'>Don't wait — our emergency team is on standby</p>
+              </div>
+            </div>
+            <a href="tel:+919876543210"
+              className='flex items-center gap-2 bg-red-500 text-white font-bold py-2.5 px-5 rounded-xl hover:scale-105 active:scale-95 transition-all duration-300 text-sm shadow-md shadow-red-200'>
+              📞 Call Now
+            </a>
           </div>
         </div>
 
-        {/* Contact Form */}
-        <form
-          onSubmit={handleSubmit}
-          className="bg-white p-6 rounded-lg shadow"
-        >
-          <h2 className="text-2xl font-semibold text-black mb-6">
-            Send Us a Message
-          </h2>
+        {/* ── Cards Row ── */}
+        <div className='w-full max-w-4xl grid grid-cols-2 gap-8'>
 
-          <input
-            type="text"
-            name="name"
-            placeholder="Full Name"
-            value={formData.name}
-            onChange={handleChange}
-            className="w-full mb-4 p-3 border rounded"
-            required
-          />
+          {/* ── Left — Contact Info Glassmorphism Card ── */}
+          <div className='bg-white/40 backdrop-blur-xl border border-white/70 rounded-3xl shadow-xl shadow-emerald-100/50 p-8 flex flex-col gap-6'>
 
-          <input
-            type="email"
-            name="email"
-            placeholder="Email Address"
-            value={formData.email}
-            onChange={handleChange}
-            className="w-full mb-4 p-3 border rounded"
-            required
-          />
+            <div>
+              <h2 className='text-2xl font-black text-gray-800 mb-1'>
+                Contact <span className='text-emerald-500'>Info</span>
+              </h2>
+              <p className='text-gray-400 text-sm'>Multiple ways to reach us</p>
+            </div>
 
-          <input
-            type="text"
-            name="phone"
-            placeholder="Phone Number"
-            value={formData.phone}
-            onChange={handleChange}
-            className="w-full mb-4 p-3 border rounded"
-          />
+            {/* Info Items */}
+            <div className='flex flex-col gap-4'>
+              {[
+                { icon: '📍', label: 'Address', value: '123 Health Street, Delhi, India', color: 'text-emerald-600', bg: 'bg-emerald-50/80' },
+                { icon: '📞', label: 'Phone', value: '+91 98765 43210', color: 'text-teal-600', bg: 'bg-teal-50/80' },
+                { icon: '📧', label: 'Email', value: 'info@deltacare.com', color: 'text-green-600', bg: 'bg-green-50/80' },
+                { icon: '🕒', label: 'Hours', value: 'Open 24/7', color: 'text-emerald-600', bg: 'bg-emerald-50/80' },
+              ].map((item, i) => (
+                <div key={i}
+                  className={`flex items-center gap-4 ${item.bg} backdrop-blur-sm border border-white/80 rounded-2xl p-4 hover:-translate-y-0.5 hover:shadow-md transition-all duration-300`}>
+                  <div className='w-10 h-10 bg-white/80 rounded-xl flex items-center justify-center text-lg shadow-sm shrink-0'>
+                    {item.icon}
+                  </div>
+                  <div>
+                    <p className={`text-xs font-bold ${item.color} uppercase tracking-wider`}>{item.label}</p>
+                    <p className='text-sm font-semibold text-gray-700 mt-0.5'>{item.value}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
 
-          <textarea
-            name="message"
-            placeholder="Your Message"
-            value={formData.message}
-            onChange={handleChange}
-            className="w-full mb-4 p-3 border rounded"
-            rows="4"
-            required
-          ></textarea>
+            {/* Divider */}
+            <div className='h-px bg-linear-to-r from-transparent via-emerald-200 to-transparent'></div>
 
-          <button
-            type="submit"
-            className="w-full bg-blue-600 text-white py-3 rounded hover:bg-blue-700 transition"
-          >
-            Submit Message
-          </button>
-        </form>
+            {/* Social */}
+            <div>
+              <p className='text-xs text-gray-400 uppercase tracking-wider font-semibold mb-3'>Connect With Us</p>
+              <div className='flex gap-2 flex-wrap'>
+                {[
+                  { label: 'Facebook', bg: 'bg-emerald-50/80 hover:bg-emerald-100 text-emerald-700 border-emerald-200' },
+                  { label: 'Instagram', bg: 'bg-teal-50/80 hover:bg-teal-100 text-teal-700 border-teal-200' },
+                  { label: 'Twitter', bg: 'bg-green-50/80 hover:bg-green-100 text-green-700 border-green-200' },
+                  { label: 'LinkedIn', bg: 'bg-mint-50/80 hover:bg-mint-100 text-emerald-700 border-emerald-100' },
+                ].map((s, i) => (
+                  <button key={i}
+                    className={`text-xs font-bold px-4 py-2 rounded-xl border backdrop-blur-sm ${s.bg} transition-all duration-300 active:scale-95`}>
+                    {s.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Map placeholder */}
+            <div className='bg-linear-to-br from-emerald-50/80 to-teal-50/80 backdrop-blur-sm border border-white/60 rounded-2xl p-6 flex flex-col items-center justify-center text-center'>
+              <span className='text-4xl mb-2'>🗺️</span>
+              <p className='font-bold text-gray-700 text-sm'>123 Health Street</p>
+              <p className='text-gray-400 text-xs mt-0.5'>Delhi, India</p>
+              <button className='mt-3 text-xs font-semibold text-emerald-600 hover:text-emerald-700 hover:underline transition-colors'>
+                View on Google Maps →
+              </button>
+            </div>
+          </div>
+
+          {/* ── Right — Form Glassmorphism Card ── */}
+          <div className='bg-white/40 backdrop-blur-xl border border-white/70 rounded-3xl shadow-xl shadow-teal-100/50 overflow-hidden'>
+
+            {/* Form Header */}
+            <div className='bg-linear-to-r from-emerald-400 to-teal-400 px-8 py-6'>
+              <div className='flex items-center gap-3'>
+                <div className='w-10 h-10 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center'>
+                  <span className='text-white text-lg'>✉️</span>
+                </div>
+                <div>
+                  <h3 className='text-white font-black text-lg'>Send a Message</h3>
+                  <p className='text-emerald-50 text-xs'>We reply within 24 hours</p>
+                </div>
+              </div>
+            </div>
+
+            <div className='p-8'>
+              {submitted ? (
+                // ── Success State ──
+                <div className='flex flex-col items-center justify-center py-16 text-center'>
+                  <div className='w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mb-4 shadow-inner'>
+                    <svg className='w-8 h-8 text-emerald-500' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                      <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2.5} d='M5 13l4 4L19 7' />
+                    </svg>
+                  </div>
+                  <h3 className='text-xl font-black text-gray-800 mb-2'>Message Sent! 🎉</h3>
+                  <p className='text-gray-400 text-sm max-w-xs'>
+                    Thank you for reaching out. We'll get back to you as soon as possible.
+                  </p>
+                </div>
+              ) : (
+                // ── Form ──
+                <form onSubmit={handleSubmit} className='flex flex-col gap-5'>
+
+                  {/* Name */}
+                  <div>
+                    <label className='block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2'>
+                      Full Name
+                    </label>
+                    <div className='relative'>
+                      <div className='absolute inset-y-0 left-3 flex items-center pointer-events-none'>
+                        <svg className='w-4 h-4 text-gray-400' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                          <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2}
+                            d='M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z' />
+                        </svg>
+                      </div>
+                      <input type="text" name="name" placeholder="John Doe"
+                        value={formData.name} onChange={handleChange}
+                        onFocus={() => setFocused('name')} onBlur={() => setFocused(null)}
+                        className={inputClass('name')} required />
+                    </div>
+                  </div>
+
+                  {/* Email */}
+                  <div>
+                    <label className='block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2'>
+                      Email Address
+                    </label>
+                    <div className='relative'>
+                      <div className='absolute inset-y-0 left-3 flex items-center pointer-events-none'>
+                        <svg className='w-4 h-4 text-gray-400' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                          <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2}
+                            d='M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z' />
+                        </svg>
+                      </div>
+                      <input type="email" name="email" placeholder="john@example.com"
+                        value={formData.email} onChange={handleChange}
+                        onFocus={() => setFocused('email')} onBlur={() => setFocused(null)}
+                        className={inputClass('email')} required />
+                    </div>
+                  </div>
+
+                  {/* Phone */}
+                  <div>
+                    <label className='block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2'>
+                      Phone <span className='text-gray-300 normal-case font-normal'>(optional)</span>
+                    </label>
+                    <div className='relative'>
+                      <div className='absolute inset-y-0 left-3 flex items-center pointer-events-none'>
+                        <svg className='w-4 h-4 text-gray-400' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                          <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2}
+                            d='M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z' />
+                        </svg>
+                      </div>
+                      <input type="text" name="phone" placeholder="+91 98765 43210"
+                        value={formData.phone} onChange={handleChange}
+                        onFocus={() => setFocused('phone')} onBlur={() => setFocused(null)}
+                        className={inputClass('phone')} />
+                    </div>
+                  </div>
+
+                  {/* Message */}
+                  <div>
+                    <label className='block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2'>
+                      Message
+                    </label>
+                    <div className='relative'>
+                      <div className='absolute top-3 left-3 pointer-events-none'>
+                        <svg className='w-4 h-4 text-gray-400' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                          <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2}
+                            d='M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z' />
+                        </svg>
+                      </div>
+                      <textarea name="message" placeholder="How can we help you today?"
+                        value={formData.message} onChange={handleChange}
+                        onFocus={() => setFocused('message')} onBlur={() => setFocused(null)}
+                        rows={4} className={`${inputClass('message')} pl-11 resize-none`} required />
+                    </div>
+                  </div>
+
+                  {/* Submit */}
+                  <button type="submit"
+                    className='group relative overflow-hidden w-full bg-gray-800 text-white font-bold py-3.5 rounded-xl hover:scale-105 active:scale-95 transition-all duration-300 shadow-lg text-sm flex items-center justify-center gap-2'>
+                    <span className='absolute inset-0 bg-linear-to-r from-emerald-500 to-teal-500 translate-y-full group-hover:translate-y-0 transition-transform duration-300'></span>
+                    <svg className='relative z-10 w-4 h-4' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                      <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2}
+                        d='M12 19l9 2-9-18-9 18 9-2zm0 0v-8' />
+                    </svg>
+                    <span className='relative z-10'>Send Message</span>
+                  </button>
+
+                </form>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Footer note */}
+        <p className='text-center text-xs text-gray-400 mt-12'>
+          © 2026 DELTACARE Hospital · All rights reserved
+        </p>
       </div>
     </div>
   );
