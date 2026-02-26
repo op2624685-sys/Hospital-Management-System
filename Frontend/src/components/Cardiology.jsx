@@ -1,48 +1,129 @@
-import React from 'react'
+import React, { useState } from 'react'
+
+const ACCENT = '#f97316'
+const BG     = '#fff7ed'
+
+const sections = [
+  {
+    title: 'Services Offered',
+    icon: '⚡',
+    items: ['Echocardiography & cardiac imaging', 'Coronary angiography & angioplasty', 'Cardiac catheterization', 'Pacemaker implantation', 'Electrophysiology studies', 'Heart failure management', 'Cardiac rehabilitation', 'Preventive cardiology', 'Holter monitoring', 'Stress testing'],
+  },
+  {
+    title: 'Conditions We Treat',
+    icon: '🩺',
+    items: ['Coronary artery disease', 'Heart failure & cardiomyopathy', 'Arrhythmias & atrial fibrillation', 'Valvular heart disease', 'Congenital heart defects', 'Hypertension', 'Aortic disorders', 'Peripheral artery disease', 'Pericardial diseases', 'Cardiac infections'],
+  },
+  {
+    title: 'Facilities & Equipment',
+    icon: '🏥',
+    items: ['Cardiac ICU (CICU)', 'Cardiac catheterization lab', 'Electrophysiology lab', 'Echocardiography suite', 'Nuclear cardiology unit', 'Cardiac MRI & CT', '24-hour Holter monitoring', 'Treadmill stress test lab', 'Pacemaker clinic'],
+  },
+  {
+    title: 'Cardiology Team',
+    icon: '👨‍⚕️',
+    items: ['Interventional Cardiologists', 'Electrophysiologists', 'Cardiac Surgeons', 'Echocardiographers', 'Cardiac Nurses', 'Cardiac Rehabilitation Specialists', 'Cardiac Dieticians', 'Cardiac Physiologists'],
+  },
+  {
+    title: 'Cardiac Emergency',
+    icon: '🚨',
+    items: ['24/7 cardiac emergency team', 'Primary PCI for heart attacks', 'Emergency pacemaker insertion', 'Cardiac arrest resuscitation', 'Dedicated cardiac emergency helpline'],
+  },
+  {
+    title: 'Patient Support',
+    icon: '🤝',
+    items: ['Cardiac rehabilitation programs', 'Lifestyle counseling', 'Medication management', 'Heart failure clinics', 'Insurance and billing assistance'],
+  },
+]
 
 const Cardiology = () => {
+  const [active, setActive] = useState(0)
+
   return (
-    <div className='px-20 py-5'>
-      <div className='flex justify-center items-center mt-20 px-5'>
-        <div className='section-1 flex flex-col w-2/3 m-10 py-2 px-4 h-full bg-transparent border-2 border-black rounded-2xl'>
-          <h2 className='text-7xl font-bold w-full mt-2 mb-4'>Cardiology Department</h2>
-          <p className='text-xl font-semibold px-2'>Specializes in the diagnosis, treatment, and prevention of diseases related to the heart and cardiovascular system. Our team of expert cardiologists and cardiac surgeons provide comprehensive care using state-of-the-art technology and evidence-based treatments.</p>
-          <div className='text-md flex flex-row flex-wrap m-2 p-3 bg-amber-50'>
-            <div className='w-1/2'>
-              <h3 className='font-medium my-2.5'>Services Offered :- </h3>
-              <ul className='p-2'>Electrocardiogram (ECG/EKG), Echocardiography, Stress testing, Cardiac catheterization, Angioplasty & stenting, Pacemaker implantation, Holter monitoring, Cardiac rehabilitation, Heart failure management, Preventive cardiology</ul>
+    <div className='flex h-full'>
+
+      <div className='flex flex-col w-3/5 p-8 overflow-y-auto'>
+        <div className='mb-8'>
+          <span
+            className='inline-flex items-center gap-2 text-xs font-black uppercase tracking-widest px-3 py-1.5 rounded-full mb-4'
+            style={{ background: `${ACCENT}15`, color: ACCENT }}>
+            <span className='w-1.5 h-1.5 rounded-full animate-pulse' style={{ background: ACCENT }} />
+            Heart & Cardiovascular Care
+          </span>
+          <h2 className='text-5xl font-black text-gray-900 leading-none mb-4'>
+            Cardiology<br />
+            <span style={{ color: ACCENT }}>Department</span>
+          </h2>
+          <p className='text-gray-500 leading-relaxed max-w-xl'>
+            Comprehensive cardiovascular care combining the latest interventional techniques with compassionate
+            patient management. Our cardiologists are dedicated to your heart health at every stage.
+          </p>
+        </div>
+
+        <div className='flex flex-wrap gap-2 mb-6'>
+          {sections.map((s, i) => (
+            <button key={i} onClick={() => setActive(i)}
+              className='flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all duration-200 active:scale-95'
+              style={{ background: active === i ? ACCENT : `${ACCENT}10`, color: active === i ? '#fff' : ACCENT }}>
+              {s.icon} {s.title}
+            </button>
+          ))}
+        </div>
+
+        <div className='rounded-2xl p-6 flex-1' style={{ background: BG, border: `1px solid ${ACCENT}20` }}>
+          <h3 className='font-black text-lg mb-4 flex items-center gap-2' style={{ color: ACCENT }}>
+            {sections[active].icon} {sections[active].title}
+          </h3>
+          <div className='grid grid-cols-2 gap-3'>
+            {sections[active].items.map((item, j) => (
+              <div key={j} className='flex items-start gap-2'>
+                <div className='w-5 h-5 rounded-lg flex items-center justify-center shrink-0 mt-0.5' style={{ background: `${ACCENT}20` }}>
+                  <div className='w-1.5 h-1.5 rounded-full' style={{ background: ACCENT }} />
+                </div>
+                <p className='text-sm text-gray-600 leading-snug'>{item}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <div className='w-2/5 flex flex-col p-6 gap-5' style={{ background: BG, borderLeft: `1px solid ${ACCENT}15` }}>
+
+        <div className='rounded-2xl overflow-hidden shadow-md' style={{ height: 220 }}>
+          <img
+            src="https://images.unsplash.com/photo-1530497610245-94d3c16cda28?q=80&w=687&auto=format&fit=crop"
+            alt="Cardiology Department"
+            className='w-full h-full object-cover'
+          />
+        </div>
+
+        <div className='bg-white rounded-2xl p-5 shadow-sm' style={{ border: `1px solid ${ACCENT}15` }}>
+          <p className='text-xs text-gray-400 uppercase tracking-wider font-bold mb-3'>Department Head</p>
+          <div className='flex items-center gap-3'>
+            <div className='w-12 h-12 rounded-xl flex items-center justify-center text-xl font-black text-white shadow-md'
+              style={{ background: `linear-gradient(135deg, ${ACCENT}, #ea580c)` }}>
+              SL
             </div>
-            <div className='w-1/2'>
-              <h3 className='font-medium my-2.5'>Conditions We Treat :-</h3>
-              <ul className='p-2'>Coronary artery disease, Heart failure, Arrhythmias, Hypertension, Valvular heart disease, Congenital heart defects, Peripheral arterial disease, Cardiomyopathy, Pericarditis, Aortic aneurysm</ul>
-            </div>
-            <div className='w-1/2'>
-              <h3 className='font-medium my-2.5'>Facilities & Equipment :- </h3>
-              <ul className='p-2'>Cardiac catheterization lab, 3D echocardiography, Nuclear cardiology unit, Cardiac MRI & CT scan, Electrophysiology lab, Dedicated cardiac ICU (CICU), Advanced hemodynamic monitoring, Coronary angiography suite</ul>
-            </div>
-            <div className='w-1/2'>
-              <h3 className='font-medium my-2.5'>Our Cardiac Team :- </h3>
-              <ul className='p-2'>Interventional Cardiologists, Electrophysiologists, Cardiac Surgeons, Cardiac Nurses & Technicians, Cardiovascular Radiologists, Cardiac Rehabilitation Specialists, Dieticians & Lifestyle Coaches</ul>
-            </div>
-            <div className='w-1/2'>
-              <h3 className='font-medium my-2.5'>Preventive Care :- </h3>
-              <ul className='p-2'>Cholesterol & lipid management, Diabetes & cardiac risk counseling, Lifestyle modification programs, Cardiac screening packages, Genetic risk assessment</ul>
-            </div>
-            <div className='w-1/2'>
-              <h3 className='font-medium my-2.5'>Patient Support :- </h3>
-              <ul className='p-2'>Dedicated cardiac helpline, Post-procedure follow-up, Remote cardiac monitoring, Patient education programs, Insurance and billing assistance</ul>
+            <div>
+              <p className='font-black text-gray-800'>Dr. Sarah Lee</p>
+              <p className='text-xs text-gray-400'>Interventional Cardiologist</p>
             </div>
           </div>
         </div>
 
-        <div className='section-2 flex h-full w-1/3 bg-transparent rounded-2xl border border-black'>
-          <div className='h-full w-1/2 flex justify-center items-center '>
-            <img className='rounded-4xl m-3 px-4' src="https://images.unsplash.com/photo-1628348068343-c6a848d2b6dd?q=80&w=687&auto=format&fit=crop" alt="Cardiology Department" />
-          </div>
-          <div className='h-full w-1/2 flex flex-col justify-center items-center m-2 py-4 px-2'>
-            <h5 className='text-md font-medium'>Department Head :- <span className='font-light'>Dr. Sarah Mitchell</span></h5>
-            <p className='font-medium'>Department members :- <span className='font-light'>18</span></p>
-          </div>
+        <div className='grid grid-cols-2 gap-3'>
+          {[
+            { label: 'Team Members', value: '18', icon: '👥' },
+            { label: 'Cath Labs', value: '2', icon: '❤️' },
+            { label: 'CICU Beds', value: '15', icon: '🏥' },
+            { label: 'Emergency', value: '24/7', icon: '🚨' },
+          ].map((stat, i) => (
+            <div key={i} className='bg-white rounded-xl p-4 shadow-sm text-center' style={{ border: `1px solid ${ACCENT}15` }}>
+              <p className='text-xl mb-1'>{stat.icon}</p>
+              <p className='text-xl font-black' style={{ color: ACCENT }}>{stat.value}</p>
+              <p className='text-xs text-gray-400 mt-0.5'>{stat.label}</p>
+            </div>
+          ))}
         </div>
       </div>
     </div>
