@@ -12,7 +12,7 @@ const Appointment = () => {
           <h1 className='text-8xl font-semibold m-3 px-2'>Reserve Your Spot</h1>
           <p className='text-2xl m-3 mt-10'>Secure your preferred time slot by booking in advance. Our simple appointment system allows you to plan ahead and avoid waiting in line, so you can focus on what matters most.</p>
           <div className='flex flex-row mt-10'>
-            <Link to="/appointment/check"className='bg-green-200 text-black m-1 border-2 border-black text-black py-2 px-4 rounded-lg hover:bg-red-300 hover:text-white'>Check Appointment</Link>
+            <Link to="/appointment/check"className='bg-green-200 text-black m-1 border-2 border-black text-black py-2 px-4 rounded-lg hover:bg-red-300 hover:text-white active:scale-80'>Check Appointment</Link>
           </div>
         </div>
         <AppointmentBooking />

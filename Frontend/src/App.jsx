@@ -5,6 +5,7 @@ import Signup from './pages/AuthPages/Signup'
 import ForgotPassword from './pages/AuthPages/ForgotPassword'
 import { Route, Routes } from 'react-router-dom'
 import Home from './pages/Home'
+import AppointmentDetails from './pages/AppointmentDetails'
 import Appointment from './pages/Appointment'
 import Doctor from './pages/Doctor'
 import Branch from './pages/Branch'
@@ -28,6 +29,7 @@ const App = () => {
       {/* appointment page link */}
       <Route path='/appointment' element={<Appointment />} />
       <Route path='/appointment/check' element={<CheckAppointments />} />
+      <Route path='/appointments/:appointmentId' element={<AppointmentDetails />} />
       <Route path='/doctors' element={<Doctor />} />
       <Route path='/branches' element={<Branch />} />
       <Route path='/services' element={<Services />} />

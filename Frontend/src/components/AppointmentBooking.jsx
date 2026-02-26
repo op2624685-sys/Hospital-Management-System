@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import API from '../api/api';
 import { useAuth } from '../context/AuthContext';
+import { Link, useNavigate } from 'react-router-dom';
 import { toast, ToastContainer, Bounce } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 const AppointmentBooking = () => {
   const { user } = useAuth(); // get logged in patient
-
+  const navigate = useNavigate();
   const [doctorName, setDoctorName] = useState('');
   const [doctorId, setDoctorId] = useState(null);
   const [allDoctors, setAllDoctors] = useState([]);
@@ -62,7 +63,7 @@ const AppointmentBooking = () => {
     }
 
     try {
-      await API.post('/patients/appointments', {
+      const response = await API.post('/patients/appointments', {
         doctorId: doctorId,
         patientId: user.id,           // from logged in user
         reason: reason,
@@ -70,12 +71,14 @@ const AppointmentBooking = () => {
       });
 
       toast.success("Appointment booked successfully!");
-
+      
       // reset form
       setDoctorName('');
       setDoctorId(null);
       setReason('');
       setAppointmentTime('');
+      
+      navigate(`/appointments/${response.data.appointmentId}`);
 
     } catch (error) {
       toast.error("Booking failed!");
