@@ -3,7 +3,7 @@ import { LogIn, LogOut, Menu, X } from 'lucide-react';
 import { Link as RouterLink, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
-const navLinks = [
+const baseNavLinks = [
   { to: '/', label: 'Home' },
   { to: '/appointment', label: 'Appointment' },
   { to: '/doctors', label: 'Doctor' },
@@ -15,13 +15,16 @@ const navLinks = [
 ];
 
 const Header = () => {
-  const { isLoggedIn, logout } = useAuth();
+  const { isLoggedIn, logout, hasRole } = useAuth();
   const location = useLocation();
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [hoveredLink, setHoveredLink] = useState(null);
 
-  // ✅ Change navbar style on scroll
+  const navLinks = hasRole('ADMIN')
+    ? [...baseNavLinks, { to: '/admin', label: 'Admin Panel' }]
+    : baseNavLinks;
+
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20);
     window.addEventListener('scroll', handleScroll);
@@ -39,8 +42,6 @@ const Header = () => {
         }`}>
 
         <div className='flex justify-between items-center px-10'>
-
-          {/* ── Logo ── */}
           <RouterLink to="/" className='group flex items-center gap-2'>
             <div className='w-9 h-9 bg-linear-to-br from-orange-400 to-rose-500 rounded-xl flex items-center justify-center shadow-md group-hover:scale-110 transition-transform duration-300'>
               <span className='text-white font-black text-sm'>D</span>
@@ -51,7 +52,6 @@ const Header = () => {
             </h1>
           </RouterLink>
 
-          {/* ── Desktop Nav ── */}
           <nav className='hidden lg:flex items-center gap-1'>
             {navLinks.map((link) => (
               <RouterLink
@@ -65,7 +65,6 @@ const Header = () => {
                     : 'text-gray-600 hover:text-gray-900'
                   }`}>
 
-                {/* Hover background */}
                 <span className={`absolute inset-0 rounded-xl transition-all duration-300
                   ${hoveredLink === link.to && !isActive(link.to)
                     ? 'bg-orange-50 scale-100 opacity-100'
@@ -73,7 +72,6 @@ const Header = () => {
                   }`}>
                 </span>
 
-                {/* Active indicator */}
                 {isActive(link.to) && (
                   <span className='absolute bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 bg-orange-500 rounded-full'></span>
                 )}
@@ -83,14 +81,11 @@ const Header = () => {
             ))}
           </nav>
 
-          {/* ── Right Side ── */}
           <div className='flex items-center gap-3'>
-
             {isLoggedIn ? (
               <button
                 onClick={logout}
                 className='group flex items-center gap-2 relative overflow-hidden bg-gray-900 text-white text-sm font-semibold py-2.5 px-5 rounded-xl transition-all duration-300 hover:scale-105 active:scale-95 shadow-md hover:shadow-lg'>
-                {/* Hover fill effect */}
                 <span className='absolute inset-0 bg-linear-to-r from-rose-500 to-orange-500 translate-x-full group-hover:translate-x-0 transition-transform duration-300'></span>
                 <LogOut size={15} className='relative z-10 group-hover:rotate-12 transition-transform duration-300' />
                 <span className='relative z-10'>Logout</span>
@@ -99,14 +94,12 @@ const Header = () => {
               <RouterLink
                 to="/login"
                 className='group flex items-center gap-2 relative overflow-hidden bg-linear-to-r from-orange-500 to-rose-500 text-white text-sm font-semibold py-2.5 px-5 rounded-xl transition-all duration-300 hover:scale-105 active:scale-95 shadow-md hover:shadow-orange-200 hover:shadow-lg'>
-                {/* Shimmer effect */}
                 <span className='absolute inset-0 bg-white opacity-0 group-hover:opacity-10 transition-opacity duration-300'></span>
                 <LogIn size={15} className='relative z-10 group-hover:-rotate-12 transition-transform duration-300' />
                 <span className='relative z-10'>Login</span>
               </RouterLink>
             )}
 
-            {/* Mobile menu toggle */}
             <button
               onClick={() => setMenuOpen(!menuOpen)}
               className='lg:hidden p-2 rounded-xl bg-gray-100 hover:bg-orange-50 text-gray-600 hover:text-orange-500 transition-all duration-300 active:scale-90'>
@@ -116,22 +109,18 @@ const Header = () => {
         </div>
       </header>
 
-      {/* ── Mobile Menu ── */}
       <div className={`fixed top-0 left-0 w-full h-full z-40 transition-all duration-500
         ${menuOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}>
 
-        {/* Backdrop */}
         <div
           className='absolute inset-0 bg-black/40 backdrop-blur-sm'
           onClick={() => setMenuOpen(false)}
         ></div>
 
-        {/* Drawer */}
         <div className={`absolute top-0 right-0 h-full w-72 bg-white shadow-2xl transition-transform duration-500
           ${menuOpen ? 'translate-x-0' : 'translate-x-full'}`}>
 
           <div className='p-6'>
-            {/* Mobile header */}
             <div className='flex justify-between items-center mb-8'>
               <h2 className='font-black text-xl'>
                 <span className='text-orange-500'>DELTA</span>CARE
@@ -143,7 +132,6 @@ const Header = () => {
               </button>
             </div>
 
-            {/* Mobile links */}
             <nav className='flex flex-col gap-1'>
               {navLinks.map((link, i) => (
                 <RouterLink
@@ -164,7 +152,6 @@ const Header = () => {
               ))}
             </nav>
 
-            {/* Mobile auth button */}
             <div className='mt-8'>
               {isLoggedIn ? (
                 <button

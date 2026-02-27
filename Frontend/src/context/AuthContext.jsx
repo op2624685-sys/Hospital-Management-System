@@ -13,11 +13,14 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(() => ({
     id: localStorage.getItem("userId"),
     roles: JSON.parse(localStorage.getItem("roles") || "[]"),
-  }))
+  }));
 
   const login = (data) => {
     setIsLoggedIn(true);
-    setUser({ id: data.id, roles: data.roles });
+    setUser({
+      id: data.userId,
+      roles: data.roles || [],
+    });
   };
 
   const logout = () => {
@@ -26,12 +29,15 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem("token");
     localStorage.removeItem("userId");
     localStorage.removeItem("roles");
-    localStorage.removeItem("isLoggedIn");
   };
 
+  const hasRole = (role) => user?.roles?.includes(role);
+
   return (
-    <AuthContext.Provider value={{ isLoggedIn, login, logout, user }}>
+    <AuthContext.Provider value={{ isLoggedIn, login, logout, user, hasRole }}>
       {children}
     </AuthContext.Provider>
   );
 };
+
+export default AuthProvider;

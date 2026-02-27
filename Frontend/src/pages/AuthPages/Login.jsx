@@ -28,7 +28,9 @@ const Login = () => {
                 login(response.data);
 
                 toast.success("Login successful!");
-                window.location.href = '/';
+                const userRoles = response.data.roles || [];
+                window.location.href = userRoles.includes("ADMIN") ? "/admin" : "/";
+
             }
 
         } catch (error) {
@@ -92,19 +94,19 @@ const Login = () => {
                 </div>
 
             </div>
-                        <ToastContainer
-                            position="top-right"
-                            autoClose={5000}
-                            hideProgressBar={false}
-                            newestOnTop={false}
-                            closeOnClick={false}
-                            rtl={false}
-                            pauseOnFocusLoss
-                            draggable
-                            pauseOnHover
-                            theme="light"
-                            transition={Bounce}
-                        />
+            <ToastContainer
+                position="top-right"
+                autoClose={5000}
+                hideProgressBar={false}
+                newestOnTop={false}
+                closeOnClick={false}
+                rtl={false}
+                pauseOnFocusLoss
+                draggable
+                pauseOnHover
+                theme="light"
+                transition={Bounce}
+            />
         </div>
     );
 };
