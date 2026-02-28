@@ -37,7 +37,7 @@ const Header = () => {
     <>
       <header className={`fixed top-0 left-0 w-full z-50 transition-all duration-500
         ${scrolled
-          ? 'bg-white/95 backdrop-blur-md shadow-lg shadow-black/5 py-3'
+          ? 'bg-transparent backdrop-blur-md shadow-lg shadow-black/5 py-3'
           : 'bg-transparent py-6'
         }`}>
 
@@ -48,7 +48,7 @@ const Header = () => {
             </div>
             <h1 className='text-2xl font-black tracking-tight'>
               <span className='text-orange-500'>DELTA</span>
-              <span className={`transition-colors duration-300 ${scrolled ? 'text-gray-800' : 'text-gray-800'}`}>CARE</span>
+              <span className={`transition-colors duration-300 ${scrolled ? 'text-orange-200' : 'text-orange-200'}`}>CARE</span>
             </h1>
           </RouterLink>
 
@@ -62,7 +62,7 @@ const Header = () => {
                 className={`relative px-4 py-2 text-sm font-medium rounded-xl transition-all duration-300 group
                   ${isActive(link.to)
                     ? 'text-orange-500'
-                    : 'text-gray-600 hover:text-gray-900'
+                    : 'text-zinc-300 hover:text-gray-900'
                   }`}>
 
                 <span className={`absolute inset-0 rounded-xl transition-all duration-300
