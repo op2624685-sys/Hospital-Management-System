@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react'
 import Header from '../components/Header'
 import AppointmentBooking from '../components/AppointmentBooking'
-import { Link} from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { gsap } from 'gsap'
 
 const Appointment = () => {
@@ -36,41 +36,59 @@ const Appointment = () => {
 
         .ap-page {
           min-height: 100vh;
-          background: #f9f6f2;
+          background: linear-gradient(160deg, #0f0c29 0%, #1a1040 20%, #24243e 45%, #1e1b4b 65%, #2d1b69 80%, #11071f 100%);
           font-family: 'Outfit', sans-serif;
           overflow-x: hidden;
         }
 
-        /* ambient */
+        /* ── Ambient blobs ── */
         .ap-ambient { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
         .ap-orb { position: absolute; border-radius: 50%; filter: blur(90px); }
+
         .ap-orb-1 {
-          width: 650px; height: 650px; top: -250px; left: -150px;
-          background: radial-gradient(circle, rgba(228,35,32,.18), transparent);
-          animation: apO1 15s ease-in-out infinite;
+          width: 650px; height: 650px; top: -240px; left: -170px;
+          opacity: 0.45;
+          background: radial-gradient(circle, #7c3aed, #4c1d95 55%, transparent);
+          animation: apO1 14s ease-in-out infinite;
         }
         .ap-orb-2 {
-          width: 450px; height: 450px; bottom: -150px; right: -100px;
-          background: radial-gradient(circle, rgba(245,158,11,.14), transparent);
-          animation: apO2 19s ease-in-out infinite;
+          width: 500px; height: 500px; bottom: -160px; right: -130px;
+          opacity: 0.40;
+          background: radial-gradient(circle, #a855f7, #6b21a8 60%, transparent);
+          animation: apO2 18s ease-in-out infinite;
         }
         .ap-orb-3 {
-          width: 300px; height: 300px; top: 45%; left: 45%;
-          background: radial-gradient(circle, rgba(16,185,129,.1), transparent);
-          animation: apO1 23s ease-in-out infinite reverse;
+          width: 380px; height: 380px; top: 35%; right: 10%;
+          opacity: 0.28;
+          background: radial-gradient(circle, #e879f9, #a21caf 55%, transparent);
+          animation: apO1 22s ease-in-out infinite reverse;
         }
-        @keyframes apO1 { 0%,100%{transform:translate(0,0)} 50%{transform:translate(30px,-40px)} }
-        @keyframes apO2 { 0%,100%{transform:translate(0,0)} 50%{transform:translate(-20px,30px)} }
+        .ap-orb-4 {
+          width: 300px; height: 300px; bottom: 20%; left: 8%;
+          opacity: 0.25;
+          background: radial-gradient(circle, #f472b6, #9d174d 60%, transparent);
+          animation: apO2 16s ease-in-out infinite;
+        }
+        .ap-orb-5 {
+          width: 240px; height: 240px; top: 55%; left: 40%;
+          opacity: 0.18;
+          background: radial-gradient(circle, #c084fc, #7e22ce 55%, transparent);
+          animation: apO1 20s ease-in-out infinite;
+        }
 
+        @keyframes apO1 { 0%,100%{transform:translate(0,0)} 50%{transform:translate(32px,-42px)} }
+        @keyframes apO2 { 0%,100%{transform:translate(0,0)} 50%{transform:translate(-24px,34px)} }
+
+        /* ── Grid texture ── */
         .ap-grid {
           position: fixed; inset: 0; pointer-events: none; z-index: 0;
           background-image:
-            linear-gradient(rgba(0,0,0,.03) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(0,0,0,.03) 1px, transparent 1px);
+            linear-gradient(rgba(255,255,255,.028) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(255,255,255,.028) 1px, transparent 1px);
           background-size: 56px 56px;
         }
 
-        /* layout */
+        /* ── Layout ── */
         .ap-body {
           position: relative; z-index: 1;
           display: flex; align-items: center; justify-content: center;
@@ -78,109 +96,140 @@ const Appointment = () => {
           padding: 60px 80px;
           gap: 80px;
         }
+
         .ap-deco-line {
           position: absolute; top: 0; bottom: 0; left: 50%;
           width: 1px;
-          background: linear-gradient(to bottom, transparent, rgba(0,0,0,.07), transparent);
+          background: linear-gradient(to bottom, transparent, rgba(255,255,255,0.06), transparent);
           pointer-events: none;
         }
 
-        /* left */
+        /* ── Left ── */
         .ap-left { flex: 1; max-width: 540px; display: flex; flex-direction: column; }
 
         .ap-eyebrow {
           display: inline-flex; align-items: center; gap: 8px;
-          font-size: 11px; font-weight: 600; letter-spacing: .18em; text-transform: uppercase;
-          color: #e42320;
-          background: rgba(228,35,32,.07);
-          border: 1px solid rgba(228,35,32,.18);
-          padding: 5px 16px; border-radius: 999px;
-          margin-bottom: 24px; width: fit-content;
+          font-size: 11px; font-weight: 700; letter-spacing: .18em; text-transform: uppercase;
+          color: #c084fc;
+          background: rgba(192,132,252,0.10);
+          border: 1px solid rgba(192,132,252,0.25);
+          padding: 6px 18px; border-radius: 999px;
+          margin-bottom: 26px; width: fit-content;
+          backdrop-filter: blur(8px);
         }
+
         .ap-live-dot {
-          width: 7px; height: 7px; background: #22c55e; border-radius: 50%; position: relative;
+          width: 7px; height: 7px; background: #22c55e; border-radius: 50%; position: relative; flex-shrink: 0;
         }
         .ap-live-dot::after {
           content: ''; position: absolute; inset: -2px; border-radius: 50%;
-          background: #22c55e40; animation: ldP 1.8s ease-in-out infinite;
+          background: rgba(34,197,94,0.35); animation: ldP 1.8s ease-in-out infinite;
         }
         @keyframes ldP { 0%,100%{transform:scale(1);opacity:1} 50%{transform:scale(1.8);opacity:0} }
 
         .ap-title {
           font-family: 'Cormorant Garamond', serif;
           font-size: clamp(3.5rem, 5.5vw, 6.5rem);
-          font-weight: 700; color: #1a1a1a; line-height: 1.0;
+          font-weight: 700; color: #f0f0ff; line-height: 1.0;
           margin: 0 0 20px;
         }
-        .ap-title em { font-style: italic; color: #e42320; }
+        .ap-title em {
+          font-style: italic;
+          background: linear-gradient(135deg, #a78bfa, #e879f9);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          background-clip: text;
+        }
 
         .ap-para {
-          font-size: 1.05rem; color: #888; line-height: 1.75;
+          font-size: 1.05rem; color: #9ca3af; line-height: 1.78;
           max-width: 440px; margin-bottom: 36px;
         }
-        .ap-para strong { color: #1a1a1a; font-weight: 500; }
+        .ap-para strong { color: #e5e7eb; font-weight: 500; }
 
-        /* stats */
+        /* ── Stats ── */
         .ap-stats { display: flex; gap: 12px; margin-bottom: 36px; }
         .ap-stat {
           display: flex; flex-direction: column; align-items: center;
-          background: #fff; border: 1.5px solid #ebe8e2;
-          border-radius: 18px; padding: 16px 24px;
-          box-shadow: 0 4px 16px rgba(0,0,0,.05);
-          transition: transform .25s, box-shadow .25s;
+          background: rgba(255,255,255,0.06);
+          border: 1px solid rgba(255,255,255,0.10);
+          border-radius: 18px; padding: 18px 26px;
+          box-shadow: 0 4px 24px rgba(0,0,0,0.30);
+          backdrop-filter: blur(12px);
+          transition: transform .25s, box-shadow .25s, border-color .25s;
         }
-        .ap-stat:hover { transform: translateY(-4px); box-shadow: 0 10px 28px rgba(0,0,0,.09); }
+        .ap-stat:hover {
+          transform: translateY(-4px);
+          box-shadow: 0 12px 32px rgba(0,0,0,0.40);
+          border-color: rgba(167,139,250,0.25);
+        }
         .ap-stat-val {
           font-family: 'Cormorant Garamond', serif;
-          font-size: 2rem; font-weight: 700; line-height: 1; color: #1a1a1a;
+          font-size: 2rem; font-weight: 700; line-height: 1;
         }
-        .ap-stat-val.red   { color: #e42320; }
-        .ap-stat-val.green { color: #22c55e; }
-        .ap-stat-val.amber { color: #d97706; }
+        .ap-stat-val.red   { color: #f87171; }
+        .ap-stat-val.green { color: #4ade80; }
+        .ap-stat-val.amber { color: #fbbf24; }
         .ap-stat-label {
-          font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: #bbb; margin-top: 4px;
+          font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: #6b7280; margin-top: 5px;
         }
 
-        /* buttons */
+        /* ── Buttons ── */
         .ap-btns { display: flex; gap: 12px; margin-bottom: 40px; }
         .ap-btn-outline {
           display: inline-flex; align-items: center; gap: 8px;
-          background: #fff; border: 1.5px solid #ebe8e2; color: #555;
+          background: rgba(255,255,255,0.06);
+          border: 1.5px solid rgba(255,255,255,0.12);
+          color: #d1d5db;
           font-family: 'Outfit', sans-serif; font-size: 13px; font-weight: 600;
           padding: 12px 22px; border-radius: 14px; text-decoration: none;
-          transition: border-color .2s, color .2s, transform .15s;
+          backdrop-filter: blur(8px);
+          transition: border-color .2s, color .2s, transform .15s, background .2s;
         }
-        .ap-btn-outline:hover { border-color: #e42320; color: #e42320; transform: translateY(-2px); }
+        .ap-btn-outline:hover {
+          border-color: rgba(167,139,250,0.45);
+          color: #a78bfa;
+          background: rgba(167,139,250,0.08);
+          transform: translateY(-2px);
+        }
+
         .ap-btn-solid {
           display: inline-flex; align-items: center; gap: 8px;
-          background: #1a1a1a; color: #fff;
+          background: linear-gradient(135deg, #7c3aed, #a855f7);
+          color: #fff;
           font-family: 'Outfit', sans-serif; font-size: 13px; font-weight: 600;
           padding: 12px 22px; border-radius: 14px; text-decoration: none;
-          transition: background .2s, transform .15s, box-shadow .2s;
-          box-shadow: 0 4px 16px rgba(0,0,0,.15);
+          transition: opacity .2s, transform .15s, box-shadow .2s;
+          box-shadow: 0 4px 20px rgba(124,58,237,0.35);
         }
-        .ap-btn-solid:hover { background: #333; transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,.2); }
+        .ap-btn-solid:hover {
+          opacity: 0.88;
+          transform: translateY(-2px);
+          box-shadow: 0 8px 28px rgba(124,58,237,0.45);
+        }
 
-        /* trust */
+        /* ── Trust row ── */
         .ap-trust { display: flex; align-items: center; gap: 12px; }
         .ap-trust-avatars { display: flex; }
         .ap-trust-avatar {
           width: 32px; height: 32px; border-radius: 50%;
-          border: 2px solid #f9f6f2; margin-left: -8px;
+          border: 2px solid rgba(255,255,255,0.12);
+          margin-left: -8px;
           display: flex; align-items: center; justify-content: center;
           font-family: 'Cormorant Garamond', serif;
           font-size: .75rem; font-weight: 700; color: #fff;
         }
         .ap-trust-avatars .ap-trust-avatar:first-child { margin-left: 0; }
-        .ap-trust-text { font-size: 13px; color: #aaa; }
-        .ap-trust-text strong { color: #1a1a1a; font-weight: 600; }
+        .ap-trust-text { font-size: 13px; color: #6b7280; }
+        .ap-trust-text strong { color: #e5e7eb; font-weight: 600; }
 
-        /* right */
+        /* ── Right ── */
         .ap-right { flex-shrink: 0; width: 460px; }
 
+        /* ── Scrollbar ── */
         ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: #f0f0f0; }
-        ::-webkit-scrollbar-thumb { background: #e42320; border-radius: 3px; }
+        ::-webkit-scrollbar-track { background: #0f0c29; }
+        ::-webkit-scrollbar-thumb { background: #7c3aed; border-radius: 3px; }
 
         @media (max-width: 1024px) {
           .ap-body { flex-direction: column; padding: 40px 24px 60px; gap: 48px; }
@@ -194,6 +243,8 @@ const Appointment = () => {
           <div className="ap-orb ap-orb-1" />
           <div className="ap-orb ap-orb-2" />
           <div className="ap-orb ap-orb-3" />
+          <div className="ap-orb ap-orb-4" />
+          <div className="ap-orb ap-orb-5" />
         </div>
         <div className="ap-grid" />
 
@@ -255,7 +306,7 @@ const Appointment = () => {
 
             <div className="ap-trust" ref={trustRef} style={{ opacity: 0 }}>
               <div className="ap-trust-avatars">
-                {[['#e42320','#a01a18'],['#22c55e','#16a34a'],['#d97706','#b45309'],['#7c3aed','#5b21b6']].map(([c1,c2],i) => (
+                {[['#7c3aed','#4c1d95'],['#a855f7','#6b21a8'],['#e879f9','#a21caf'],['#f472b6','#9d174d']].map(([c1,c2],i) => (
                   <div key={i} className="ap-trust-avatar"
                     style={{ background: `linear-gradient(135deg,${c1},${c2})` }}>
                     {['A','B','C','D'][i]}
