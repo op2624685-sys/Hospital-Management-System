@@ -37,12 +37,12 @@ const Doctor = () => {
 
         .doc-page {
           min-height: 100vh;
-          background: #f9f6f2;
+          background: linear-gradient(160deg, #0f0c29 0%, #1a1040 20%, #24243e 45%, #1e1b4b 65%, #2d1b69 80%, #11071f 100%);
           font-family: 'Outfit', sans-serif;
           overflow-x: hidden;
         }
 
-        /* ── Ambient BG ── */
+        /* ── Ambient blobs ── */
         .doc-ambient {
           position: fixed;
           inset: 0;
@@ -54,34 +54,49 @@ const Doctor = () => {
           position: absolute;
           border-radius: 50%;
           filter: blur(90px);
-          opacity: .2;
         }
         .doc-orb-1 {
-          width: 700px; height: 700px;
-          top: -250px; right: -200px;
-          background: radial-gradient(circle, #e42320, transparent);
-          animation: orbFloat1 14s ease-in-out infinite;
+          width: 640px; height: 640px;
+          top: -220px; left: -180px;
+          opacity: 0.45;
+          background: radial-gradient(circle, #7c3aed, #4c1d95 55%, transparent);
+          animation: orbFloat1 13s ease-in-out infinite;
         }
         .doc-orb-2 {
-          width: 450px; height: 450px;
-          bottom: -150px; left: -100px;
-          background: radial-gradient(circle, #f59e0b, transparent);
-          animation: orbFloat2 18s ease-in-out infinite;
+          width: 520px; height: 520px;
+          bottom: -160px; right: -140px;
+          opacity: 0.40;
+          background: radial-gradient(circle, #a855f7, #6b21a8 60%, transparent);
+          animation: orbFloat2 17s ease-in-out infinite;
         }
         .doc-orb-3 {
-          width: 350px; height: 350px;
-          top: 50%; left: 35%;
-          background: radial-gradient(circle, #10b981, transparent);
-          opacity: .1;
-          animation: orbFloat1 22s ease-in-out infinite reverse;
+          width: 420px; height: 420px;
+          top: 30%; right: 8%;
+          opacity: 0.28;
+          background: radial-gradient(circle, #e879f9, #a21caf 55%, transparent);
+          animation: orbFloat1 21s ease-in-out infinite reverse;
+        }
+        .doc-orb-4 {
+          width: 340px; height: 340px;
+          bottom: 25%; left: 5%;
+          opacity: 0.25;
+          background: radial-gradient(circle, #f472b6, #9d174d 60%, transparent);
+          animation: orbFloat2 19s ease-in-out infinite;
+        }
+        .doc-orb-5 {
+          width: 260px; height: 260px;
+          top: 60%; left: 38%;
+          opacity: 0.20;
+          background: radial-gradient(circle, #c084fc, #7e22ce 55%, transparent);
+          animation: orbFloat1 15s ease-in-out infinite;
         }
         @keyframes orbFloat1 {
           0%,100% { transform: translate(0,0); }
-          50% { transform: translate(40px,-50px); }
+          50% { transform: translate(35px,-45px); }
         }
         @keyframes orbFloat2 {
           0%,100% { transform: translate(0,0); }
-          50% { transform: translate(-30px,40px); }
+          50% { transform: translate(-28px,38px); }
         }
 
         /* ── Grid texture ── */
@@ -91,8 +106,8 @@ const Doctor = () => {
           z-index: 0;
           pointer-events: none;
           background-image:
-            linear-gradient(rgba(0,0,0,.035) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(0,0,0,.035) 1px, transparent 1px);
+            linear-gradient(rgba(255,255,255,.030) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(255,255,255,.030) 1px, transparent 1px);
           background-size: 56px 56px;
         }
 
@@ -100,40 +115,44 @@ const Doctor = () => {
         .doc-hero {
           position: relative;
           z-index: 1;
-          padding: 100px 80px 60px;
+          padding: 110px 80px 60px;
           animation: heroIn .8s ease both;
         }
         @keyframes heroIn {
           from { opacity: 0; transform: translateY(-24px); }
           to   { opacity: 1; transform: translateY(0); }
         }
+
         .doc-eyebrow {
           display: inline-flex;
           align-items: center;
           gap: 8px;
           font-size: 11px;
-          font-weight: 600;
+          font-weight: 700;
           letter-spacing: .18em;
           text-transform: uppercase;
-          color: #e42320;
-          background: rgba(228,35,32,.08);
-          border: 1px solid rgba(228,35,32,.2);
-          padding: 6px 18px;
+          color: #c084fc;
+          background: rgba(192,132,252,0.10);
+          border: 1px solid rgba(192,132,252,0.25);
+          padding: 7px 18px;
           border-radius: 999px;
-          margin-bottom: 24px;
+          margin-bottom: 28px;
+          backdrop-filter: blur(8px);
         }
+
         .doc-live-dot {
           width: 8px; height: 8px;
           background: #22c55e;
           border-radius: 50%;
           position: relative;
+          flex-shrink: 0;
         }
         .doc-live-dot::after {
           content: '';
           position: absolute;
           inset: -3px;
           border-radius: 50%;
-          background: #22c55e40;
+          background: rgba(34,197,94,0.35);
           animation: livePulse 1.8s ease-in-out infinite;
         }
         @keyframes livePulse {
@@ -148,42 +167,48 @@ const Doctor = () => {
           gap: 40px;
           flex-wrap: wrap;
         }
+
         .doc-title {
           font-family: 'Cormorant Garamond', serif;
           font-size: clamp(3.5rem, 6vw, 7rem);
           font-weight: 700;
-          color: #1a1a1a;
+          color: #f0f0ff;
           line-height: 1.0;
-          margin: 0 0 16px;
+          margin: 0 0 18px;
         }
         .doc-title em {
           font-style: italic;
-          color: #e42320;
-        }
-        .doc-subtitle {
-          font-size: clamp(.95rem, 1.3vw, 1.15rem);
-          color: #777;
-          max-width: 520px;
-          line-height: 1.75;
+          background: linear-gradient(135deg, #a78bfa, #e879f9);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          background-clip: text;
         }
 
-        /* Stats */
+        .doc-subtitle {
+          font-size: clamp(.95rem, 1.3vw, 1.12rem);
+          color: #9ca3af;
+          max-width: 520px;
+          line-height: 1.80;
+        }
+
+        /* ── Stats card ── */
         .doc-stats {
           display: flex;
           gap: 0;
-          background: #fff;
-          border: 1.5px solid #ebebeb;
+          background: rgba(255,255,255,0.06);
+          border: 1px solid rgba(255,255,255,0.10);
           border-radius: 20px;
           overflow: hidden;
-          box-shadow: 0 8px 32px rgba(0,0,0,.06);
+          box-shadow: 0 8px 40px rgba(0,0,0,0.35);
           flex-shrink: 0;
+          backdrop-filter: blur(16px);
           animation: heroIn .8s .15s ease both;
         }
         .doc-stat-item {
           display: flex;
           flex-direction: column;
           align-items: center;
-          padding: 24px 32px;
+          padding: 26px 34px;
           position: relative;
         }
         .doc-stat-item + .doc-stat-item::before {
@@ -191,21 +216,24 @@ const Doctor = () => {
           position: absolute;
           left: 0; top: 20%; height: 60%;
           width: 1px;
-          background: #ebebeb;
+          background: rgba(255,255,255,0.08);
         }
         .doc-stat-num {
           font-family: 'Cormorant Garamond', serif;
           font-size: 2.2rem;
           font-weight: 700;
-          color: #1a1a1a;
+          background: linear-gradient(135deg, #a78bfa, #e879f9);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          background-clip: text;
           line-height: 1;
         }
         .doc-stat-label {
           font-size: 11px;
-          letter-spacing: .1em;
+          letter-spacing: .10em;
           text-transform: uppercase;
-          color: #aaa;
-          margin-top: 4px;
+          color: #6b7280;
+          margin-top: 5px;
         }
 
         /* ── Divider ── */
@@ -215,20 +243,20 @@ const Doctor = () => {
           display: flex;
           align-items: center;
           gap: 16px;
-          padding: 0 80px 40px;
+          padding: 0 80px 44px;
           animation: heroIn .8s .25s ease both;
         }
         .doc-divider-line {
           flex: 1;
           height: 1px;
-          background: linear-gradient(90deg, transparent, #ddd, transparent);
+          background: linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent);
         }
         .doc-divider-label {
           font-size: 11px;
           font-weight: 600;
           letter-spacing: .15em;
           text-transform: uppercase;
-          color: #bbb;
+          color: #4b5563;
         }
 
         /* ── Sticky Search ── */
@@ -236,10 +264,10 @@ const Doctor = () => {
           position: sticky;
           top: 0;
           z-index: 20;
-          background: rgba(249,246,242,.85);
-          backdrop-filter: blur(16px);
-          -webkit-backdrop-filter: blur(16px);
-          border-bottom: 1px solid rgba(0,0,0,.06);
+          background: rgba(15,12,41,0.80);
+          backdrop-filter: blur(20px);
+          -webkit-backdrop-filter: blur(20px);
+          border-bottom: 1px solid rgba(255,255,255,0.06);
           padding: 16px 80px;
           display: flex;
           align-items: center;
@@ -254,26 +282,27 @@ const Doctor = () => {
         .doc-search-inner input {
           width: 100%;
           padding: 13px 44px;
-          background: #fff;
-          border: 1.5px solid #e2e2e2;
+          background: rgba(255,255,255,0.07);
+          border: 1.5px solid rgba(255,255,255,0.10);
           border-radius: 14px;
           font-family: 'Outfit', sans-serif;
           font-size: 14px;
-          color: #1a1a1a;
+          color: #e5e7eb;
           outline: none;
-          transition: border-color .2s, box-shadow .2s;
-          box-shadow: 0 2px 12px rgba(0,0,0,.04);
+          transition: border-color .25s, box-shadow .25s;
+          box-shadow: 0 2px 16px rgba(0,0,0,0.20);
         }
         .doc-search-inner input:focus {
-          border-color: #e42320;
-          box-shadow: 0 0 0 4px rgba(228,35,32,.07), 0 2px 12px rgba(0,0,0,.04);
+          border-color: rgba(167,139,250,0.50);
+          box-shadow: 0 0 0 4px rgba(167,139,250,0.10), 0 2px 16px rgba(0,0,0,0.20);
         }
-        .doc-search-inner input::placeholder { color: #bbb; }
+        .doc-search-inner input::placeholder { color: #6b7280; }
+
         .doc-search-icon {
           position: absolute;
           left: 14px; top: 50%;
           transform: translateY(-50%);
-          color: #e42320;
+          color: #a78bfa;
           pointer-events: none;
         }
         .doc-clear-btn {
@@ -282,21 +311,22 @@ const Doctor = () => {
           transform: translateY(-50%);
           background: none;
           border: none;
-          color: #bbb;
+          color: #6b7280;
           cursor: pointer;
           padding: 2px;
           transition: color .2s;
         }
-        .doc-clear-btn:hover { color: #e42320; }
+        .doc-clear-btn:hover { color: #a78bfa; }
+
         .doc-result-pill {
           font-size: 13px;
-          color: #999;
+          color: #6b7280;
           white-space: nowrap;
         }
-        .doc-result-pill strong { color: #1a1a1a; }
-        .doc-result-pill span { color: #e42320; }
+        .doc-result-pill strong { color: #e5e7eb; }
+        .doc-result-pill span { color: #a78bfa; }
 
-        /* ── Grid ── */
+        /* ── Grid section ── */
         .doc-grid-section {
           position: relative;
           z-index: 1;
@@ -315,14 +345,14 @@ const Doctor = () => {
         .doc-spinner {
           width: 44px; height: 44px;
           border-radius: 50%;
-          border: 3px solid #f0f0f0;
-          border-top-color: #e42320;
+          border: 3px solid rgba(255,255,255,0.08);
+          border-top-color: #a78bfa;
           animation: spin 0.8s linear infinite;
         }
         @keyframes spin { to { transform: rotate(360deg); } }
         .doc-loading p {
           font-size: 14px;
-          color: #aaa;
+          color: #6b7280;
           letter-spacing: .05em;
         }
 
@@ -335,25 +365,19 @@ const Doctor = () => {
           padding: 120px 0;
           gap: 12px;
         }
-        .doc-empty-icon {
-          font-size: 56px;
-          margin-bottom: 8px;
-        }
+        .doc-empty-icon { font-size: 56px; margin-bottom: 8px; }
         .doc-empty h3 {
           font-family: 'Cormorant Garamond', serif;
           font-size: 2rem;
           font-weight: 600;
-          color: #1a1a1a;
+          color: #e5e7eb;
         }
-        .doc-empty p {
-          font-size: 14px;
-          color: #aaa;
-        }
+        .doc-empty p { font-size: 14px; color: #6b7280; }
         .doc-empty-clear {
           margin-top: 8px;
           background: none;
-          border: 1.5px solid #e42320;
-          color: #e42320;
+          border: 1.5px solid rgba(167,139,250,0.40);
+          color: #a78bfa;
           font-family: 'Outfit', sans-serif;
           font-size: 13px;
           font-weight: 600;
@@ -363,8 +387,8 @@ const Doctor = () => {
           transition: background .2s, color .2s;
         }
         .doc-empty-clear:hover {
-          background: #e42320;
-          color: #fff;
+          background: rgba(167,139,250,0.15);
+          color: #c084fc;
         }
 
         /* ── Cards grid ── */
@@ -376,8 +400,8 @@ const Doctor = () => {
 
         /* ── Scrollbar ── */
         ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: #f0f0f0; }
-        ::-webkit-scrollbar-thumb { background: #e42320; border-radius: 3px; }
+        ::-webkit-scrollbar-track { background: #0f0c29; }
+        ::-webkit-scrollbar-thumb { background: #7c3aed; border-radius: 3px; }
 
         @media (max-width: 768px) {
           .doc-hero { padding: 80px 24px 40px; }
@@ -390,11 +414,13 @@ const Doctor = () => {
       `}</style>
 
       <div className="doc-page">
-        {/* Ambient */}
+        {/* Ambient blobs */}
         <div className="doc-ambient">
           <div className="doc-orb doc-orb-1" />
           <div className="doc-orb doc-orb-2" />
           <div className="doc-orb doc-orb-3" />
+          <div className="doc-orb doc-orb-4" />
+          <div className="doc-orb doc-orb-5" />
         </div>
         <div className="doc-grid-texture" />
 
