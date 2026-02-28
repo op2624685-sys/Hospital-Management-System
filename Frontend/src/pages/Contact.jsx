@@ -25,11 +25,11 @@ const Contact = () => {
   };
 
   const inputClass = (field) => `
-    w-full pl-11 pr-4 py-3 bg-white/50 border rounded-xl text-sm
-    focus:outline-none focus:bg-white transition-all duration-300 placeholder-gray-400
+    w-full pl-11 pr-4 py-3 bg-white/10 border rounded-xl text-sm text-gray-200
+    focus:outline-none focus:bg-white/15 transition-all duration-300 placeholder-gray-500
     ${focused === field
-      ? 'border-emerald-400 shadow-sm shadow-emerald-100'
-      : 'border-white/60'
+      ? 'border-violet-400 shadow-sm shadow-violet-500/20'
+      : 'border-white/20'
     }
   `;
 
@@ -37,41 +37,72 @@ const Contact = () => {
     <div className='min-h-screen relative overflow-hidden'>
 
       {/* ── Full Page Background ── */}
-      <div className='fixed inset-0 bg-linear-to-br from-emerald-50 via-teal-50 to-mint-50 -z-10'
-        style={{ background: 'linear-gradient(135deg, #ecfdf5 0%, #f0fdfa 40%, #f0fdf4 70%, #dcfce7 100%)' }}>
+      <div className='fixed inset-0 -z-10'
+        style={{
+          background: 'linear-gradient(160deg, #0f0c29 0%, #1a1040 20%, #24243e 45%, #1e1b4b 65%, #2d1b69 80%, #11071f 100%)'
+        }}>
+      </div>
+
+      {/* ── Subtle grid overlay ── */}
+      <div className='fixed inset-0 -z-10 opacity-[0.04]'
+        style={{
+          backgroundImage: 'linear-gradient(rgba(255,255,255,0.3) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.3) 1px, transparent 1px)',
+          backgroundSize: '60px 60px'
+        }}>
       </div>
 
       {/* ── Floating Background Blobs ── */}
-      <div className='fixed top-20 left-10 w-96 h-96 bg-emerald-200 rounded-full blur-3xl opacity-30 -z-10 animate-pulse'></div>
-      <div className='fixed bottom-20 right-10 w-80 h-80 bg-teal-200 rounded-full blur-3xl opacity-30 -z-10 animate-pulse'
-        style={{ animationDelay: '1s' }}></div>
-      <div className='fixed top-1/2 left-1/2 w-64 h-64 bg-green-100 rounded-full blur-3xl opacity-40 -z-10'></div>
-      <div className='fixed top-10 right-1/3 w-48 h-48 bg-mint-100 rounded-full blur-2xl opacity-20 -z-10'
-        style={{ background: '#ccfbf1' }}></div>
+      {/* Top-left vivid violet */}
+      <div className='fixed -top-24 -left-24 w-140 h-140 rounded-full blur-3xl opacity-50 -z-10 animate-pulse'
+        style={{ background: 'radial-gradient(circle, #7c3aed 0%, #4c1d95 55%, transparent 100%)' }}></div>
+
+      {/* Bottom-right electric indigo */}
+      <div className='fixed -bottom-20 -right-20 w-130 h-130 rounded-full blur-3xl opacity-45 -z-10 animate-pulse'
+        style={{ background: 'radial-gradient(circle, #6366f1 0%, #312e81 60%, transparent 100%)', animationDelay: '1.5s' }}></div>
+
+      {/* Center magenta burst */}
+      <div className='fixed top-1/3 left-1/3 w-100 h-100 rounded-full blur-3xl opacity-35 -z-10'
+        style={{ background: 'radial-gradient(circle, #a855f7 0%, #7e22ce 50%, transparent 100%)' }}></div>
+
+      {/* Top-right cyan-teal accent */}
+      <div className='fixed top-0 right-1/4 w-75 h-75 rounded-full blur-2xl opacity-40 -z-10 animate-pulse'
+        style={{ background: 'radial-gradient(circle, #06b6d4 0%, #0e7490 60%, transparent 100%)', animationDelay: '2s' }}></div>
+
+      {/* Bottom-left pink-fuchsia */}
+      <div className='fixed bottom-1/4 -left-10 w-85 h-85 rounded-full blur-3xl opacity-40 -z-10 animate-pulse'
+        style={{ background: 'radial-gradient(circle, #e879f9 0%, #a21caf 60%, transparent 100%)', animationDelay: '0.8s' }}></div>
+
+      {/* Mid-right deep rose */}
+      <div className='fixed top-1/2 -right-10 w-70 h-70 rounded-full blur-2xl opacity-35 -z-10'
+        style={{ background: 'radial-gradient(circle, #f472b6 0%, #9d174d 55%, transparent 100%)' }}></div>
 
       {/* ── Floating Decorative Cards ── */}
       {/* Top left mini card */}
-      <div className='fixed top-32 left-8 bg-white/40 backdrop-blur-md border border-white/60 rounded-2xl p-4 shadow-lg -z-5 hidden xl:block'>
-        <p className='text-xs font-bold text-emerald-700'>🟢 Online Support</p>
-        <p className='text-xs text-gray-500 mt-0.5'>Available 24/7</p>
+      <div className='fixed top-32 left-8 bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-4 shadow-lg -z-5 hidden xl:block'
+        style={{ boxShadow: '0 4px 24px rgba(124,58,237,0.25)' }}>
+        <p className='text-xs font-bold text-violet-300'>🟢 Online Support</p>
+        <p className='text-xs text-gray-400 mt-0.5'>Available 24/7</p>
       </div>
 
       {/* Bottom left mini card */}
-      <div className='fixed bottom-32 left-8 bg-white/40 backdrop-blur-md border border-white/60 rounded-2xl p-4 shadow-lg -z-5 hidden xl:block'>
-        <p className='text-xs font-bold text-teal-700'>⚡ Fast Response</p>
-        <p className='text-xs text-gray-500 mt-0.5'>Within 24 hours</p>
+      <div className='fixed bottom-32 left-8 bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-4 shadow-lg -z-5 hidden xl:block'
+        style={{ boxShadow: '0 4px 24px rgba(99,102,241,0.25)' }}>
+        <p className='text-xs font-bold text-indigo-300'>⚡ Fast Response</p>
+        <p className='text-xs text-gray-400 mt-0.5'>Within 24 hours</p>
       </div>
 
       {/* Top right mini card */}
-      <div className='fixed top-32 right-8 bg-white/40 backdrop-blur-md border border-white/60 rounded-2xl p-4 shadow-lg -z-5 hidden xl:block'>
-        <p className='text-xs font-bold text-green-700'>🏥 DELTACARE</p>
-        <p className='text-xs text-gray-500 mt-0.5'>Trusted by 10k+</p>
+      <div className='fixed top-32 right-8 bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-4 shadow-lg -z-5 hidden xl:block'
+        style={{ boxShadow: '0 4px 24px rgba(168,85,247,0.20)' }}>
+        <p className='text-xs font-bold text-purple-300'>🏥 DELTACARE</p>
+        <p className='text-xs text-gray-400 mt-0.5'>Trusted by 10k+</p>
       </div>
 
       {/* Bottom right mini card */}
-      <div className='fixed bottom-32 right-8 bg-white/40 backdrop-blur-md border border-white/60 rounded-2xl p-4 shadow-lg -z-5 hidden xl:block'>
-        <p className='text-xs font-bold text-emerald-700'>⭐ 4.9 Rating</p>
-        <p className='text-xs text-gray-500 mt-0.5'>10k+ reviews</p>
+      <div className='fixed bottom-32 right-8 bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-4 shadow-lg -z-5 hidden xl:block'
+        style={{ boxShadow: '0 4px 24px rgba(6,182,212,0.20)' }}>
+        <p className='text-xs font-bold text-cyan-300'>⭐ 4.9 Rating</p>
+        <p className='text-xs text-gray-400 mt-0.5'>10k+ reviews</p>
       </div>
 
       <Header />
@@ -81,17 +112,18 @@ const Contact = () => {
 
         {/* ── Page Title ── */}
         <div className='text-center mb-14'>
-          <span className='inline-flex items-center gap-2 bg-white/60 backdrop-blur-sm border border-emerald-200 text-emerald-600 text-xs font-bold px-4 py-2 rounded-full uppercase tracking-widest mb-5'>
-            <span className='w-2 h-2 bg-emerald-400 rounded-full animate-pulse'></span>
+          <span className='inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm border border-violet-400/30 text-violet-300 text-xs font-bold px-4 py-2 rounded-full uppercase tracking-widest mb-5'>
+            <span className='w-2 h-2 bg-violet-400 rounded-full animate-pulse'></span>
             We're Here For You
           </span>
-          <h1 className='text-7xl font-black text-gray-800 leading-none mb-4'>
+          <h1 className='text-7xl font-black text-white leading-none mb-4'>
             Let{' '}
-            <span className='text-transparent bg-clip-text bg-linear-to-r from-emerald-500 to-teal-500'>
+            <span className='text-transparent bg-clip-text'
+              style={{ backgroundImage: 'linear-gradient(135deg, #a78bfa, #06b6d4)' }}>
               Us Help
             </span>
           </h1>
-          <p className='text-gray-500 text-lg max-w-lg mx-auto leading-relaxed'>
+          <p className='text-gray-400 text-lg max-w-lg mx-auto leading-relaxed'>
             Our dedicated team is ready to assist you with
             appointments, queries, or any medical emergency.
           </p>
@@ -99,14 +131,14 @@ const Contact = () => {
 
         {/* ── Emergency Banner ── */}
         <div className='w-full max-w-4xl mb-10'>
-          <div className='bg-white/50 backdrop-blur-md border border-red-100 rounded-2xl px-6 py-4 flex items-center justify-between shadow-sm'>
+          <div className='bg-white/10 backdrop-blur-md border border-red-400/20 rounded-2xl px-6 py-4 flex items-center justify-between shadow-sm'>
             <div className='flex items-center gap-3'>
-              <div className='w-10 h-10 bg-red-100 rounded-xl flex items-center justify-center text-lg'>
+              <div className='w-10 h-10 bg-red-500/20 rounded-xl flex items-center justify-center text-lg'>
                 🚨
               </div>
               <div>
-                <p className='font-bold text-gray-800 text-sm'>Medical Emergency?</p>
-                <p className='text-xs text-gray-500'>Don't wait — our emergency team is on standby</p>
+                <p className='font-bold text-white text-sm'>Medical Emergency?</p>
+                <p className='text-xs text-gray-400'>Don't wait — our emergency team is on standby</p>
               </div>
             </div>
             <a href="tel:+919876543210"
@@ -120,11 +152,12 @@ const Contact = () => {
         <div className='w-full max-w-4xl grid grid-cols-2 gap-8'>
 
           {/* ── Left — Contact Info Glassmorphism Card ── */}
-          <div className='bg-white/40 backdrop-blur-xl border border-white/70 rounded-3xl shadow-xl shadow-emerald-100/50 p-8 flex flex-col gap-6'>
+          <div className='bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl p-8 flex flex-col gap-6'
+            style={{ boxShadow: '0 20px 60px rgba(124,58,237,0.20), 0 4px 16px rgba(99,102,241,0.15)' }}>
 
             <div>
-              <h2 className='text-2xl font-black text-gray-800 mb-1'>
-                Contact <span className='text-emerald-500'>Info</span>
+              <h2 className='text-2xl font-black text-white mb-1'>
+                Contact <span style={{ color: '#a78bfa' }}>Info</span>
               </h2>
               <p className='text-gray-400 text-sm'>Multiple ways to reach us</p>
             </div>
@@ -132,39 +165,40 @@ const Contact = () => {
             {/* Info Items */}
             <div className='flex flex-col gap-4'>
               {[
-                { icon: '📍', label: 'Address', value: '123 Health Street, Delhi, India', color: 'text-emerald-600', bg: 'bg-emerald-50/80' },
-                { icon: '📞', label: 'Phone', value: '+91 98765 43210', color: 'text-teal-600', bg: 'bg-teal-50/80' },
-                { icon: '📧', label: 'Email', value: 'info@deltacare.com', color: 'text-green-600', bg: 'bg-green-50/80' },
-                { icon: '🕒', label: 'Hours', value: 'Open 24/7', color: 'text-emerald-600', bg: 'bg-emerald-50/80' },
+                { icon: '📍', label: 'Address', value: '123 Health Street, Delhi, India', color: 'text-violet-400', bg: 'bg-violet-500/10' },
+                { icon: '📞', label: 'Phone', value: '+91 98765 43210', color: 'text-cyan-400', bg: 'bg-cyan-500/10' },
+                { icon: '📧', label: 'Email', value: 'info@deltacare.com', color: 'text-purple-400', bg: 'bg-purple-500/10' },
+                { icon: '🕒', label: 'Hours', value: 'Open 24/7', color: 'text-indigo-400', bg: 'bg-indigo-500/10' },
               ].map((item, i) => (
                 <div key={i}
-                  className={`flex items-center gap-4 ${item.bg} backdrop-blur-sm border border-white/80 rounded-2xl p-4 hover:-translate-y-0.5 hover:shadow-md transition-all duration-300`}>
-                  <div className='w-10 h-10 bg-white/80 rounded-xl flex items-center justify-center text-lg shadow-sm shrink-0'>
+                  className={`flex items-center gap-4 ${item.bg} backdrop-blur-sm border border-white/10 rounded-2xl p-4 hover:-translate-y-0.5 hover:shadow-md transition-all duration-300`}>
+                  <div className='w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center text-lg shadow-sm shrink-0'>
                     {item.icon}
                   </div>
                   <div>
                     <p className={`text-xs font-bold ${item.color} uppercase tracking-wider`}>{item.label}</p>
-                    <p className='text-sm font-semibold text-gray-700 mt-0.5'>{item.value}</p>
+                    <p className='text-sm font-semibold text-gray-200 mt-0.5'>{item.value}</p>
                   </div>
                 </div>
               ))}
             </div>
 
             {/* Divider */}
-            <div className='h-px bg-linear-to-r from-transparent via-emerald-200 to-transparent'></div>
+            <div className='h-px'
+              style={{ background: 'linear-gradient(to right, transparent, #7c3aed55, transparent)' }}></div>
 
             {/* Social */}
             <div>
-              <p className='text-xs text-gray-400 uppercase tracking-wider font-semibold mb-3'>Connect With Us</p>
+              <p className='text-xs text-gray-500 uppercase tracking-wider font-semibold mb-3'>Connect With Us</p>
               <div className='flex gap-2 flex-wrap'>
                 {[
-                  { label: 'Facebook', bg: 'bg-emerald-50/80 hover:bg-emerald-100 text-emerald-700 border-emerald-200' },
-                  { label: 'Instagram', bg: 'bg-teal-50/80 hover:bg-teal-100 text-teal-700 border-teal-200' },
-                  { label: 'Twitter', bg: 'bg-green-50/80 hover:bg-green-100 text-green-700 border-green-200' },
-                  { label: 'LinkedIn', bg: 'bg-mint-50/80 hover:bg-mint-100 text-emerald-700 border-emerald-100' },
+                  { label: 'Facebook', cls: 'bg-violet-500/10 hover:bg-violet-500/20 text-violet-300 border-violet-500/20' },
+                  { label: 'Instagram', cls: 'bg-fuchsia-500/10 hover:bg-fuchsia-500/20 text-fuchsia-300 border-fuchsia-500/20' },
+                  { label: 'Twitter', cls: 'bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-300 border-cyan-500/20' },
+                  { label: 'LinkedIn', cls: 'bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-300 border-indigo-500/20' },
                 ].map((s, i) => (
                   <button key={i}
-                    className={`text-xs font-bold px-4 py-2 rounded-xl border backdrop-blur-sm ${s.bg} transition-all duration-300 active:scale-95`}>
+                    className={`text-xs font-bold px-4 py-2 rounded-xl border backdrop-blur-sm ${s.cls} transition-all duration-300 active:scale-95`}>
                     {s.label}
                   </button>
                 ))}
@@ -172,28 +206,31 @@ const Contact = () => {
             </div>
 
             {/* Map placeholder */}
-            <div className='bg-linear-to-br from-emerald-50/80 to-teal-50/80 backdrop-blur-sm border border-white/60 rounded-2xl p-6 flex flex-col items-center justify-center text-center'>
+            <div className='backdrop-blur-sm border border-white/10 rounded-2xl p-6 flex flex-col items-center justify-center text-center'
+              style={{ background: 'linear-gradient(135deg, rgba(124,58,237,0.15) 0%, rgba(99,102,241,0.15) 100%)' }}>
               <span className='text-4xl mb-2'>🗺️</span>
-              <p className='font-bold text-gray-700 text-sm'>123 Health Street</p>
-              <p className='text-gray-400 text-xs mt-0.5'>Delhi, India</p>
-              <button className='mt-3 text-xs font-semibold text-emerald-600 hover:text-emerald-700 hover:underline transition-colors'>
+              <p className='font-bold text-gray-200 text-sm'>123 Health Street</p>
+              <p className='text-gray-500 text-xs mt-0.5'>Delhi, India</p>
+              <button className='mt-3 text-xs font-semibold text-violet-400 hover:text-violet-300 hover:underline transition-colors'>
                 View on Google Maps →
               </button>
             </div>
           </div>
 
           {/* ── Right — Form Glassmorphism Card ── */}
-          <div className='bg-white/40 backdrop-blur-xl border border-white/70 rounded-3xl shadow-xl shadow-teal-100/50 overflow-hidden'>
+          <div className='bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl overflow-hidden'
+            style={{ boxShadow: '0 20px 60px rgba(99,102,241,0.20), 0 4px 16px rgba(6,182,212,0.12)' }}>
 
             {/* Form Header */}
-            <div className='bg-linear-to-r from-emerald-400 to-teal-400 px-8 py-6'>
+            <div className='px-8 py-6'
+              style={{ background: 'linear-gradient(135deg, #7c3aed 0%, #06b6d4 100%)' }}>
               <div className='flex items-center gap-3'>
                 <div className='w-10 h-10 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center'>
                   <span className='text-white text-lg'>✉️</span>
                 </div>
                 <div>
                   <h3 className='text-white font-black text-lg'>Send a Message</h3>
-                  <p className='text-emerald-50 text-xs'>We reply within 24 hours</p>
+                  <p className='text-violet-100 text-xs'>We reply within 24 hours</p>
                 </div>
               </div>
             </div>
@@ -202,12 +239,12 @@ const Contact = () => {
               {submitted ? (
                 // ── Success State ──
                 <div className='flex flex-col items-center justify-center py-16 text-center'>
-                  <div className='w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mb-4 shadow-inner'>
-                    <svg className='w-8 h-8 text-emerald-500' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                  <div className='w-16 h-16 bg-violet-500/20 rounded-full flex items-center justify-center mb-4 shadow-inner'>
+                    <svg className='w-8 h-8 text-violet-400' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
                       <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2.5} d='M5 13l4 4L19 7' />
                     </svg>
                   </div>
-                  <h3 className='text-xl font-black text-gray-800 mb-2'>Message Sent! 🎉</h3>
+                  <h3 className='text-xl font-black text-white mb-2'>Message Sent! 🎉</h3>
                   <p className='text-gray-400 text-sm max-w-xs'>
                     Thank you for reaching out. We'll get back to you as soon as possible.
                   </p>
@@ -294,8 +331,10 @@ const Contact = () => {
 
                   {/* Submit */}
                   <button type="submit"
-                    className='group relative overflow-hidden w-full bg-gray-800 text-white font-bold py-3.5 rounded-xl hover:scale-105 active:scale-95 transition-all duration-300 shadow-lg text-sm flex items-center justify-center gap-2'>
-                    <span className='absolute inset-0 bg-linear-to-r from-emerald-500 to-teal-500 translate-y-full group-hover:translate-y-0 transition-transform duration-300'></span>
+                    className='group relative overflow-hidden w-full text-white font-bold py-3.5 rounded-xl hover:scale-105 active:scale-95 transition-all duration-300 text-sm flex items-center justify-center gap-2'
+                    style={{ background: '#1f2937', boxShadow: '0 8px 24px rgba(124,58,237,0.30)' }}>
+                    <span className='absolute inset-0 translate-y-full group-hover:translate-y-0 transition-transform duration-300'
+                      style={{ background: 'linear-gradient(135deg, #7c3aed, #06b6d4)' }}></span>
                     <svg className='relative z-10 w-4 h-4' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
                       <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2}
                         d='M12 19l9 2-9-18-9 18 9-2zm0 0v-8' />
@@ -310,7 +349,7 @@ const Contact = () => {
         </div>
 
         {/* Footer note */}
-        <p className='text-center text-xs text-gray-400 mt-12'>
+        <p className='text-center text-xs text-gray-600 mt-12'>
           © 2026 DELTACARE Hospital · All rights reserved
         </p>
       </div>
