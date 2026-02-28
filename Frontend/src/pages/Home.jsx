@@ -3,6 +3,7 @@ import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import Header from '../components/Header';
 import { Link } from 'react-router-dom';
+import { Hospital } from 'lucide-react';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -223,7 +224,7 @@ const Home = () => {
             {/* Card header */}
             <div className='flex items-center gap-3 mb-6'>
               <div className='w-12 h-12 bg-linear-to-br from-orange-400 to-rose-500 rounded-2xl flex items-center justify-center shadow-lg'>
-                <span className='text-white text-xl'>🏥</span>
+                <span className='text-white text-xl'><Hospital /></span>
               </div>
               <div>
                 <p className='font-black text-gray-800'>DELTACARE</p>
@@ -272,12 +273,12 @@ const Home = () => {
 
           {/* Floating mini cards */}
           <div className='absolute -top-6 -right-4 bg-white rounded-2xl shadow-lg p-3 border border-gray-100'>
-            <p className='text-xs font-bold text-gray-700'>🚑 Emergency</p>
+            <p className='text-xs font-bold text-gray-700'><img src="https://img.icons8.com/ios-filled/24/000000/ambulance.png"/> Emergency</p>
             <p className='text-xs text-gray-400'>Available Now</p>
           </div>
 
           <div className='absolute -bottom-4 -left-6 bg-white rounded-2xl shadow-lg p-3 border border-gray-100'>
-            <p className='text-xs font-bold text-gray-700'>✅ 10k+ Patients</p>
+            <p className='text-xs font-bold text-gray-700'><img src="https://img.icons8.com/ios-filled/24/000000/heart-health.png"/> 10k+ Patients</p>
             <p className='text-xs text-gray-400'>Trust Us</p>
           </div>
         </div>
