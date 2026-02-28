@@ -77,12 +77,12 @@ const Branch = () => {
 
         .branch-page {
           min-height: 100vh;
-          background: #faf8f5;
+          background: linear-gradient(160deg, #0f0c29 0%, #1a1040 20%, #24243e 45%, #1e1b4b 65%, #2d1b69 80%, #11071f 100%);
           font-family: 'DM Sans', sans-serif;
           overflow-x: hidden;
         }
 
-        /* ── Decorative background ── */
+        /* ── Decorative background blobs ── */
         .bg-deco {
           position: fixed;
           inset: 0;
@@ -90,33 +90,52 @@ const Branch = () => {
           z-index: 0;
           overflow: hidden;
         }
+
         .bg-blob {
           position: absolute;
           border-radius: 50%;
-          filter: blur(80px);
-          opacity: 0.25;
+          filter: blur(90px);
         }
+
         .bg-blob-1 {
-          width: 600px; height: 600px;
-          top: -200px; right: -150px;
-          background: radial-gradient(circle, #e4232080, transparent);
+          width: 620px; height: 620px;
+          top: -200px; left: -180px;
+          opacity: 0.45;
+          background: radial-gradient(circle, #7c3aed, #4c1d95 55%, transparent);
           animation: float1 12s ease-in-out infinite;
         }
         .bg-blob-2 {
-          width: 400px; height: 400px;
-          bottom: -100px; left: -100px;
-          background: radial-gradient(circle, #f59e0b60, transparent);
+          width: 520px; height: 520px;
+          bottom: -160px; right: -160px;
+          opacity: 0.40;
+          background: radial-gradient(circle, #a855f7, #6b21a8 60%, transparent);
           animation: float2 16s ease-in-out infinite;
         }
         .bg-blob-3 {
-          width: 300px; height: 300px;
-          top: 40%; left: 40%;
-          background: radial-gradient(circle, #e4232030, transparent);
+          width: 420px; height: 420px;
+          top: 30%; right: 5%;
+          opacity: 0.30;
+          background: radial-gradient(circle, #e879f9, #a21caf 55%, transparent);
           animation: float1 20s ease-in-out infinite reverse;
         }
+        .bg-blob-4 {
+          width: 340px; height: 340px;
+          bottom: 20%; left: 5%;
+          opacity: 0.28;
+          background: radial-gradient(circle, #f472b6, #9d174d 60%, transparent);
+          animation: float2 18s ease-in-out infinite;
+        }
+        .bg-blob-5 {
+          width: 260px; height: 260px;
+          top: 55%; left: 40%;
+          opacity: 0.22;
+          background: radial-gradient(circle, #c084fc, #7e22ce 55%, transparent);
+          animation: float1 14s ease-in-out infinite;
+        }
+
         @keyframes float1 {
           0%,100% { transform: translate(0,0) scale(1); }
-          50% { transform: translate(30px,-40px) scale(1.1); }
+          50% { transform: translate(30px,-40px) scale(1.08); }
         }
         @keyframes float2 {
           0%,100% { transform: translate(0,0) scale(1); }
@@ -130,8 +149,8 @@ const Branch = () => {
           pointer-events: none;
           z-index: 0;
           background-image:
-            linear-gradient(rgba(0,0,0,.04) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(0,0,0,.04) 1px, transparent 1px);
+            linear-gradient(rgba(255,255,255,.03) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(255,255,255,.03) 1px, transparent 1px);
           background-size: 60px 60px;
         }
 
@@ -143,7 +162,7 @@ const Branch = () => {
           flex-direction: column;
           align-items: center;
           justify-content: center;
-          padding: 80px 24px 40px;
+          padding: 100px 24px 40px;
           text-align: center;
           animation: fadeDown .7s ease both;
         }
@@ -151,39 +170,46 @@ const Branch = () => {
           from { opacity: 0; transform: translateY(-30px); }
           to   { opacity: 1; transform: translateY(0); }
         }
+
         .branch-eyebrow {
           display: inline-flex;
           align-items: center;
           gap: 8px;
           font-size: 12px;
-          font-weight: 600;
+          font-weight: 700;
           letter-spacing: .15em;
           text-transform: uppercase;
-          color: #e42320;
-          background: #fff4f4;
-          border: 1px solid #fdd;
-          padding: 6px 16px;
+          color: #c084fc;
+          background: rgba(192, 132, 252, 0.10);
+          border: 1px solid rgba(192, 132, 252, 0.25);
+          padding: 7px 18px;
           border-radius: 999px;
-          margin-bottom: 20px;
+          margin-bottom: 24px;
+          backdrop-filter: blur(8px);
         }
+
         .branch-title {
           font-family: 'Playfair Display', serif;
           font-size: clamp(3rem, 6vw, 6rem);
           font-weight: 700;
-          color: #1a1a1a;
+          color: #f0f0ff;
           line-height: 1.1;
           max-width: 780px;
           margin-bottom: 20px;
         }
         .branch-title em {
           font-style: italic;
-          color: #e42320;
+          background: linear-gradient(135deg, #a78bfa, #e879f9);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          background-clip: text;
         }
+
         .branch-sub {
-          font-size: clamp(1rem, 1.5vw, 1.2rem);
-          color: #666;
-          max-width: 580px;
-          line-height: 1.7;
+          font-size: clamp(1rem, 1.5vw, 1.15rem);
+          color: #9ca3af;
+          max-width: 560px;
+          line-height: 1.75;
           margin-bottom: 40px;
         }
 
@@ -193,29 +219,31 @@ const Branch = () => {
           z-index: 1;
           display: flex;
           justify-content: center;
-          padding: 0 24px 24px;
+          padding: 0 24px 28px;
           animation: fadeUp .7s .2s ease both;
         }
         @keyframes fadeUp {
           from { opacity: 0; transform: translateY(20px); }
           to   { opacity: 1; transform: translateY(0); }
         }
+
         .branch-search-box {
           display: flex;
           align-items: center;
           gap: 12px;
-          background: #fff;
-          border: 1.5px solid #e2e2e2;
+          background: rgba(255,255,255,0.07);
+          border: 1.5px solid rgba(255,255,255,0.12);
           border-radius: 16px;
           padding: 14px 20px;
           width: 100%;
           max-width: 560px;
-          box-shadow: 0 4px 24px rgba(0,0,0,.06);
-          transition: border-color .2s, box-shadow .2s;
+          box-shadow: 0 4px 32px rgba(0,0,0,0.30);
+          backdrop-filter: blur(16px);
+          transition: border-color .25s, box-shadow .25s;
         }
         .branch-search-box:focus-within {
-          border-color: #e42320;
-          box-shadow: 0 0 0 4px rgba(228,35,32,.08), 0 4px 24px rgba(0,0,0,.06);
+          border-color: rgba(167, 139, 250, 0.5);
+          box-shadow: 0 0 0 4px rgba(167,139,250,0.12), 0 4px 32px rgba(0,0,0,0.30);
         }
         .branch-search-box input {
           flex: 1;
@@ -224,10 +252,10 @@ const Branch = () => {
           background: transparent;
           font-family: 'DM Sans', sans-serif;
           font-size: 15px;
-          color: #1a1a1a;
+          color: #e5e7eb;
         }
-        .branch-search-box input::placeholder { color: #aaa; }
-        .branch-search-icon { color: #e42320; flex-shrink: 0; }
+        .branch-search-box input::placeholder { color: #6b7280; }
+        .branch-search-icon { color: #a78bfa; flex-shrink: 0; }
 
         /* ── Stats bar ── */
         .branch-stats-bar {
@@ -236,36 +264,39 @@ const Branch = () => {
           display: flex;
           justify-content: center;
           gap: 48px;
-          padding: 16px 24px 48px;
+          padding: 16px 24px 52px;
           animation: fadeUp .7s .3s ease both;
         }
-        .branch-stat {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-        }
+
+        .branch-stat { display: flex; flex-direction: column; align-items: center; }
+
         .branch-stat-num {
           font-family: 'Playfair Display', serif;
           font-size: 2rem;
           font-weight: 700;
-          color: #1a1a1a;
+          background: linear-gradient(135deg, #a78bfa, #e879f9);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          background-clip: text;
           line-height: 1;
         }
+
         .branch-stat-label {
           font-size: 11px;
           letter-spacing: .1em;
           text-transform: uppercase;
-          color: #999;
-          margin-top: 4px;
+          color: #6b7280;
+          margin-top: 5px;
         }
+
         .branch-stat-divider {
           width: 1px;
           height: 40px;
-          background: #e2e2e2;
+          background: rgba(255,255,255,0.08);
           align-self: center;
         }
 
-        /* ── Grid ── */
+        /* ── Grid section ── */
         .branch-grid-section {
           position: relative;
           z-index: 1;
@@ -273,39 +304,46 @@ const Branch = () => {
           margin: 0 auto;
           padding: 0 24px 80px;
         }
+
         .branch-grid-header {
           display: flex;
           align-items: center;
           justify-content: space-between;
           margin-bottom: 28px;
+          padding-bottom: 16px;
+          border-bottom: 1px solid rgba(255,255,255,0.07);
         }
+
         .branch-grid-label {
           font-size: 13px;
-          font-weight: 600;
-          color: #999;
-          letter-spacing: .08em;
+          font-weight: 700;
+          color: #6b7280;
+          letter-spacing: .10em;
           text-transform: uppercase;
         }
+
         .branch-result-count {
           font-size: 13px;
-          color: #aaa;
+          color: #4b5563;
         }
+
         .branch-cards-grid {
           display: grid;
           grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
           gap: 20px;
         }
+
         .branch-no-results {
           grid-column: 1 / -1;
           text-align: center;
           padding: 80px 0;
-          color: #aaa;
+          color: #6b7280;
           font-size: 1.1rem;
         }
 
         ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: #f0f0f0; }
-        ::-webkit-scrollbar-thumb { background: #e42320; border-radius: 3px; }
+        ::-webkit-scrollbar-track { background: #0f0c29; }
+        ::-webkit-scrollbar-thumb { background: #7c3aed; border-radius: 3px; }
 
         @media (max-width: 600px) {
           .branch-stats-bar { gap: 20px; }
@@ -314,11 +352,13 @@ const Branch = () => {
       `}</style>
 
       <div className="branch-page">
-        {/* Background decorations */}
+        {/* Background blobs */}
         <div className="bg-deco">
           <div className="bg-blob bg-blob-1" />
           <div className="bg-blob bg-blob-2" />
           <div className="bg-blob bg-blob-3" />
+          <div className="bg-blob bg-blob-4" />
+          <div className="bg-blob bg-blob-5" />
         </div>
         <div className="grid-lines" />
 
