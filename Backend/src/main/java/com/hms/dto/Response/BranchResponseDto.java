@@ -1,16 +1,17 @@
-package com.hms.dto;
+package com.hms.dto.Response;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
-@NoArgsConstructor
 @AllArgsConstructor
-public class AdminDto {
+@NoArgsConstructor
+public class BranchResponseDto {
 
     private Long id;
     private String name;
+    private String address;
     private String email;
-    private Long branchId;
+    private String contactNumber;
 }

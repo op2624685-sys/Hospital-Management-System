@@ -12,5 +12,5 @@ public class AdminResponseDto {
     private Long userId;
     private String name;
     private String email;
-    private String branch;
+    private Long branchId;
 }

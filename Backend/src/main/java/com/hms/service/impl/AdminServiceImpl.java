@@ -2,7 +2,6 @@ package com.hms.service.impl;
 
 import java.util.List;
 
-import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
 import com.hms.dto.AdminDto;
@@ -26,14 +25,13 @@ public class AdminServiceImpl implements AdminService {
     private final AdminRepository adminRepository;
     private final UserRepository userRepository;
     private final BranchRepository branchRepository;
-    private final ModelMapper modelMapper;
     
     @Override
     public List<AdminDto> getAllAdmins() {
         List<Admin> admins = adminRepository.findAll();
         return admins
                 .stream()
-                .map(admin -> modelMapper.map(admin, AdminDto.class))
+                .map(this::mapToAdminDto)
                 .toList();
     }
 
@@ -41,7 +39,7 @@ public class AdminServiceImpl implements AdminService {
     public AdminDto getAdminById(Long id) {
         Admin admin = adminRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Admin not found with id: " + id));
-        return modelMapper.map(admin, AdminDto.class);
+        return mapToAdminDto(admin);
     }
 
     @Override
@@ -49,7 +47,7 @@ public class AdminServiceImpl implements AdminService {
         List<Admin> admins = adminRepository.findByName(name);
         return admins
                 .stream()
-                .map(admin -> modelMapper.map(admin, AdminDto.class))
+                .map(this::mapToAdminDto)
                 .toList();
     }
 
@@ -65,6 +63,12 @@ public class AdminServiceImpl implements AdminService {
     public AdminResponseDto onBoardNewAdmin(OnBoardAdminRequestDto onBoardAdminRequestDto) {
         User user = userRepository.findById(onBoardAdminRequestDto.getUserId()).orElseThrow(() -> new RuntimeException("User not found with id: " + onBoardAdminRequestDto.getUserId()));
         Branch branch = branchRepository.findById(onBoardAdminRequestDto.getBranchId()).orElseThrow(() -> new RuntimeException("Branch not found with id: " + onBoardAdminRequestDto.getBranchId()));
+        if (adminRepository.existsByEmail(onBoardAdminRequestDto.getEmail())) {
+            throw new RuntimeException("Admin already exists with email: " + onBoardAdminRequestDto.getEmail());
+        }
+        if (adminRepository.existsByBranch_Id(onBoardAdminRequestDto.getBranchId())) {
+            throw new RuntimeException("This branch already has an admin assigned");
+        }
         Admin admin = Admin.builder()
                 .name(onBoardAdminRequestDto.getName())
                 .email(onBoardAdminRequestDto.getEmail())
@@ -72,9 +76,24 @@ public class AdminServiceImpl implements AdminService {
                 .user(user)
                 .build();
         user.getRoles().add(RoleType.ADMIN);
-        return modelMapper.map(adminRepository.save(admin), AdminResponseDto.class);
+        Admin savedAdmin = adminRepository.save(admin);
+        return mapToAdminResponseDto(savedAdmin);
     }
-    
-    
+
+    private AdminDto mapToAdminDto(Admin admin) {
+        return new AdminDto(
+                admin.getId(),
+                admin.getName(),
+                admin.getEmail(),
+                admin.getBranch() != null ? admin.getBranch().getId() : null);
+    }
+
+    private AdminResponseDto mapToAdminResponseDto(Admin admin) {
+        return new AdminResponseDto(
+                admin.getId(),
+                admin.getName(),
+                admin.getEmail(),
+                admin.getBranch() != null ? admin.getBranch().getId() : null);
+    }
 
 }

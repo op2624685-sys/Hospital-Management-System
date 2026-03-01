@@ -16,4 +16,8 @@ public interface AdminRepository extends JpaRepository<Admin, Long> {
     List<Admin> findByBranch(Branch branch);
 
     List<Admin> findByBranchId(Long branch_id);
+
+    boolean existsByEmail(String email);
+
+    boolean existsByBranch_Id(Long branchId);
 }

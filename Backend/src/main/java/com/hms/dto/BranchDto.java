@@ -5,12 +5,14 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
-@NoArgsConstructor
 @AllArgsConstructor
-public class AdminDto {
+@NoArgsConstructor
+public class BranchDto {
 
     private Long id;
     private String name;
+    private String address;
+    private String contactNumber;
     private String email;
-    private Long branchId;
+    private AdminDto admin;
 }

@@ -35,6 +35,6 @@ public class Admin {
     private String email;
 
     @OneToOne
-    @JoinColumn(name = "branch", unique = true, nullable = false)
+    @JoinColumn(name = "branch_id", unique = true, nullable = false)
     private Branch branch;
 }
