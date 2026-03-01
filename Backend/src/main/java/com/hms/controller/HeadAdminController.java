@@ -31,15 +31,15 @@ public class HeadAdminController {
     private final BranchService branchService;
 
     
+    @GetMapping("/getAllAdmins")
+    public ResponseEntity<List<AdminDto>> getAllAdmins() {
+        return ResponseEntity.status(HttpStatus.OK).body(adminService.getAllAdmins());
+    }
+
     @PostMapping("/onBoardNewAdmin")
     public ResponseEntity<AdminResponseDto> onBoardNewAdmin(
             @Valid @RequestBody OnBoardAdminRequestDto onBoardAdminRequestDto) {
         return ResponseEntity.status(HttpStatus.CREATED).body(adminService.onBoardNewAdmin(onBoardAdminRequestDto));
-    }
-
-    @GetMapping("/getAllAdmins")
-    public ResponseEntity<List<AdminDto>> getAllAdmins() {
-        return ResponseEntity.status(HttpStatus.OK).body(adminService.getAllAdmins());
     }
 
     @PostMapping("/createNewBranch")
