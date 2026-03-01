@@ -2,8 +2,9 @@ package com.hms.controller;
 
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import com.hms.dto.CreateAppointmentRequestDto;
+
 import com.hms.dto.PatientDto;
+import com.hms.dto.Request.CreateAppointmentRequestDto;
 import com.hms.dto.Response.AppointmentResponseDto;
 import com.hms.entity.User;
 import com.hms.service.AppointmentService;

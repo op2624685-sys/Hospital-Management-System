@@ -1,4 +1,4 @@
-package com.hms.dto;
+package com.hms.dto.Request;
 
 import java.time.LocalDateTime;
 import lombok.Data;

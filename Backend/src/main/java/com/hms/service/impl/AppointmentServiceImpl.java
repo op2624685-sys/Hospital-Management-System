@@ -6,7 +6,8 @@ import org.modelmapper.ModelMapper;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
-import com.hms.dto.CreateAppointmentRequestDto;
+
+import com.hms.dto.Request.CreateAppointmentRequestDto;
 import com.hms.dto.Response.AppointmentResponseDto;
 import com.hms.entity.Appointment;
 import com.hms.entity.Doctor;
