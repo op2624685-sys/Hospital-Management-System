@@ -12,5 +12,5 @@ public class OnBoardAdminRequestDto {
     private Long userId;
     private String name;
     private String email;
-    private String branch;
+    private Long branchId;
 }

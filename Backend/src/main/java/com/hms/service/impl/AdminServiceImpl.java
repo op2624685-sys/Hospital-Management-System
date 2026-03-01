@@ -9,9 +9,11 @@ import com.hms.dto.AdminDto;
 import com.hms.dto.Request.OnBoardAdminRequestDto;
 import com.hms.dto.Response.AdminResponseDto;
 import com.hms.entity.Admin;
+import com.hms.entity.Branch;
 import com.hms.entity.User;
 import com.hms.entity.type.RoleType;
 import com.hms.repository.AdminRepository;
+import com.hms.repository.BranchRepository;
 import com.hms.repository.UserRepository;
 import com.hms.service.AdminService;
 
@@ -23,6 +25,7 @@ public class AdminServiceImpl implements AdminService {
 
     private final AdminRepository adminRepository;
     private final UserRepository userRepository;
+    private final BranchRepository branchRepository;
     private final ModelMapper modelMapper;
     
     @Override
@@ -60,11 +63,12 @@ public class AdminServiceImpl implements AdminService {
 
     @Override
     public AdminResponseDto onBoardNewAdmin(OnBoardAdminRequestDto onBoardAdminRequestDto) {
-        User user = userRepository.findById(onBoardAdminRequestDto.getUserId()).orElseThrow();
+        User user = userRepository.findById(onBoardAdminRequestDto.getUserId()).orElseThrow(() -> new RuntimeException("User not found with id: " + onBoardAdminRequestDto.getUserId()));
+        Branch branch = branchRepository.findById(onBoardAdminRequestDto.getBranchId()).orElseThrow(() -> new RuntimeException("Branch not found with id: " + onBoardAdminRequestDto.getBranchId()));
         Admin admin = Admin.builder()
                 .name(onBoardAdminRequestDto.getName())
                 .email(onBoardAdminRequestDto.getEmail())
-                .branch(onBoardAdminRequestDto.getBranch())
+                .branch(branch)
                 .user(user)
                 .build();
         user.getRoles().add(RoleType.ADMIN);
