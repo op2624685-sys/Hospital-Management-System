@@ -11,6 +11,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToOne;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -41,4 +42,16 @@ public class Department {
         inverseJoinColumns = @JoinColumn(name = "doctor_id")
     )
     private Set<Doctor> doctors = new HashSet<>();
+
+    @ManyToMany
+    @JoinTable(
+        name = "department_patient",
+        joinColumns = @JoinColumn(name = "department_id"),
+        inverseJoinColumns = @JoinColumn(name = "patient_id")
+    )
+    private Set<Patient> patients = new HashSet<>();
+
+    @ManyToOne
+    @JoinColumn(name = "branch_id")
+    private Branch branch;
 }
