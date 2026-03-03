@@ -2,8 +2,6 @@ package com.hms.dto;
 
 import java.time.LocalDate;
 
-import com.hms.entity.Patient;
-
 import lombok.*;
 
 @Data
@@ -15,5 +13,5 @@ public class InsuranceDto {
     private String policyNumber;
     private String provider;
     private LocalDate validUntil;
-    private Patient patient;
+    private Long patientId;
 }

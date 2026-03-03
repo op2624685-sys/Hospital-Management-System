@@ -7,5 +7,6 @@ import com.hms.entity.Insurance;
 
 @Repository
 public interface InsuranceRepository extends JpaRepository<Insurance, Long> {
-    
+
+    boolean existsByPolicyNumber(String policyNumber);
 }
