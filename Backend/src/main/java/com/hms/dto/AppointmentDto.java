@@ -18,5 +18,6 @@ public class AppointmentDto {
     private AppointmentStatusType status;
     private PatientDto patient;
     private DoctorDto doctor;
+    private BranchDto branch;
 
 }

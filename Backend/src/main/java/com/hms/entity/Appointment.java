@@ -66,5 +66,10 @@ public class Appointment {
     @JoinColumn(nullable = false)
     private Patient patient;
 
+    @ManyToOne
+    @ToString.Exclude
+    @JoinColumn(nullable = false)
+    private Branch branch;
+
 
 }

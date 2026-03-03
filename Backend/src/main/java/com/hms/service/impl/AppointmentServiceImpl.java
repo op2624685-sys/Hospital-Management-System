@@ -41,6 +41,15 @@ public class AppointmentServiceImpl implements AppointmentService {
                 .orElseThrow(() -> new EntityNotFoundException("Patient not found with ID: " + patientId));
         Doctor doctor = doctorRepository.findById(doctorId)
                 .orElseThrow(() -> new EntityNotFoundException("Doctor not found with ID: " + doctorId));
+        if (doctor.getBranch() == null) {
+            throw new IllegalStateException("Doctor is not assigned to any branch");
+        }
+
+        if (createAppointmentRequestDto.getBranchId() != null
+                && !createAppointmentRequestDto.getBranchId().equals(doctor.getBranch().getId())) {
+            throw new IllegalArgumentException("Doctor does not belong to the requested branch");
+        }
+
         Appointment appointment = Appointment.builder()
                 .reason(createAppointmentRequestDto.getReason())
                 .appointmentTime(createAppointmentRequestDto.getAppointmentTime())
@@ -49,6 +58,7 @@ public class AppointmentServiceImpl implements AppointmentService {
         appointment.setStatus(AppointmentStatusType.PENDING);
         appointment.setPatient(patient);
         appointment.setDoctor(doctor);
+        appointment.setBranch(doctor.getBranch());
         patient.getAppointments().add(appointment); // to maintain consistency
 
         appointment = appointmentRepository.save(appointment);
@@ -68,7 +78,7 @@ public class AppointmentServiceImpl implements AppointmentService {
     }
 
     @Override
-    @PreAuthorize("hasRole('ADMIN') OR (hasRole('DOCTOR') AND #doctorId == authentication.principal.id)")
+    @PreAuthorize("hasAnyRole('ADMIN','HEADADMIN') OR (hasRole('DOCTOR') AND #doctorId == authentication.principal.id)")
     public List<AppointmentResponseDto> getAllAppointmentsOfDoctor(Long doctorId) {
         Doctor doctor = doctorRepository.findById(doctorId).orElseThrow();
 

@@ -19,4 +19,5 @@ public class AppointmentResponseDto {
     private DoctorResponseDto doctor;
     private AppointmentStatusType status;
     private PatientResponseDto patient;
+    private BranchResponseDto branch;
 }
