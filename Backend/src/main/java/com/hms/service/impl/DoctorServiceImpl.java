@@ -8,9 +8,11 @@ import org.springframework.transaction.annotation.Transactional;
 import com.hms.dto.DoctorDto;
 import com.hms.dto.Request.OnBoardDoctorRequestDto;
 import com.hms.dto.Response.DoctorResponseDto;
+import com.hms.entity.Branch;
 import com.hms.entity.Doctor;
 import com.hms.entity.User;
 import com.hms.entity.type.RoleType;
+import com.hms.repository.BranchRepository;
 import com.hms.repository.DoctorRepository;
 import com.hms.repository.UserRepository;
 import com.hms.service.DoctorService;
@@ -22,6 +24,7 @@ public class DoctorServiceImpl implements DoctorService {
 
     private final DoctorRepository doctorRepository;
     private final UserRepository userRepository;
+    private final BranchRepository branchRepository;
     private final ModelMapper modelMapper;
 
     @Override
@@ -59,9 +62,11 @@ public class DoctorServiceImpl implements DoctorService {
 
     @Override
     @Transactional
-    @PreAuthorize("hasAnyRole('ADMIN', 'DOCTOR')")
+    @PreAuthorize("hasAnyRole('HEADADMIN', 'ADMIN')")
     public DoctorResponseDto onBoardNewDoctor(OnBoardDoctorRequestDto onBoardDoctorRequestDto) {
-        User user = userRepository.findById(onBoardDoctorRequestDto.getUserId()).orElseThrow();
+        User user = userRepository.findById(onBoardDoctorRequestDto.getUserId()).orElseThrow(() -> new RuntimeException("User not found with id: " + onBoardDoctorRequestDto.getUserId()));
+        Branch branch = branchRepository.findById(onBoardDoctorRequestDto.getBranchId())
+                .orElseThrow(() -> new RuntimeException("Branch not found with id: " + onBoardDoctorRequestDto.getBranchId()));
 
         if (doctorRepository.existsById(onBoardDoctorRequestDto.getUserId())) {
             throw new IllegalArgumentException("Already a doctor");
@@ -71,6 +76,7 @@ public class DoctorServiceImpl implements DoctorService {
                 .name(onBoardDoctorRequestDto.getName())
                 .specialization(onBoardDoctorRequestDto.getSpecialization())
                 .email(onBoardDoctorRequestDto.getEmail())
+                .branch(branch)
                 .user(user)
                 .build();
 

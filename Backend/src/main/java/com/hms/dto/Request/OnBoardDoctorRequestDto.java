@@ -13,4 +13,5 @@ public class OnBoardDoctorRequestDto {
     private String name;
     private String specialization;
     private String email;
+    private Long branchId;
 }

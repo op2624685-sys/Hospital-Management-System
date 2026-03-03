@@ -1,5 +1,7 @@
 package com.hms.dto.Response;
 
+import java.util.Set;
+
 import com.hms.dto.DepartmentDto;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -14,5 +16,6 @@ public class DoctorResponseDto {
     private String name;
     private String specialization;
     private String email;
-    private DepartmentDto department;
+    private Set<DepartmentDto> departments;
+    private BranchResponseDto branch;
 }

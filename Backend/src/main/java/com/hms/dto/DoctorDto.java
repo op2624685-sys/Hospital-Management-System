@@ -1,5 +1,7 @@
 package com.hms.dto;
 
+import java.util.Set;
+
 import lombok.*;
 
 @Data
@@ -11,5 +13,6 @@ public class DoctorDto {
     private String name;
     private String specialization;
     private String email;
-    private DepartmentDto department;
+    private Set<DepartmentDto> departments;
+    private BranchDto branch;
 }

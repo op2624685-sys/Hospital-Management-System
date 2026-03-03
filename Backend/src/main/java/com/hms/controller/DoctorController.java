@@ -13,15 +13,17 @@ import org.springframework.web.bind.annotation.GetMapping;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/doctors")
+@RequestMapping("/doctor")
 public class DoctorController {
 
     private final AppointmentService appointmentService;
 
     @GetMapping("/appointments")
-    public ResponseEntity<List<AppointmentResponseDto>> getAllAppointmentsOfDoctor() {
+    public ResponseEntity<List<AppointmentResponseDto>> getAllAppointmentsOfDoctor(
+            @RequestParam(value = "doctorId", required = false) Long doctorId) {
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        return ResponseEntity.ok(appointmentService.getAllAppointmentsOfDoctor(user.getId()));
+        Long targetDoctorId = doctorId != null ? doctorId : user.getId();
+        return ResponseEntity.ok(appointmentService.getAllAppointmentsOfDoctor(targetDoctorId));
     }
     
 }
