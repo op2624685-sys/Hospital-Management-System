@@ -2,6 +2,7 @@ package com.hms.security;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
@@ -19,6 +20,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Configuration
+@EnableMethodSecurity
 @Slf4j
 @RequiredArgsConstructor
 public class WebSecurityConfig {
@@ -48,8 +50,10 @@ public class WebSecurityConfig {
                         sessionConfig -> sessionConfig.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/public/**", "/auth/**").permitAll()
-                        .requestMatchers("/admin/**").hasRole(ADMIN.name())
-                        .requestMatchers("/doctor/**").hasAnyRole(DOCTOR.name(), ADMIN.name())
+                        .requestMatchers("/head-admin/**").hasRole(HEADADMIN.name())
+                        .requestMatchers("/admin/**").hasAnyRole(ADMIN.name(), HEADADMIN.name())
+                        .requestMatchers("/doctor/**").hasAnyRole(DOCTOR.name(), ADMIN.name(), HEADADMIN.name())
+                        .requestMatchers("/patients/**").hasRole(PATIENT.name())
                         .anyRequest().authenticated())
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
                 .exceptionHandling(exceptionHandlingConfigurer -> 
