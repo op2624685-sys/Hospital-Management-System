@@ -3,12 +3,16 @@ package com.hms.controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.hms.dto.InsuranceDto;
 import com.hms.dto.PatientDto;
 import com.hms.dto.Request.CreateAppointmentRequestDto;
+import com.hms.dto.Request.CreateInsuranceRequestDto;
 import com.hms.dto.Response.AppointmentResponseDto;
 import com.hms.entity.User;
 import com.hms.service.AppointmentService;
+import com.hms.service.InsuranceService;
 import com.hms.service.PatientService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -25,6 +29,7 @@ public class PatientController {
 
     private final PatientService patientService;
     private final AppointmentService appointmentService;
+    private final InsuranceService insuranceService;
 
      @PostMapping("/appointments")
     public ResponseEntity<AppointmentResponseDto> createNewAppointment(@RequestBody CreateAppointmentRequestDto createAppointmentRequestDto) {
@@ -34,6 +39,13 @@ public class PatientController {
     @GetMapping("/appointments/check/{appointmentId}")
     public ResponseEntity<AppointmentResponseDto> getAppointmentByAppointmentId(@PathVariable String appointmentId) {
         return ResponseEntity.ok(appointmentService.getAppointmentByAppointmentId(appointmentId));
+    }
+
+    @PostMapping("/insurance")
+    public ResponseEntity<InsuranceDto> createInsurance(@Valid @RequestBody CreateInsuranceRequestDto createInsuranceRequestDto) {
+        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(insuranceService.createInsuranceForPatient(createInsuranceRequestDto, user.getId()));
     }
     
     @GetMapping("/profile")
