@@ -51,4 +51,7 @@ public class Branch {
 
     @OneToMany(mappedBy = "branch")
     private List<Patient> patients = new ArrayList<>();
+
+    @OneToMany(mappedBy = "branch")
+    private List<Appointment> appointments = new ArrayList<>();
 }

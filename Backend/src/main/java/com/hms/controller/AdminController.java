@@ -4,12 +4,16 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import com.hms.dto.DepartmentDto;
+import com.hms.dto.Request.CreateDepartmentRequestDto;
 import com.hms.dto.Request.OnBoardDoctorRequestDto;
 import com.hms.dto.Response.DoctorResponseDto;
 import com.hms.dto.Response.PatientResponseDto;
+import com.hms.service.DepartmentService;
 import com.hms.service.DoctorService;
 import com.hms.service.PatientService;
 import java.util.List;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -22,6 +26,7 @@ public class AdminController {
 
     private final PatientService patientService;
     private final DoctorService doctorService;
+    private final DepartmentService departmentService;
 
     @GetMapping("/patients")
     public ResponseEntity<List<PatientResponseDto>> getAllPatients(
@@ -34,5 +39,12 @@ public class AdminController {
     public ResponseEntity<DoctorResponseDto> onBoardNewDoctor(
             @RequestBody OnBoardDoctorRequestDto onBoardDoctorRequestDto) {
         return ResponseEntity.status(HttpStatus.CREATED).body(doctorService.onBoardNewDoctor(onBoardDoctorRequestDto));
-    }    
+    }
+
+    @PostMapping("/createNewDepartment")
+    public ResponseEntity<DepartmentDto> createNewDepartment(
+            @Valid @RequestBody CreateDepartmentRequestDto createDepartmentRequestDto) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(departmentService.createNewDepartment(createDepartmentRequestDto));
+    }
 }
