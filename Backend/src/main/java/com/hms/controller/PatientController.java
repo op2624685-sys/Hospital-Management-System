@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.PutMapping;
 
 @RestController
 @RequiredArgsConstructor
@@ -39,6 +40,11 @@ public class PatientController {
     @GetMapping("/appointments/check/{appointmentId}")
     public ResponseEntity<AppointmentResponseDto> getAppointmentByAppointmentId(@PathVariable String appointmentId) {
         return ResponseEntity.ok(appointmentService.getAppointmentByAppointmentId(appointmentId));
+    }
+
+    @PutMapping("/appointments/{appointmentId}/cancel")
+    public ResponseEntity<AppointmentResponseDto> cancelAppointmentByPatient(@PathVariable String appointmentId) {
+        return ResponseEntity.ok(appointmentService.cancelAppointmentByPatient(appointmentId));
     }
 
     @PostMapping("/insurance")
