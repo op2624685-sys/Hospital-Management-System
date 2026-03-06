@@ -1,6 +1,7 @@
 package com.hms.service.impl;
 
 import java.util.List;
+import java.util.Set;
 import org.modelmapper.ModelMapper;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
@@ -80,7 +81,8 @@ public class DoctorServiceImpl implements DoctorService {
                 .user(user)
                 .build();
 
-            user.getRoles().add(RoleType.DOCTOR);
+            user.setRoles(Set.of(RoleType.DOCTOR));
+            userRepository.save(user);
 
             return modelMapper.map(doctorRepository.save(doctor), DoctorResponseDto.class);
     }

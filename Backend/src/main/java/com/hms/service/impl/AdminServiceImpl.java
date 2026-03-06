@@ -1,6 +1,7 @@
 package com.hms.service.impl;
 
 import java.util.List;
+import java.util.Set;
 
 import org.springframework.stereotype.Service;
 
@@ -75,7 +76,8 @@ public class AdminServiceImpl implements AdminService {
                 .branch(branch)
                 .user(user)
                 .build();
-        user.getRoles().add(RoleType.ADMIN);
+        user.setRoles(Set.of(RoleType.ADMIN));
+        userRepository.save(user);
         Admin savedAdmin = adminRepository.save(admin);
         return mapToAdminResponseDto(savedAdmin);
     }
