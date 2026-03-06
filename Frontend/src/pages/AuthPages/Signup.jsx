@@ -1,186 +1,160 @@
-import React, { useState } from 'react'
-import API from '../../api/api'
-import { Link } from 'react-router-dom'
+﻿import React, { useLayoutEffect, useRef, useState } from 'react';
+import API from '../../api/api';
+import { Link, useNavigate } from 'react-router-dom';
+import { CalendarDays, Droplets, Eye, EyeOff, Mail, UserRound } from 'lucide-react';
+import { gsap } from 'gsap';
 
 const Signup = () => {
-    const [formData, setFormData] = useState({
-        name: '',
-        email: '',
-        birthDate: '',
-        gender: '',
-        bloodGroup: '',
-        username: '',
-        password: '',
-        agreeToTerms: false
-    })
+  const navigate = useNavigate();
+  const shellRef = useRef(null);
 
-    const handleInputChange = (e) => {
-        const { name, value, type, checked } = e.target
-        setFormData(prev => ({
-            ...prev,
-            [name]: type === 'checkbox' ? checked : value
-        }))
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    birthDate: '',
+    gender: '',
+    bloodGroup: '',
+    username: '',
+    password: '',
+    agreeToTerms: false,
+  });
+  const [showPassword, setShowPassword] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState('');
+
+  useLayoutEffect(() => {
+    const ctx = gsap.context(() => {
+      gsap.fromTo('.auth-card', { y: 24, opacity: 0, scale: 0.985 }, { y: 0, opacity: 1, scale: 1, duration: 0.7, ease: 'power3.out' });
+      gsap.fromTo('.auth-art', { x: -30, opacity: 0 }, { x: 0, opacity: 1, duration: 0.9, ease: 'power3.out' });
+      gsap.fromTo('.auth-fade', { y: 14, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, stagger: 0.06, ease: 'power2.out', delay: 0.14 });
+    }, shellRef);
+
+    return () => ctx.revert();
+  }, []);
+
+  const handleInputChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: type === 'checkbox' ? checked : value,
+    }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError('');
+
+    if (formData.password.length < 6) {
+      setError('Password must be at least 6 characters.');
+      return;
     }
 
-    const handleSubmit = async (e) => {
-    e.preventDefault()
+    setIsSubmitting(true);
     try {
-        const response = await API.post('/auth/signup', formData)
-        console.log('Signup successful:', response.data)
-        // Optional: redirect to login page
-        window.location.href = '/login'
-    } catch (error) {
-        console.error('Signup failed:', error.response?.data || error.message)
+      await API.post('/auth/signup', formData);
+      navigate('/login');
+    } catch (err) {
+      setError(err?.response?.data?.message || 'Signup failed. Please verify the details and retry.');
+    } finally {
+      setIsSubmitting(false);
     }
-}
+  };
 
+  return (
+    <div ref={shellRef} className="auth-shell">
+      <div className="auth-bg-orb auth-bg-orb-1" />
+      <div className="auth-bg-orb auth-bg-orb-2" />
+      <div className="auth-bg-orb auth-bg-orb-4" />
 
-    return (
-        <div className='h-screen flex items-center justify-center bg-cover' style={{ "backgroundImage": "url('https://images.unsplash.com/photo-1545569341-9eb8b30979d9?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D')" }}>
-            <div className='border border-blue-300 rounded-md p-8 shadow-lg backdrop-filter backdrop-blur-lg bg-opacity-30 relative w-full md:w-1/2 lg:w-1/3'>
-                <h1 className='text-4xl font-bold text-center p-3 mb-6'>Sign Up</h1>
-                <form onSubmit={handleSubmit}>
-                    <div className='relative my-4'>
-                        <input
-                            type="text"
-                            className='block w-full py-2.5 px-0 text-sm text-white bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:focus:border-blur-500 focus:outline-none focus:ring-0 focus:text-white focus:border-blue-500 peer'
-                            placeholder=''
-                            name="name"
-                            id="name"
-                            value={formData.name}
-                            onChange={handleInputChange}
-                            required
-                        />
-                        <label htmlFor="fullName" className='absolute text-sm duration-300 transform -translate scale-75 top-3 -z-10 origin-left peer-focus:left-0 peer-focus:text-blue-500 peer-focus:dark:text-blue-400 peer-placeholder-shown:scale-100 peer-focus:scale-75 peer-focus:-translate-y-6'>Full Name</label>
-                    </div>
+      <section className="auth-layout auth-layout-signup">
+        <aside className="auth-art">
+          <span className="auth-chip auth-fade">New Patient Enrollment</span>
+          <h1 className="auth-fade">Create Your HMS Account</h1>
+          <p className="auth-fade">Register once to book appointments, access records, and manage your healthcare journey online.</p>
+          <ul>
+            <li className="auth-fade">Book appointments faster</li>
+            <li className="auth-fade">Track prescriptions and reports</li>
+            <li className="auth-fade">Secure patient profile management</li>
+          </ul>
+        </aside>
 
-                    <div className='relative my-4'>
-                        <input
-                            type="email"
-                            className='block w-full py-2.5 px-0 text-sm text-white bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:focus:border-blur-500 focus:outline-none focus:ring-0 focus:text-white focus:border-blue-500 peer'
-                            placeholder=''
-                            name="email"
-                            id="email"
-                            value={formData.email}
-                            onChange={handleInputChange}
-                            required
-                        />
-                        <label htmlFor="email" className='absolute text-sm duration-300 transform -translate scale-75 top-3 -z-10 origin-left peer-focus:left-0 peer-focus:text-blue-500 peer-focus:dark:text-blue-400 peer-placeholder-shown:scale-100 peer-focus:scale-75 peer-focus:-translate-y-6'>Email Address</label>
-                    </div>
+        <div className="auth-card auth-card-wide">
+          <h2 className="auth-fade">Sign Up</h2>
+          <p className="auth-sub auth-fade">Fill your profile details to continue.</p>
 
-                    <div className='relative my-4'>
-                        <input
-                            type="date"
-                            className='block w-full py-2.5 px-0 text-sm text-white bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:focus:border-blur-500 focus:outline-none focus:ring-0 focus:text-white focus:border-blue-500 peer'
-                            id="birthDate"
-                            name="birthDate"
-                            value={formData.birthDate}
-                            onChange={handleInputChange}
-                            max={new Date().toISOString().split("T")[0]} // Prevents selecting a future date
-                        />
-                        {formData.birthDate && <p>Date of birth selected: {formData.birthDate}</p>}
-                        <label htmlFor="birthDate" className='absolute text-sm duration-300 transform -translate scale-75 top-3 -z-10 origin-left peer-focus:left-0 peer-focus:text-blue-500 peer-focus:dark:text-blue-400 peer-placeholder-shown:scale-100 peer-focus:scale-75 peer-focus:-translate-y-6'>Enter your birthday:</label>
-                    </div>
+          <form onSubmit={handleSubmit} className="auth-form auth-form-grid">
+            <label className="auth-field auth-fade">
+              <UserRound size={16} />
+              <input type="text" placeholder="Full name" name="name" value={formData.name} onChange={handleInputChange} required />
+            </label>
 
-                    <div className='relative my-4'>
-                        <select
-                            className='block w-full py-2.5 px-0 text-sm text-white bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:focus:border-blur-500 focus:outline-none focus:ring-0 focus:text-white focus:border-blue-500 peer'
-                            name="gender"
-                            id="gender"
-                            value={formData.gender}
-                            onChange={handleInputChange}
-                            required
-                        >
-                            <option value="" className='bg-gray-800 text-white'> </option>
-                            <option value="MALE" className='bg-gray-800 text-white'>Male</option>
-                            <option value="FEMALE" className='bg-gray-800 text-white'>Female</option>
-                            <option value="OTHER" className='bg-gray-800 text-white'>Other</option>
-                        </select>
-                        <label htmlFor="gender" className='absolute text-sm duration-300 transform -translate scale-75 top-3 -z-10 origin-left peer-focus:left-0 peer-focus:text-blue-500 peer-focus:dark:text-blue-400 peer-placeholder-shown:scale-100 peer-focus:scale-75 peer-focus:-translate-y-6'>Gender</label>
-                    </div>
+            <label className="auth-field auth-fade">
+              <Mail size={16} />
+              <input type="email" placeholder="Email" name="email" value={formData.email} onChange={handleInputChange} required />
+            </label>
 
-                    <div className='relative my-4'>
-                        <select
-                            className='block w-full py-2.5 px-0 text-sm text-white bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:focus:border-blur-500 focus:outline-none focus:ring-0 focus:text-white focus:border-blue-500 peer'
-                            name="bloodGroup"
-                            id="bloodGroup"
-                            value={formData.bloodGroup}
-                            onChange={handleInputChange}
-                            required
-                        >
-                            <option value="" className='bg-gray-800 text-white'> </option>
-                            <option value="A_POSITIVE" className='bg-gray-800 text-white'>A+</option>
-                            <option value="A_NEGATIVE" className='bg-gray-800 text-white'>A-</option>
-                            <option value="B_POSITIVE" className='bg-gray-800 text-white'>B+</option>
-                            <option value="B_NEGATIVE" className='bg-gray-800 text-white'>B-</option>
-                            <option value="O_POSITIVE" className='bg-gray-800 text-white'>O+</option>
-                            <option value="O_NEGATIVE" className='bg-gray-800 text-white'>O-</option>
-                            <option value="AB_POSITIVE" className='bg-gray-800 text-white'>AB+</option>
-                            <option value="AB_NEGATIVE" className='bg-gray-800 text-white'>AB-</option>
-                        </select>
-                        <label htmlFor="bloodGroup" className='absolute text-sm duration-300 transform -translate scale-75 top-3 -z-10 origin-left peer-focus:left-0 peer-focus:text-blue-500 peer-focus:dark:text-blue-400 peer-placeholder-shown:scale-100 peer-focus:scale-75 peer-focus:-translate-y-6'>BloodGroup</label>
-                    </div>
+            <label className="auth-field auth-fade">
+              <CalendarDays size={16} />
+              <input type="date" name="birthDate" value={formData.birthDate} onChange={handleInputChange} max={new Date().toISOString().split('T')[0]} required />
+            </label>
 
-                    <div className='relative my-4'>
-                        <input
-                            type="text"
-                            className='block w-full py-2.5 px-0 text-sm text-white bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:focus:border-blur-500 focus:outline-none focus:ring-0 focus:text-white focus:border-blue-500 peer'
-                            placeholder=''
-                            name="username"
-                            id="username"
-                            value={formData.username}
-                            onChange={handleInputChange}
-                            required
-                        />
-                        <label htmlFor="username" className='absolute text-sm duration-300 transform -translate scale-75 top-3 -z-10 origin-left peer-focus:left-0 peer-focus:text-blue-500 peer-focus:dark:text-blue-400 peer-placeholder-shown:scale-100 peer-focus:scale-75 peer-focus:-translate-y-6'>Username</label>
-                    </div>
+            <label className="auth-field auth-fade">
+              <span className="auth-field-prefix">G</span>
+              <select name="gender" value={formData.gender} onChange={handleInputChange} required>
+                <option value="">Gender</option>
+                <option value="MALE">Male</option>
+                <option value="FEMALE">Female</option>
+                <option value="OTHER">Other</option>
+              </select>
+            </label>
 
-                    <div className='relative my-4'>
-                        <input
-                            type="password"
-                            className='block w-full py-2.5 px-0 text-sm text-white bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:focus:border-blur-500 focus:outline-none focus:ring-0 focus:text-white focus:border-blue-500 peer'
-                            placeholder=''
-                            name="password"
-                            id="password"
-                            value={formData.password}
-                            onChange={handleInputChange}
-                            required
-                        />
-                        <label htmlFor="password" className='absolute text-sm duration-300 transform -translate scale-75 top-3 -z-10 origin-left peer-focus:left-0 peer-focus:text-blue-500 peer-focus:dark:text-blue-400 peer-placeholder-shown:scale-100 peer-focus:scale-75 peer-focus:-translate-y-6'>Password</label>
-                    </div>
+            <label className="auth-field auth-fade">
+              <Droplets size={16} />
+              <select name="bloodGroup" value={formData.bloodGroup} onChange={handleInputChange} required>
+                <option value="">Blood Group</option>
+                <option value="A_POSITIVE">A+</option>
+                <option value="A_NEGATIVE">A-</option>
+                <option value="B_POSITIVE">B+</option>
+                <option value="B_NEGATIVE">B-</option>
+                <option value="O_POSITIVE">O+</option>
+                <option value="O_NEGATIVE">O-</option>
+                <option value="AB_POSITIVE">AB+</option>
+                <option value="AB_NEGATIVE">AB-</option>
+              </select>
+            </label>
 
-                    <div className='flex items-center my-4'>
-                        <input
-                            type="checkbox"
-                            name="agreeToTerms"
-                            id="agreeToTerms"
-                            checked={formData.agreeToTerms}
-                            onChange={handleInputChange}
-                            className='mr-2 w-4 h-4 text-blue-600 bg-transparent border-2 border-gray-300 rounded focus:ring-blue-500 focus:ring-2'
-                            required
-                        />
-                        <label htmlFor="agreeToTerms" className='text-sm text-white'>
-                            I agree to the <span className='text-blue-400 hover:text-blue-300 cursor-pointer'>Terms and Conditions</span>
-                        </label>
-                    </div>
+            <label className="auth-field auth-fade">
+              <UserRound size={16} />
+              <input type="text" placeholder="Username" name="username" value={formData.username} onChange={handleInputChange} required />
+            </label>
 
-                    <button
-                        type="submit"
-                        className='w-full mb-4 mt-6 text-[18px] rounded bg-blue-500 py-2 hover:bg-blue-600 transition-colors duration-300 active:scale-90'
-                        disabled={!formData.agreeToTerms}
-                    >
-                        Sign Up
-                    </button>
-                </form>
+            <label className="auth-field auth-fade auth-field-full">
+              <span className="auth-field-prefix">*</span>
+              <input type={showPassword ? 'text' : 'password'} placeholder="Password" name="password" value={formData.password} onChange={handleInputChange} required />
+              <button type="button" className="auth-icon-btn" onClick={() => setShowPassword((v) => !v)}>
+                {showPassword ? <EyeOff size={15} /> : <Eye size={15} />}
+              </button>
+            </label>
 
-                <div className='text-center'>
-                    <Link to="/login" className='text-[12px]'>
-                        Already have an account? <span className='font-bold'>Login</span>
-                    </Link>
-                </div>
-            </div>
+            <label className="auth-check auth-field-full auth-fade">
+              <input type="checkbox" name="agreeToTerms" checked={formData.agreeToTerms} onChange={handleInputChange} required />
+              I agree to the terms and privacy policy.
+            </label>
+
+            {error && <p className="auth-error auth-field-full">{error}</p>}
+
+            <button type="submit" className="auth-btn auth-field-full auth-fade" disabled={!formData.agreeToTerms || isSubmitting}>
+              {isSubmitting ? 'Creating account...' : 'Create Account'}
+            </button>
+          </form>
+
+          <div className="auth-links auth-fade">
+            <Link to="/login">Already have an account? Sign In</Link>
+          </div>
         </div>
-    )
-}
+      </section>
+    </div>
+  );
+};
 
-export default Signup
+export default Signup;

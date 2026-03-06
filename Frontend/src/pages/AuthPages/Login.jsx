@@ -1,122 +1,140 @@
-import React, { useState } from 'react';
+﻿import React, { useLayoutEffect, useRef, useState } from 'react';
 import API from '../../api/api';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { ToastContainer, toast, Bounce } from 'react-toastify';
+import { Eye, EyeOff, Lock, UserRound } from 'lucide-react';
+import { gsap } from 'gsap';
 import 'react-toastify/dist/ReactToastify.css';
 import { useAuth } from '../../context/AuthContext';
+
 const Login = () => {
+  const { login } = useAuth();
+  const navigate = useNavigate();
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
-    const { login } = useAuth();
-    const [username, setUsername] = useState('');
-    const [password, setPassword] = useState('');
+  const shellRef = useRef(null);
 
-    const handleLogin = async (e) => {
-        e.preventDefault();
+  useLayoutEffect(() => {
+    const ctx = gsap.context(() => {
+      gsap.fromTo('.auth-card', { y: 26, opacity: 0, scale: 0.98 }, { y: 0, opacity: 1, scale: 1, duration: 0.7, ease: 'power3.out' });
+      gsap.fromTo('.auth-art', { x: 28, opacity: 0 }, { x: 0, opacity: 1, duration: 0.9, ease: 'power3.out' });
+      gsap.fromTo('.auth-fade', { y: 12, opacity: 0 }, { y: 0, opacity: 1, duration: 0.55, stagger: 0.08, ease: 'power2.out', delay: 0.12 });
+    }, shellRef);
 
-        try {
-            const response = await API.post('/auth/login', {
-                username: username,
-                password: password
-            });
+    return () => ctx.revert();
+  }, []);
 
-            // If backend returns JWT token
-            if (response.data.token) {
-                localStorage.setItem("token", response.data.token);
-                localStorage.setItem("userId", response.data.userId);
-                localStorage.setItem("roles", JSON.stringify(response.data.roles));
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    setIsLoading(true);
 
-                login(response.data);
+    try {
+      const response = await API.post('/auth/login', { username, password });
 
-                toast.success("Login successful!");
-                const userRoles = response.data.roles || [];
-                if (userRoles.includes("HEADADMIN") || userRoles.includes("ADMIN")) {
-                    window.location.href = "/admin";
-                } else if (userRoles.includes("DOCTOR")) {
-                    window.location.href = "/doctor/appointments";
-                } else if (userRoles.includes("PATIENT")) {
-                    window.location.href = "/my-appointments";
-                } else {
-                    window.location.href = "/";
-                }
+      if (response.data.token) {
+        localStorage.setItem('token', response.data.token);
+        localStorage.setItem('userId', response.data.userId);
+        localStorage.setItem('roles', JSON.stringify(response.data.roles));
+        login(response.data);
 
-            }
+        toast.success('Login successful');
+        const userRoles = response.data.roles || [];
 
-        } catch (error) {
-            toast.warn("Login failed!");
-            console.error(error);
+        if (userRoles.includes('HEADADMIN') || userRoles.includes('ADMIN')) {
+          navigate('/admin');
+        } else if (userRoles.includes('DOCTOR')) {
+          navigate('/doctor/appointments');
+        } else if (userRoles.includes('PATIENT')) {
+          navigate('/my-appointments');
+        } else {
+          navigate('/');
         }
-    };
+      }
+    } catch (error) {
+      toast.error(error?.response?.data?.message || 'Login failed. Please verify credentials.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-    return (
-        <div className='h-screen flex items-center justify-center bg-cover'
-            style={{ backgroundImage: "url('https://images.unsplash.com/photo-1545569341-9eb8b30979d9')" }}>
+  return (
+    <div ref={shellRef} className="auth-shell">
+      <div className="auth-bg-orb auth-bg-orb-1" />
+      <div className="auth-bg-orb auth-bg-orb-2" />
+      <div className="auth-bg-orb auth-bg-orb-3" />
 
-            <div className='border-2 border-black rounded-xl p-8 shadow-lg backdrop-filter backdrop-blur-lg bg-opacity-30 relative '>
+      <section className="auth-layout">
+        <aside className="auth-art">
+          <span className="auth-chip auth-fade">Secure Access</span>
+          <h1 className="auth-fade">Welcome to MediCore HMS</h1>
+          <p className="auth-fade">Access patient records, appointments, departments, and admin operations in one secure platform.</p>
+          <ul>
+            <li className="auth-fade">Role-based access control</li>
+            <li className="auth-fade">Enterprise-grade security</li>
+            <li className="auth-fade">Real-time care operations</li>
+          </ul>
+        </aside>
 
-                <h1 className='text-4xl font-bold text-center p-3 mb-6'>Login</h1>
+        <div className="auth-card">
+          <h2 className="auth-fade">Login</h2>
+          <p className="auth-sub auth-fade">Use your hospital account to continue.</p>
 
-                {/* CONNECT FORM HERE */}
-                <form onSubmit={handleLogin}>
+          <form onSubmit={handleLogin} className="auth-form">
+            <label className="auth-field auth-fade">
+              <UserRound size={16} />
+              <input
+                type="text"
+                placeholder="Username"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                required
+              />
+            </label>
 
-                    <div className='relative my-4'>
-                        <input
-                            type="text"
-                            className='block w-72 py-2.5 px-0 text-sm text-white bg-transparent border-0 border-b-2 border-gray-300 appearance-none focus:outline-none focus:ring-0 focus:text-white focus:border-blue-500 peer'
-                            value={username}
-                            onChange={(e) => setUsername(e.target.value)}
-                            required
-                        />
-                        <label className='absolute text-sm duration-300 transform -translate scale-75 top-3 -z-10 origin-left peer-focus:text-blue-500'>
-                            Username
-                        </label>
-                    </div>
+            <label className="auth-field auth-fade">
+              <Lock size={16} />
+              <input
+                type={showPassword ? 'text' : 'password'}
+                placeholder="Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+              <button type="button" className="auth-icon-btn" onClick={() => setShowPassword((v) => !v)}>
+                {showPassword ? <EyeOff size={15} /> : <Eye size={15} />}
+              </button>
+            </label>
 
-                    <div className='relative my-4'>
-                        <input
-                            type="password"
-                            className='block w-72 py-2.5 px-0 text-sm text-white bg-transparent border-0 border-b-2 border-gray-300 appearance-none focus:outline-none focus:ring-0 focus:text-white focus:border-blue-500 peer'
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            required
-                        />
-                        <label className='absolute text-sm duration-300 transform -translate scale-75 top-3 -z-10 origin-left peer-focus:text-blue-500'>
-                            Password
-                        </label>
-                    </div>
-                    <button
-                        type="submit"
-                        className='w-full mb-4 mt-6 text-[18px] rounded bg-blue-500 py-2 hover:bg-blue-600 transition-colors duration-300 active:scale-90'>
-                        Login
-                    </button>
-                </form>
+            <button type="submit" className="auth-btn auth-fade" disabled={isLoading}>
+              {isLoading ? 'Logging in...' : 'Login'}
+            </button>
+          </form>
 
-                <div>
-                    <Link to="/forgotpassword" className='text-[11px] font-bold'>
-                        Forgot Password*
-                    </Link>
-                </div>
-                <div>
-                    <Link to="/signup" className='text-[12px]'>
-                        Don't have an account? <span className='font-bold'>Sign Up</span>
-                    </Link>
-                </div>
-
-            </div>
-            <ToastContainer
-                position="top-right"
-                autoClose={5000}
-                hideProgressBar={false}
-                newestOnTop={false}
-                closeOnClick={false}
-                rtl={false}
-                pauseOnFocusLoss
-                draggable
-                pauseOnHover
-                theme="light"
-                transition={Bounce}
-            />
+          <div className="auth-links auth-fade">
+            <Link to="/login/forgotpassword">Forgot password?</Link>
+            <Link to="/signup">Create account</Link>
+          </div>
         </div>
-    );
+      </section>
+
+      <ToastContainer
+        position="top-right"
+        autoClose={3500}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+        transition={Bounce}
+      />
+    </div>
+  );
 };
 
 export default Login;
