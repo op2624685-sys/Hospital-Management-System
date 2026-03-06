@@ -12,12 +12,12 @@ import EmergencyDepartment from '../components/EmergencyDepartment'
 gsap.registerPlugin(ScrollTrigger)
 
 const DEPARTMENTS = [
-  { component: EmergencyDepartment, accent: '#f87171', bg: '#1a0f0f', label: 'Emergency',  icon: '🚨', number: '01', members: 10, head: 'Dr. John Doe' },
-  { component: Cardiology,          accent: '#fb923c', bg: '#1a1208', label: 'Cardiology',  icon: '❤️', number: '02', members: 18, head: 'Dr. Sarah Lee' },
-  { component: Neurology,           accent: '#a78bfa', bg: '#130f1e', label: 'Neurology',   icon: '🧠', number: '03', members: 15, head: 'Dr. Alan Foster' },
-  { component: Orthopedics,         accent: '#34d399', bg: '#0a1812', label: 'Orthopedics', icon: '🦴', number: '04', members: 12, head: 'Dr. Robert King' },
-  { component: Pediatrics,          accent: '#fbbf24', bg: '#1a1508', label: 'Pediatrics',  icon: '👶', number: '05', members: 20, head: 'Dr. Emily Chen' },
-  { component: Radiology,           accent: '#e879f9', bg: '#17091a', label: 'Radiology',   icon: '🔬', number: '06', members: 14, head: 'Dr. James Parker' },
+  { component: EmergencyDepartment, accent: '#2563eb', bg: '#eff6ff', label: 'Emergency',  icon: '🚨', number: '01', members: 10, head: 'Dr. John Doe' },
+  { component: Cardiology,          accent: '#0ea5e9', bg: '#ecfeff', label: 'Cardiology',  icon: '❤️', number: '02', members: 18, head: 'Dr. Sarah Lee' },
+  { component: Neurology,           accent: '#14b8a6', bg: '#f0fdfa', label: 'Neurology',   icon: '🧠', number: '03', members: 15, head: 'Dr. Alan Foster' },
+  { component: Orthopedics,         accent: '#10b981', bg: '#ecfdf5', label: 'Orthopedics', icon: '🦴', number: '04', members: 12, head: 'Dr. Robert King' },
+  { component: Pediatrics,          accent: '#22c55e', bg: '#f0fdf4', label: 'Pediatrics',  icon: '👶', number: '05', members: 20, head: 'Dr. Emily Chen' },
+  { component: Radiology,           accent: '#0284c7', bg: '#eff6ff', label: 'Radiology',   icon: '🔬', number: '06', members: 14, head: 'Dr. James Parker' },
 ]
 
 const Department = () => {
@@ -57,7 +57,7 @@ const Department = () => {
         gsap.to(dot, {
           scaleX:     j === index ? 3 : 1,
           opacity:    j === index ? 1 : 0.3,
-          background: j === index ? dept.accent : '#4b5563',
+          background: j === index ? dept.accent : '#94a3b8',
           duration:   0.35, ease: 'power2.out',
         })
       })
@@ -141,7 +141,7 @@ const Department = () => {
       ref={wrapperRef}
       style={{
         height: `${DEPARTMENTS.length * 130}vh`,
-        background: 'linear-gradient(160deg, #060408 0%, #0d0b18 25%, #111018 50%, #0f0d1a 75%, #080612 100%)'
+        background: 'linear-gradient(165deg, #f8fbff 0%, #f8fafc 100%)'
       }}>
 
       <Header />
@@ -150,8 +150,8 @@ const Department = () => {
       <div className='fixed inset-0 pointer-events-none'
         style={{
           zIndex: 0,
-          opacity: 0.03,
-          backgroundImage: 'linear-gradient(rgba(255,255,255,0.4) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.4) 1px, transparent 1px)',
+          opacity: 0.18,
+          backgroundImage: 'linear-gradient(rgba(37,99,235,0.14) 1px, transparent 1px), linear-gradient(90deg, rgba(37,99,235,0.14) 1px, transparent 1px)',
           backgroundSize: '60px 60px'
         }}></div>
 
@@ -187,7 +187,7 @@ const Department = () => {
           <p
             ref={counterRef}
             className='text-[10px] font-black tracking-widest mb-1 font-mono'
-            style={{ color: '#6b7280' }}>
+            style={{ color: '#64748b' }}>
             01 / {String(DEPARTMENTS.length).padStart(2,'0')}
           </p>
 
@@ -197,7 +197,7 @@ const Department = () => {
               ref={el => (dotRefs.current[i] = el)}
               className='h-1.5 w-1.5 rounded-full origin-left'
               style={{
-                background: i === 0 ? dept.accent : '#4b5563',
+                background: i === 0 ? dept.accent : '#94a3b8',
                 opacity:    i === 0 ? 1 : 0.3,
                 transform:  i === 0 ? 'scaleX(3)' : 'scaleX(1)',
               }}
@@ -216,9 +216,9 @@ const Department = () => {
             SCROLL HINT
         ══════════════════ */}
         <div className='absolute bottom-5 right-8 z-50 flex items-center gap-2 opacity-30'>
-          <p className='text-[10px] uppercase tracking-widest font-semibold' style={{ color: '#9ca3af' }}>Scroll</p>
-          <div className='w-4 h-7 border rounded-full flex items-start justify-center pt-1' style={{ borderColor: '#4b5563' }}>
-            <div className='w-0.5 h-1.5 rounded-full animate-bounce' style={{ background: '#6b7280' }} />
+          <p className='text-[10px] uppercase tracking-widest font-semibold' style={{ color: '#64748b' }}>Scroll</p>
+          <div className='w-4 h-7 border rounded-full flex items-start justify-center pt-1' style={{ borderColor: '#94a3b8' }}>
+            <div className='w-0.5 h-1.5 rounded-full animate-bounce' style={{ background: '#2563eb' }} />
           </div>
         </div>
 
@@ -238,8 +238,8 @@ const Department = () => {
                 right:           20,
                 bottom:          16,
                 borderRadius:    20,
-                background:      '#111118',
-                border:          '1px solid rgba(255,255,255,0.07)',
+                background:      '#ffffff',
+                border:          '1px solid #dbe6ff',
                 willChange:      'transform, opacity',
                 transformOrigin: 'center top',
                 boxShadow:       `0 8px 60px rgba(0,0,0,0.60), 0 2px 8px rgba(0,0,0,0.40), 0 0 0 1px rgba(255,255,255,0.04)`,
@@ -268,19 +268,19 @@ const Department = () => {
                     {dept.icon}
                   </div>
                   <div>
-                    <p className='font-black text-lg leading-none' style={{ color: '#e5e7eb' }}>{dept.label}</p>
-                    <p className='text-xs mt-0.5 font-medium' style={{ color: '#6b7280' }}>Department</p>
+                    <p className='font-black text-lg leading-none' style={{ color: '#0f172a' }}>{dept.label}</p>
+                    <p className='text-xs mt-0.5 font-medium' style={{ color: '#64748b' }}>Department</p>
                   </div>
                 </div>
 
                 {/* Right meta */}
                 <div className='flex items-center gap-6'>
                   <div className='text-right hidden md:block'>
-                    <p className='text-xs' style={{ color: '#6b7280' }}>Head</p>
-                    <p className='text-sm font-bold' style={{ color: '#d1d5db' }}>{dept.head}</p>
+                    <p className='text-xs' style={{ color: '#64748b' }}>Head</p>
+                    <p className='text-sm font-bold' style={{ color: '#334155' }}>{dept.head}</p>
                   </div>
                   <div className='text-right hidden md:block'>
-                    <p className='text-xs' style={{ color: '#6b7280' }}>Members</p>
+                    <p className='text-xs' style={{ color: '#64748b' }}>Members</p>
                     <p className='text-sm font-black' style={{ color: dept.accent }}>{dept.members}</p>
                   </div>
 
@@ -300,7 +300,7 @@ const Department = () => {
               {/* ── Dept content ── */}
               <div
                 className='overflow-y-auto'
-                style={{ height: 'calc(100% - 62px)', background: '#0e0e14' }}>
+                style={{ height: 'calc(100% - 62px)', background: '#f8fafc' }}>
                 <DeptComponent />
               </div>
 
@@ -324,3 +324,4 @@ const Department = () => {
 }
 
 export default Department
+

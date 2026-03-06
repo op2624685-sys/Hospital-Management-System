@@ -417,7 +417,95 @@ const AdminPanel = () => {
         /* scrollbar */
         ::-webkit-scrollbar { width: 5px; }
         ::-webkit-scrollbar-track { background: #f0f0f0; }
-        ::-webkit-scrollbar-thumb { background: #e42320; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb { background: #2563eb; border-radius: 3px; }
+
+        /* theme override: healthcare SaaS */
+        .admin-page {
+          background:
+            radial-gradient(circle at 0 0, rgba(37,99,235,.12), transparent 42%),
+            radial-gradient(circle at 100% 100%, rgba(20,184,166,.10), transparent 44%),
+            linear-gradient(180deg, #f8fbff 0%, #f8fafc 100%);
+        }
+        .admin-grid-bg {
+          background-image:
+            linear-gradient(rgba(37,99,235,.06) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(37,99,235,.06) 1px, transparent 1px);
+        }
+        .admin-orb-1 {
+          background: radial-gradient(circle, rgba(37,99,235,.2), transparent);
+        }
+        .admin-orb-2 {
+          background: radial-gradient(circle, rgba(20,184,166,.16), transparent);
+        }
+        .admin-eyebrow {
+          color: #2563eb;
+          background: rgba(37,99,235,.08);
+          border-color: rgba(37,99,235,.24);
+        }
+        .admin-title em { color: #14b8a6; }
+        .admin-date { color: #64748b; }
+        .admin-badge {
+          border-color: #dbe6ff;
+          background: #fff;
+        }
+        .admin-badge svg { color: #2563eb; }
+        .admin-refresh-btn {
+          background: linear-gradient(120deg, #2563eb 0%, #14b8a6 100%);
+        }
+        .admin-refresh-btn:hover { background: linear-gradient(120deg, #1d4ed8 0%, #0f9f91 100%); }
+        .admin-tabs {
+          border-color: #dbe6ff;
+          box-shadow: 0 8px 24px rgba(37,99,235,.08);
+        }
+        .admin-tab.active {
+          background: #2563eb;
+          box-shadow: 0 8px 18px rgba(37,99,235,.25);
+        }
+        .admin-tab:not(.active):hover {
+          background: #eff6ff;
+          color: #1e40af;
+        }
+        .admin-stat-card,
+        .admin-section {
+          border-color: #dbe6ff;
+          box-shadow: 0 10px 26px rgba(15,23,42,.06);
+        }
+        .admin-stat-card:hover {
+          box-shadow: 0 16px 34px rgba(15,23,42,.1);
+        }
+        .admin-stat-label,
+        .admin-section-sub,
+        .admin-table th {
+          color: #64748b;
+        }
+        .admin-view-all {
+          color: #2563eb;
+          background: #eff6ff;
+          border: 1px solid #bfdbfe;
+        }
+        .admin-view-all:hover { background: #dbeafe; }
+        .admin-table td {
+          border-bottom-color: #e2e8f0;
+          color: #334155;
+        }
+        .admin-table tr:hover td { background: #f8fbff; }
+        .admin-dept-tag {
+          background: #f1f5f9;
+          color: #334155;
+        }
+        .admin-doctor-row,
+        .admin-payment-row {
+          border-color: #e2e8f0;
+        }
+        .admin-doctor-row:hover,
+        .admin-payment-row:hover { background: #f8fbff; }
+        .admin-doc-avatar {
+          background: linear-gradient(135deg, #2563eb, #14b8a6);
+        }
+        .admin-pay-icon { background: #eff6ff; }
+        .admin-progress-track { background: #e2e8f0; }
+        .admin-bar { background: linear-gradient(to top, #2563eb, #3b82f6); }
+        .admin-bar.secondary { background: linear-gradient(to top, #14b8a6, #2dd4bf); }
 
         @media (max-width: 1200px) {
           .admin-stats-grid { grid-template-columns: repeat(2, 1fr); }

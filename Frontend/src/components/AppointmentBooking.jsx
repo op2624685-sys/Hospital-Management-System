@@ -132,7 +132,7 @@ const AppointmentBooking = () => {
         /* header banner */
         .ab-banner {
           position: relative;
-          background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+          background: linear-gradient(135deg, #1e3a8a 0%, #0f766e 100%);
           padding: 28px 32px;
           overflow: hidden;
         }
@@ -147,7 +147,7 @@ const AppointmentBooking = () => {
           position: absolute;
           width: 120px; height: 120px;
           top: -30px; right: 30px;
-          background: radial-gradient(circle, rgba(228,35,32,.4), transparent);
+          background: radial-gradient(circle, rgba(37,99,235,.4), transparent);
           filter: blur(30px);
         }
         .ab-banner-inner {
@@ -160,12 +160,12 @@ const AppointmentBooking = () => {
         .ab-banner-icon {
           width: 52px; height: 52px;
           border-radius: 16px;
-          background: rgba(228,35,32,.15);
-          border: 1px solid rgba(228,35,32,.3);
+          background: rgba(255,255,255,.18);
+          border: 1px solid rgba(255,255,255,.35);
           display: flex; align-items: center; justify-content: center;
           flex-shrink: 0;
         }
-        .ab-banner-icon svg { color: #e42320; }
+        .ab-banner-icon svg { color: #ffffff; }
         .ab-banner-text h2 {
           font-family: 'Cormorant Garamond', serif;
           font-size: 1.6rem;
@@ -186,8 +186,8 @@ const AppointmentBooking = () => {
           display: flex;
           align-items: center;
           gap: 12px;
-          background: #fff8f4;
-          border: 1px solid rgba(228,35,32,.15);
+          background: #eff6ff;
+          border: 1px solid rgba(37,99,235,.16);
           border-radius: 14px;
           padding: 12px 16px;
           animation: abCardIn .5s .1s ease both;
@@ -197,7 +197,7 @@ const AppointmentBooking = () => {
         .ab-prefill-avatar {
           width: 36px; height: 36px;
           border-radius: 50%;
-          background: linear-gradient(135deg, #e42320, #a01a18);
+          background: linear-gradient(135deg, #2563eb, #14b8a6);
           display: flex; align-items: center; justify-content: center;
           font-family: 'Cormorant Garamond', serif;
           font-size: .9rem; font-weight: 700; color: #fff;
@@ -210,9 +210,9 @@ const AppointmentBooking = () => {
         .ab-prefill-meta { font-size: 11px; color: #aaa; }
         .ab-prefill-badge {
           font-size: 10px; font-weight: 600; letter-spacing: .08em;
-          text-transform: uppercase; color: #e42320;
-          background: rgba(228,35,32,.08);
-          border: 1px solid rgba(228,35,32,.15);
+          text-transform: uppercase; color: #1d4ed8;
+          background: rgba(37,99,235,.1);
+          border: 1px solid rgba(37,99,235,.2);
           padding: 3px 8px; border-radius: 999px;
         }
 
@@ -227,7 +227,7 @@ const AppointmentBooking = () => {
           color: #bbb;
           display: flex; align-items: center; gap: 6px;
         }
-        .ab-label svg { color: #e42320; }
+        .ab-label svg { color: #2563eb; }
 
         .ab-input-wrap { position: relative; }
         .ab-input {
@@ -243,9 +243,9 @@ const AppointmentBooking = () => {
           transition: border-color .2s, box-shadow .2s, background .2s;
         }
         .ab-input:focus {
-          border-color: #e42320;
+          border-color: #2563eb;
           background: #fff;
-          box-shadow: 0 0 0 4px rgba(228,35,32,.07);
+          box-shadow: 0 0 0 4px rgba(37,99,235,.12);
         }
         .ab-input::placeholder { color: #ccc; }
         .ab-input-icon {
@@ -256,7 +256,7 @@ const AppointmentBooking = () => {
           pointer-events: none;
           transition: color .2s;
         }
-        .ab-field:focus-within .ab-input-icon { color: #e42320; }
+        .ab-field:focus-within .ab-input-icon { color: #2563eb; }
 
         /* selected doctor checkmark */
         .ab-check {
@@ -294,11 +294,11 @@ const AppointmentBooking = () => {
           border-bottom: 1px solid #f5f0ea;
         }
         .ab-drop-item:last-child { border-bottom: none; }
-        .ab-drop-item:hover { background: #fff8f4; }
+        .ab-drop-item:hover { background: #eff6ff; }
         .ab-drop-avatar {
           width: 34px; height: 34px;
           border-radius: 50%;
-          background: linear-gradient(135deg, #e42320, #a01a18);
+          background: linear-gradient(135deg, #2563eb, #14b8a6);
           display: flex; align-items: center; justify-content: center;
           font-family: 'Cormorant Garamond', serif;
           font-size: .85rem; font-weight: 700; color: #fff;
@@ -334,7 +334,7 @@ const AppointmentBooking = () => {
         .ab-submit {
           width: 100%;
           display: flex; align-items: center; justify-content: center; gap: 10px;
-          background: #e42320;
+          background: linear-gradient(120deg, #2563EB 0%, #14B8A6 100%);
           color: #fff;
           border: none;
           border-radius: 16px;
@@ -343,10 +343,10 @@ const AppointmentBooking = () => {
           font-size: 14px; font-weight: 600;
           cursor: pointer;
           transition: background .2s, transform .15s, box-shadow .2s;
-          box-shadow: 0 8px 28px rgba(228,35,32,.28);
+          box-shadow: 0 8px 28px rgba(37,99,235,.28);
           letter-spacing: .02em;
         }
-        .ab-submit:hover { background: #c81c1a; transform: translateY(-2px); box-shadow: 0 12px 36px rgba(228,35,32,.35); }
+        .ab-submit:hover { filter: brightness(1.04); transform: translateY(-2px); box-shadow: 0 12px 36px rgba(20,184,166,.35); }
         .ab-submit:active { transform: scale(.97); }
         .ab-submit:disabled { opacity: .6; cursor: not-allowed; transform: none; box-shadow: none; }
         .ab-spinner {

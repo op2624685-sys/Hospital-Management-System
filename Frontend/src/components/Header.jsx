@@ -1,17 +1,30 @@
 import React, { useState, useEffect } from 'react';
-import { LogIn, LogOut, Menu, X } from 'lucide-react';
+import {
+  Activity,
+  Building2,
+  CalendarDays,
+  LayoutDashboard,
+  LogIn,
+  LogOut,
+  Menu,
+  Phone,
+  Stethoscope,
+  UserPlus,
+  Users,
+  X
+} from 'lucide-react';
 import { Link as RouterLink, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 const baseNavLinks = [
-  { to: '/', label: 'Home' },
-  { to: '/appointment', label: 'Appointment' },
-  { to: '/doctors', label: 'Doctor' },
-  { to: '/branches', label: 'Branches' },
-  { to: '/departments', label: 'Departments' },
-  { to: '/services', label: 'Services' },
-  { to: '/about', label: 'About Us' },
-  { to: '/contact', label: 'Contact Us' },
+  { to: '/', label: 'Home', icon: Activity },
+  { to: '/appointment', label: 'Appointment', icon: CalendarDays },
+  { to: '/doctors', label: 'Doctors', icon: Stethoscope },
+  { to: '/branches', label: 'Branches', icon: Building2 },
+  { to: '/departments', label: 'Departments', icon: LayoutDashboard },
+  { to: '/services', label: 'Services', icon: UserPlus },
+  { to: '/about', label: 'About Us', icon: Users },
+  { to: '/contact', label: 'Contact Us', icon: Phone },
 ];
 
 const Header = () => {
@@ -19,17 +32,15 @@ const Header = () => {
   const location = useLocation();
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
-  const [hoveredLink, setHoveredLink] = useState(null);
-
   let navLinks = baseNavLinks;
   if (hasRole('DOCTOR')) {
-    navLinks = [...navLinks, { to: '/doctor/appointments', label: 'My Appointments' }];
+    navLinks = [...navLinks, { to: '/doctor/appointments', label: 'My Appointments', icon: CalendarDays }];
   }
   if (hasRole('PATIENT')) {
-    navLinks = [...navLinks, { to: '/my-appointments', label: 'My Appointments' }];
+    navLinks = [...navLinks, { to: '/my-appointments', label: 'My Appointments', icon: CalendarDays }];
   }
   if (hasRole('ADMIN') || hasRole('HEADADMIN')) {
-    navLinks = [...navLinks, { to: '/admin', label: 'Admin Panel' }];
+    navLinks = [...navLinks, { to: '/admin', label: 'Admin Panel', icon: LayoutDashboard }];
   }
 
   useEffect(() => {
@@ -44,46 +55,31 @@ const Header = () => {
     <>
       <header className={`fixed top-0 left-0 w-full z-50 transition-all duration-500
         ${scrolled
-          ? 'bg-transparent backdrop-blur-md shadow-lg shadow-black/5 py-3'
-          : 'bg-transparent py-6'
+          ? 'bg-white/88 backdrop-blur-xl border-b border-blue-100/70 shadow-[0_8px_32px_rgba(37,99,235,0.08)] py-3'
+          : 'bg-white/55 backdrop-blur-md py-4'
         }`}>
 
         <div className='flex justify-between items-center px-10'>
           <RouterLink to="/" className='group flex items-center gap-2'>
-            <div className='w-9 h-9 bg-linear-to-br from-orange-400 to-rose-500 rounded-xl flex items-center justify-center shadow-md group-hover:scale-110 transition-transform duration-300'>
-              <span className='text-white font-black text-sm'>D</span>
+            <div className='w-10 h-10 bg-gradient-to-br from-blue-600 to-cyan-500 rounded-xl flex items-center justify-center shadow-md group-hover:scale-110 transition-transform duration-300'>
+              <Activity size={18} className='text-white' />
             </div>
             <h1 className='text-2xl font-black tracking-tight'>
-              <span className='text-orange-500'>DELTA</span>
-              <span className={`transition-colors duration-300 ${scrolled ? 'text-orange-200' : 'text-orange-200'}`}>CARE</span>
+              <span className='text-blue-600'>Medi</span>
+              <span className='text-teal-600'>Core</span>
             </h1>
           </RouterLink>
 
-          <nav className='hidden lg:flex items-center gap-1'>
+          <nav className='hidden lg:flex items-center gap-1 bg-white border border-blue-100 rounded-2xl p-1 shadow-sm'>
             {navLinks.map((link) => (
-              <RouterLink
-                key={link.to}
-                to={link.to}
-                onMouseEnter={() => setHoveredLink(link.to)}
-                onMouseLeave={() => setHoveredLink(null)}
-                className={`relative px-4 py-2 text-sm font-medium rounded-xl transition-all duration-300 group
+              <RouterLink key={link.to} to={link.to}
+                className={`relative px-3 py-2 text-sm font-medium rounded-xl transition-all duration-300 flex items-center gap-1.5
                   ${isActive(link.to)
-                    ? 'text-orange-500'
-                    : 'text-zinc-300 hover:text-gray-900'
+                    ? 'text-blue-700 bg-blue-50'
+                    : 'text-slate-600 hover:text-blue-700 hover:bg-blue-50/70'
                   }`}>
-
-                <span className={`absolute inset-0 rounded-xl transition-all duration-300
-                  ${hoveredLink === link.to && !isActive(link.to)
-                    ? 'bg-orange-50 scale-100 opacity-100'
-                    : 'bg-orange-50 scale-95 opacity-0'
-                  }`}>
-                </span>
-
-                {isActive(link.to) && (
-                  <span className='absolute bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 bg-orange-500 rounded-full'></span>
-                )}
-
-                <span className='relative'>{link.label}</span>
+                <link.icon size={14} />
+                <span>{link.label}</span>
               </RouterLink>
             ))}
           </nav>
@@ -92,24 +88,22 @@ const Header = () => {
             {isLoggedIn ? (
               <button
                 onClick={logout}
-                className='group flex items-center gap-2 relative overflow-hidden bg-gray-900 text-white text-sm font-semibold py-2.5 px-5 rounded-xl transition-all duration-300 hover:scale-105 active:scale-95 shadow-md hover:shadow-lg'>
-                <span className='absolute inset-0 bg-linear-to-r from-rose-500 to-orange-500 translate-x-full group-hover:translate-x-0 transition-transform duration-300'></span>
-                <LogOut size={15} className='relative z-10 group-hover:rotate-12 transition-transform duration-300' />
-                <span className='relative z-10'>Logout</span>
+                className='group flex items-center gap-2 bg-slate-900 text-white text-sm font-semibold py-2.5 px-5 rounded-xl transition-all duration-300 hover:scale-105 active:scale-95 shadow-md hover:shadow-lg'>
+                <LogOut size={15} className='group-hover:rotate-12 transition-transform duration-300' />
+                <span>Logout</span>
               </button>
             ) : (
               <RouterLink
                 to="/login"
-                className='group flex items-center gap-2 relative overflow-hidden bg-linear-to-r from-orange-500 to-rose-500 text-white text-sm font-semibold py-2.5 px-5 rounded-xl transition-all duration-300 hover:scale-105 active:scale-95 shadow-md hover:shadow-orange-200 hover:shadow-lg'>
-                <span className='absolute inset-0 bg-white opacity-0 group-hover:opacity-10 transition-opacity duration-300'></span>
-                <LogIn size={15} className='relative z-10 group-hover:-rotate-12 transition-transform duration-300' />
-                <span className='relative z-10'>Login</span>
+                className='group flex items-center gap-2 bg-gradient-to-r from-blue-600 to-teal-500 text-white text-sm font-semibold py-2.5 px-5 rounded-xl transition-all duration-300 hover:scale-105 active:scale-95 shadow-md hover:shadow-cyan-200 hover:shadow-lg'>
+                <LogIn size={15} className='group-hover:-rotate-12 transition-transform duration-300' />
+                <span>Login</span>
               </RouterLink>
             )}
 
             <button
               onClick={() => setMenuOpen(!menuOpen)}
-              className='lg:hidden p-2 rounded-xl bg-gray-100 hover:bg-orange-50 text-gray-600 hover:text-orange-500 transition-all duration-300 active:scale-90'>
+              className='lg:hidden p-2 rounded-xl bg-white border border-blue-100 hover:bg-blue-50 text-slate-600 hover:text-blue-600 transition-all duration-300 active:scale-90'>
               {menuOpen ? <X size={20} /> : <Menu size={20} />}
             </button>
           </div>
@@ -130,11 +124,11 @@ const Header = () => {
           <div className='p-6'>
             <div className='flex justify-between items-center mb-8'>
               <h2 className='font-black text-xl'>
-                <span className='text-orange-500'>DELTA</span>CARE
+                <span className='text-blue-600'>Medi</span><span className='text-teal-600'>Core</span>
               </h2>
               <button
                 onClick={() => setMenuOpen(false)}
-                className='p-2 rounded-xl bg-gray-100 hover:bg-orange-50 text-gray-600 hover:text-orange-500 transition-all'>
+                className='p-2 rounded-xl bg-gray-100 hover:bg-blue-50 text-gray-600 hover:text-blue-600 transition-all'>
                 <X size={18} />
               </button>
             </div>
@@ -148,12 +142,10 @@ const Header = () => {
                   style={{ transitionDelay: menuOpen ? `${i * 50}ms` : '0ms' }}
                   className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-300
                     ${isActive(link.to)
-                      ? 'bg-orange-50 text-orange-500 font-semibold'
-                      : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                      ? 'bg-blue-50 text-blue-600 font-semibold'
+                      : 'text-gray-600 hover:bg-gray-50 hover:text-blue-700'
                     }`}>
-                  {isActive(link.to) && (
-                    <span className='w-1.5 h-1.5 bg-orange-500 rounded-full'></span>
-                  )}
+                  <link.icon size={15} />
                   {link.label}
                 </RouterLink>
               ))}
@@ -163,7 +155,7 @@ const Header = () => {
               {isLoggedIn ? (
                 <button
                   onClick={() => { logout(); setMenuOpen(false); }}
-                  className='w-full flex items-center justify-center gap-2 bg-gray-900 text-white py-3 rounded-xl font-semibold text-sm hover:bg-rose-500 transition-all duration-300'>
+                  className='w-full flex items-center justify-center gap-2 bg-gray-900 text-white py-3 rounded-xl font-semibold text-sm hover:bg-slate-800 transition-all duration-300'>
                   <LogOut size={15} />
                   Logout
                 </button>
@@ -171,7 +163,7 @@ const Header = () => {
                 <RouterLink
                   to="/login"
                   onClick={() => setMenuOpen(false)}
-                  className='w-full flex items-center justify-center gap-2 bg-linear-to-r from-orange-500 to-rose-500 text-white py-3 rounded-xl font-semibold text-sm transition-all duration-300'>
+                  className='w-full flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 to-teal-500 text-white py-3 rounded-xl font-semibold text-sm transition-all duration-300'>
                   <LogIn size={15} />
                   Login
                 </RouterLink>
