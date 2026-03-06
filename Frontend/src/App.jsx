@@ -22,6 +22,8 @@ import Radiology from "./components/Radiology";
 import CheckAppointments from "./pages/CheckAppointments";
 import AdminPanel from "./pages/AdminPanel";
 import ProtectedRoute from "./components/ProtectedRoute";
+import DoctorAppointments from "./pages/DoctorAppointments";
+import MyAppointments from "./pages/MyAppointments";
 
 const App = () => {
   return (
@@ -54,6 +56,22 @@ const App = () => {
           element={
             <ProtectedRoute role="ADMIN">
               <AdminPanel />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/doctor/appointments"
+          element={
+            <ProtectedRoute role="DOCTOR">
+              <DoctorAppointments />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/my-appointments"
+          element={
+            <ProtectedRoute role="PATIENT">
+              <MyAppointments />
             </ProtectedRoute>
           }
         />

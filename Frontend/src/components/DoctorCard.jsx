@@ -23,7 +23,9 @@ const DoctorCard = ({ doctor, index = 0 }) => {
   const [hovered, setHovered] = useState(false)
   const navigate = useNavigate()
 
-  const config = specialityConfig[doctor.speciality] || specialityConfig.default
+  const specialization = doctor.specialization || doctor.speciality
+  const firstDepartment = Array.isArray(doctor.departments) ? doctor.departments[0] : doctor.department
+  const config = specialityConfig[specialization] || specialityConfig.default
   const [c1, c2] = avatarPairs[doctor.id % avatarPairs.length]
 
   const initials = doctor.name
@@ -40,8 +42,8 @@ const DoctorCard = ({ doctor, index = 0 }) => {
       state: {
         doctorId:   doctor.id,
         doctorName: doctor.name,
-        speciality: doctor.speciality  || '',
-        department: doctor.department?.name || '',
+        speciality: specialization || '',
+        department: firstDepartment?.name || '',
       }
     })
   }
@@ -247,7 +249,7 @@ const DoctorCard = ({ doctor, index = 0 }) => {
             </div>
 
             <span className="dc-speciality-badge">
-              {doctor.speciality || 'General'}
+              {specialization || 'General'}
             </span>
 
             <div className="dc-dept-row">
@@ -255,7 +257,7 @@ const DoctorCard = ({ doctor, index = 0 }) => {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
                   d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-2 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
               </svg>
-              <span>{doctor.department?.name || 'General Department'}</span>
+              <span>{firstDepartment?.name || 'General Department'}</span>
             </div>
 
             <div className="dc-divider" />

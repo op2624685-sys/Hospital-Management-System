@@ -143,6 +143,17 @@ public class AppointmentServiceImpl implements AppointmentService {
                 .map(appointment -> modelMapper.map(appointment, AppointmentResponseDto.class))
                 .collect(Collectors.toList());
     }
+
+    @Override
+    @PreAuthorize("hasRole('PATIENT') AND #patientId == authentication.principal.id")
+    public List<AppointmentResponseDto> getAllAppointmentsOfPatient(Long patientId) {
+        Patient patient = patientRepository.findById(patientId)
+                .orElseThrow(() -> new EntityNotFoundException("Patient not found with ID: " + patientId));
+        return patient.getAppointments()
+                .stream()
+                .map(appointment -> modelMapper.map(appointment, AppointmentResponseDto.class))
+                .collect(Collectors.toList());
+    }
     @Transactional
     @Override
     public AppointmentResponseDto getAppointmentByAppointmentId(String appointmentId) {

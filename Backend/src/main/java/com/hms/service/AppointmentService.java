@@ -15,6 +15,8 @@ public interface AppointmentService{
     AppointmentResponseDto getAppointmentByAppointmentId(String appointmentId);
 
     List<AppointmentResponseDto> getAllAppointmentsOfDoctor(Long doctorId);
+    
+    List<AppointmentResponseDto> getAllAppointmentsOfPatient(Long patientId);
 
     AppointmentResponseDto createNewAppointment(CreateAppointmentRequestDto createAppointmentRequestDto);
 

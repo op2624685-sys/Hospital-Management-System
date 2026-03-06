@@ -2,7 +2,10 @@ package com.hms.service.impl;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
+import java.util.List;
+import java.util.stream.Collectors;
 
+import com.hms.dto.BranchDto;
 import com.hms.dto.Request.BranchRequestDto;
 import com.hms.dto.Response.BranchResponseDto;
 import com.hms.entity.Branch;
@@ -23,6 +26,14 @@ public class BranchServiceImpl implements BranchService {
         Branch branch = modelMapper.map(branchRequestDto, Branch.class);
         Branch savedBranch = branchRepository.save(branch);
         return modelMapper.map(savedBranch, BranchResponseDto.class);
+    }
+
+    @Override
+    public List<BranchDto> getAllBranches() {
+        return branchRepository.findAll()
+                .stream()
+                .map(branch -> modelMapper.map(branch, BranchDto.class))
+                .collect(Collectors.toList());
     }
 
 

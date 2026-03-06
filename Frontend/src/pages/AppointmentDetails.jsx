@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
-import API from '../api/api'
+import appointmentApi from '../api/appointments'
+import { useAuth } from '../context/AuthContext'
 
 const statusConfig = {
   PENDING: {
@@ -63,16 +64,19 @@ const ErrorScreen = ({ onBack }) => (
 const AppointmentDetails = () => {
   const { appointmentId } = useParams()
   const navigate = useNavigate()
+  const { user, hasRole } = useAuth()
 
   const [appointment, setAppointment] = useState(null)
   const [loading, setLoading]         = useState(true)
   const [error, setError]             = useState(null)
   const [copied, setCopied]           = useState(false)
+  const [copiedLink, setCopiedLink]   = useState(false)
+  const [cancelling, setCancelling]   = useState(false)
 
   useEffect(() => {
     const fetch = async () => {
       try {
-        const res = await API.get(`/patients/appointments/check/${appointmentId}`)
+        const res = await appointmentApi.getByAppointmentId(appointmentId)
         setAppointment(res.data)
       } catch {
         setError(true)
@@ -87,6 +91,32 @@ const AppointmentDetails = () => {
     navigator.clipboard.writeText(appointment.appointmentId)
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
+  }
+
+  const handleCopyLink = () => {
+    navigator.clipboard.writeText(window.location.href)
+    setCopiedLink(true)
+    setTimeout(() => setCopiedLink(false), 2000)
+  }
+
+  const canPatientCancel = Boolean(
+    hasRole('PATIENT') &&
+    appointment?.status !== 'CANCELLED' &&
+    String(appointment?.patient?.id) === String(user?.id)
+  )
+
+  const handleCancelByPatient = async () => {
+    if (!canPatientCancel) return
+    setCancelling(true)
+    try {
+      const res = await appointmentApi.cancelByPatient(appointment.appointmentId)
+      setAppointment(res.data)
+    } catch (e) {
+      console.error(e)
+      alert('Failed to cancel appointment')
+    } finally {
+      setCancelling(false)
+    }
   }
 
   if (loading) return <LoadingScreen />
@@ -660,12 +690,20 @@ const AppointmentDetails = () => {
                   </svg>
                   Print
                 </button>
+                <button className="ad-btn ad-btn-outline" onClick={handleCopyLink}>
+                  {copiedLink ? 'Link Copied' : 'Copy Link'}
+                </button>
                 <button className="ad-btn ad-btn-primary" onClick={() => navigate('/appointment/check')}>
                   <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
                   </svg>
                   Check Status
                 </button>
+                {canPatientCancel && (
+                  <button className="ad-btn ad-btn-primary" onClick={handleCancelByPatient} disabled={cancelling}>
+                    {cancelling ? 'Cancelling...' : 'Cancel Appointment'}
+                  </button>
+                )}
               </div>
             </div>
           </div>

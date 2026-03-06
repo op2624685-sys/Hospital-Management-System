@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import API from '../api/api';
+import appointmentApi from '../api/appointments';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { toast, ToastContainer, Bounce } from 'react-toastify';
@@ -12,11 +13,13 @@ const AppointmentBooking = () => {
 
   const [doctorName, setDoctorName] = useState(state?.doctorName || '');
   const [doctorId, setDoctorId] = useState(state?.doctorId || null);
+  const [selectedDoctor, setSelectedDoctor] = useState(null);
   const [allDoctors, setAllDoctors] = useState([]);
   const [doctorSuggestions, setDoctorSuggestions] = useState([]);
   const [reason, setReason] = useState('');
   const [appointmentTime, setAppointmentTime] = useState('');
   const [loading, setLoading] = useState(false);
+  const [patientName, setPatientName] = useState('');
   const dropdownRef = useRef(null);
 
   useEffect(() => {
@@ -30,6 +33,20 @@ const AppointmentBooking = () => {
     };
     fetchDoctors();
   }, []);
+
+  useEffect(() => {
+    const fetchPatientProfile = async () => {
+      try {
+        if (user?.roles?.includes('PATIENT')) {
+          const response = await API.get('/patients/profile');
+          setPatientName(response.data?.name || '');
+        }
+      } catch (error) {
+        console.error('Failed to fetch patient profile:', error);
+      }
+    };
+    fetchPatientProfile();
+  }, [user]);
 
   // Close dropdown on outside click
   useEffect(() => {
@@ -46,6 +63,7 @@ const AppointmentBooking = () => {
     const val = e.target.value;
     setDoctorName(val);
     setDoctorId(null);
+    setSelectedDoctor(null);
     if (val.length < 2) { setDoctorSuggestions([]); return; }
     setDoctorSuggestions(
       allDoctors.filter(d => d.name.toLowerCase().includes(val.toLowerCase()))
@@ -55,6 +73,7 @@ const AppointmentBooking = () => {
   const handleSelectDoctor = (doctor) => {
     setDoctorName(doctor.name);
     setDoctorId(doctor.id);
+    setSelectedDoctor(doctor);
     setDoctorSuggestions([]);
   };
 
@@ -63,11 +82,12 @@ const AppointmentBooking = () => {
     if (!doctorId) { toast.warn('Please select a doctor from the suggestions!'); return; }
     setLoading(true);
     try {
-      const response = await API.post('/patients/appointments', {
+      const response = await appointmentApi.create({
         doctorId,
         patientId: user.id,
         reason,
         appointmentTime,
+        branchId: selectedDoctor?.branch?.id || null,
       });
       toast.success('Appointment booked successfully!');
       setDoctorName(''); setDoctorId(null); setReason(''); setAppointmentTime('');
@@ -370,7 +390,7 @@ const AppointmentBooking = () => {
               <div className="ab-prefill-info">
                 <div className="ab-prefill-name">Dr. {state.doctorName}</div>
                 <div className="ab-prefill-meta">
-                  {[state.speciality, state.department].filter(Boolean).join(' · ')}
+                  {[state.speciality || state.specialization, state.department].filter(Boolean).join(' · ')}
                 </div>
               </div>
               <span className="ab-prefill-badge">Pre-filled</span>
@@ -418,7 +438,7 @@ const AppointmentBooking = () => {
                         </div>
                         <div>
                           <div className="ab-drop-name">Dr. {doctor.name}</div>
-                          <div className="ab-drop-spec">{doctor.speciality || 'General'}</div>
+                          <div className="ab-drop-spec">{doctor.specialization || doctor.speciality || 'General'}</div>
                         </div>
                       </div>
                     ))}
@@ -484,7 +504,7 @@ const AppointmentBooking = () => {
                 <div className="ab-patient-avatar">{initials}</div>
                 <div>
                   <div className="ab-patient-label">Booking as</div>
-                  <div className="ab-patient-name">{user.username || `Patient #${user.id}`}</div>
+                  <div className="ab-patient-name">{patientName || user.username || 'Patient'}</div>
                 </div>
               </div>
             )}

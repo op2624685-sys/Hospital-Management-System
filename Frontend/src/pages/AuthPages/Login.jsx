@@ -29,7 +29,15 @@ const Login = () => {
 
                 toast.success("Login successful!");
                 const userRoles = response.data.roles || [];
-                window.location.href = userRoles.includes("ADMIN") ? "/admin" : "/";
+                if (userRoles.includes("HEADADMIN") || userRoles.includes("ADMIN")) {
+                    window.location.href = "/admin";
+                } else if (userRoles.includes("DOCTOR")) {
+                    window.location.href = "/doctor/appointments";
+                } else if (userRoles.includes("PATIENT")) {
+                    window.location.href = "/my-appointments";
+                } else {
+                    window.location.href = "/";
+                }
 
             }
 

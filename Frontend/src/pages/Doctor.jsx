@@ -23,9 +23,15 @@ const Doctor = () => {
   }, [])
 
   const filtered = doctors.filter(doctor =>
+    {
+      const firstDepartment = Array.isArray(doctor.departments) ? doctor.departments[0] : doctor.department
+      return (
     doctor.name.toLowerCase().includes(search.toLowerCase()) ||
     doctor.speciality?.toLowerCase().includes(search.toLowerCase()) ||
-    doctor.department?.name?.toLowerCase().includes(search.toLowerCase())
+    doctor.specialization?.toLowerCase().includes(search.toLowerCase()) ||
+    firstDepartment?.name?.toLowerCase().includes(search.toLowerCase())
+      )
+    }
   )
 
   return (

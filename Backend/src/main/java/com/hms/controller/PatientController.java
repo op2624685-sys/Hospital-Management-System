@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.PutMapping;
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -40,6 +41,12 @@ public class PatientController {
     @GetMapping("/appointments/check/{appointmentId}")
     public ResponseEntity<AppointmentResponseDto> getAppointmentByAppointmentId(@PathVariable String appointmentId) {
         return ResponseEntity.ok(appointmentService.getAppointmentByAppointmentId(appointmentId));
+    }
+
+    @GetMapping("/appointments")
+    public ResponseEntity<List<AppointmentResponseDto>> getAllAppointmentsOfLoggedInPatient() {
+        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        return ResponseEntity.ok(appointmentService.getAllAppointmentsOfPatient(user.getId()));
     }
 
     @PutMapping("/appointments/{appointmentId}/cancel")

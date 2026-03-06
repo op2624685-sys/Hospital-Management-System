@@ -21,9 +21,16 @@ const Header = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   const [hoveredLink, setHoveredLink] = useState(null);
 
-  const navLinks = hasRole('ADMIN')
-    ? [...baseNavLinks, { to: '/admin', label: 'Admin Panel' }]
-    : baseNavLinks;
+  let navLinks = baseNavLinks;
+  if (hasRole('DOCTOR')) {
+    navLinks = [...navLinks, { to: '/doctor/appointments', label: 'My Appointments' }];
+  }
+  if (hasRole('PATIENT')) {
+    navLinks = [...navLinks, { to: '/my-appointments', label: 'My Appointments' }];
+  }
+  if (hasRole('ADMIN') || hasRole('HEADADMIN')) {
+    navLinks = [...navLinks, { to: '/admin', label: 'Admin Panel' }];
+  }
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20);

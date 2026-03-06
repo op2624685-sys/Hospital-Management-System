@@ -9,6 +9,9 @@ const tagColors = {
 }
 
 const BranchCard = ({ branch, index }) => {
+  const location = branch.location || branch.address?.split(',').slice(-1)[0]?.trim() || 'N/A'
+  const mapUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(branch.address || branch.name)}`
+
   return (
     <>
       <style>{`
@@ -165,15 +168,15 @@ const BranchCard = ({ branch, index }) => {
             </div>
             <div className="info-row">
               <span className="info-label">City</span>
-              <span>{branch.location}</span>
-            </div>
-            <div className="info-row">
-              <span className="info-label">PIN</span>
-              <span>{branch.pincode}</span>
+              <span>{location}</span>
             </div>
             <div className="info-row">
               <Phone size={14} strokeWidth={2} />
-              <span>{branch.contact}</span>
+              <span>{branch.contact || branch.contactNumber}</span>
+            </div>
+            <div className="info-row">
+              <span className="info-label">Mail</span>
+              <span>{branch.email}</span>
             </div>
           </div>
 
@@ -182,10 +185,10 @@ const BranchCard = ({ branch, index }) => {
               <Calendar size={14} />
               Book Appointment
             </button>
-            <button className="btn-secondary">
+            <a className="btn-secondary" href={mapUrl} target="_blank" rel="noreferrer">
               <Navigation size={14} />
               Directions
-            </button>
+            </a>
           </div>
         </div>
       </div>

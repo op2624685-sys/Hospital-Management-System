@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react'
 import { Link } from 'react-router-dom'
-import API from '../api/api'
+import appointmentApi from '../api/appointments'
 
 const statusConfig = {
   PENDING: {
@@ -42,7 +42,7 @@ const CheckAppointment = () => {
     e.preventDefault()
     setLoading(true); setError(null); setAppointment(null)
     try {
-      const res = await API.get(`/patients/appointments/check/${appointmentId}`)
+      const res = await appointmentApi.getByAppointmentId(appointmentId)
       setAppointment(res.data)
       setTimeout(() => resultRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 120)
     } catch {
@@ -611,6 +611,9 @@ const CheckAppointment = () => {
                     </svg>
                     Search Another
                   </button>
+                  <Link className="ck-reset" to={`/appointment/${appointment.appointmentId}`} style={{ marginTop: 8, textDecoration: 'none' }}>
+                    Open Full Details
+                  </Link>
                 </div>
               </div>
             )}
