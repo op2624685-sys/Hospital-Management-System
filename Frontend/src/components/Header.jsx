@@ -32,15 +32,32 @@ const Header = () => {
   const location = useLocation();
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const isHeadAdmin = hasRole('HEADADMIN');
+  const isAdmin = hasRole('ADMIN');
+  const isDoctor = hasRole('DOCTOR');
+  const isPatient = hasRole('PATIENT');
+
   let navLinks = baseNavLinks;
-  if (hasRole('DOCTOR')) {
-    navLinks = [...navLinks, { to: '/doctor/appointments', label: 'My Appointments', icon: CalendarDays }];
-  }
-  if (hasRole('PATIENT')) {
-    navLinks = [...navLinks, { to: '/my-appointments', label: 'My Appointments', icon: CalendarDays }];
-  }
-  if (hasRole('ADMIN') || hasRole('HEADADMIN')) {
-    navLinks = [...navLinks, { to: '/admin', label: 'Admin Panel', icon: LayoutDashboard }];
+  if (isHeadAdmin) {
+    navLinks = [
+      { to: '/', label: 'Home', icon: Activity },
+      { to: '/head-admin', label: 'Head Admin Panel', icon: LayoutDashboard },
+      { to: '/contact', label: 'Contact Us', icon: Phone },
+    ];
+  } else if (isAdmin) {
+    navLinks = [
+      { to: '/', label: 'Home', icon: Activity },
+      { to: '/admin', label: 'Admin Panel', icon: LayoutDashboard },
+      { to: '/contact', label: 'Contact Us', icon: Phone },
+    ];
+  } else if (isDoctor) {
+    navLinks = [
+      { to: '/', label: 'Home', icon: Activity },
+      { to: '/doctor/booked-details', label: 'Booked Details', icon: CalendarDays },
+      { to: '/contact', label: 'Contact Us', icon: Phone },
+    ];
+  } else if (isPatient) {
+    navLinks = [...baseNavLinks, { to: '/my-appointments', label: 'My Appointments', icon: CalendarDays }];
   }
 
   useEffect(() => {

@@ -3,14 +3,18 @@ import API from '../api/api';
 import appointmentApi from '../api/appointments';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { toast, ToastContainer, Bounce } from 'react-toastify';
+import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 const AppointmentBooking = () => {
-  const { user } = useAuth();
+  const { user, isLoggedIn } = useAuth();
   const navigate = useNavigate();
   const { state } = useLocation(); // doctor pre-fill from DoctorCard
 
+  const [branchName, setBranchName] = useState('');
+  const [branchId, setBranchId] = useState(null);
+  const [allBranches, setAllBranches] = useState([]);
+  const [branchSuggestions, setBranchSuggestions] = useState([]);
   const [doctorName, setDoctorName] = useState(state?.doctorName || '');
   const [doctorId, setDoctorId] = useState(state?.doctorId || null);
   const [selectedDoctor, setSelectedDoctor] = useState(null);
@@ -20,18 +24,23 @@ const AppointmentBooking = () => {
   const [appointmentTime, setAppointmentTime] = useState('');
   const [loading, setLoading] = useState(false);
   const [patientName, setPatientName] = useState('');
-  const dropdownRef = useRef(null);
+  const doctorDropdownRef = useRef(null);
+  const branchDropdownRef = useRef(null);
 
   useEffect(() => {
-    const fetchDoctors = async () => {
+    const fetchMeta = async () => {
       try {
-        const response = await API.get('/public/doctors');
-        setAllDoctors(response.data);
+        const [doctorResponse, branchResponse] = await Promise.all([
+          API.get('/public/doctors'),
+          API.get('/public/branches'),
+        ]);
+        setAllDoctors(doctorResponse.data || []);
+        setAllBranches(branchResponse.data || []);
       } catch (error) {
-        console.error('Failed to fetch doctors:', error);
+        console.error('Failed to fetch doctors/branches:', error);
       }
     };
-    fetchDoctors();
+    fetchMeta();
   }, []);
 
   useEffect(() => {
@@ -51,13 +60,44 @@ const AppointmentBooking = () => {
   // Close dropdown on outside click
   useEffect(() => {
     const handler = (e) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+      if (doctorDropdownRef.current && !doctorDropdownRef.current.contains(e.target)) {
         setDoctorSuggestions([]);
+      }
+      if (branchDropdownRef.current && !branchDropdownRef.current.contains(e.target)) {
+        setBranchSuggestions([]);
       }
     };
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
   }, []);
+
+  const handleBranchSearch = (e) => {
+    const val = e.target.value;
+    setBranchName(val);
+    setBranchId(null);
+    setDoctorName('');
+    setDoctorId(null);
+    setSelectedDoctor(null);
+    if (val.length < 2) { setBranchSuggestions([]); return; }
+    setBranchSuggestions(
+      allBranches.filter(b => b.name.toLowerCase().includes(val.toLowerCase()))
+    );
+  };
+
+  const handleSelectBranch = (branch) => {
+    setBranchName(branch.name);
+    setBranchId(branch.id);
+    setBranchSuggestions([]);
+  };
+
+  const handleChangeBranch = () => {
+    setBranchName('');
+    setBranchId(null);
+    setBranchSuggestions([]);
+    setDoctorName('');
+    setDoctorId(null);
+    setSelectedDoctor(null);
+  };
 
   const handleDoctorSearch = (e) => {
     const val = e.target.value;
@@ -65,20 +105,34 @@ const AppointmentBooking = () => {
     setDoctorId(null);
     setSelectedDoctor(null);
     if (val.length < 2) { setDoctorSuggestions([]); return; }
-    setDoctorSuggestions(
-      allDoctors.filter(d => d.name.toLowerCase().includes(val.toLowerCase()))
-    );
+    const filteredDoctors = allDoctors.filter(d => {
+      const matchesName = d.name.toLowerCase().includes(val.toLowerCase());
+      if (!matchesName) return false;
+      if (!branchId) return true;
+      return d?.branch?.id === branchId;
+    });
+    setDoctorSuggestions(filteredDoctors);
   };
 
   const handleSelectDoctor = (doctor) => {
     setDoctorName(doctor.name);
     setDoctorId(doctor.id);
     setSelectedDoctor(doctor);
+    if (!branchId && doctor?.branch?.id && doctor?.branch?.name) {
+      setBranchId(doctor.branch.id);
+      setBranchName(doctor.branch.name);
+    }
     setDoctorSuggestions([]);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!isLoggedIn || !user?.id) {
+      toast.info('Please login first to book an appointment.');
+      setTimeout(() => navigate('/login'), 900);
+      return;
+    }
+    if (!branchId) { toast.warn('Please select a branch from the suggestions!'); return; }
     if (!doctorId) { toast.warn('Please select a doctor from the suggestions!'); return; }
     setLoading(true);
     try {
@@ -87,10 +141,12 @@ const AppointmentBooking = () => {
         patientId: user.id,
         reason,
         appointmentTime,
-        branchId: selectedDoctor?.branch?.id || null,
+        branchId,
       });
       toast.success('Appointment booked successfully!');
-      setDoctorName(''); setDoctorId(null); setReason(''); setAppointmentTime('');
+      setBranchName(''); setBranchId(null);
+      setDoctorName(''); setDoctorId(null); setSelectedDoctor(null);
+      setReason(''); setAppointmentTime('');
       navigate(`/appointment/${response.data.appointmentId}`);
     } catch (error) {
       toast.error('Booking failed. Please try again.');
@@ -268,6 +324,23 @@ const AppointmentBooking = () => {
           background: #22c55e;
           display: flex; align-items: center; justify-content: center;
         }
+        .ab-change-btn {
+          position: absolute;
+          right: 42px;
+          top: 50%;
+          transform: translateY(-50%);
+          border: 1px solid #bfdbfe;
+          background: #eff6ff;
+          color: #1d4ed8;
+          border-radius: 999px;
+          padding: 2px 8px;
+          font-size: 10px;
+          font-weight: 700;
+          letter-spacing: .06em;
+          text-transform: uppercase;
+          cursor: pointer;
+        }
+        .ab-change-btn:hover { background: #dbeafe; }
 
         /* dropdown */
         .ab-dropdown {
@@ -401,7 +474,59 @@ const AppointmentBooking = () => {
           <form className="ab-form" onSubmit={handleSubmit}>
 
             {/* Doctor search */}
-            <div className="ab-field" ref={dropdownRef}>
+            <div className="ab-field" ref={branchDropdownRef}>
+              <label className="ab-label">
+                <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                    d="M3 21h18M5 21V7l8-4 6 4v14M9 9h.01M9 13h.01M9 17h.01M13 9h.01M13 13h.01M13 17h.01" />
+                </svg>
+                Branch
+              </label>
+              <div className="ab-input-wrap">
+                <svg className="ab-input-icon" width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                    d="M3 21h18M5 21V7l8-4 6 4v14" />
+                </svg>
+                <input
+                  className="ab-input"
+                  type="text"
+                  value={branchName}
+                  onChange={handleBranchSearch}
+                  placeholder={branchId ? "Branch selected" : "Search branch by name..."}
+                  readOnly={Boolean(branchId)}
+                />
+                {branchId && (
+                  <button type="button" className="ab-change-btn" onClick={handleChangeBranch}>
+                    Change
+                  </button>
+                )}
+                {branchId && (
+                  <div className="ab-check">
+                    <svg width="10" height="10" fill="none" stroke="#fff" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                    </svg>
+                  </div>
+                )}
+                {branchSuggestions.length > 0 && (
+                  <div className="ab-dropdown">
+                    {branchSuggestions.map(branch => (
+                      <div key={branch.id} className="ab-drop-item" onClick={() => handleSelectBranch(branch)}>
+                        <div className="ab-drop-avatar">
+                          {branch.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)}
+                        </div>
+                        <div>
+                          <div className="ab-drop-name">{branch.name}</div>
+                          <div className="ab-drop-spec">{branch.address}</div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Doctor search */}
+            <div className="ab-field" ref={doctorDropdownRef}>
               <label className="ab-label">
                 <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
@@ -524,8 +649,6 @@ const AppointmentBooking = () => {
             </button>
           </form>
         </div>
-
-        <ToastContainer position="top-right" autoClose={3000} theme="light" transition={Bounce} />
       </div>
     </>
   );

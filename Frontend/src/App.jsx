@@ -21,22 +21,44 @@ import Pediatrics from "./components/Pediatrics";
 import Radiology from "./components/Radiology";
 import CheckAppointments from "./pages/CheckAppointments";
 import AdminPanel from "./pages/AdminPanel";
+import HeadAdminPanel from "./pages/HeadAdminPanel";
 import ProtectedRoute from "./components/ProtectedRoute";
-import DoctorAppointments from "./pages/DoctorAppointments";
+import DoctorBookedDetails from "./pages/DoctorBookedDetails";
 import MyAppointments from "./pages/MyAppointments";
+import RoleBlockedRoute from "./components/RoleBlockedRoute";
 
 const App = () => {
   return (
     <div>
       <Routes>
         <Route path="/" element={<Home />} />
-        <Route path="/appointment" element={<Appointment />} />
-        <Route path="/appointment/check" element={<CheckAppointments />} />
-        <Route path="/appointment/:appointmentId" element={<AppointmentDetails />} />
+        <Route path="/appointment" element={
+          <RoleBlockedRoute blockedRoles={["DOCTOR", "ADMIN", "HEADADMIN"]}>
+            <Appointment />
+          </RoleBlockedRoute>
+        } />
+        <Route path="/appointment/check" element={
+          <RoleBlockedRoute blockedRoles={["DOCTOR", "ADMIN", "HEADADMIN"]}>
+            <CheckAppointments />
+          </RoleBlockedRoute>
+        } />
+        <Route path="/appointment/:appointmentId" element={
+          <RoleBlockedRoute blockedRoles={["DOCTOR", "ADMIN", "HEADADMIN"]}>
+            <AppointmentDetails />
+          </RoleBlockedRoute>
+        } />
         <Route path="/doctors" element={<Doctor />} />
         <Route path="/branches" element={<Branch />} />
-        <Route path="/services" element={<Services />} />
-        <Route path="/about" element={<About />} />
+        <Route path="/services" element={
+          <RoleBlockedRoute blockedRoles={["DOCTOR", "ADMIN", "HEADADMIN"]}>
+            <Services />
+          </RoleBlockedRoute>
+        } />
+        <Route path="/about" element={
+          <RoleBlockedRoute blockedRoles={["DOCTOR", "ADMIN", "HEADADMIN"]}>
+            <About />
+          </RoleBlockedRoute>
+        } />
         <Route path="/contact" element={<Contact />} />
 
         <Route path="/departments" element={<Department />} />
@@ -60,17 +82,33 @@ const App = () => {
           }
         />
         <Route
+          path="/head-admin"
+          element={
+            <ProtectedRoute role="HEADADMIN">
+              <HeadAdminPanel />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/doctor/booked-details"
+          element={
+            <ProtectedRoute role="DOCTOR">
+              <DoctorBookedDetails />
+            </ProtectedRoute>
+          }
+        />
+        <Route
           path="/doctor/appointments"
           element={
             <ProtectedRoute role="DOCTOR">
-              <DoctorAppointments />
+              <DoctorBookedDetails />
             </ProtectedRoute>
           }
         />
         <Route
           path="/my-appointments"
           element={
-            <ProtectedRoute role="PATIENT">
+            <ProtectedRoute role="PATIENT" redirectTo="/">
               <MyAppointments />
             </ProtectedRoute>
           }
