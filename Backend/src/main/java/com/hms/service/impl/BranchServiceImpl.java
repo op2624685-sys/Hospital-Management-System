@@ -23,7 +23,11 @@ public class BranchServiceImpl implements BranchService {
 
     @Override
     public BranchResponseDto createNewBranch(BranchRequestDto branchRequestDto) {
-        Branch branch = modelMapper.map(branchRequestDto, Branch.class);
+        Branch branch = new Branch();
+        branch.setName(branchRequestDto.getBranchName());
+        branch.setAddress(branchRequestDto.getBranchAddress());
+        branch.setContactNumber(branchRequestDto.getBranchContactNumber());
+        branch.setEmail(branchRequestDto.getBranchEmail());
         Branch savedBranch = branchRepository.save(branch);
         return modelMapper.map(savedBranch, BranchResponseDto.class);
     }
