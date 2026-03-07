@@ -21,5 +21,6 @@ public interface PatientRepository extends JpaRepository<Patient, Long> {
     @Query(value = "select * from patient", nativeQuery = true)
     Page<Patient> findAllPatients(Pageable pageable);
 
+    List<Patient> findByBranch_Id(Long branchId);
 
 }

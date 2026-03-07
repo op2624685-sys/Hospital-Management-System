@@ -11,4 +11,6 @@ import com.hms.entity.Doctor;
 public interface DoctorRepository extends JpaRepository<Doctor, Long> {
 
     List<Doctor> findByName(String name);
+
+    List<Doctor> findByBranch_Id(Long branchId);
 }
