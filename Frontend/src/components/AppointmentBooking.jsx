@@ -11,8 +11,8 @@ const AppointmentBooking = () => {
   const navigate = useNavigate();
   const { state } = useLocation(); // doctor pre-fill from DoctorCard
 
-  const [branchName, setBranchName] = useState('');
-  const [branchId, setBranchId] = useState(null);
+  const [branchName, setBranchName] = useState(state?.branchName || '');
+  const [branchId, setBranchId] = useState(state?.branchId || null);
   const [allBranches, setAllBranches] = useState([]);
   const [branchSuggestions, setBranchSuggestions] = useState([]);
   const [doctorName, setDoctorName] = useState(state?.doctorName || '');
@@ -34,14 +34,19 @@ const AppointmentBooking = () => {
           API.get('/public/doctors'),
           API.get('/public/branches'),
         ]);
-        setAllDoctors(doctorResponse.data || []);
+        const doctors = doctorResponse.data || [];
+        setAllDoctors(doctors);
         setAllBranches(branchResponse.data || []);
+        if (state?.doctorId) {
+          const preselectedDoctor = doctors.find(d => d.id === state.doctorId) || null;
+          setSelectedDoctor(preselectedDoctor);
+        }
       } catch (error) {
         console.error('Failed to fetch doctors/branches:', error);
       }
     };
     fetchMeta();
-  }, []);
+  }, [state]);
 
   useEffect(() => {
     const fetchPatientProfile = async () => {

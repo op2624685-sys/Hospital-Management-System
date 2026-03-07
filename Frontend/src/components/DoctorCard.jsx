@@ -44,6 +44,8 @@ const DoctorCard = ({ doctor, index = 0 }) => {
         doctorName: doctor.name,
         speciality: specialization || '',
         department: firstDepartment?.name || '',
+        branchId: doctor?.branch?.id || null,
+        branchName: doctor?.branch?.name || '',
       }
     })
   }
