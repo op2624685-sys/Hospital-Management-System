@@ -3,6 +3,8 @@ import Header from '../components/Header'
 import AppointmentBooking from '../components/AppointmentBooking'
 import { Link } from 'react-router-dom'
 import { gsap } from 'gsap'
+import { ToastContainer, Bounce } from 'react-toastify'
+import 'react-toastify/dist/ReactToastify.css'
 
 const Appointment = () => {
 
@@ -322,6 +324,13 @@ const Appointment = () => {
             <AppointmentBooking />
           </div>
         </div>
+
+        <ToastContainer
+          position="top-right"
+          autoClose={3000}
+          theme="light"
+          transition={Bounce}
+        />
       </div>
     </>
   )

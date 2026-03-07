@@ -43,10 +43,12 @@ const Login = () => {
         toast.success('Login successful');
         const userRoles = response.data.roles || [];
 
-        if (userRoles.includes('HEADADMIN') || userRoles.includes('ADMIN')) {
+        if (userRoles.includes('HEADADMIN')) {
+          navigate('/head-admin');
+        } else if (userRoles.includes('ADMIN')) {
           navigate('/admin');
         } else if (userRoles.includes('DOCTOR')) {
-          navigate('/doctor/appointments');
+          navigate('/doctor/booked-details');
         } else if (userRoles.includes('PATIENT')) {
           navigate('/my-appointments');
         } else {
