@@ -191,6 +191,23 @@ const DoctorCard = ({ doctor, index = 0 }) => {
           justify-content: center;
         }
         .dc-dept-row svg { color: var(--dc-accent); flex-shrink: 0; }
+        .dc-meta-row {
+          display: flex;
+          align-items: center;
+          justify-content: flex-end;
+          gap: 10px;
+          font-size: 11px;
+          color: #94a3b8;
+          margin-top: -2px;
+        }
+        .dc-branch {
+          color: #64748b;
+          font-weight: 500;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+          max-width: 65%;
+        }
         .dc-divider { height: 1px; background: #f0ece6; }
         .dc-btn {
           width: 100%;
@@ -258,6 +275,10 @@ const DoctorCard = ({ doctor, index = 0 }) => {
                   d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-2 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
               </svg>
               <span>{firstDepartment?.name || 'General Department'}</span>
+            </div>
+
+            <div className="dc-meta-row">
+              <span className="dc-branch">{doctor?.branch?.name || 'Branch N/A'}</span>
             </div>
 
             <div className="dc-divider" />
