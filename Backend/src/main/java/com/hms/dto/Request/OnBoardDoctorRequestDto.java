@@ -1,5 +1,7 @@
 package com.hms.dto.Request;
 
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -9,9 +11,19 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class OnBoardDoctorRequestDto {
 
-    private Long userId;
+    @NotBlank(message = "username is required")
+    private String username;
+
+    @NotBlank(message = "name is required")
     private String name;
+
+    @NotBlank(message = "specialization is required")
     private String specialization;
+
+    @NotBlank(message = "email is required")
+    @Email(message = "email must be valid")
     private String email;
-    private Long branchId;
+
+    @NotBlank(message = "branchName is required")
+    private String branchName;
 }

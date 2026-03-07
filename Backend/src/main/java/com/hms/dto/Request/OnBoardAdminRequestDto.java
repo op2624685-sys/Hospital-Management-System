@@ -2,7 +2,6 @@ package com.hms.dto.Request;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -12,8 +11,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class OnBoardAdminRequestDto {
 
-    @NotNull(message = "userId is required")
-    private Long userId;
+    @NotBlank(message = "username is required")
+    private String username;
 
     @NotBlank(message = "name is required")
     private String name;
@@ -22,6 +21,6 @@ public class OnBoardAdminRequestDto {
     @Email(message = "email must be valid")
     private String email;
 
-    @NotNull(message = "branchId is required")
-    private Long branchId;
+    @NotBlank(message = "branchName is required")
+    private String branchName;
 }
