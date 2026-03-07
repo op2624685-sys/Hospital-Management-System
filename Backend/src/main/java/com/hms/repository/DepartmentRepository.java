@@ -10,4 +10,6 @@ public interface DepartmentRepository extends JpaRepository<Department, Long> {
 
     boolean existsByNameAndBranch_Id(String name, Long branchId);
 
+    java.util.List<Department> findByBranch_Id(Long branchId);
+
 }
