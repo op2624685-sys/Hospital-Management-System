@@ -227,6 +227,7 @@ const Appointment = () => {
 
         /* ── Right ── */
         .ap-right { flex-shrink: 0; width: 460px; }
+        .ap-right { margin-top: 22px; }
 
         /* ── Scrollbar ── */
         ::-webkit-scrollbar { width: 6px; }

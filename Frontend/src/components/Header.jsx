@@ -102,6 +102,7 @@ const Header = () => {
           </nav>
 
           <div className='flex items-center gap-3'>
+            <div className='hidden lg:flex items-center gap-3'>
             {isLoggedIn ? (
               <button
                 onClick={logout}
@@ -117,6 +118,7 @@ const Header = () => {
                 <span>Login</span>
               </RouterLink>
             )}
+            </div>
 
             <button
               onClick={() => setMenuOpen(!menuOpen)}
