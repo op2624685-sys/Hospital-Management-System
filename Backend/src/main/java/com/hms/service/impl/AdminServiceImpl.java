@@ -1,5 +1,6 @@
 package com.hms.service.impl;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -62,12 +63,16 @@ public class AdminServiceImpl implements AdminService {
 
     @Override
     public AdminResponseDto onBoardNewAdmin(OnBoardAdminRequestDto onBoardAdminRequestDto) {
-        User user = userRepository.findById(onBoardAdminRequestDto.getUserId()).orElseThrow(() -> new RuntimeException("User not found with id: " + onBoardAdminRequestDto.getUserId()));
-        Branch branch = branchRepository.findById(onBoardAdminRequestDto.getBranchId()).orElseThrow(() -> new RuntimeException("Branch not found with id: " + onBoardAdminRequestDto.getBranchId()));
+        String username = onBoardAdminRequestDto.getUsername() == null ? "" : onBoardAdminRequestDto.getUsername().trim();
+        String branchName = onBoardAdminRequestDto.getBranchName() == null ? "" : onBoardAdminRequestDto.getBranchName().trim();
+
+        User user = userRepository.findByUsernameIgnoreCase(username)
+                .orElseThrow(() -> new RuntimeException("User not found with username: " + username));
+        Branch branch = resolveBranchByName(branchName);
         if (adminRepository.existsByEmail(onBoardAdminRequestDto.getEmail())) {
             throw new RuntimeException("Admin already exists with email: " + onBoardAdminRequestDto.getEmail());
         }
-        if (adminRepository.existsByBranch_Id(onBoardAdminRequestDto.getBranchId())) {
+        if (adminRepository.existsByBranch_Id(branch.getId())) {
             throw new RuntimeException("This branch already has an admin assigned");
         }
         Admin admin = Admin.builder()
@@ -76,10 +81,20 @@ public class AdminServiceImpl implements AdminService {
                 .branch(branch)
                 .user(user)
                 .build();
-        user.setRoles(Set.of(RoleType.ADMIN));
+        user.setRoles(new HashSet<>(Set.of(RoleType.ADMIN)));
         userRepository.save(user);
         Admin savedAdmin = adminRepository.save(admin);
         return mapToAdminResponseDto(savedAdmin);
+    }
+
+    private Branch resolveBranchByName(String branchName) {
+        return branchRepository.findByNameIgnoreCase(branchName).orElseGet(() -> {
+            List<Branch> partialMatches = branchRepository.findByNameContainingIgnoreCase(branchName);
+            if (partialMatches.size() == 1) {
+                return partialMatches.get(0);
+            }
+            throw new RuntimeException("Branch not found with name: " + branchName);
+        });
     }
 
     private AdminDto mapToAdminDto(Admin admin) {

@@ -1,5 +1,6 @@
 package com.hms.service.impl;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import org.modelmapper.ModelMapper;
@@ -65,11 +66,14 @@ public class DoctorServiceImpl implements DoctorService {
     @Transactional
     @PreAuthorize("hasAnyRole('HEADADMIN', 'ADMIN')")
     public DoctorResponseDto onBoardNewDoctor(OnBoardDoctorRequestDto onBoardDoctorRequestDto) {
-        User user = userRepository.findById(onBoardDoctorRequestDto.getUserId()).orElseThrow(() -> new RuntimeException("User not found with id: " + onBoardDoctorRequestDto.getUserId()));
-        Branch branch = branchRepository.findById(onBoardDoctorRequestDto.getBranchId())
-                .orElseThrow(() -> new RuntimeException("Branch not found with id: " + onBoardDoctorRequestDto.getBranchId()));
+        String username = onBoardDoctorRequestDto.getUsername() == null ? "" : onBoardDoctorRequestDto.getUsername().trim();
+        String branchName = onBoardDoctorRequestDto.getBranchName() == null ? "" : onBoardDoctorRequestDto.getBranchName().trim();
 
-        if (doctorRepository.existsById(onBoardDoctorRequestDto.getUserId())) {
+        User user = userRepository.findByUsernameIgnoreCase(username)
+                .orElseThrow(() -> new RuntimeException("User not found with username: " + username));
+        Branch branch = resolveBranchByName(branchName);
+
+        if (doctorRepository.existsById(user.getId())) {
             throw new IllegalArgumentException("Already a doctor");
         }
 
@@ -81,10 +85,20 @@ public class DoctorServiceImpl implements DoctorService {
                 .user(user)
                 .build();
 
-            user.setRoles(Set.of(RoleType.DOCTOR));
+            user.setRoles(new HashSet<>(Set.of(RoleType.DOCTOR)));
             userRepository.save(user);
 
             return modelMapper.map(doctorRepository.save(doctor), DoctorResponseDto.class);
+    }
+
+    private Branch resolveBranchByName(String branchName) {
+        return branchRepository.findByNameIgnoreCase(branchName).orElseGet(() -> {
+            List<Branch> partialMatches = branchRepository.findByNameContainingIgnoreCase(branchName);
+            if (partialMatches.size() == 1) {
+                return partialMatches.get(0);
+            }
+            throw new RuntimeException("Branch not found with name: " + branchName);
+        });
     }
 
 }

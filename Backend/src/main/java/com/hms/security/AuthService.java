@@ -1,5 +1,6 @@
 package com.hms.security;
 
+import java.util.HashSet;
 import java.util.Set;
 
 // import org.modelmapper.ModelMapper;
@@ -59,7 +60,7 @@ public class AuthService {
         user = User.builder()
             .username(signupRequestDto.getUsername())
             .password(passwordEncoder.encode(signupRequestDto.getPassword()))
-            .roles(Set.of(RoleType.PATIENT))
+            .roles(new HashSet<>(Set.of(RoleType.PATIENT)))
             .build();
         user = userRepository.save(user);
 
