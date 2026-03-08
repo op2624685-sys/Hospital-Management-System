@@ -76,7 +76,7 @@ const Header = () => {
           : 'bg-white/55 backdrop-blur-md py-4'
         }`}>
 
-        <div className='flex justify-between items-center px-10'>
+        <div className='flex justify-between items-center px-4 lg:px-10'>
           <RouterLink to="/" className='group flex items-center gap-2'>
             <div className='w-10 h-10 bg-gradient-to-br from-blue-600 to-cyan-500 rounded-xl flex items-center justify-center shadow-md group-hover:scale-110 transition-transform duration-300'>
               <Activity size={18} className='text-white' />

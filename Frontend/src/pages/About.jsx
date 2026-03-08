@@ -78,7 +78,7 @@ const About = () => {
       {/* ══════════════════════
           HERO
       ══════════════════════ */}
-      <section className='relative pt-40 pb-24 px-20 overflow-hidden'>
+      <section className='relative pt-32 lg:pt-40 pb-16 lg:pb-24 px-5 lg:px-20 overflow-hidden'>
         <div className='absolute top-10 right-0 w-96 h-96 rounded-full blur-3xl opacity-20'
           style={{ background: 'radial-gradient(circle, #a855f7, transparent)' }}></div>
         <div className='absolute bottom-0 left-0 w-72 h-72 rounded-full blur-3xl opacity-15'
@@ -90,8 +90,8 @@ const About = () => {
             Est. 2005 · DELTACARE Hospital
           </span>
 
-          <h1 className='text-8xl font-black leading-none mb-6' style={{ color: '#fff' }}>
-            About <br />
+          <h1 className='text-5xl lg:text-8xl font-black leading-none mb-6' style={{ color: '#fff' }}>
+            About <br className="hidden lg:block"/>
             <span className='text-transparent bg-clip-text'
               style={{ backgroundImage: 'linear-gradient(135deg, #a78bfa, #e879f9)' }}>
               Our Hospital
@@ -109,8 +109,8 @@ const About = () => {
       {/* ══════════════════════
           STATS BAR
       ══════════════════════ */}
-      <section className='px-20 pb-20'>
-        <div className='grid grid-cols-4 gap-5'>
+      <section className='px-5 lg:px-20 pb-12 lg:pb-20'>
+        <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5'>
           {stats.map((stat, i) => (
             <div key={i}
               className={`${stat.bg} border ${stat.border} rounded-2xl p-6 flex items-center gap-4 hover:-translate-y-1 hover:shadow-lg transition-all duration-300 backdrop-blur-sm`}
@@ -130,8 +130,8 @@ const About = () => {
       {/* ══════════════════════
           MISSION & VISION
       ══════════════════════ */}
-      <section className='px-20 pb-20'>
-        <div className='grid grid-cols-2 gap-6'>
+      <section className='px-5 lg:px-20 pb-12 lg:pb-20'>
+        <div className='grid grid-cols-1 lg:grid-cols-2 gap-6'>
 
           {/* Mission */}
           <div className='relative rounded-3xl p-10 overflow-hidden border border-white/10'
@@ -182,7 +182,7 @@ const About = () => {
       {/* ══════════════════════
           OUR VALUES
       ══════════════════════ */}
-      <section className='px-20 pb-20'>
+      <section className='px-5 lg:px-20 pb-12 lg:pb-20'>
         <div className='text-center mb-12'>
           <span className='inline-flex items-center gap-2 bg-white/10 border border-fuchsia-400/30 text-fuchsia-300 text-xs font-bold px-4 py-2 rounded-full uppercase tracking-widest mb-4'>
             What We Stand For
@@ -196,7 +196,7 @@ const About = () => {
           </h2>
         </div>
 
-        <div className='grid grid-cols-4 gap-5'>
+        <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5'>
           {values.map((value, i) => (
             <div key={i}
               className='group border border-white/10 rounded-2xl p-6 hover:shadow-xl hover:-translate-y-2 transition-all duration-300 cursor-default backdrop-blur-sm'
@@ -214,8 +214,8 @@ const About = () => {
       {/* ══════════════════════
           DOCTORS SECTION
       ══════════════════════ */}
-      <section className='px-20 pb-20'>
-        <div className='flex justify-between items-end mb-12'>
+      <section className='px-5 lg:px-20 pb-12 lg:pb-20'>
+        <div className='flex flex-col sm:flex-row justify-between items-start sm:items-end mb-12 gap-6 sm:gap-0'>
           <div>
             <span className='inline-flex items-center gap-2 bg-rose-500/10 border border-rose-400/25 text-rose-300 text-xs font-bold px-4 py-2 rounded-full uppercase tracking-widest mb-4'>
               Meet The Team
@@ -235,7 +235,7 @@ const About = () => {
           </Link>
         </div>
 
-        <div className='grid grid-cols-3 gap-6'>
+        <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6'>
           {doctors.map((doctor) => (
             <div key={doctor.id}
               className='group border border-white/10 rounded-2xl overflow-hidden hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 backdrop-blur-sm'
@@ -283,9 +283,9 @@ const About = () => {
       {/* ══════════════════════
           STORY SECTION
       ══════════════════════ */}
-      <section className='mx-20 mb-20 border border-white/10 rounded-3xl p-16 backdrop-blur-sm'
+      <section className='mx-5 lg:mx-20 mb-12 lg:mb-20 border border-white/10 rounded-3xl p-8 lg:p-16 backdrop-blur-sm'
         style={{ background: 'rgba(255,255,255,0.05)' }}>
-        <div className='flex gap-16 items-center'>
+        <div className='flex flex-col lg:flex-row gap-12 lg:gap-16 items-start lg:items-center'>
           <div className='flex-1'>
             <span className='inline-flex items-center gap-2 bg-amber-500/10 border border-amber-400/25 text-amber-300 text-xs font-bold px-4 py-2 rounded-full uppercase tracking-widest mb-5'>
               Our Story
@@ -316,7 +316,7 @@ const About = () => {
           </div>
 
           {/* Timeline */}
-          <div className='w-72 flex flex-col gap-6 shrink-0'>
+          <div className='w-full lg:w-72 flex flex-col gap-6 shrink-0'>
             {[
               { year: '2005', label: 'Hospital Founded', color: 'bg-violet-500' },
               { year: '2010', label: 'Expanded to 150 beds', color: 'bg-fuchsia-500' },
