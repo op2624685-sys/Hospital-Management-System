@@ -183,7 +183,7 @@ const Department = () => {
         {/* ══════════════════
             LEFT SIDEBAR
         ══════════════════ */}
-        <div className='absolute left-6 top-1/2 -translate-y-1/2 z-50 flex flex-col items-start gap-3'>
+        <div className='hidden md:flex absolute left-6 top-1/2 -translate-y-1/2 z-50 flex-col items-start gap-3'>
           <p
             ref={counterRef}
             className='text-[10px] font-black tracking-widest mb-1 font-mono'
@@ -234,7 +234,7 @@ const Department = () => {
               className='absolute overflow-hidden'
               style={{
                 top:             84,
-                left:            52,
+                left:            20,  /* adjusted for mobile, original was 52 */
                 right:           20,
                 bottom:          16,
                 borderRadius:    20,
@@ -247,13 +247,13 @@ const Department = () => {
 
               {/* ── Card top strip ── */}
               <div
-                className='flex items-center justify-between px-8 py-3 border-b'
+                className='flex flex-col sm:flex-row sm:items-center justify-between px-4 sm:px-8 py-3 border-b gap-3 sm:gap-0'
                 style={{
                   borderColor: `${dept.accent}18`,
                   background:  dept.bg,
                 }}>
 
-                <div className='flex items-center gap-4'>
+                <div className='flex items-center gap-3 sm:gap-4'>
                   {/* Number */}
                   <span
                     className='text-4xl font-black leading-none select-none'
