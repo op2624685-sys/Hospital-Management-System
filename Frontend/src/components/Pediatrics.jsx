@@ -40,21 +40,21 @@ const Pediatrics = () => {
   const [active, setActive] = useState(0)
 
   return (
-    <div className='flex h-full'>
+    <div className='flex flex-col md:flex-row h-full overflow-y-auto md:overflow-visible'>
 
-      <div className='flex flex-col w-3/5 p-8 overflow-y-auto'>
-        <div className='mb-8'>
+      <div className='flex flex-col w-full md:w-3/5 p-5 md:p-8 md:overflow-y-auto'>
+        <div className='mb-6 md:mb-8'>
           <span
             className='inline-flex items-center gap-2 text-xs font-black uppercase tracking-widest px-3 py-1.5 rounded-full mb-4'
             style={{ background: `${ACCENT}15`, color: ACCENT }}>
             <span className='w-1.5 h-1.5 rounded-full animate-pulse' style={{ background: ACCENT }} />
             Child & Infant Healthcare
           </span>
-          <h2 className='text-5xl font-black text-gray-900 leading-none mb-4'>
+          <h2 className='text-3xl md:text-5xl font-black text-gray-900 leading-none mb-3 md:mb-4'>
             Pediatrics<br />
             <span style={{ color: ACCENT }}>Department</span>
           </h2>
-          <p className='text-gray-500 leading-relaxed max-w-xl'>
+          <p className='text-sm md:text-base text-gray-500 leading-relaxed max-w-xl'>
             Provides comprehensive medical care for infants, children, and adolescents from birth to 18 years.
             Our pediatric specialists address the unique physical, emotional, and developmental needs of young patients.
           </p>
@@ -70,11 +70,11 @@ const Pediatrics = () => {
           ))}
         </div>
 
-        <div className='rounded-2xl p-6 flex-1' style={{ background: BG, border: `1px solid ${ACCENT}20` }}>
-          <h3 className='font-black text-lg mb-4 flex items-center gap-2' style={{ color: ACCENT }}>
+        <div className='rounded-2xl p-5 md:p-6 flex-1' style={{ background: BG, border: `1px solid ${ACCENT}20` }}>
+          <h3 className='font-black text-base md:text-lg mb-4 flex items-center gap-2' style={{ color: ACCENT }}>
             {sections[active].icon} {sections[active].title}
           </h3>
-          <div className='grid grid-cols-2 gap-3'>
+          <div className='grid grid-cols-1 sm:grid-cols-2 gap-3'>
             {sections[active].items.map((item, j) => (
               <div key={j} className='flex items-start gap-2'>
                 <div className='w-5 h-5 rounded-lg flex items-center justify-center shrink-0 mt-0.5' style={{ background: `${ACCENT}20` }}>
@@ -87,9 +87,9 @@ const Pediatrics = () => {
         </div>
       </div>
 
-      <div className='w-2/5 flex flex-col p-6 gap-5' style={{ background: BG, borderLeft: `1px solid ${ACCENT}15` }}>
+      <div className='w-full md:w-2/5 flex flex-col p-5 md:p-6 gap-5 bg-white md:bg-transparent' style={{ borderLeft: `1px solid ${ACCENT}15` }}>
 
-        <div className='rounded-2xl overflow-hidden shadow-md' style={{ height: 220 }}>
+        <div className='rounded-2xl overflow-hidden shadow-md h-48 md:h-56'>
           <img
             src="https://images.unsplash.com/photo-1666214280557-f1b5022eb634?q=80&w=687&auto=format&fit=crop"
             alt="Pediatrics Department"

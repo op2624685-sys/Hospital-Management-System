@@ -40,24 +40,24 @@ const EmergencyDepartment = () => {
   const [active, setActive] = useState(0)
 
   return (
-    <div className='flex h-full' style={{ fontFamily: 'system-ui, sans-serif' }}>
+    <div className='flex flex-col md:flex-row h-full overflow-y-auto md:overflow-visible' style={{ fontFamily: 'system-ui, sans-serif' }}>
 
       {/* ── Left Panel ── */}
-      <div className='flex flex-col w-3/5 p-8 overflow-y-auto'>
+      <div className='flex flex-col w-full md:w-3/5 p-5 md:p-8 md:overflow-y-auto'>
 
         {/* Hero */}
-        <div className='mb-8'>
+        <div className='mb-6 md:mb-8'>
           <span
             className='inline-flex items-center gap-2 text-xs font-black uppercase tracking-widest px-3 py-1.5 rounded-full mb-4'
             style={{ background: `${ACCENT}15`, color: ACCENT }}>
             <span className='w-1.5 h-1.5 rounded-full animate-pulse' style={{ background: ACCENT }} />
             24/7 Emergency Care
           </span>
-          <h2 className='text-5xl font-black text-gray-900 leading-none mb-4'>
+          <h2 className='text-3xl md:text-5xl font-black text-gray-900 leading-none mb-3 md:mb-4'>
             Emergency<br />
             <span style={{ color: ACCENT }}>Department</span>
           </h2>
-          <p className='text-gray-500 leading-relaxed max-w-xl'>
+          <p className='text-sm md:text-base text-gray-500 leading-relaxed max-w-xl'>
             Provides immediate medical care for acute illnesses, injuries, and life-threatening conditions.
             Operates 24/7 with physicians, nurses, and trauma specialists trained in rapid assessment and stabilization.
           </p>
@@ -81,14 +81,14 @@ const EmergencyDepartment = () => {
 
         {/* Active section content */}
         <div
-          className='rounded-2xl p-6 flex-1'
+          className='rounded-2xl p-5 md:p-6 flex-1'
           style={{ background: BG, border: `1px solid ${ACCENT}20` }}>
           <h3
-            className='font-black text-lg mb-4 flex items-center gap-2'
+            className='font-black text-base md:text-lg mb-4 flex items-center gap-2'
             style={{ color: ACCENT }}>
             {sections[active].icon} {sections[active].title}
           </h3>
-          <div className='grid grid-cols-2 gap-3'>
+          <div className='grid grid-cols-1 sm:grid-cols-2 gap-3'>
             {sections[active].items.map((item, j) => (
               <div key={j} className='flex items-start gap-2'>
                 <div
@@ -105,11 +105,11 @@ const EmergencyDepartment = () => {
 
       {/* ── Right Panel ── */}
       <div
-        className='w-2/5 flex flex-col p-6 gap-5'
-        style={{ background: BG, borderLeft: `1px solid ${ACCENT}15` }}>
+        className='w-full md:w-2/5 flex flex-col p-5 md:p-6 gap-5 bg-white md:bg-transparent'
+        style={{ borderLeft: `1px solid ${ACCENT}15` }}>
 
         {/* Image */}
-        <div className='rounded-2xl overflow-hidden shadow-md' style={{ height: 220 }}>
+        <div className='rounded-2xl overflow-hidden shadow-md h-48 md:h-56'>
           <img
             src="https://images.unsplash.com/photo-1712215544003-af10130f8eb3?q=80&w=687&auto=format&fit=crop"
             alt="Emergency Department"
