@@ -26,10 +26,12 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import DoctorBookedDetails from "./pages/DoctorBookedDetails";
 import MyAppointments from "./pages/MyAppointments";
 import RoleBlockedRoute from "./components/RoleBlockedRoute";
+import GlobalBackground from "./components/GlobalBackground";
 
 const App = () => {
   return (
     <div>
+      <GlobalBackground />
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/appointment" element={
