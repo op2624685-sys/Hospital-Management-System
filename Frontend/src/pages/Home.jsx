@@ -4,6 +4,7 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import Header from '../components/Header';
 import { Link } from 'react-router-dom';
 import { Hospital } from 'lucide-react';
+import Doctor3D from '../components/Doctor3D';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -48,11 +49,7 @@ const Home = () => {
         .fromTo(paraRef.current,         { opacity: 0, y: 30 },   { opacity: 1, y: 0, duration: 0.6 }, '-=0.4')
         .fromTo(btnsRef.current.children,{ opacity: 0, y: 20, scale: 0.9 }, { opacity: 1, y: 0, scale: 1, duration: 0.5, stagger: 0.15 }, '-=0.3')
         .fromTo(statsRef.current.children,{ opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.5, stagger: 0.1 }, '-=0.2')
-        .fromTo(floatingRef.current,     { opacity: 0, scale: 0.8, x: 80 }, { opacity: 1, scale: 1, x: 0, duration: 0.9, ease: 'back.out(1.7)' }, '-=0.8');
-
-      gsap.to(floatingRef.current, {
-        y: -15, duration: 2.5, ease: 'sine.inOut', yoyo: true, repeat: -1, delay: 1.5
-      });
+        .fromTo(floatingRef.current,     { opacity: 0, scale: 0.95 }, { opacity: 1, scale: 1, duration: 1.2, ease: 'power2.out' }, '-=0.8');
 
       gsap.fromTo(servicesRef.current.children,
         { opacity: 0, y: 60, scale: 0.95 },
@@ -103,7 +100,7 @@ const Home = () => {
       {/* ════════════════════════════════
           HERO SECTION
       ════════════════════════════════ */}
-      <section ref={heroRef} className='relative min-h-screen flex items-center overflow-hidden px-20' style={{ zIndex: 1 }}>
+      <section ref={heroRef} className='relative min-h-screen flex flex-col lg:flex-row items-center overflow-hidden px-5 lg:px-20 pt-24 lg:pt-0' style={{ zIndex: 1 }}>
 
         {/* Extra hero-local blobs */}
         <div className='absolute top-20 right-20 w-96 h-96 rounded-full blur-3xl opacity-20 pointer-events-none'
@@ -112,7 +109,7 @@ const Home = () => {
           style={{ background: 'radial-gradient(circle, #e879f9, transparent)' }}></div>
 
         {/* ── Left Content ── */}
-        <div className='relative z-10 w-1/2 pr-10'>
+        <div className='relative z-10 w-full lg:w-1/2 lg:pr-10 mb-12 lg:mb-0'>
 
           {/* Tagline */}
           <div ref={taglineRef} className='opacity-0 mb-6'>
@@ -124,10 +121,10 @@ const Home = () => {
           </div>
 
           {/* Heading */}
-          <h1 ref={headingRef} className='opacity-0 text-7xl font-black leading-none mb-3' style={{ color: '#f0f0ff' }}>
+          <h1 ref={headingRef} className='opacity-0 text-5xl lg:text-7xl font-black leading-none mb-3' style={{ color: '#f0f0ff' }}>
             Your Health,
           </h1>
-          <h1 ref={subheadingRef} className='opacity-0 text-7xl font-black leading-none mb-6'>
+          <h1 ref={subheadingRef} className='opacity-0 text-5xl lg:text-7xl font-black leading-none mb-6'>
             <span className='text-transparent bg-clip-text'
               style={{ backgroundImage: 'linear-gradient(135deg, #a78bfa, #e879f9)' }}>
               Our Priority
@@ -163,7 +160,7 @@ const Home = () => {
           </div>
 
           {/* Stats */}
-          <div ref={statsRef} className='flex gap-8'>
+          <div ref={statsRef} className='flex flex-wrap lg:flex-nowrap gap-6 lg:gap-8'>
             {stats.map((stat, i) => (
               <div key={i} className='text-center'>
                 <p className='text-2xl mb-0.5'>{stat.icon}</p>
@@ -174,88 +171,17 @@ const Home = () => {
           </div>
         </div>
 
-        {/* ── Right — Floating Card ── */}
-        <div ref={floatingRef} className='opacity-0 relative w-1/2 flex justify-center items-center'>
-
-          {/* Main card */}
-          <div className='rounded-3xl p-8 w-80'
-            style={{ background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.12)', backdropFilter: 'blur(20px)', boxShadow: '0 24px 64px rgba(0,0,0,0.50), 0 0 0 1px rgba(255,255,255,0.05)' }}>
-
-            {/* Card header */}
-            <div className='flex items-center gap-3 mb-6'>
-              <div className='w-12 h-12 rounded-2xl flex items-center justify-center shadow-lg'
-                style={{ background: 'linear-gradient(135deg, #7c3aed, #a855f7)' }}>
-                <span className='text-white text-xl'><Hospital /></span>
-              </div>
-              <div>
-                <p className='font-black' style={{ color: '#f0f0ff' }}>DELTACARE</p>
-                <p className='text-xs' style={{ color: '#6b7280' }}>Hospital Management</p>
-              </div>
-            </div>
-
-            {/* Appointment preview */}
-            <div className='rounded-2xl p-4 mb-4'
-              style={{ background: 'rgba(167,139,250,0.10)', border: '1px solid rgba(167,139,250,0.15)' }}>
-              <p className='text-xs font-semibold uppercase tracking-wider mb-2' style={{ color: '#a78bfa' }}>
-                Next Appointment
-              </p>
-              <p className='font-bold' style={{ color: '#e5e7eb' }}>Dr. Sarah Johnson</p>
-              <p className='text-xs' style={{ color: '#9ca3af' }}>Cardiology · Today 2:30 PM</p>
-              <div className='flex items-center gap-1 mt-2'>
-                <div className='w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse'></div>
-                <p className='text-xs font-medium' style={{ color: '#4ade80' }}>Confirmed</p>
-              </div>
-            </div>
-
-            {/* Quick stats */}
-            <div className='grid grid-cols-2 gap-3'>
-              <div className='rounded-xl p-3 text-center'
-                style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}>
-                <p className='text-xl font-black' style={{ color: '#a78bfa' }}>50+</p>
-                <p className='text-xs' style={{ color: '#6b7280' }}>Doctors</p>
-              </div>
-              <div className='rounded-xl p-3 text-center'
-                style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}>
-                <p className='text-xl font-black' style={{ color: '#e879f9' }}>24/7</p>
-                <p className='text-xs' style={{ color: '#6b7280' }}>Support</p>
-              </div>
-            </div>
-
-            {/* Ratings */}
-            <div className='flex items-center justify-between mt-4 pt-4'
-              style={{ borderTop: '1px solid rgba(255,255,255,0.08)' }}>
-              <div className='flex -space-x-2'>
-                {['#7c3aed','#a855f7','#e879f9','#f472b6'].map((c, i) => (
-                  <div key={i} className='w-7 h-7 rounded-full'
-                    style={{ background: c, border: '2px solid rgba(255,255,255,0.15)' }}></div>
-                ))}
-              </div>
-              <div className='text-right'>
-                <p className='text-xs font-bold' style={{ color: '#e5e7eb' }}>⭐ 4.9/5</p>
-                <p className='text-xs' style={{ color: '#6b7280' }}>10k+ reviews</p>
-              </div>
-            </div>
-          </div>
-
-          {/* Floating mini cards */}
-          <div className='absolute -top-6 -right-4 rounded-2xl p-3'
-            style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.12)', backdropFilter: 'blur(12px)', boxShadow: '0 8px 24px rgba(0,0,0,0.30)' }}>
-            <p className='text-xs font-bold' style={{ color: '#e5e7eb' }}>🚑 Emergency</p>
-            <p className='text-xs' style={{ color: '#6b7280' }}>Available Now</p>
-          </div>
-
-          <div className='absolute -bottom-4 -left-6 rounded-2xl p-3'
-            style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.12)', backdropFilter: 'blur(12px)', boxShadow: '0 8px 24px rgba(0,0,0,0.30)' }}>
-            <p className='text-xs font-bold' style={{ color: '#e5e7eb' }}>❤️ 10k+ Patients</p>
-            <p className='text-xs' style={{ color: '#6b7280' }}>Trust Us</p>
-          </div>
+        {/* ── Right — 3D Doctor Canvas ── */}
+        <div ref={floatingRef} className='opacity-0 relative w-full lg:w-1/2 h-[50vh] lg:h-[80vh] rounded-3xl overflow-hidden'
+          style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', backdropFilter: 'blur(10px)', boxShadow: 'inset 0 0 40px rgba(0,0,0,0.5)' }}>
+          <Doctor3D />
         </div>
       </section>
 
       {/* ════════════════════════════════
           SERVICES SECTION
       ════════════════════════════════ */}
-      <section className='px-20 py-24 relative' style={{ zIndex: 1, background: 'rgba(255,255,255,0.03)', borderTop: '1px solid rgba(255,255,255,0.06)', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+      <section className='px-5 lg:px-20 py-16 lg:py-24 relative' style={{ zIndex: 1, background: 'rgba(255,255,255,0.03)', borderTop: '1px solid rgba(255,255,255,0.06)', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
         <div className='text-center mb-16'>
           <span className='inline-flex items-center gap-2 text-xs font-bold px-4 py-2 rounded-full uppercase tracking-widest mb-4'
             style={{ background: 'rgba(232,121,249,0.10)', border: '1px solid rgba(232,121,249,0.22)', color: '#e879f9' }}>
@@ -273,7 +199,7 @@ const Home = () => {
           </p>
         </div>
 
-        <div ref={servicesRef} className='grid grid-cols-3 gap-6'>
+        <div ref={servicesRef} className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
           {services.map((service, i) => (
             <div key={i}
               className='group rounded-2xl p-6 hover:-translate-y-2 transition-all duration-300 cursor-pointer overflow-hidden relative'
@@ -299,7 +225,7 @@ const Home = () => {
       {/* ════════════════════════════════
           CTA SECTION
       ════════════════════════════════ */}
-      <section ref={ctaRef} className='opacity-0 mx-20 mb-20 rounded-3xl px-16 py-20 relative overflow-hidden' style={{ zIndex: 1 }}>
+      <section ref={ctaRef} className='opacity-0 mx-5 lg:mx-20 mb-10 lg:mb-20 rounded-3xl px-8 lg:px-16 py-12 lg:py-20 relative overflow-hidden' style={{ zIndex: 1 }}>
 
         {/* CTA background */}
         <div className='absolute inset-0 rounded-3xl'
@@ -311,7 +237,7 @@ const Home = () => {
         <div className='absolute top-1/2 right-1/4 w-32 h-32 rounded-full blur-xl pointer-events-none'
           style={{ background: 'rgba(255,255,255,0.10)' }}></div>
 
-        <div className='relative z-10 flex justify-between items-center'>
+        <div className='relative z-10 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-10 lg:gap-0'>
           <div>
             <span className='inline-flex items-center gap-2 bg-white/20 text-white text-xs font-bold px-4 py-2 rounded-full uppercase tracking-widest mb-6'>
               <span className='w-2 h-2 bg-white rounded-full animate-pulse'></span>
