@@ -140,20 +140,10 @@ const Department = () => {
     <div
       ref={wrapperRef}
       style={{
-        height: `${DEPARTMENTS.length * 130}vh`,
-        background: 'linear-gradient(165deg, #f8fbff 0%, #f8fafc 100%)'
+        height: `${DEPARTMENTS.length * 130}vh`
       }}>
 
       <Header />
-
-      {/* ── Subtle grid overlay ── */}
-      <div className='fixed inset-0 pointer-events-none'
-        style={{
-          zIndex: 0,
-          opacity: 0.18,
-          backgroundImage: 'linear-gradient(rgba(37,99,235,0.14) 1px, transparent 1px), linear-gradient(90deg, rgba(37,99,235,0.14) 1px, transparent 1px)',
-          backgroundSize: '60px 60px'
-        }}></div>
 
       {/* ═══════════════════════════════════
           PINNED VIEWPORT
