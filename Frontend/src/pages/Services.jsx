@@ -97,14 +97,7 @@ const Services = () => {
 
   return (
     <div ref={containerRef}
-      className='min-h-screen overflow-hidden'
-      style={{ background: 'linear-gradient(160deg, #0f0c29 0%, #1a1040 20%, #24243e 45%, #1e1b4b 65%, #2d1b69 80%, #11071f 100%)' }}>
-
-      <div className='fixed inset-0 pointer-events-none z-0'
-        style={{
-          backgroundImage: 'linear-gradient(rgba(255,255,255,.028) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.028) 1px, transparent 1px)',
-          backgroundSize: '56px 56px'
-        }}></div>
+      className='min-h-screen overflow-hidden'>
 
       <Header />
 
