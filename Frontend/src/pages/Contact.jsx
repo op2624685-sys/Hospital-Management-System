@@ -108,7 +108,7 @@ const Contact = () => {
       <Header />
 
       {/* ── Main Content ── */}
-      <div className='min-h-screen flex flex-col items-center justify-center px-6 py-32'>
+      <div className='min-h-screen flex flex-col items-center justify-center px-6 py-24 lg:py-32'>
 
         {/* ── Page Title ── */}
         <div className='text-center mb-14'>
@@ -116,7 +116,7 @@ const Contact = () => {
             <span className='w-2 h-2 bg-violet-400 rounded-full animate-pulse'></span>
             We're Here For You
           </span>
-          <h1 className='text-7xl font-black text-white leading-none mb-4'>
+          <h1 className='text-4xl lg:text-7xl font-black text-white leading-none mb-4'>
             Let{' '}
             <span className='text-transparent bg-clip-text'
               style={{ backgroundImage: 'linear-gradient(135deg, #a78bfa, #06b6d4)' }}>
@@ -129,9 +129,8 @@ const Contact = () => {
           </p>
         </div>
 
-        {/* ── Emergency Banner ── */}
         <div className='w-full max-w-4xl mb-10'>
-          <div className='bg-white/10 backdrop-blur-md border border-red-400/20 rounded-2xl px-6 py-4 flex items-center justify-between shadow-sm'>
+          <div className='bg-white/10 backdrop-blur-md border border-red-400/20 rounded-2xl px-6 py-4 flex flex-col sm:flex-row items-start sm:items-center justify-between shadow-sm gap-4 sm:gap-0'>
             <div className='flex items-center gap-3'>
               <div className='w-10 h-10 bg-red-500/20 rounded-xl flex items-center justify-center text-lg'>
                 🚨
@@ -149,7 +148,7 @@ const Contact = () => {
         </div>
 
         {/* ── Cards Row ── */}
-        <div className='w-full max-w-4xl grid grid-cols-2 gap-8'>
+        <div className='w-full max-w-4xl grid grid-cols-1 lg:grid-cols-2 gap-8'>
 
           {/* ── Left — Contact Info Glassmorphism Card ── */}
           <div className='bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl p-8 flex flex-col gap-6'
