@@ -58,7 +58,7 @@ public class HeadAdminServiceImpl implements HeadAdminService {
                         doctor.getEmail()))
                 .toList();
 
-        List<PatientResponseDto> patients = patientRepository.findByBranch_Id(branchId).stream()
+        List<PatientResponseDto> patients = patientRepository.findByBranches_Id(branchId).stream()
                 .map(patient -> new PatientResponseDto(
                         patient.getId(),
                         patient.getName(),
@@ -131,7 +131,7 @@ public class HeadAdminServiceImpl implements HeadAdminService {
                 adminUsername,
                 (long) admins.size(),
                 (long) doctorRepository.findByBranch_Id(branchId).size(),
-                (long) patientRepository.findByBranch_Id(branchId).size(),
+                (long) patientRepository.findByBranches_Id(branchId).size(),
                 (long) departmentRepository.findByBranch_Id(branchId).size(),
                 appointmentCount,
                 appointmentCount * ESTIMATED_REVENUE_PER_APPOINTMENT);
