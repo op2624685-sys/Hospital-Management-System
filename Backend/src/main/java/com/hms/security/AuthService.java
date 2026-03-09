@@ -9,6 +9,8 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.hms.dto.Request.LoginRequestDto;
 import com.hms.dto.Request.SignupRequestDto;
 import com.hms.dto.Response.LoginResponseDto;
@@ -42,6 +44,7 @@ public class AuthService {
         return new LoginResponseDto(token, user.getId(), user.getRoles());
     }
 
+    @Transactional
     public SignupResponseDto signup(SignupRequestDto signupRequestDto) {
         User user = userRepository.findByUsername(signupRequestDto.getUsername()).orElse(null);
         if (user != null) throw new IllegalArgumentException("User already exists");
