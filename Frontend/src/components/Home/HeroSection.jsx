@@ -110,7 +110,7 @@ const HeroSection = ({ onAnimationsReady }) => {
         </div>
       </div>
 
-      {/* ── Right — 3D Doctor Canvas ── */}
+      {/* ── Right — 3D Model Canvas ── */}
       <div ref={floatingRef} className='opacity-0 relative w-full lg:w-1/2 h-[50vh] lg:h-[80vh] rounded-3xl overflow-hidden'
         style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', backdropFilter: 'blur(10px)', boxShadow: 'inset 0 0 40px rgba(0,0,0,0.5)' }}>
         <Doctor3D />
