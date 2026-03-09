@@ -3,8 +3,12 @@ import API from '../../api/api';
 import { Link, useNavigate } from 'react-router-dom';
 import { CalendarDays, Droplets, Eye, EyeOff, Mail, UserRound } from 'lucide-react';
 import { gsap } from 'gsap';
+import 'react-toastify/dist/ReactToastify.css';
+import { ToastContainer, toast, Zoom } from 'react-toastify';
+import { useAuth } from '../../context/AuthContext';
 
 const Signup = () => {
+  const { login } = useAuth();
   const navigate = useNavigate();
   const shellRef = useRef(null);
 
@@ -52,7 +56,39 @@ const Signup = () => {
     setIsSubmitting(true);
     try {
       await API.post('/auth/signup', formData);
-      navigate('/login');
+
+      // Auto-login with the same credentials
+      const loginResponse = await API.post('/auth/login', {
+        username: formData.username,
+        password: formData.password,
+      });
+
+      if (loginResponse.data.token) {
+        // Store auth data exactly like the Login page does
+        localStorage.setItem('token', loginResponse.data.token);
+        localStorage.setItem('userId', loginResponse.data.userId);
+        localStorage.setItem('roles', JSON.stringify(loginResponse.data.roles));
+
+        // Update global auth context
+        login(loginResponse.data);
+
+        toast.success('Account created successfully!');
+
+        // Redirect based on role (new users will typically be PATIENT)
+        const userRoles = loginResponse.data.roles || [];
+
+        if (userRoles.includes('HEADADMIN')) {
+          navigate('/head-admin');
+        } else if (userRoles.includes('ADMIN')) {
+          navigate('/admin');
+        } else if (userRoles.includes('DOCTOR')) {
+          navigate('/doctor/booked-details');
+        } else if (userRoles.includes('PATIENT')) {
+          navigate('/my-appointments');
+        } else {
+          navigate('/');
+        }
+      }
     } catch (err) {
       setError(err?.response?.data?.message || 'Signup failed. Please verify the details and retry.');
     } finally {
@@ -153,6 +189,20 @@ const Signup = () => {
           </div>
         </div>
       </section>
+
+      <ToastContainer
+        position="top-right"
+        autoClose={3500}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+        transition={Zoom}
+      />
     </div>
   );
 };
