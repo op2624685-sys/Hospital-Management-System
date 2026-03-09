@@ -8,6 +8,9 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
@@ -49,8 +52,13 @@ public class Branch {
     @OneToMany(mappedBy = "branch")
     private List<Doctor> doctors = new ArrayList<>();
 
-    @OneToMany(mappedBy = "branch")
-    private List<Patient> patients = new ArrayList<>();
+    @ManyToMany
+    @JoinTable(
+        name = "branch_patients",
+        joinColumns = @JoinColumn(name = "branch_id"),
+        inverseJoinColumns = @JoinColumn(name = "patient_id")
+    )
+    private List<Patient> patients;
 
     @OneToMany(mappedBy = "branch")
     private List<Appointment> appointments = new ArrayList<>();
