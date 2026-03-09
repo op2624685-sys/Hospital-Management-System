@@ -1,5 +1,6 @@
 import React from 'react'
 import { MapPin, Phone, Navigation, Calendar } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
 
 const tagColors = {
   Flagship: 'bg-amber-100 text-amber-700',
@@ -9,8 +10,18 @@ const tagColors = {
 }
 
 const BranchCard = ({ branch, index }) => {
+  const navigate = useNavigate()
   const location = branch.location || branch.address?.split(',').slice(-1)[0]?.trim() || 'N/A'
   const mapUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(branch.address || branch.name)}`
+
+  const handleBookAppointment = () => {
+    navigate('/appointment', {
+      state: {
+        branchName: branch.name,
+        branchId: branch.id
+      }
+    })
+  }
 
   return (
     <>
@@ -181,7 +192,7 @@ const BranchCard = ({ branch, index }) => {
           </div>
 
           <div className="card-actions">
-            <button className="btn-primary">
+            <button className="btn-primary" onClick={handleBookAppointment}>
               <Calendar size={14} />
               Book Appointment
             </button>
