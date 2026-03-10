@@ -22,3 +22,41 @@ spring:
                     auth: true
                     starttls:
                         enable: true
+
+# Swagger/OpenAPI Configuration
+springdoc:
+    swagger-ui:
+        path: /swagger-ui.html
+        enabled: true
+        operations-sorter: method
+        tags-sorter: alpha
+    api-docs:
+        path: /v3/api-docs
+
+# Resilience4j Rate Limiter Configuration
+resilience4j:
+    ratelimiter:
+        configs:
+            default:
+                limitRefreshPeriod: 1m
+                limitForPeriod: 100
+                timeoutDuration: 1s
+        instances:
+            globalRateLimiter:
+                baseConfig: default
+            authRateLimiter:
+                limitRefreshPeriod: 1m
+                limitForPeriod: 10
+                timeoutDuration: 1s
+            userRateLimiter:
+                limitRefreshPeriod: 1m
+                limitForPeriod: 50
+                timeoutDuration: 1s
+            readOnlyRateLimiter:
+                limitRefreshPeriod: 1m
+                limitForPeriod: 200
+                timeoutDuration: 1s
+            adminRateLimiter:
+                limitRefreshPeriod: 1m
+                limitForPeriod: 30
+                timeoutDuration: 1s

@@ -51,6 +51,31 @@
       		<artifactId>spring-boot-starter-oauth2-client</artifactId>
     	</dependency>
 
+		<!-- Swagger/SpringDoc OpenAPI for API Documentation -->
+		<dependency>
+			<groupId>org.springdoc</groupId>
+			<artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+			<version>2.3.0</version>
+		</dependency>
+
+		<!-- Resilience4j for Rate Limiting -->
+		<dependency>
+			<groupId>io.github.resilience4j</groupId>
+			<artifactId>resilience4j-spring-boot3</artifactId>
+			<version>2.1.0</version>
+		</dependency>
+		<dependency>
+			<groupId>io.github.resilience4j</groupId>
+			<artifactId>resilience4j-ratelimiter</artifactId>
+			<version>2.1.0</version>
+		</dependency>
+
+		<!-- AOP for Rate Limiting Aspect -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-aop</artifactId>
+		</dependency>
+
 		<dependency>
     		<groupId>io.jsonwebtoken</groupId>
     		<artifactId>jjwt-api</artifactId>
