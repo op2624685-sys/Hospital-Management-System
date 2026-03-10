@@ -95,16 +95,25 @@ public class AuthService {
 
     @Transactional
     public PasswordResetResponseDto forgotPassword(ForgotPasswordRequestDto forgotPasswordRequestDto) {
-        String email = forgotPasswordRequestDto.getEmail();
+        String username = forgotPasswordRequestDto.getUsername();
         
-        userRepository.findByUsernameIgnoreCase(email)
-                .orElseThrow(() -> new IllegalArgumentException("User not found with email: " + email));
+        log.info("Sending OTP for password reset for username: {}", username);
+        otpService.generateAndSaveOtp(username);
         
-        log.info("Sending OTP for password reset for email: {}", email);
-        otpService.generateAndSaveOtp(email);
+        // Get the user and their actual email
+        User user = userRepository.findByUsernameIgnoreCase(username)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+        
+        Patient patient = patientRepository.findById(user.getId())
+                .orElseThrow(() -> new IllegalArgumentException("Email not found for user"));
+        
+        String email = patient.getEmail();
+        if (email == null) {
+            throw new IllegalArgumentException("Email not found for user");
+        }
         
         return PasswordResetResponseDto.builder()
-                .message("OTP has been sent to your email address")
+                .message("OTP has been sent to your registered email address")
                 .success(true)
                 .email(email)
                 .build();
@@ -146,8 +155,8 @@ public class AuthService {
             throw new IllegalArgumentException("Please verify OTP first");
         }
         
-        User user = userRepository.findByUsernameIgnoreCase(email)
-                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+        // Get user from the token (already associated)
+        User user = token.getUser();
         
         // Update password
         user.setPassword(passwordEncoder.encode(newPassword));
@@ -167,16 +176,25 @@ public class AuthService {
 
     @Transactional
     public PasswordResetResponseDto resendOtp(ForgotPasswordRequestDto forgotPasswordRequestDto) {
-        String email = forgotPasswordRequestDto.getEmail();
+        String username = forgotPasswordRequestDto.getUsername();
         
-        userRepository.findByUsernameIgnoreCase(email)
-                .orElseThrow(() -> new IllegalArgumentException("User not found with email: " + email));
+        log.info("Resending OTP for password reset for username: {}", username);
+        otpService.resendOtp(username);
         
-        log.info("Resending OTP for password reset for email: {}", email);
-        otpService.resendOtp(email);
+        // Get the user and their actual email
+        User user = userRepository.findByUsernameIgnoreCase(username)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+        
+        Patient patient = patientRepository.findById(user.getId())
+                .orElseThrow(() -> new IllegalArgumentException("Email not found for user"));
+        
+        String email = patient.getEmail();
+        if (email == null) {
+            throw new IllegalArgumentException("Email not found for user");
+        }
         
         return PasswordResetResponseDto.builder()
-                .message("OTP has been resent to your email address")
+                .message("OTP has been resent to your registered email address")
                 .success(true)
                 .email(email)
                 .build();

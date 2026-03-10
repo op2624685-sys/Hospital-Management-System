@@ -8,8 +8,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.hms.entity.PasswordResetToken;
 import com.hms.entity.User;
+import com.hms.entity.Patient;
 import com.hms.repository.PasswordResetTokenRepository;
 import com.hms.repository.UserRepository;
+import com.hms.repository.PatientRepository;
 import com.hms.service.EmailService;
 import com.hms.service.OtpService;
 
@@ -24,6 +26,7 @@ public class OtpServiceImpl implements OtpService {
     private final PasswordResetTokenRepository passwordResetTokenRepository;
     private final UserRepository userRepository;
     private final EmailService emailService;
+    private final PatientRepository patientRepository;
 
     private static final int OTP_LENGTH = 6;
     private static final int OTP_EXPIRY_MINUTES = 10;
@@ -31,14 +34,20 @@ public class OtpServiceImpl implements OtpService {
 
     @Override
     @Transactional
-    public PasswordResetToken generateAndSaveOtp(String email) {
-        // Find user by email
-        User user = userRepository.findByUsernameIgnoreCase(email)
-                .orElseThrow(() -> new IllegalArgumentException("User not found with email: " + email));
+    public PasswordResetToken generateAndSaveOtp(String username) {
+        // Find user by username
+        User user = userRepository.findByUsernameIgnoreCase(username)
+                .orElseThrow(() -> new IllegalArgumentException("User not found with username: " + username));
+
+        // Get email from patient record
+        String email = getEmailForUser(user);
+        if (email == null) {
+            throw new IllegalArgumentException("Email not found for user: " + username);
+        }
 
         // Generate OTP
         String otp = generateOtp();
-        log.info("Generated OTP for email: {}", email);
+        log.info("Generated OTP for username: {}", username);
 
         // Invalidate previous OTP if exists
         passwordResetTokenRepository.findByUserAndIsUsedFalseAndIsVerifiedFalse(user)
@@ -59,7 +68,7 @@ public class OtpServiceImpl implements OtpService {
                 .build();
 
         resetToken = passwordResetTokenRepository.save(resetToken);
-        log.info("Password reset token saved for email: {}", email);
+        log.info("Password reset token saved for username: {}", username);
 
         // Send OTP via email
         emailService.sendOtpEmail(email, otp);
@@ -69,10 +78,16 @@ public class OtpServiceImpl implements OtpService {
 
     @Override
     @Transactional
-    public PasswordResetToken resendOtp(String email) {
-        // Find user by email
-        User user = userRepository.findByUsernameIgnoreCase(email)
-                .orElseThrow(() -> new IllegalArgumentException("User not found with email: " + email));
+    public PasswordResetToken resendOtp(String username) {
+        // Find user by username
+        User user = userRepository.findByUsernameIgnoreCase(username)
+                .orElseThrow(() -> new IllegalArgumentException("User not found with username: " + username));
+
+        // Get email from patient record
+        String email = getEmailForUser(user);
+        if (email == null) {
+            throw new IllegalArgumentException("Email not found for user: " + username);
+        }
 
         // Check for recent OTP send to prevent spam
         PasswordResetToken lastToken = passwordResetTokenRepository.findLatestUnusedTokenByEmail(email)
@@ -84,21 +99,21 @@ public class OtpServiceImpl implements OtpService {
             
             if (LocalDateTime.now().isBefore(cooldownExpiry)) {
                 long secondsRemaining = java.time.temporal.ChronoUnit.SECONDS.between(LocalDateTime.now(), cooldownExpiry);
-                log.warn("Resend OTP requested too soon for email: {}. Wait {} seconds.", email, secondsRemaining);
+                log.warn("Resend OTP requested too soon for username: {}. Wait {} seconds.", username, secondsRemaining);
                 throw new IllegalArgumentException("Please wait before requesting a new OTP. Try again in " + secondsRemaining + " seconds.");
             }
         }
 
         // Generate new OTP
         String otp = generateOtp();
-        log.info("Resending OTP for email: {}", email);
+        log.info("Resending OTP for username: {}", username);
 
         // Invalidate any previous unverified OTPs
         passwordResetTokenRepository.findByUserAndIsUsedFalseAndIsVerifiedFalse(user)
                 .ifPresent(token -> {
                     token.setIsUsed(true);
                     passwordResetTokenRepository.save(token);
-                    log.debug("Invalidated previous OTP for email: {}", email);
+                    log.debug("Invalidated previous OTP for username: {}", username);
                 });
 
         // Create and save new token
@@ -113,7 +128,7 @@ public class OtpServiceImpl implements OtpService {
                 .build();
 
         resetToken = passwordResetTokenRepository.save(resetToken);
-        log.info("New OTP resent for email: {}", email);
+        log.info("New OTP resent for username: {}", username);
 
         // Send OTP via email
         emailService.sendOtpEmail(email, otp);
@@ -175,5 +190,21 @@ public class OtpServiceImpl implements OtpService {
         Random random = new Random();
         int otp = 100000 + random.nextInt(900000);
         return String.valueOf(otp);
+    }
+
+    private String getEmailForUser(User user) {
+        // Get email from patient record
+        try {
+            Patient patient = patientRepository.findById(user.getId()).orElse(null);
+            if (patient != null && patient.getEmail() != null) {
+                log.info("Found email for user: {}", user.getUsername());
+                return patient.getEmail();
+            }
+            log.warn("No patient record with email found for user: {}", user.getUsername());
+            return null;
+        } catch (Exception e) {
+            log.error("Error getting email for user: {}", user.getId(), e);
+            return null;
+        }
     }
 }

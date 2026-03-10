@@ -1,4 +1,4 @@
-﻿import React, { useLayoutEffect, useRef, useState } from 'react';
+import React, { useLayoutEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Mail, ShieldCheck, Lock, Eye, EyeOff, KeyRound } from 'lucide-react';
 import { gsap } from 'gsap';
@@ -11,13 +11,14 @@ const ForgotPassword = () => {
   const navigate = useNavigate();
 
   // Form states
-  const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState(''); // Email returned from backend
   const [otp, setOtp] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
 
   // UI states
-  const [stage, setStage] = useState(1); // Stage 1: Email, Stage 2: OTP, Stage 3: Password
+  const [stage, setStage] = useState(1); // Stage 1: Username, Stage 2: OTP, Stage 3: Password
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -65,8 +66,12 @@ const ForgotPassword = () => {
     setIsLoading(true);
 
     try {
-      await forgotPasswordAPI.sendOtp(email);
-      toast.success('OTP sent to your email!', {
+      const response = await forgotPasswordAPI.sendOtp(username);
+      // Store the email from the backend response (Axios wraps body in response.data)
+      if (response.data && response.data.email) {
+        setEmail(response.data.email);
+      }
+      toast.success('OTP sent to your registered email!', {
         position: 'top-right',
         autoClose: 3000,
         hideProgressBar: false,
@@ -79,7 +84,7 @@ const ForgotPassword = () => {
       setStage(2);
       setOtpTimer(600);
     } catch (error) {
-      toast.error(error.response?.data?.message || 'Error sending OTP. Please check your email.', {
+      toast.error(error.response?.data?.message || 'User not found or error sending OTP. Please check your username.', {
         position: 'top-right',
         autoClose: 3000,
         hideProgressBar: false,
@@ -147,8 +152,8 @@ const ForgotPassword = () => {
     setIsLoading(true);
 
     try {
-      await forgotPasswordAPI.resendOtp(email);
-      toast.success('OTP resent to your email!', {
+      await forgotPasswordAPI.resendOtp(username);
+      toast.success('OTP resent to your registered email!', {
         position: 'top-right',
         autoClose: 3000,
         hideProgressBar: false,
@@ -251,8 +256,8 @@ const ForgotPassword = () => {
           <span className="auth-chip auth-fade">Account Recovery</span>
           <h1 className="auth-fade">Reset Your Password Safely</h1>
           <p className="auth-fade">
-            {stage === 1 && 'Enter your registered email and we will send you a One-Time Password (OTP).'}
-            {stage === 2 && 'Enter the OTP sent to your email address to verify your account.'}
+            {stage === 1 && 'Enter your registered username and we will send you a One-Time Password (OTP).'}
+            {stage === 2 && 'Enter the OTP sent to your registered email address to verify your account.'}
             {stage === 3 && 'Create a new secure password for your account.'}
           </p>
           <ul>
@@ -263,20 +268,20 @@ const ForgotPassword = () => {
         </aside>
 
         <div className="auth-card">
-          {/* Stage 1: Email Input */}
+          {/* Stage 1: Username Input */}
           {stage === 1 && (
             <>
               <h2 className="auth-fade">Forgot Password</h2>
-              <p className="auth-sub auth-fade">Enter your registered email address</p>
+              <p className="auth-sub auth-fade">Enter your registered username</p>
 
               <form onSubmit={handleSendOtp} className="auth-form">
                 <label className="auth-field auth-fade">
                   <Mail size={16} />
                   <input
-                    type="email"
-                    placeholder="you@hospital.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    type="text"
+                    placeholder="username"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
                     required
                   />
                 </label>

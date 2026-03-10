@@ -15,8 +15,8 @@ API.interceptors.request.use((config) => {
 
 // Forgot Password API Endpoints
 export const forgotPasswordAPI = {
-  sendOtp: (email) => API.post('/auth/forgot-password', { email }),
-  resendOtp: (email) => API.post('/auth/resend-otp', { email }),
+  sendOtp: (username) => API.post('/auth/forgot-password', { username }),
+  resendOtp: (username) => API.post('/auth/resend-otp', { username }),
   verifyOtp: (email, otp) => API.post('/auth/verify-otp', { email, otp }),
   resetPassword: (email, newPassword, confirmPassword) => 
     API.post('/auth/reset-password', { email, newPassword, confirmPassword })
