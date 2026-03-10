@@ -86,6 +86,7 @@ public class DoctorServiceImpl implements DoctorService {
                 .build();
 
             user.setRoles(new HashSet<>(Set.of(RoleType.DOCTOR)));
+            user.setEmail(onBoardDoctorRequestDto.getEmail());
             userRepository.save(user);
 
             return modelMapper.map(doctorRepository.save(doctor), DoctorResponseDto.class);

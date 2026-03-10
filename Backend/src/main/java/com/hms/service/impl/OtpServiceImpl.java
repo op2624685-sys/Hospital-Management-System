@@ -8,10 +8,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.hms.entity.PasswordResetToken;
 import com.hms.entity.User;
-import com.hms.entity.Patient;
 import com.hms.repository.PasswordResetTokenRepository;
 import com.hms.repository.UserRepository;
-import com.hms.repository.PatientRepository;
 import com.hms.service.EmailService;
 import com.hms.service.OtpService;
 
@@ -26,7 +24,6 @@ public class OtpServiceImpl implements OtpService {
     private final PasswordResetTokenRepository passwordResetTokenRepository;
     private final UserRepository userRepository;
     private final EmailService emailService;
-    private final PatientRepository patientRepository;
 
     private static final int OTP_LENGTH = 6;
     private static final int OTP_EXPIRY_MINUTES = 10;
@@ -193,18 +190,13 @@ public class OtpServiceImpl implements OtpService {
     }
 
     private String getEmailForUser(User user) {
-        // Get email from patient record
-        try {
-            Patient patient = patientRepository.findById(user.getId()).orElse(null);
-            if (patient != null && patient.getEmail() != null) {
-                log.info("Found email for user: {}", user.getUsername());
-                return patient.getEmail();
-            }
-            log.warn("No patient record with email found for user: {}", user.getUsername());
-            return null;
-        } catch (Exception e) {
-            log.error("Error getting email for user: {}", user.getId(), e);
-            return null;
+        // Get email directly from User entity (works for all user types)
+        String email = user.getEmail();
+        if (email != null) {
+            log.info("Found email for user: {}", user.getUsername());
+        } else {
+            log.warn("No email found for user: {}", user.getUsername());
         }
+        return email;
     }
 }

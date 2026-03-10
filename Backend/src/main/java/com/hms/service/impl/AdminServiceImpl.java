@@ -82,6 +82,7 @@ public class AdminServiceImpl implements AdminService {
                 .user(user)
                 .build();
         user.setRoles(new HashSet<>(Set.of(RoleType.ADMIN)));
+        user.setEmail(onBoardAdminRequestDto.getEmail());
         userRepository.save(user);
         Admin savedAdmin = adminRepository.save(admin);
         return mapToAdminResponseDto(savedAdmin);

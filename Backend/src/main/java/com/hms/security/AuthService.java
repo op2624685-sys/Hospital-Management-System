@@ -72,6 +72,7 @@ public class AuthService {
         user = User.builder()
             .username(signupRequestDto.getUsername())
             .password(passwordEncoder.encode(signupRequestDto.getPassword()))
+            .email(signupRequestDto.getEmail())
             .roles(new HashSet<>(Set.of(RoleType.PATIENT)))
             .build();
         user = userRepository.save(user);
@@ -100,14 +101,11 @@ public class AuthService {
         log.info("Sending OTP for password reset for username: {}", username);
         otpService.generateAndSaveOtp(username);
         
-        // Get the user and their actual email
+        // Get the user and their email directly from the User entity
         User user = userRepository.findByUsernameIgnoreCase(username)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
         
-        Patient patient = patientRepository.findById(user.getId())
-                .orElseThrow(() -> new IllegalArgumentException("Email not found for user"));
-        
-        String email = patient.getEmail();
+        String email = user.getEmail();
         if (email == null) {
             throw new IllegalArgumentException("Email not found for user");
         }
@@ -181,14 +179,11 @@ public class AuthService {
         log.info("Resending OTP for password reset for username: {}", username);
         otpService.resendOtp(username);
         
-        // Get the user and their actual email
+        // Get the user and their email directly from the User entity
         User user = userRepository.findByUsernameIgnoreCase(username)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
         
-        Patient patient = patientRepository.findById(user.getId())
-                .orElseThrow(() -> new IllegalArgumentException("Email not found for user"));
-        
-        String email = patient.getEmail();
+        String email = user.getEmail();
         if (email == null) {
             throw new IllegalArgumentException("Email not found for user");
         }
