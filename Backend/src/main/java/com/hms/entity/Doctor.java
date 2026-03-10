@@ -45,9 +45,11 @@ public class Doctor {
     private String email;
 
     @OneToMany(mappedBy = "doctor")
+    @Builder.Default
     private List<Appointment> Appointments = new ArrayList<>();
 
     @ManyToMany(mappedBy = "doctors")
+    @Builder.Default
     private Set<Department> departments = new HashSet<>();
 
     @ManyToOne

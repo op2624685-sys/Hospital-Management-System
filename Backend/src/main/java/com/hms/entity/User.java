@@ -49,6 +49,7 @@ public class User implements UserDetails{
 
     @ElementCollection(fetch = FetchType.EAGER)
     @Enumerated(EnumType.STRING)
+    @Builder.Default
     Set<RoleType> roles = new HashSet<>();
 
 

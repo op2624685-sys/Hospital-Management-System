@@ -79,7 +79,7 @@ public class Patient {
 
     @CreationTimestamp
     @Column(nullable = false,updatable = false)
-    private LocalDateTime createdAt = LocalDateTime.now();
+    private LocalDateTime createdAt;
 
     @UpdateTimestamp
     @Column(nullable = false)
@@ -93,6 +93,7 @@ public class Patient {
     private List<Branch> branches;
 
     @OneToMany(mappedBy = "patient", cascade = {CascadeType.REMOVE}, orphanRemoval = true, fetch = FetchType.EAGER)
+    @Builder.Default
     private List<Appointment> Appointments = new ArrayList<>();
 
 }
