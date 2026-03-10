@@ -1,6 +1,7 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import Header from "../components/Header";
 import API from "../api/api";
+import adminApi from "../api/admin";
 import { gsap } from "gsap";
 
 // ── Mock fallback data (replace with real API calls) ──────────────────────────
@@ -101,28 +102,98 @@ const Section = ({ title, subtitle, children, action }) => (
 
 // ── Main ──────────────────────────────────────────────────────────────────────
 const AdminPanel = () => {
-  const [stats, setStats] = useState(MOCK.stats);
-  const [appointments, setAppointments] = useState(MOCK.recentAppointments);
-  const [doctors, setDoctors] = useState(MOCK.activeDoctors);
-  const [payments, setPayments] = useState(MOCK.payments);
+  const [stats] = useState(MOCK.stats);
+  const [appointments] = useState(MOCK.recentAppointments);
+  const [doctors] = useState(MOCK.activeDoctors);
+  const [payments] = useState(MOCK.payments);
+  const [patients, setPatients] = useState([]);
   const [activeTab, setActiveTab] = useState("overview");
   const [loading, setLoading] = useState(false);
+  const [showDepartmentForm, setShowDepartmentForm] = useState(false);
+  const [formData, setFormData] = useState({ name: "", headDoctor: "", branch: "" });
+  const [currentPage, setCurrentPage] = useState(0);
+  const [_totalPatients, _setTotalPatients] = useState(0);
   const headerRef = useRef(null);
+
+  const fetchPatients = useCallback(async () => {
+    try {
+      setLoading(true);
+      const response = await adminApi.getPatients(currentPage, 10);
+      setPatients(response.data.content || response.data);
+      _setTotalPatients(response.data.totalElements || response.data.length);
+    } catch (error) {
+      console.error("Error fetching patients:", error);
+      alert("Failed to load patients");
+    } finally {
+      setLoading(false);
+    }
+  }, [currentPage]);
 
   useEffect(() => {
     gsap.fromTo(headerRef.current,
       { opacity: 0, y: -20 },
       { opacity: 1, y: 0, duration: .6, ease: "power3.out" }
     );
-
-    // Replace mocks with real API calls:
-    // API.get('/admin/stats').then(r => setStats(r.data))
-    // API.get('/admin/appointments/recent').then(r => setAppointments(r.data))
-    // API.get('/admin/doctors/active').then(r => setDoctors(r.data))
-    // API.get('/admin/payments/recent').then(r => setPayments(r.data))
   }, []);
 
-  const tabs = ["overview", "appointments", "doctors", "payments"];
+  // Fetch patients when tab changes to patients
+  useEffect(() => {
+    if (activeTab === "patients") {
+      fetchPatients();
+    }
+  }, [activeTab, fetchPatients]);
+
+
+
+  const handleCreateDepartment = async (e) => {
+    e.preventDefault();
+    if (!formData.name || !formData.headDoctor || !formData.branch) {
+      alert("Please fill all fields");
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const payload = {
+        name: formData.name,
+        headDoctorId: parseInt(formData.headDoctor),
+        branchId: parseInt(formData.branch),
+      };
+      const response = await adminApi.createDepartment(payload);
+      
+      // Store created department in localStorage for display on Department page
+      const createdDepts = localStorage.getItem('createdDepartments') || '[]';
+      const deptList = JSON.parse(createdDepts);
+      
+      // Add new department with additional info for display
+      const newDept = {
+        id: response.data?.id || Date.now(),
+        name: formData.name,
+        headDoctorId: parseInt(formData.headDoctor),
+        headDoctorName: `Dr. ID: ${formData.headDoctor}`, // This can be enhanced with actual doctor name from API
+        branchId: parseInt(formData.branch),
+        members: 0,
+        createdAt: new Date().toISOString(),
+      };
+      
+      deptList.push(newDept);
+      localStorage.setItem('createdDepartments', JSON.stringify(deptList));
+      
+      alert("Department created successfully! You can view it on the Department page.");
+      setFormData({ name: "", headDoctor: "", branch: "" });
+      setShowDepartmentForm(false);
+      
+      // Refresh departments list
+      window.location.reload();
+    } catch (error) {
+      console.error("Error creating department:", error);
+      alert("Failed to create department. " + (error.response?.data?.message || ""));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const tabs = ["overview", "appointments", "doctors", "payments", "patients", "departments"];
 
   return (
     <>
@@ -419,6 +490,161 @@ const AdminPanel = () => {
         ::-webkit-scrollbar-track { background: #f0f0f0; }
         ::-webkit-scrollbar-thumb { background: #2563eb; border-radius: 3px; }
 
+        /* department form styles */
+        .admin-form-wrapper {
+          background: #fff;
+          border: 1.5px solid #ebe8e2;
+          border-radius: 16px;
+          padding: 24px;
+          margin-bottom: 20px;
+        }
+        .admin-form-group {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 16px;
+          margin-bottom: 16px;
+        }
+        .admin-form-group.full { grid-template-columns: 1fr; }
+        .admin-form-group input,
+        .admin-form-group select {
+          padding: 10px 14px;
+          border: 1.5px solid #ebe8e2;
+          border-radius: 10px;
+          font-family: 'Outfit', sans-serif;
+          font-size: 13px;
+          transition: border-color .2s, box-shadow .2s;
+        }
+        .admin-form-group input:focus,
+        .admin-form-group select:focus {
+          outline: none;
+          border-color: #2563eb;
+          box-shadow: 0 0 0 3px rgba(37,99,235,.1);
+        }
+        .admin-form-label {
+          font-size: 12px;
+          font-weight: 600;
+          color: #555;
+          margin-bottom: 6px;
+          display: block;
+          text-transform: uppercase;
+          letter-spacing: .02em;
+        }
+        .admin-form-actions {
+          display: flex;
+          gap: 10px;
+          justify-content: flex-end;
+        }
+        .admin-form-actions button {
+          padding: 10px 20px;
+          border-radius: 10px;
+          border: 1.5px solid #ebe8e2;
+          font-family: 'Outfit', sans-serif;
+          font-size: 13px;
+          font-weight: 600;
+          cursor: pointer;
+          transition: all .2s;
+        }
+        .admin-form-actions .btn-primary {
+          background: #2563eb;
+          color: #fff;
+          border-color: #2563eb;
+        }
+        .admin-form-actions .btn-primary:hover {
+          background: #1d4ed8;
+          transform: translateY(-1px);
+          box-shadow: 0 8px 16px rgba(37,99,235,.3);
+        }
+        .admin-form-actions .btn-cancel {
+          background: #fff;
+          color: #1a1a1a;
+        }
+        .admin-form-actions .btn-cancel:hover {
+          background: #f9f6f2;
+        }
+
+        /* patients table styles */
+        .admin-patients-list {
+          background: #fff;
+          border: 1.5px solid #ebe8e2;
+          border-radius: 16px;
+          overflow: hidden;
+        }
+        .admin-patients-header {
+          padding: 20px 24px;
+          border-bottom: 1px solid #f9f6f2;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+        }
+        .admin-patient-row {
+          display: flex;
+          align-items: center;
+          padding: 12px 24px;
+          border-bottom: 1px solid #f9f6f2;
+          transition: background .15s;
+        }
+        .admin-patient-row:hover { background: #faf8f5; }
+        .admin-patient-row:last-child { border-bottom: none; }
+        .admin-patient-col {
+          font-size: 13px;
+          color: #444;
+        }
+        .admin-patient-col.name {
+          font-weight: 600;
+          color: #1a1a1a;
+          flex: 2;
+        }
+        .admin-patient-col.email {
+          color: #666;
+          flex: 2;
+        }
+        .admin-patient-col.id {
+          font-family: monospace;
+          font-size: 11px;
+          color: #bbb;
+          flex: 1;
+        }
+        .admin-patient-col.date {
+          color: #aaa;
+          flex: 1;
+        }
+        .admin-pagination {
+          display: flex;
+          justify-content: center;
+          gap: 8px;
+          padding: 16px;
+          border-top: 1px solid #f9f6f2;
+        }
+        .admin-pagination button {
+          padding: 6px 12px;
+          border: 1px solid #ebe8e2;
+          background: #fff;
+          border-radius: 6px;
+          cursor: pointer;
+          font-size: 12px;
+          font-weight: 600;
+          transition: all .2s;
+        }
+        .admin-pagination button:hover:not(:disabled) {
+          background: #2563eb;
+          color: #fff;
+          border-color: #2563eb;
+        }
+        .admin-pagination button:disabled {
+          opacity: 0.5;
+          cursor: not-allowed;
+        }
+        .admin-loading {
+          text-align: center;
+          padding: 40px 20px;
+          color: #aaa;
+        }
+        .admin-empty-state {
+          text-align: center;
+          padding: 40px 20px;
+          color: #bbb;
+        }
+
         /* theme override: healthcare SaaS */
         .admin-page {
           background:
@@ -589,6 +815,9 @@ const AdminPanel = () => {
           {/* ── Sections ── */}
           <div className="admin-sections-grid">
 
+            {activeTab === "overview" && (
+              <>
+
             {/* Recent Appointments */}
             <div className="admin-section full">
               <Section title="Recent Appointments" subtitle="Today's appointment activity" action="View All">
@@ -749,6 +978,120 @@ const AdminPanel = () => {
                 </div>
               </Section>
             </div>
+
+              </>
+            )}
+
+            {activeTab === "patients" && (
+              <div className="admin-section full">
+                <Section title="All Patients" subtitle="Hospital registered patients" action="Refresh">
+                  {loading ? (
+                    <div className="admin-loading">Loading patients...</div>
+                  ) : patients.length === 0 ? (
+                    <div className="admin-empty-state">No patients found</div>
+                  ) : (
+                    <div className="admin-patients-list">
+                      <div className="admin-patients-header">
+                        <div style={{ flex: 2, fontWeight: 600, fontSize: 13 }}>Patient Name</div>
+                        <div style={{ flex: 2, fontWeight: 600, fontSize: 13 }}>Email</div>
+                        <div style={{ flex: 1, fontWeight: 600, fontSize: 13 }}>Blood Group</div>
+                        <div style={{ flex: 1, fontWeight: 600, fontSize: 13, textAlign: "center" }}>Registered</div>
+                      </div>
+                      {patients.map(patient => (
+                        <div key={patient.id} className="admin-patient-row">
+                          <div className="admin-patient-col name">{patient.name || "N/A"}</div>
+                          <div className="admin-patient-col email">{patient.email || "N/A"}</div>
+                          <div className="admin-patient-col">{patient.bloodGroup || "N/A"}</div>
+                          <div className="admin-patient-col" style={{ textAlign: "center", fontSize: 12, color: "#aaa" }}>
+                            {patient.createdAt ? new Date(patient.createdAt).toLocaleDateString() : "N/A"}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  {!loading && patients.length > 0 && (
+                    <div className="admin-pagination">
+                      <button 
+                        onClick={() => setCurrentPage(Math.max(0, currentPage - 1))}
+                        disabled={currentPage === 0}>
+                        Previous
+                      </button>
+                      <span style={{ padding: "6px 12px", fontSize: 12, color: "#aaa" }}>
+                        Page {currentPage + 1}
+                      </span>
+                      <button 
+                        onClick={() => setCurrentPage(currentPage + 1)}
+                        disabled={patients.length < 10}>
+                        Next
+                      </button>
+                    </div>
+                  )}
+                </Section>
+              </div>
+            )}
+
+            {activeTab === "departments" && (
+              <div className="admin-section full">
+                <Section title="Department Management" subtitle="Create and manage departments">
+                  {!showDepartmentForm ? (
+                    <button className="admin-refresh-btn" 
+                      onClick={() => setShowDepartmentForm(true)}
+                      style={{ marginBottom: "20px" }}>
+                      + Create New Department
+                    </button>
+                  ) : (
+                    <form className="admin-form-wrapper" onSubmit={handleCreateDepartment}>
+                      <div className="admin-form-group">
+                        <div>
+                          <label className="admin-form-label">Department Name</label>
+                          <input
+                            type="text"
+                            placeholder="e.g., Cardiology"
+                            value={formData.name}
+                            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                            required
+                          />
+                        </div>
+                        <div>
+                          <label className="admin-form-label">Head Doctor ID</label>
+                          <input
+                            type="number"
+                            placeholder="Enter doctor ID"
+                            value={formData.headDoctor}
+                            onChange={(e) => setFormData({ ...formData, headDoctor: e.target.value })}
+                            required
+                          />
+                        </div>
+                      </div>
+                      <div className="admin-form-group full">
+                        <label className="admin-form-label">Branch ID</label>
+                        <input
+                          type="number"
+                          placeholder="Enter branch ID"
+                          value={formData.branch}
+                          onChange={(e) => setFormData({ ...formData, branch: e.target.value })}
+                          required
+                        />
+                      </div>
+                      <div className="admin-form-actions">
+                        <button 
+                          type="button" 
+                          className="btn-cancel"
+                          onClick={() => setShowDepartmentForm(false)}>
+                          Cancel
+                        </button>
+                        <button 
+                          type="submit" 
+                          className="btn-primary"
+                          disabled={loading}>
+                          {loading ? "Creating..." : "Create Department"}
+                        </button>
+                      </div>
+                    </form>
+                  )}
+                </Section>
+              </div>
+            )}
 
           </div>
         </div>
