@@ -3,7 +3,7 @@ import { gsap } from 'gsap';
 import { Link } from 'react-router-dom';
 import Doctor3D from '../Doctor3D';
 
-const HeroSection = ({ onAnimationsReady }) => {
+const HeroSection = () => {
   const heroRef = useRef();
   const taglineRef = useRef();
   const headingRef = useRef();
@@ -113,7 +113,9 @@ const HeroSection = ({ onAnimationsReady }) => {
       {/* ── Right — 3D Model Canvas ── */}
       <div ref={floatingRef} className='opacity-0 relative w-full lg:w-1/2 h-[50vh] lg:h-[80vh] rounded-3xl overflow-hidden'
         style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', backdropFilter: 'blur(10px)', boxShadow: 'inset 0 0 40px rgba(0,0,0,0.5)' }}>
-        <Doctor3D />
+        <div className="absolute inset-0">
+          <Doctor3D />
+        </div>
       </div>
     </section>
   );
