@@ -22,6 +22,10 @@ export const appointmentApi = {
     return API.get(`/doctor/appointments${query}`);
   },
 
+  getBookedSlots(doctorId, date) {
+    return API.get(`/public/doctors/${doctorId}/booked-slots`, { params: { date } });
+  },
+
   updateStatus(appointmentId, status) {
     return API.put(`/doctor/appointments/${appointmentId}/status?status=${status}`);
   },

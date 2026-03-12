@@ -21,11 +21,17 @@ const AppointmentBooking = () => {
   const [allDoctors, setAllDoctors] = useState([]);
   const [doctorSuggestions, setDoctorSuggestions] = useState([]);
   const [reason, setReason] = useState('');
-  const [appointmentTime, setAppointmentTime] = useState('');
+  const [appointmentDate, setAppointmentDate] = useState('');
+  const [appointmentSlot, setAppointmentSlot] = useState('');
+  const [bookedSlots, setBookedSlots] = useState([]);
+  const [loadingSlots, setLoadingSlots] = useState(false);
   const [loading, setLoading] = useState(false);
   const [patientName, setPatientName] = useState('');
   const doctorDropdownRef = useRef(null);
   const branchDropdownRef = useRef(null);
+  const SLOT_MINUTES = 20;
+  const START_HOUR = 10;
+  const END_HOUR = 19; // exclusive
 
   useEffect(() => {
     const fetchMeta = async () => {
@@ -61,6 +67,28 @@ const AppointmentBooking = () => {
     };
     fetchPatientProfile();
   }, [user]);
+
+  useEffect(() => {
+    const fetchBookedSlots = async () => {
+      if (!doctorId || !appointmentDate) { setBookedSlots([]); return; }
+      setLoadingSlots(true);
+      try {
+        const res = await appointmentApi.getBookedSlots(doctorId, appointmentDate);
+        const slots = Array.isArray(res.data) ? res.data : [];
+        const times = slots.map((s) => {
+          const t = String(s).split('T')[1] || '';
+          return t.slice(0, 5);
+        }).filter(Boolean);
+        setBookedSlots(times);
+      } catch (error) {
+        console.error('Failed to fetch booked slots:', error);
+        setBookedSlots([]);
+      } finally {
+        setLoadingSlots(false);
+      }
+    };
+    fetchBookedSlots();
+  }, [doctorId, appointmentDate]);
 
   // Close dropdown on outside click
   useEffect(() => {
@@ -102,6 +130,8 @@ const AppointmentBooking = () => {
     setDoctorName('');
     setDoctorId(null);
     setSelectedDoctor(null);
+    setAppointmentSlot('');
+    setBookedSlots([]);
   };
 
   const handleDoctorSearch = (e) => {
@@ -123,6 +153,8 @@ const AppointmentBooking = () => {
     setDoctorName(doctor.name);
     setDoctorId(doctor.id);
     setSelectedDoctor(doctor);
+    setAppointmentSlot('');
+    setBookedSlots([]);
     if (!branchId && doctor?.branch?.id && doctor?.branch?.name) {
       setBranchId(doctor.branch.id);
       setBranchName(doctor.branch.name);
@@ -139,8 +171,11 @@ const AppointmentBooking = () => {
     }
     if (!branchId) { toast.warn('Please select a branch from the suggestions!'); return; }
     if (!doctorId) { toast.warn('Please select a doctor from the suggestions!'); return; }
+    if (!appointmentDate) { toast.warn('Please select a date!'); return; }
+    if (!appointmentSlot) { toast.warn('Please select a time slot!'); return; }
     setLoading(true);
     try {
+      const appointmentTime = `${appointmentDate}T${appointmentSlot}`;
       const response = await appointmentApi.create({
         doctorId,
         patientId: user.id,
@@ -148,10 +183,13 @@ const AppointmentBooking = () => {
         appointmentTime,
         branchId,
       });
-      toast.success('Appointment booked successfully!');
+      const bookedAt = appointmentTime
+        ? new Date(appointmentTime).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' })
+        : '';
+      toast.success(bookedAt ? `Appointment booked for ${bookedAt}` : 'Appointment booked successfully!');
       setBranchName(''); setBranchId(null);
       setDoctorName(''); setDoctorId(null); setSelectedDoctor(null);
-      setReason(''); setAppointmentTime('');
+      setReason(''); setAppointmentDate(''); setAppointmentSlot(''); setBookedSlots([]);
       navigate(`/appointment/${response.data.appointmentId}`);
     } catch (error) {
       toast.error('Booking failed. Please try again.');
@@ -164,6 +202,18 @@ const AppointmentBooking = () => {
   const initials = user?.username
     ? user.username.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
     : 'P';
+
+  const timeSlots = (() => {
+    const slots = [];
+    for (let h = START_HOUR; h < END_HOUR; h++) {
+      for (let m = 0; m < 60; m += SLOT_MINUTES) {
+        const hh = String(h).padStart(2, '0');
+        const mm = String(m).padStart(2, '0');
+        slots.push(`${hh}:${mm}`);
+      }
+    }
+    return slots;
+  })();
 
   return (
     <>
@@ -435,6 +485,63 @@ const AppointmentBooking = () => {
           animation: spin .7s linear infinite;
         }
         @keyframes spin { to { transform: rotate(360deg); } }
+
+        .ab-slot-wrap { display: flex; flex-direction: column; gap: 10px; }
+        .ab-slots {
+          display: grid;
+          grid-template-columns: repeat(auto-fill, minmax(86px, 1fr));
+          gap: 8px;
+        }
+        .ab-slot {
+          padding: 8px 10px;
+          border-radius: 10px;
+          border: 1.5px solid #e2e8f0;
+          background: #fff;
+          font-size: 12px;
+          font-weight: 600;
+          color: #0f172a;
+          cursor: pointer;
+          transition: all .15s ease;
+          text-align: center;
+        }
+        .ab-slot:hover { border-color: #93c5fd; background: #eff6ff; }
+        .ab-slot-selected {
+          border-color: #2563eb;
+          background: #dbeafe;
+          color: #1d4ed8;
+        }
+        .ab-slot-booked {
+          border-color: #fecaca;
+          background: #fef2f2;
+          color: #b91c1c;
+          cursor: not-allowed;
+          text-decoration: line-through;
+        }
+        .ab-slot-disabled {
+          opacity: .6;
+          cursor: not-allowed;
+        }
+        .ab-booked-list {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 6px;
+        }
+        .ab-booked-pill {
+          font-size: 11px;
+          padding: 4px 8px;
+          border-radius: 999px;
+          background: #fef2f2;
+          color: #b91c1c;
+          border: 1px solid #fecaca;
+        }
+        .ab-msg {
+          font-size: 12px;
+          color: #64748b;
+        }
+        .ab-submeta {
+          font-size: 12px;
+          color: #64748b;
+        }
       `}</style>
 
       <div className="ab-wrap">
@@ -602,14 +709,14 @@ const AppointmentBooking = () => {
               </div>
             </div>
 
-            {/* Date & Time */}
+            {/* Date */}
             <div className="ab-field">
               <label className="ab-label">
                 <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
                     d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                 </svg>
-                Date &amp; Time
+                Appointment Date
               </label>
               <div className="ab-input-wrap">
                 <svg className="ab-input-icon" width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -618,11 +725,70 @@ const AppointmentBooking = () => {
                 </svg>
                 <input
                   className="ab-input"
-                  type="datetime-local"
-                  value={appointmentTime}
-                  onChange={e => setAppointmentTime(e.target.value)}
+                  type="date"
+                  value={appointmentDate}
+                  onChange={e => { setAppointmentDate(e.target.value); setAppointmentSlot(''); }}
                   required
                 />
+              </div>
+            </div>
+
+            {/* Time slots */}
+            <div className="ab-field">
+              <label className="ab-label">
+                <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                Appointment Time
+              </label>
+              <div className="ab-slot-wrap">
+                {!doctorId && (
+                  <div className="ab-msg">
+                    Select a doctor to view available slots.
+                  </div>
+                )}
+                {doctorId && !appointmentDate && (
+                  <div className="ab-msg">
+                    Select a date to view available slots.
+                  </div>
+                )}
+                {doctorId && appointmentDate && (
+                  <>
+                    {loadingSlots ? (
+                      <div className="ab-msg">Loading booked slots...</div>
+                    ) : (
+                      <div className="ab-slots">
+                        {timeSlots.map((slot) => {
+                          const isBooked = bookedSlots.includes(slot);
+                          const isSelected = appointmentSlot === slot;
+                          return (
+                            <button
+                              type="button"
+                              key={slot}
+                              className={`ab-slot ${isBooked ? 'ab-slot-booked' : ''} ${isSelected ? 'ab-slot-selected' : ''}`}
+                              onClick={() => !isBooked && setAppointmentSlot(slot)}
+                              disabled={isBooked}
+                            >
+                              {slot}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
+
+                    {!loadingSlots && bookedSlots.length > 0 && (
+                      <div>
+                        <div className="ab-submeta" style={{ marginBottom: 6 }}>Already booked:</div>
+                        <div className="ab-booked-list">
+                          {bookedSlots.map((t) => (
+                            <span key={t} className="ab-booked-pill">{t}</span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </>
+                )}
               </div>
             </div>
 
