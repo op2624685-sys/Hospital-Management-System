@@ -34,6 +34,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
+        boolean isPublicEndpoint = isPublicEndpoint(request.getRequestURI());
         try {
             log.info("Incoming request: {}", request.getRequestURI());
 
@@ -57,8 +58,17 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             filterChain.doFilter(request, response);
             
         } catch (Exception ex) {
+            if (isPublicEndpoint) {
+                // If token is invalid/expired on a public endpoint, proceed unauthenticated.
+                filterChain.doFilter(request, response);
+                return;
+            }
             handlerExceptionResolver.resolveException(request, response, null, ex);
         }
+    }
+
+    private boolean isPublicEndpoint(String uri) {
+        return uri != null && (uri.startsWith("/api/v1/public") || uri.startsWith("/api/v1/auth"));
     }
 
 }

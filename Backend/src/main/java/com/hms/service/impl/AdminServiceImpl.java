@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.hms.dto.AdminDto;
 import com.hms.dto.Request.OnBoardAdminRequestDto;
@@ -62,6 +63,7 @@ public class AdminServiceImpl implements AdminService {
     }
 
     @Override
+    @Transactional
     public AdminResponseDto onBoardNewAdmin(OnBoardAdminRequestDto onBoardAdminRequestDto) {
         String username = onBoardAdminRequestDto.getUsername() == null ? "" : onBoardAdminRequestDto.getUsername().trim();
         String branchName = onBoardAdminRequestDto.getBranchName() == null ? "" : onBoardAdminRequestDto.getBranchName().trim();

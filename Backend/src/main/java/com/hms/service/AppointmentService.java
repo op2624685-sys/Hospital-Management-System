@@ -1,6 +1,8 @@
 package com.hms.service;
 
 import java.util.List;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 import com.hms.dto.Request.CreateAppointmentRequestDto;
 import com.hms.dto.Request.UpdateAppointmentRequestDto;
@@ -25,5 +27,7 @@ public interface AppointmentService{
     AppointmentResponseDto cancelAppointmentByPatient(String appointmentId);
 
     AppointmentResponseDto updateAppointment(String appointmentId, UpdateAppointmentRequestDto updateAppointmentRequestDto);
+
+    List<LocalDateTime> getBookedSlotsForDoctor(Long doctorId, LocalDate date);
 
 }
