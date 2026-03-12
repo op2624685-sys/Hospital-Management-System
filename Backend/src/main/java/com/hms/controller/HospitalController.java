@@ -1,12 +1,15 @@
 package com.hms.controller;
 
 import java.util.List;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import com.hms.dto.BranchDto;
 import com.hms.dto.DoctorDto;
+import com.hms.service.AppointmentService;
 import com.hms.service.BranchService;
 import com.hms.service.DoctorService;
 
@@ -20,10 +23,21 @@ public class HospitalController {
 
     private final DoctorService doctorService;
     private final BranchService branchService;
+    private final AppointmentService appointmentService;
 
     @GetMapping("/doctors")
     public ResponseEntity<List<DoctorDto>> getAllDoctors() {
         return ResponseEntity.ok(doctorService.getAllDoctors());
+    }
+
+    @GetMapping("/doctors/{doctorId}/booked-slots")
+    public ResponseEntity<List<String>> getBookedSlots(
+            @PathVariable Long doctorId,
+            @RequestParam("date") LocalDate date) {
+        List<String> slots = appointmentService.getBookedSlotsForDoctor(doctorId, date).stream()
+                .map(LocalDateTime::toString)
+                .toList();
+        return ResponseEntity.ok(slots);
     }
 
     @GetMapping("/branches")
