@@ -18,4 +18,6 @@ public interface DoctorService {
 
     DoctorResponseDto onBoardNewDoctor(OnBoardDoctorRequestDto onBoardDoctorRequestDto);
 
+    List<DoctorResponseDto> getDoctorsForAdminBranch(int page, int size, String search, String specialization, String sortBy);
+
 }
