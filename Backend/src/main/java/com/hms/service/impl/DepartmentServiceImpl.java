@@ -13,12 +13,19 @@ import com.hms.dto.Request.CreateDepartmentRequestDto;
 import com.hms.entity.Branch;
 import com.hms.entity.Department;
 import com.hms.entity.Doctor;
+import com.hms.entity.Admin;
+import com.hms.entity.User;
+import com.hms.entity.type.RoleType;
+import com.hms.dto.Response.AdminDepartmentListDto;
+import com.hms.repository.AdminRepository;
 import com.hms.repository.BranchRepository;
 import com.hms.repository.DepartmentRepository;
 import com.hms.repository.DoctorRepository;
 import com.hms.service.DepartmentService;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 @Service
 @RequiredArgsConstructor
@@ -27,6 +34,7 @@ public class DepartmentServiceImpl implements DepartmentService{
     private final DepartmentRepository departmentRepository;
     private final BranchRepository branchRepository;
     private final DoctorRepository doctorRepository;
+    private final AdminRepository adminRepository;
 
     @Override
     public List<DepartmentDto> getAllDepartment() {
@@ -47,8 +55,7 @@ public class DepartmentServiceImpl implements DepartmentService{
     @Override
     @Transactional
     public DepartmentDto createNewDepartment(CreateDepartmentRequestDto createDepartmentRequestDto) {
-        Branch branch = branchRepository.findById(createDepartmentRequestDto.getBranchId())
-                .orElseThrow(() -> new RuntimeException("Branch not found with id: " + createDepartmentRequestDto.getBranchId()));
+        Branch branch = resolveBranchForDepartment(createDepartmentRequestDto);
         if (departmentRepository.existsByNameAndBranch_Id(createDepartmentRequestDto.getName(), branch.getId())) {
             throw new IllegalArgumentException("Department already exists in this branch: " + createDepartmentRequestDto.getName());
         }
@@ -77,6 +84,50 @@ public class DepartmentServiceImpl implements DepartmentService{
         department.setDoctors(doctors);
         Department savedDepartment = departmentRepository.save(department);
         return mapToDepartmentDto(savedDepartment);
+    }
+
+    private Branch resolveBranchForDepartment(CreateDepartmentRequestDto dto) {
+        User currentUser = getCurrentUser();
+        if (currentUser.getRoles().contains(RoleType.ADMIN)) {
+            Admin admin = adminRepository.findById(currentUser.getId())
+                    .orElseThrow(() -> new RuntimeException("Admin profile not found for user id: " + currentUser.getId()));
+            return admin.getBranch();
+        }
+        if (currentUser.getRoles().contains(RoleType.HEADADMIN)) {
+            if (dto.getBranchId() == null) {
+                throw new IllegalArgumentException("branchId is required for head admin");
+            }
+            return branchRepository.findById(dto.getBranchId())
+                    .orElseThrow(() -> new RuntimeException("Branch not found with id: " + dto.getBranchId()));
+        }
+        throw new RuntimeException("Only admin or head admin can create departments");
+    }
+
+    private User getCurrentUser() {
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        if (principal instanceof User user) {
+            return user;
+        }
+        throw new RuntimeException("Authenticated user not found");
+    }
+
+    @Override
+    @PreAuthorize("hasRole('ADMIN')")
+    @Transactional(readOnly = true)
+    public List<AdminDepartmentListDto> getDepartmentsForAdminBranch() {
+        User currentUser = getCurrentUser();
+        Admin admin = adminRepository.findById(currentUser.getId())
+                .orElseThrow(() -> new RuntimeException("Admin profile not found for user id: " + currentUser.getId()));
+        Long branchId = admin.getBranch().getId();
+        return departmentRepository.findByBranch_Id(branchId)
+                .stream()
+                .map(dep -> new AdminDepartmentListDto(
+                        dep.getId(),
+                        dep.getName(),
+                        dep.getHeadDoctor() != null ? dep.getHeadDoctor().getName() : "N/A",
+                        dep.getDoctors() == null ? 0 : dep.getDoctors().size()
+                ))
+                .toList();
     }
 
     private void validateDoctorsBelongToBranch(Set<Doctor> doctors, Long branchId) {

@@ -13,4 +13,6 @@ public interface DepartmentService {
 
     DepartmentDto createNewDepartment(CreateDepartmentRequestDto createDepartmentRequestDto);
 
+    java.util.List<com.hms.dto.Response.AdminDepartmentListDto> getDepartmentsForAdminBranch();
+
 }
