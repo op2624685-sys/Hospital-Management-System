@@ -23,4 +23,6 @@ public interface PatientRepository extends JpaRepository<Patient, Long> {
 
     List<Patient> findByBranches_Id(Long branchId);
 
+    long countByBranches_Id(Long branchId);
+
 }
