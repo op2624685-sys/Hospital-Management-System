@@ -49,7 +49,13 @@ public class WebSecurityConfig {
                 .sessionManagement(
                         sessionConfig -> sessionConfig.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/public/**", "/auth/**").permitAll()
+                        .requestMatchers(
+                                "/public/**",
+                                "/auth/**",
+                                "/swagger-ui/**",
+                                "/swagger-ui.html",
+                                "/v3/api-docs/**")
+                        .permitAll()
                         .requestMatchers("/head-admin/**").hasRole(HEADADMIN.name())
                         .requestMatchers("/admin/**").hasAnyRole(ADMIN.name(), HEADADMIN.name())
                         .requestMatchers("/doctor/**").hasAnyRole(DOCTOR.name(), ADMIN.name(), HEADADMIN.name())
