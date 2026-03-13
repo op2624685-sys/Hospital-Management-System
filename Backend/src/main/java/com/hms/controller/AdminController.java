@@ -7,11 +7,16 @@ import org.springframework.web.bind.annotation.*;
 import com.hms.dto.DepartmentDto;
 import com.hms.dto.Request.CreateDepartmentRequestDto;
 import com.hms.dto.Request.OnBoardDoctorRequestDto;
+import com.hms.dto.Response.AppointmentResponseDto;
+import com.hms.dto.Response.AdminOverviewDto;
+import com.hms.dto.Response.AdminDepartmentListDto;
 import com.hms.dto.Response.DoctorResponseDto;
 import com.hms.dto.Response.PatientResponseDto;
+import com.hms.service.AppointmentService;
 import com.hms.service.DepartmentService;
 import com.hms.service.DoctorService;
 import com.hms.service.PatientService;
+import com.hms.service.AdminService;
 import java.util.List;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +32,8 @@ public class AdminController {
     private final PatientService patientService;
     private final DoctorService doctorService;
     private final DepartmentService departmentService;
+    private final AppointmentService appointmentService;
+    private final AdminService adminService;
 
     @GetMapping("/patients")
     public ResponseEntity<List<PatientResponseDto>> getAllPatients(
@@ -35,9 +42,19 @@ public class AdminController {
         return ResponseEntity.ok(patientService.getAllPatients(pageNumber, pageSize));
     }
 
+    @GetMapping("/overview")
+    public ResponseEntity<AdminOverviewDto> getAdminOverview() {
+        return ResponseEntity.ok(adminService.getAdminOverview());
+    }
+
+    @GetMapping("/departments")
+    public ResponseEntity<List<AdminDepartmentListDto>> getDepartmentsForAdminBranch() {
+        return ResponseEntity.ok(departmentService.getDepartmentsForAdminBranch());
+    }
+
     @PostMapping("/onBoardNewDoctor")
     public ResponseEntity<DoctorResponseDto> onBoardNewDoctor(
-            @RequestBody OnBoardDoctorRequestDto onBoardDoctorRequestDto) {
+            @Valid @RequestBody OnBoardDoctorRequestDto onBoardDoctorRequestDto) {
         return ResponseEntity.status(HttpStatus.CREATED).body(doctorService.onBoardNewDoctor(onBoardDoctorRequestDto));
     }
 
@@ -46,5 +63,23 @@ public class AdminController {
             @Valid @RequestBody CreateDepartmentRequestDto createDepartmentRequestDto) {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(departmentService.createNewDepartment(createDepartmentRequestDto));
+    }
+
+    @GetMapping("/doctors")
+    public ResponseEntity<List<DoctorResponseDto>> getDoctorsForAdminBranch(
+            @RequestParam(value = "page", defaultValue = "0") Integer pageNumber,
+            @RequestParam(value = "size", defaultValue = "10") Integer pageSize,
+            @RequestParam(value = "search", required = false) String search,
+            @RequestParam(value = "specialization", required = false) String specialization,
+            @RequestParam(value = "sort", defaultValue = "name") String sortBy) {
+        return ResponseEntity.ok(doctorService.getDoctorsForAdminBranch(
+                pageNumber, pageSize, search, specialization, sortBy));
+    }
+
+    @GetMapping("/appointments")
+    public ResponseEntity<List<AppointmentResponseDto>> getRecentAppointments(
+            @RequestParam(value = "page", defaultValue = "0") Integer pageNumber,
+            @RequestParam(value = "size", defaultValue = "10") Integer pageSize) {
+        return ResponseEntity.ok(appointmentService.getRecentAppointmentsForAdmin(pageNumber, pageSize));
     }
 }
