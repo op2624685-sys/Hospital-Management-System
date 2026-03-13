@@ -26,9 +26,11 @@ import com.hms.dto.DepartmentDto;
 import com.hms.entity.Appointment;
 import com.hms.entity.Doctor;
 import com.hms.entity.Patient;
+import com.hms.entity.Admin;
 import com.hms.entity.type.AppointmentStatusType;
 import com.hms.entity.type.RoleType;
 import com.hms.repository.AppointmentRepository;
+import com.hms.repository.AdminRepository;
 import com.hms.repository.DoctorRepository;
 import com.hms.repository.PatientRepository;
 import com.hms.service.AppointmentService;
@@ -36,6 +38,7 @@ import com.hms.service.EmailService;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 
 @Service
 @RequiredArgsConstructor
@@ -45,6 +48,7 @@ public class AppointmentServiceImpl implements AppointmentService {
     private final AppointmentRepository appointmentRepository;
     private final PatientRepository patientRepository;
     private final DoctorRepository doctorRepository;
+    private final AdminRepository adminRepository;
     private final EmailService emailService;
     @Value("${app.appointment-details-base-url:http://localhost:5173/appointments}")
     private String appointmentDetailsBaseUrl;
@@ -256,6 +260,20 @@ public class AppointmentServiceImpl implements AppointmentService {
                 .map(Appointment::getAppointmentTime)
                 .sorted()
                 .toList();
+    }
+
+    @Override
+    @Transactional
+    @PreAuthorize("hasRole('ADMIN')")
+    public List<AppointmentResponseDto> getRecentAppointmentsForAdmin(int page, int size) {
+        Long adminUserId = getAuthenticatedUserId();
+        Admin admin = adminRepository.findById(adminUserId)
+                .orElseThrow(() -> new RuntimeException("Admin profile not found for user id: " + adminUserId));
+        var pageable = PageRequest.of(Math.max(page, 0), Math.max(size, 1));
+        return appointmentRepository.findByBranch_IdOrderByAppointmentTimeDesc(admin.getBranch().getId(), pageable)
+                .stream()
+                .map(this::mapToAppointmentResponseDto)
+                .collect(Collectors.toList());
     }
 
     private void enforceDoctorCanAccessOwnAppointment(Appointment appointment) {

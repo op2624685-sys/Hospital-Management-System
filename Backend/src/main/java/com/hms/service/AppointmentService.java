@@ -30,4 +30,6 @@ public interface AppointmentService{
 
     List<LocalDateTime> getBookedSlotsForDoctor(Long doctorId, LocalDate date);
 
+    List<AppointmentResponseDto> getRecentAppointmentsForAdmin(int page, int size);
+
 }
