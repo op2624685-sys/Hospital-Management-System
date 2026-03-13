@@ -17,4 +17,6 @@ public interface AdminService {
     String deleteAdminById(Long id);
 
     AdminResponseDto onBoardNewAdmin(OnBoardAdminRequestDto onBoardAdminRequestDto);
+
+    com.hms.dto.Response.AdminOverviewDto getAdminOverview();
 }

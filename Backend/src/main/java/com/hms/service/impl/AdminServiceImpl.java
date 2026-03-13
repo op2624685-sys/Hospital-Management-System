@@ -10,16 +10,36 @@ import org.springframework.transaction.annotation.Transactional;
 import com.hms.dto.AdminDto;
 import com.hms.dto.Request.OnBoardAdminRequestDto;
 import com.hms.dto.Response.AdminResponseDto;
+import com.hms.dto.Response.AdminOverviewDto;
+import com.hms.dto.Response.AdminStatsDto;
+import com.hms.dto.Response.AdminDepartmentLoadDto;
+import com.hms.dto.Response.AdminWeeklyCountDto;
+import com.hms.dto.Response.DoctorResponseDto;
 import com.hms.entity.Admin;
 import com.hms.entity.Branch;
+import com.hms.entity.Doctor;
 import com.hms.entity.User;
 import com.hms.entity.type.RoleType;
+import com.hms.entity.type.AppointmentStatusType;
 import com.hms.repository.AdminRepository;
+import com.hms.repository.AppointmentRepository;
 import com.hms.repository.BranchRepository;
+import com.hms.repository.DoctorRepository;
+import com.hms.repository.PatientRepository;
+import com.hms.repository.DepartmentRepository;
 import com.hms.repository.UserRepository;
 import com.hms.service.AdminService;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.context.SecurityContextHolder;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.TextStyle;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.Locale;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -28,6 +48,10 @@ public class AdminServiceImpl implements AdminService {
     private final AdminRepository adminRepository;
     private final UserRepository userRepository;
     private final BranchRepository branchRepository;
+    private final DoctorRepository doctorRepository;
+    private final PatientRepository patientRepository;
+    private final AppointmentRepository appointmentRepository;
+    private final DepartmentRepository departmentRepository;
     
     @Override
     public List<AdminDto> getAllAdmins() {
@@ -116,4 +140,90 @@ public class AdminServiceImpl implements AdminService {
                 admin.getBranch() != null ? admin.getBranch().getId() : null);
     }
 
+    @Override
+    @PreAuthorize("hasRole('ADMIN')")
+    public AdminOverviewDto getAdminOverview() {
+        Long adminUserId = getAuthenticatedUserId();
+        Admin admin = adminRepository.findById(adminUserId)
+                .orElseThrow(() -> new RuntimeException("Admin profile not found for user id: " + adminUserId));
+        Long branchId = admin.getBranch().getId();
+
+        long totalDoctors = doctorRepository.countByBranch_Id(branchId);
+        long totalPatients = patientRepository.countByBranches_Id(branchId);
+
+        LocalDate today = LocalDate.now();
+        LocalDateTime start = today.atStartOfDay();
+        LocalDateTime end = today.plusDays(1).atStartOfDay().minusNanos(1);
+        long todayAppointments = appointmentRepository.countByBranch_IdAndAppointmentTimeBetween(branchId, start, end);
+        long pendingAppointments = appointmentRepository.countByBranch_IdAndStatus(branchId, AppointmentStatusType.PENDING);
+        long confirmedAppointments = appointmentRepository.countByBranch_IdAndStatus(branchId, AppointmentStatusType.CONFIRMED);
+
+        AdminStatsDto stats = new AdminStatsDto(
+                totalDoctors,
+                totalPatients,
+                todayAppointments,
+                pendingAppointments,
+                confirmedAppointments
+        );
+
+        List<DoctorResponseDto> recentDoctors = doctorRepository.findByBranch_IdOrderByIdDesc(branchId)
+                .stream()
+                .sorted(Comparator.comparing(Doctor::getId).reversed())
+                .limit(5)
+                .map(this::mapToDoctorResponseDto)
+                .toList();
+
+        List<AdminDepartmentLoadDto> departmentLoad = departmentRepository.findByBranch_Id(branchId)
+                .stream()
+                .map(dep -> new AdminDepartmentLoadDto(dep.getName(), dep.getPatients() == null ? 0 : dep.getPatients().size()))
+                .sorted(Comparator.comparing(AdminDepartmentLoadDto::getPatientCount).reversed())
+                .toList();
+
+        List<AdminWeeklyCountDto> weeklyAppointments = new ArrayList<>();
+        for (int i = 6; i >= 0; i--) {
+            LocalDate day = today.minusDays(i);
+            LocalDateTime dayStart = day.atStartOfDay();
+            LocalDateTime dayEnd = day.plusDays(1).atStartOfDay().minusNanos(1);
+            long count = appointmentRepository.countByBranch_IdAndAppointmentTimeBetween(branchId, dayStart, dayEnd);
+            String label = day.getDayOfWeek().getDisplayName(TextStyle.SHORT, Locale.ENGLISH);
+            weeklyAppointments.add(new AdminWeeklyCountDto(label, count));
+        }
+
+        return new AdminOverviewDto(stats, recentDoctors, departmentLoad, weeklyAppointments);
+    }
+
+    private Long getAuthenticatedUserId() {
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        if (principal instanceof com.hms.entity.User user) {
+            return user.getId();
+        }
+        throw new RuntimeException("User authentication is required");
+    }
+
+    private DoctorResponseDto mapToDoctorResponseDto(Doctor doctor) {
+        if (doctor == null) return null;
+        return new DoctorResponseDto(
+                doctor.getId(),
+                doctor.getName(),
+                doctor.getSpecialization(),
+                doctor.getEmail(),
+                doctor.getDepartments() == null ? java.util.Set.of() : doctor.getDepartments().stream()
+                        .map(dep -> new com.hms.dto.DepartmentDto(
+                                dep.getId(),
+                                dep.getName(),
+                                dep.getBranch() != null ? dep.getBranch().getId() : null,
+                                dep.getHeadDoctor() != null ? dep.getHeadDoctor().getId() : null,
+                                dep.getDoctors() == null ? java.util.Set.of()
+                                        : dep.getDoctors().stream().map(Doctor::getId).collect(Collectors.toSet())
+                        ))
+                        .collect(Collectors.toSet()),
+                doctor.getBranch() == null ? null : new com.hms.dto.Response.BranchResponseDto(
+                        doctor.getBranch().getId(),
+                        doctor.getBranch().getName(),
+                        doctor.getBranch().getAddress(),
+                        doctor.getBranch().getEmail(),
+                        doctor.getBranch().getContactNumber()
+                )
+        );
+    }
 }
