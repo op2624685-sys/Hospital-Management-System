@@ -3,6 +3,8 @@ import Header from "../components/Header";
 import API from "../api/api";
 import adminApi from "../api/admin";
 import { gsap } from "gsap";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 // ── Mock fallback data (replace with real API calls) ──────────────────────────
 const MOCK = {
@@ -49,9 +51,26 @@ const statusColor = {
   Completed:    { bg: "#f0fdf4", color: "#16a34a", dot: "#22c55e" },
   "In Progress":{ bg: "#fff8f4", color: "#e42320", dot: "#e42320" },
   Pending:      { bg: "#fffbeb", color: "#d97706", dot: "#f59e0b" },
+  Confirmed:    { bg: "#eff6ff", color: "#2563eb", dot: "#3b82f6" },
   Cancelled:    { bg: "#fef2f2", color: "#dc2626", dot: "#ef4444" },
   Success:      { bg: "#f0fdf4", color: "#16a34a", dot: "#22c55e" },
   Refunded:     { bg: "#f5f3ff", color: "#7c3aed", dot: "#8b5cf6" },
+};
+
+const formatStatus = (status) => {
+  if (!status) return "Pending";
+  const upper = String(status).toUpperCase();
+  if (upper === "PENDING") return "Pending";
+  if (upper === "CONFIRMED") return "Confirmed";
+  if (upper === "CANCELLED") return "Cancelled";
+  return String(status);
+};
+
+const formatTime = (value) => {
+  if (!value) return "—";
+  const dt = new Date(value);
+  if (Number.isNaN(dt.getTime())) return value;
+  return dt.toLocaleString();
 };
 
 const deptColor = {
@@ -94,7 +113,15 @@ const Section = ({ title, subtitle, children, action }) => (
         <h3 className="admin-section-title">{title}</h3>
         {subtitle && <p className="admin-section-sub">{subtitle}</p>}
       </div>
-      {action && <button className="admin-view-all">{action}</button>}
+      {action && (
+        typeof action === "string" ? (
+          <button className="admin-view-all">{action}</button>
+        ) : (
+          <button className="admin-view-all" onClick={action.onClick}>
+            {action.label}
+          </button>
+        )
+      )}
     </div>
     {children}
   </div>
@@ -102,15 +129,45 @@ const Section = ({ title, subtitle, children, action }) => (
 
 // ── Main ──────────────────────────────────────────────────────────────────────
 const AdminPanel = () => {
-  const [stats] = useState(MOCK.stats);
-  const [appointments] = useState(MOCK.recentAppointments);
-  const [doctors] = useState(MOCK.activeDoctors);
+  const [stats, setStats] = useState(MOCK.stats);
+  const [appointments, setAppointments] = useState([]);
+  const [appointmentsLoading, setAppointmentsLoading] = useState(false);
+  const [appointmentsError, setAppointmentsError] = useState("");
+  const [appointmentsPage, setAppointmentsPage] = useState(0);
+  const [overviewDoctors, setOverviewDoctors] = useState([]);
+  const [departmentLoad, setDepartmentLoad] = useState([]);
+  const [weeklyAppointments, setWeeklyAppointments] = useState([]);
+  const [overviewError, setOverviewError] = useState("");
+  const [doctors, setDoctors] = useState([]);
+  const [doctorsLoading, setDoctorsLoading] = useState(false);
+  const [doctorsError, setDoctorsError] = useState("");
+  const [doctorPage, setDoctorPage] = useState(0);
+  const [doctorSearch, setDoctorSearch] = useState("");
+  const [doctorSpec, setDoctorSpec] = useState("");
+  const [doctorSort, setDoctorSort] = useState("name");
   const [payments] = useState(MOCK.payments);
   const [patients, setPatients] = useState([]);
   const [activeTab, setActiveTab] = useState("overview");
   const [loading, setLoading] = useState(false);
   const [showDepartmentForm, setShowDepartmentForm] = useState(false);
   const [formData, setFormData] = useState({ name: "", headDoctor: "", branch: "" });
+  const [headDoctorName, setHeadDoctorName] = useState("");
+  const [headDoctorSuggestions, setHeadDoctorSuggestions] = useState([]);
+  const [headDoctorError, setHeadDoctorError] = useState("");
+  const [departmentDoctorName, setDepartmentDoctorName] = useState("");
+  const [departmentDoctorSuggestions, setDepartmentDoctorSuggestions] = useState([]);
+  const [selectedDepartmentDoctors, setSelectedDepartmentDoctors] = useState([]);
+  const [departments, setDepartments] = useState([]);
+  const [departmentsLoading, setDepartmentsLoading] = useState(false);
+  const [departmentsError, setDepartmentsError] = useState("");
+  const [doctorForm, setDoctorForm] = useState({
+    username: "",
+    name: "",
+    specialization: "",
+    email: "",
+  });
+  const [doctorSubmitting, setDoctorSubmitting] = useState(false);
+  const [doctorMessage, setDoctorMessage] = useState("");
   const [currentPage, setCurrentPage] = useState(0);
   const [_totalPatients, _setTotalPatients] = useState(0);
   const headerRef = useRef(null);
@@ -129,6 +186,26 @@ const AdminPanel = () => {
     }
   }, [currentPage]);
 
+  const fetchDoctors = useCallback(async (page = 0, size = 10, search = "", specialization = "", sort = "name") => {
+    try {
+      setDoctorsError("");
+      setDoctorsLoading(true);
+      const response = await adminApi.getDoctors({
+        page,
+        size,
+        search: search || undefined,
+        specialization: specialization || undefined,
+        sort,
+      });
+      setDoctors(response.data || []);
+    } catch (error) {
+      setDoctorsError(error?.response?.data?.message || "Failed to load doctors");
+      setDoctors([]);
+    } finally {
+      setDoctorsLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
     gsap.fromTo(headerRef.current,
       { opacity: 0, y: -20 },
@@ -143,21 +220,56 @@ const AdminPanel = () => {
     }
   }, [activeTab, fetchPatients]);
 
+  useEffect(() => {
+    if (activeTab === "doctors") {
+      fetchDoctors(doctorPage, 10, doctorSearch.trim(), doctorSpec.trim(), doctorSort);
+    }
+  }, [activeTab, doctorPage, doctorSearch, doctorSpec, doctorSort, fetchDoctors]);
+
+  const fetchDepartments = useCallback(async () => {
+    try {
+      setDepartmentsError("");
+      setDepartmentsLoading(true);
+      const response = await adminApi.getDepartments();
+      setDepartments(response.data || []);
+    } catch (error) {
+      setDepartmentsError(error?.response?.data?.message || "Failed to load departments");
+      setDepartments([]);
+    } finally {
+      setDepartmentsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (activeTab === "departments") {
+      fetchDepartments();
+    }
+  }, [activeTab, fetchDepartments]);
+
 
 
   const handleCreateDepartment = async (e) => {
     e.preventDefault();
-    if (!formData.name || !formData.headDoctor || !formData.branch) {
+    if (!formData.name || !headDoctorName) {
       alert("Please fill all fields");
       return;
     }
 
     try {
       setLoading(true);
+      setHeadDoctorError("");
+      const match = headDoctorSuggestions.find(
+        d => d.name && d.name.toLowerCase() === headDoctorName.trim().toLowerCase()
+      );
+      if (!match) {
+        setHeadDoctorError("Please select a valid head doctor from suggestions");
+        setLoading(false);
+        return;
+      }
       const payload = {
         name: formData.name,
-        headDoctorId: parseInt(formData.headDoctor),
-        branchId: parseInt(formData.branch),
+        headDoctorId: match.id,
+        doctorIds: selectedDepartmentDoctors.map(d => d.id),
       };
       const response = await adminApi.createDepartment(payload);
       
@@ -169,9 +281,9 @@ const AdminPanel = () => {
       const newDept = {
         id: response.data?.id || Date.now(),
         name: formData.name,
-        headDoctorId: parseInt(formData.headDoctor),
-        headDoctorName: `Dr. ID: ${formData.headDoctor}`, // This can be enhanced with actual doctor name from API
-        branchId: parseInt(formData.branch),
+        headDoctorId: match.id,
+        headDoctorName: `Dr. ${match.name}`,
+        branchId: null,
         members: 0,
         createdAt: new Date().toISOString(),
       };
@@ -179,21 +291,156 @@ const AdminPanel = () => {
       deptList.push(newDept);
       localStorage.setItem('createdDepartments', JSON.stringify(deptList));
       
-      alert("Department created successfully! You can view it on the Department page.");
+      toast.success("Department created successfully!");
       setFormData({ name: "", headDoctor: "", branch: "" });
+      setHeadDoctorName("");
+      setHeadDoctorSuggestions([]);
+      setDepartmentDoctorName("");
+      setDepartmentDoctorSuggestions([]);
+      setSelectedDepartmentDoctors([]);
       setShowDepartmentForm(false);
-      
-      // Refresh departments list
-      window.location.reload();
+      await fetchDepartments();
     } catch (error) {
       console.error("Error creating department:", error);
-      alert("Failed to create department. " + (error.response?.data?.message || ""));
+      toast.error("Failed to create department. " + (error.response?.data?.message || ""));
     } finally {
       setLoading(false);
     }
   };
 
+  useEffect(() => {
+    const q = headDoctorName.trim();
+    if (!showDepartmentForm || q.length < 2) {
+      setHeadDoctorSuggestions([]);
+      return;
+    }
+    let cancelled = false;
+    adminApi.getDoctors({ page: 0, size: 10, search: q, sort: "name" })
+      .then(res => {
+        if (!cancelled) {
+          setHeadDoctorSuggestions(res.data || []);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) setHeadDoctorSuggestions([]);
+      });
+    return () => { cancelled = true; };
+  }, [headDoctorName, showDepartmentForm]);
+
+  useEffect(() => {
+    const q = departmentDoctorName.trim();
+    if (!showDepartmentForm || q.length < 2) {
+      setDepartmentDoctorSuggestions([]);
+      return;
+    }
+    let cancelled = false;
+    adminApi.getDoctors({ page: 0, size: 10, search: q, sort: "name" })
+      .then(res => {
+        if (!cancelled) {
+          setDepartmentDoctorSuggestions(res.data || []);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) setDepartmentDoctorSuggestions([]);
+      });
+    return () => { cancelled = true; };
+  }, [departmentDoctorName, showDepartmentForm]);
+
+  const addDepartmentDoctor = () => {
+    const match = departmentDoctorSuggestions.find(
+      d => d.name && d.name.toLowerCase() === departmentDoctorName.trim().toLowerCase()
+    );
+    if (!match) return;
+    if (selectedDepartmentDoctors.some(d => d.id === match.id)) return;
+    setSelectedDepartmentDoctors([...selectedDepartmentDoctors, { id: match.id, name: match.name }]);
+    setDepartmentDoctorName("");
+    setDepartmentDoctorSuggestions([]);
+  };
+
+  const removeDepartmentDoctor = (id) => {
+    setSelectedDepartmentDoctors(selectedDepartmentDoctors.filter(d => d.id !== id));
+  };
+
+  const handleOnboardDoctor = async (e) => {
+    e.preventDefault();
+    setDoctorMessage("");
+    const payload = {
+      username: doctorForm.username.trim(),
+      name: doctorForm.name.trim(),
+      specialization: doctorForm.specialization.trim(),
+      email: doctorForm.email.trim(),
+    };
+    if (!payload.username || !payload.name || !payload.specialization || !payload.email) {
+      setDoctorMessage("Please fill all fields");
+      return;
+    }
+
+    try {
+      setDoctorSubmitting(true);
+      await adminApi.onboardDoctor(payload);
+      setDoctorMessage("Doctor onboarded successfully");
+      setDoctorForm({ username: "", name: "", specialization: "", email: "" });
+    } catch (error) {
+      setDoctorMessage(error?.response?.data?.message || "Failed to onboard doctor");
+    } finally {
+      setDoctorSubmitting(false);
+    }
+  };
+
   const tabs = ["overview", "appointments", "doctors", "payments", "patients", "departments"];
+
+  const fetchAppointments = useCallback(async (page = 0, size = 10) => {
+    try {
+      setAppointmentsError("");
+      setAppointmentsLoading(true);
+      const response = await adminApi.getAppointments(page, size);
+      setAppointments(response.data || []);
+    } catch (error) {
+      setAppointmentsError(error?.response?.data?.message || "Failed to load appointments");
+      setAppointments([]);
+    } finally {
+      setAppointmentsLoading(false);
+    }
+  }, []);
+
+  const fetchOverview = useCallback(async () => {
+    try {
+      setOverviewError("");
+      const response = await adminApi.getOverview();
+      const data = response.data || {};
+      if (data.stats) {
+        setStats((prev) => ({
+          ...prev,
+          totalDoctors: data.stats.totalDoctors ?? prev.totalDoctors,
+          totalPatients: data.stats.totalPatients ?? prev.totalPatients,
+          todayAppointments: data.stats.todayAppointments ?? prev.todayAppointments,
+          pendingAppointments: data.stats.pendingAppointments ?? prev.pendingAppointments,
+          completedAppointments: data.stats.confirmedAppointments ?? prev.completedAppointments,
+          totalRevenue: prev.totalRevenue,
+          todayRevenue: prev.todayRevenue,
+        }));
+      }
+      setOverviewDoctors(data.recentDoctors || []);
+      setDepartmentLoad(data.departmentLoad || []);
+      setWeeklyAppointments(data.weeklyAppointments || []);
+    } catch (error) {
+      setOverviewError(error?.response?.data?.message || "Failed to load overview");
+    }
+  }, []);
+
+  useEffect(() => {
+    if (activeTab === "overview") {
+      setAppointmentsPage(0);
+      fetchAppointments(0, 5);
+      fetchOverview();
+    }
+  }, [activeTab, fetchAppointments, fetchOverview]);
+
+  useEffect(() => {
+    if (activeTab === "appointments") {
+      fetchAppointments(appointmentsPage, 10);
+    }
+  }, [activeTab, appointmentsPage, fetchAppointments]);
 
   return (
     <>
@@ -498,6 +745,11 @@ const AdminPanel = () => {
           padding: 24px;
           margin-bottom: 20px;
         }
+        .admin-form-message {
+          margin-top: 12px;
+          font-size: 12px;
+          color: #e42320;
+        }
         .admin-form-group {
           display: grid;
           grid-template-columns: 1fr 1fr;
@@ -572,13 +824,16 @@ const AdminPanel = () => {
         .admin-patients-header {
           padding: 20px 24px;
           border-bottom: 1px solid #f9f6f2;
-          display: flex;
-          justify-content: space-between;
+          display: grid;
+          grid-template-columns: 2fr 1fr 1fr;
           align-items: center;
+          gap: 12px;
         }
         .admin-patient-row {
-          display: flex;
+          display: grid;
+          grid-template-columns: 2fr 1fr 1fr;
           align-items: center;
+          gap: 12px;
           padding: 12px 24px;
           border-bottom: 1px solid #f9f6f2;
           transition: background .15s;
@@ -592,11 +847,17 @@ const AdminPanel = () => {
         .admin-patient-col.name {
           font-weight: 600;
           color: #1a1a1a;
-          flex: 2;
+          display: flex;
+          flex-direction: column;
+          gap: 2px;
+        }
+        .admin-patient-sub {
+          font-size: 12px;
+          color: #888;
+          font-weight: 400;
         }
         .admin-patient-col.email {
           color: #666;
-          flex: 2;
         }
         .admin-patient-col.id {
           font-family: monospace;
@@ -820,67 +1081,88 @@ const AdminPanel = () => {
 
             {/* Recent Appointments */}
             <div className="admin-section full">
-              <Section title="Recent Appointments" subtitle="Today's appointment activity" action="View All">
-                <table className="admin-table">
-                  <thead>
-                    <tr>
-                      <th>ID</th><th>Patient</th><th>Doctor</th><th>Department</th>
-                      <th>Time</th><th>Status</th><th>Amount</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {appointments.map(apt => {
-                      const s = statusColor[apt.status] || statusColor.Pending;
-                      return (
-                        <tr key={apt.id}>
-                          <td><span className="admin-apt-id">{apt.id}</span></td>
-                          <td><span className="admin-patient-name">{apt.patient}</span></td>
-                          <td>{apt.doctor}</td>
-                          <td>
-                            <span className="admin-dept-tag"
-                              style={{ color: deptColor[apt.dept] || deptColor.default }}>
-                              {apt.dept}
-                            </span>
-                          </td>
-                          <td>{apt.time}</td>
-                          <td>
-                            <span className="admin-status-pill"
-                              style={{ background: s.bg, color: s.color }}>
-                              <span className="admin-status-dot" style={{ background: s.dot }} />
-                              {apt.status}
-                            </span>
-                          </td>
-                          <td><span className="admin-amount">₹{apt.amount}</span></td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
+              <Section
+                title="Recent Appointments"
+                subtitle="Today's appointment activity"
+                action={{ label: "View All", onClick: () => setActiveTab("appointments") }}
+              >
+                {appointmentsLoading ? (
+                  <div className="admin-loading">Loading appointments...</div>
+                ) : appointmentsError ? (
+                  <div className="admin-empty-state">{appointmentsError}</div>
+                ) : appointments.length === 0 ? (
+                  <div className="admin-empty-state">No appointments found</div>
+                ) : (
+                  <table className="admin-table">
+                    <thead>
+                      <tr>
+                        <th>ID</th><th>Patient</th><th>Doctor</th><th>Department</th>
+                        <th>Time</th><th>Status</th><th>Amount</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {appointments.map(apt => {
+                        const statusLabel = formatStatus(apt.status);
+                        const s = statusColor[statusLabel] || statusColor.Pending;
+                        const dept = apt?.doctor?.departments?.[0]?.name || apt?.doctor?.specialization || "General";
+                        return (
+                          <tr key={apt.appointmentId || apt.id}>
+                            <td><span className="admin-apt-id">{apt.appointmentId || apt.id}</span></td>
+                            <td><span className="admin-patient-name">{apt?.patient?.name || "—"}</span></td>
+                            <td>{apt?.doctor?.name ? `Dr. ${apt.doctor.name}` : "—"}</td>
+                            <td>
+                              <span className="admin-dept-tag"
+                                style={{ color: deptColor[dept] || deptColor.default }}>
+                                {dept}
+                              </span>
+                            </td>
+                            <td>{formatTime(apt.appointmentTime)}</td>
+                            <td>
+                              <span className="admin-status-pill"
+                                style={{ background: s.bg, color: s.color }}>
+                                <span className="admin-status-dot" style={{ background: s.dot }} />
+                                {statusLabel}
+                              </span>
+                            </td>
+                            <td><span className="admin-amount">—</span></td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                )}
               </Section>
             </div>
 
             {/* Active Doctors */}
             <div className="admin-section">
-              <Section title="Active Doctors" subtitle="Currently on duty" action="Manage">
+              <Section
+                title="Recent Doctors"
+                subtitle="Latest doctors in your branch"
+                action={{ label: "View All", onClick: () => setActiveTab("doctors") }}
+              >
                 <div className="admin-doctor-list">
-                  {doctors.map(doc => (
+                  {overviewDoctors.map(doc => {
+                    const patientCount = Array.isArray(doc.patients)
+                      ? doc.patients.length
+                      : (typeof doc.patients === "number" ? doc.patients : 0);
+                    const initials = (doc.name || "DR").split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2);
+                    return (
                     <div key={doc.id} className="admin-doctor-row">
                       <div className="admin-doc-avatar"
-                        style={{ background: `linear-gradient(135deg, ${deptColor[doc.speciality] || deptColor.default}, #1a1a1a)` }}>
-                        {doc.avatar}
+                        style={{ background: `linear-gradient(135deg, ${deptColor[doc.specialization] || deptColor.default}, #1a1a1a)` }}>
+                        {initials}
                       </div>
                       <div className="admin-doc-info">
-                        <div className="admin-doc-name">{doc.name}</div>
-                        <div className="admin-doc-spec">{doc.speciality}</div>
+                        <div className="admin-doc-name">Dr. {doc.name}</div>
+                        <div className="admin-doc-spec">{doc.specialization || "General"}</div>
                       </div>
                       <div className="admin-doc-meta">
-                        <span className="admin-doc-pts">{doc.patients} pts</span>
-                        <span className={`admin-doc-status ${doc.status === "Active" ? "active" : "leave"}`}>
-                          {doc.status}
-                        </span>
+                        <span className="admin-doc-pts">{doc.email || "—"}</span>
                       </div>
                     </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </Section>
             </div>
@@ -919,25 +1201,25 @@ const AdminPanel = () => {
             <div className="admin-section">
               <Section title="Department Load" subtitle="Active patients by department">
                 <div className="admin-progress-wrap">
-                  {[
-                    { name: "Cardiology",   val: 85, color: "#e42320" },
-                    { name: "Neurology",    val: 62, color: "#7c3aed" },
-                    { name: "Orthopedics",  val: 74, color: "#0891b2" },
-                    { name: "Pediatrics",   val: 91, color: "#d97706" },
-                    { name: "Dermatology",  val: 48, color: "#db2777" },
-                    { name: "General",      val: 55, color: "#059669" },
-                  ].map(d => (
+                  {departmentLoad.map((d, idx) => {
+                    const max = Math.max(1, ...departmentLoad.map(x => x.patientCount || 0));
+                    const val = Math.round(((d.patientCount || 0) / max) * 100);
+                    const color = deptColor[d.name] || deptColor.default;
+                    return (
                     <div key={d.name} className="admin-progress-row">
                       <div className="admin-progress-head">
-                        <span className="admin-progress-label" style={{ color: d.color }}>{d.name}</span>
-                        <span className="admin-progress-val">{d.val}%</span>
+                        <span className="admin-progress-label" style={{ color }}>{d.name}</span>
+                        <span className="admin-progress-val">{val}%</span>
                       </div>
                       <div className="admin-progress-track">
                         <div className="admin-progress-fill"
-                          style={{ width: `${d.val}%`, background: d.color }} />
+                          style={{ width: `${val}%`, background: color }} />
                       </div>
                     </div>
-                  ))}
+                  )})}
+                  {departmentLoad.length === 0 && (
+                    <div className="admin-empty-state">No department data</div>
+                  )}
                 </div>
               </Section>
             </div>
@@ -946,40 +1228,209 @@ const AdminPanel = () => {
             <div className="admin-section">
               <Section title="Weekly Appointments" subtitle="This week vs last week">
                 <div className="admin-chart-bars">
-                  {[
-                    { day: "Mon", cur: 78, prev: 65 },
-                    { day: "Tue", cur: 92, prev: 80 },
-                    { day: "Wed", cur: 105,prev: 88 },
-                    { day: "Thu", cur: 88, prev: 72 },
-                    { day: "Fri", cur: 134,prev: 110},
-                    { day: "Sat", cur: 60, prev: 55 },
-                    { day: "Sun", cur: 30, prev: 28 },
-                  ].map(d => (
+                  {weeklyAppointments.map(d => {
+                    const max = Math.max(1, ...weeklyAppointments.map(x => x.count || 0));
+                    const cur = Math.round((d.count / max) * 90);
+                    return (
                     <div key={d.day} className="admin-bar-wrap">
                       <div style={{ display: "flex", gap: 3, alignItems: "flex-end", flex: 1, width: "100%" }}>
-                        <div className="admin-bar secondary"
-                          style={{ height: `${(d.prev / 134) * 90}%`, flex: 1 }} />
                         <div className="admin-bar"
-                          style={{ height: `${(d.cur / 134) * 90}%`, flex: 1 }} />
+                          style={{ height: `${cur}%`, flex: 1 }} />
                       </div>
                       <span className="admin-bar-label">{d.day}</span>
                     </div>
-                  ))}
-                </div>
-                <div style={{ display: "flex", gap: 16, marginTop: 14 }}>
-                  <span style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11, color: "#aaa" }}>
-                    <span style={{ width: 10, height: 10, borderRadius: 2, background: "#e42320", display: "inline-block" }} />
-                    This week
-                  </span>
-                  <span style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11, color: "#aaa" }}>
-                    <span style={{ width: 10, height: 10, borderRadius: 2, background: "#555", display: "inline-block" }} />
-                    Last week
-                  </span>
+                  )})}
+                  {weeklyAppointments.length === 0 && (
+                    <div className="admin-empty-state">No weekly data</div>
+                  )}
                 </div>
               </Section>
             </div>
 
               </>
+            )}
+
+            {activeTab === "appointments" && (
+              <div className="admin-section full">
+                <Section title="All Appointments" subtitle="Paginated appointment list">
+                  {appointmentsLoading ? (
+                    <div className="admin-loading">Loading appointments...</div>
+                  ) : appointmentsError ? (
+                    <div className="admin-empty-state">{appointmentsError}</div>
+                  ) : appointments.length === 0 ? (
+                    <div className="admin-empty-state">No appointments found</div>
+                  ) : (
+                    <>
+                      <table className="admin-table">
+                        <thead>
+                          <tr>
+                            <th>ID</th><th>Patient</th><th>Doctor</th><th>Department</th>
+                            <th>Time</th><th>Status</th><th>Amount</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {appointments.map(apt => {
+                            const statusLabel = formatStatus(apt.status);
+                            const s = statusColor[statusLabel] || statusColor.Pending;
+                            const dept = apt?.doctor?.departments?.[0]?.name || apt?.doctor?.specialization || "General";
+                            return (
+                              <tr key={apt.appointmentId || apt.id}>
+                                <td><span className="admin-apt-id">{apt.appointmentId || apt.id}</span></td>
+                                <td><span className="admin-patient-name">{apt?.patient?.name || "—"}</span></td>
+                                <td>{apt?.doctor?.name ? `Dr. ${apt.doctor.name}` : "—"}</td>
+                                <td>
+                                  <span className="admin-dept-tag"
+                                    style={{ color: deptColor[dept] || deptColor.default }}>
+                                    {dept}
+                                  </span>
+                                </td>
+                                <td>{formatTime(apt.appointmentTime)}</td>
+                                <td>
+                                  <span className="admin-status-pill"
+                                    style={{ background: s.bg, color: s.color }}>
+                                    <span className="admin-status-dot" style={{ background: s.dot }} />
+                                    {statusLabel}
+                                  </span>
+                                </td>
+                                <td><span className="admin-amount">—</span></td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                      <div className="admin-pagination">
+                        <button
+                          onClick={() => setAppointmentsPage(Math.max(0, appointmentsPage - 1))}
+                          disabled={appointmentsPage === 0}>
+                          Previous
+                        </button>
+                        <span style={{ padding: "6px 12px", fontSize: 12, color: "#aaa" }}>
+                          Page {appointmentsPage + 1}
+                        </span>
+                        <button
+                          onClick={() => setAppointmentsPage(appointmentsPage + 1)}
+                          disabled={appointments.length < 10}>
+                          Next
+                        </button>
+                      </div>
+                    </>
+                  )}
+                </Section>
+              </div>
+            )}
+
+            {activeTab === "doctors" && (
+              <div className="admin-section full">
+                <Section title="Onboard Doctor" subtitle="Doctors are assigned to your branch automatically">
+                  <form className="admin-form-wrapper" onSubmit={handleOnboardDoctor}>
+                    <div className="admin-form-group">
+                      <div>
+                        <label className="admin-form-label">Username</label>
+                        <input
+                          type="text"
+                          placeholder="Doctor username"
+                          value={doctorForm.username}
+                          onChange={(e) => setDoctorForm({ ...doctorForm, username: e.target.value })}
+                          required
+                        />
+                      </div>
+                      <div>
+                        <label className="admin-form-label">Doctor Name</label>
+                        <input
+                          type="text"
+                          placeholder="Doctor name"
+                          value={doctorForm.name}
+                          onChange={(e) => setDoctorForm({ ...doctorForm, name: e.target.value })}
+                          required
+                        />
+                      </div>
+                    </div>
+                    <div className="admin-form-group">
+                      <div>
+                        <label className="admin-form-label">Specialization</label>
+                        <input
+                          type="text"
+                          placeholder="Specialization"
+                          value={doctorForm.specialization}
+                          onChange={(e) => setDoctorForm({ ...doctorForm, specialization: e.target.value })}
+                          required
+                        />
+                      </div>
+                      <div>
+                        <label className="admin-form-label">Email</label>
+                        <input
+                          type="email"
+                          placeholder="doctor@example.com"
+                          value={doctorForm.email}
+                          onChange={(e) => setDoctorForm({ ...doctorForm, email: e.target.value })}
+                          required
+                        />
+                      </div>
+                    </div>
+                    {doctorMessage && <div className="admin-form-message">{doctorMessage}</div>}
+                    <div className="admin-form-actions">
+                      <button type="submit" className="btn-primary" disabled={doctorSubmitting}>
+                        {doctorSubmitting ? "Onboarding..." : "Onboard Doctor"}
+                      </button>
+                    </div>
+                  </form>
+                </Section>
+                <Section title="Doctors" subtitle="Doctors in your branch">
+                  <div className="admin-form-wrapper" style={{ marginBottom: 16 }}>
+                    <div className="admin-form-group full">
+                      <label className="admin-form-label">Search Doctor</label>
+                      <input
+                        type="text"
+                        placeholder="Search by name"
+                        value={doctorSearch}
+                        onChange={(e) => { setDoctorSearch(e.target.value); setDoctorPage(0); }}
+                      />
+                    </div>
+                  </div>
+                  {doctorsLoading ? (
+                    <div className="admin-loading">Loading doctors...</div>
+                  ) : doctorsError ? (
+                    <div className="admin-empty-state">{doctorsError}</div>
+                  ) : doctors.length === 0 ? (
+                    <div className="admin-empty-state">No doctors found</div>
+                  ) : (
+                    <>
+                      <div className="admin-doctor-list">
+                        {doctors.map(doc => (
+                          <div key={doc.id} className="admin-doctor-row">
+                            <div className="admin-doc-avatar"
+                              style={{ background: `linear-gradient(135deg, ${deptColor[doc.specialization] || deptColor.default}, #1a1a1a)` }}>
+                              {(doc.name || "DR").split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2)}
+                            </div>
+                            <div className="admin-doc-info">
+                              <div className="admin-doc-name">Dr. {doc.name}</div>
+                              <div className="admin-doc-spec">{doc.specialization || "General"}</div>
+                            </div>
+                            <div className="admin-doc-meta">
+                              <span className="admin-doc-pts">{doc.email || "—"}</span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                      <div className="admin-pagination">
+                        <button
+                          onClick={() => setDoctorPage(Math.max(0, doctorPage - 1))}
+                          disabled={doctorPage === 0}>
+                          Previous
+                        </button>
+                        <span style={{ padding: "6px 12px", fontSize: 12, color: "#aaa" }}>
+                          Page {doctorPage + 1}
+                        </span>
+                        <button
+                          onClick={() => setDoctorPage(doctorPage + 1)}
+                          disabled={doctors.length < 10}>
+                          Next
+                        </button>
+                      </div>
+                    </>
+                  )}
+                </Section>
+              </div>
             )}
 
             {activeTab === "patients" && (
@@ -991,19 +1442,20 @@ const AdminPanel = () => {
                     <div className="admin-empty-state">No patients found</div>
                   ) : (
                     <div className="admin-patients-list">
-                      <div className="admin-patients-header">
-                        <div style={{ flex: 2, fontWeight: 600, fontSize: 13 }}>Patient Name</div>
-                        <div style={{ flex: 2, fontWeight: 600, fontSize: 13 }}>Email</div>
-                        <div style={{ flex: 1, fontWeight: 600, fontSize: 13 }}>Blood Group</div>
-                        <div style={{ flex: 1, fontWeight: 600, fontSize: 13, textAlign: "center" }}>Registered</div>
+                    <div className="admin-patients-header">
+                        <div style={{ fontWeight: 600, fontSize: 13 }}>Patient</div>
+                        <div style={{ fontWeight: 600, fontSize: 13 }}>Blood Group</div>
+                        <div style={{ fontWeight: 600, fontSize: 13, textAlign: "center" }}>Birth Date</div>
                       </div>
                       {patients.map(patient => (
                         <div key={patient.id} className="admin-patient-row">
-                          <div className="admin-patient-col name">{patient.name || "N/A"}</div>
-                          <div className="admin-patient-col email">{patient.email || "N/A"}</div>
+                          <div className="admin-patient-col name">
+                            <div>{patient.name || "N/A"}</div>
+                            <div className="admin-patient-sub">{patient.email || "N/A"}</div>
+                          </div>
                           <div className="admin-patient-col">{patient.bloodGroup || "N/A"}</div>
                           <div className="admin-patient-col" style={{ textAlign: "center", fontSize: 12, color: "#aaa" }}>
-                            {patient.createdAt ? new Date(patient.createdAt).toLocaleDateString() : "N/A"}
+                            {patient.birthDate || "N/A"}
                           </div>
                         </div>
                       ))}
@@ -1053,26 +1505,71 @@ const AdminPanel = () => {
                           />
                         </div>
                         <div>
-                          <label className="admin-form-label">Head Doctor ID</label>
+                          <label className="admin-form-label">Head Doctor Name</label>
                           <input
-                            type="number"
-                            placeholder="Enter doctor ID"
-                            value={formData.headDoctor}
-                            onChange={(e) => setFormData({ ...formData, headDoctor: e.target.value })}
+                            type="text"
+                            list="head-doctor-suggestions"
+                            placeholder="Search doctor by name"
+                            value={headDoctorName}
+                            onChange={(e) => setHeadDoctorName(e.target.value)}
                             required
                           />
+                          <datalist id="head-doctor-suggestions">
+                            {headDoctorSuggestions.map(d => (
+                              <option key={d.id} value={d.name} />
+                            ))}
+                          </datalist>
                         </div>
                       </div>
-                      <div className="admin-form-group full">
-                        <label className="admin-form-label">Branch ID</label>
-                        <input
-                          type="number"
-                          placeholder="Enter branch ID"
-                          value={formData.branch}
-                          onChange={(e) => setFormData({ ...formData, branch: e.target.value })}
-                          required
-                        />
+                      {headDoctorError && (
+                        <div className="admin-form-message">{headDoctorError}</div>
+                      )}
+                      <div className="admin-form-group">
+                        <div>
+                          <label className="admin-form-label">Add Doctors</label>
+                          <input
+                            type="text"
+                            list="department-doctor-suggestions"
+                            placeholder="Search doctor by name"
+                            value={departmentDoctorName}
+                            onChange={(e) => setDepartmentDoctorName(e.target.value)}
+                          />
+                          <datalist id="department-doctor-suggestions">
+                            {departmentDoctorSuggestions.map(d => (
+                              <option key={d.id} value={d.name} />
+                            ))}
+                          </datalist>
+                        </div>
+                        <div style={{ display: "flex", alignItems: "flex-end" }}>
+                          <button
+                            type="button"
+                            className="admin-refresh-btn"
+                            onClick={addDepartmentDoctor}
+                          >
+                            Add
+                          </button>
+                        </div>
                       </div>
+                      {selectedDepartmentDoctors.length > 0 && (
+                        <div className="admin-form-group full">
+                          <div>
+                            <label className="admin-form-label">Selected Doctors</label>
+                            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                              {selectedDepartmentDoctors.map(d => (
+                                <button
+                                  key={d.id}
+                                  type="button"
+                                  className="admin-view-all"
+                                  onClick={() => removeDepartmentDoctor(d.id)}
+                                  title="Remove"
+                                >
+                                  Dr. {d.name} ×
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                      )}
                       <div className="admin-form-actions">
                         <button 
                           type="button" 
@@ -1089,6 +1586,32 @@ const AdminPanel = () => {
                       </div>
                     </form>
                   )}
+                  <Section title="Departments" subtitle="Head doctor and members">
+                    {departmentsLoading ? (
+                      <div className="admin-loading">Loading departments...</div>
+                    ) : departmentsError ? (
+                      <div className="admin-empty-state">{departmentsError}</div>
+                    ) : departments.length === 0 ? (
+                      <div className="admin-empty-state">No departments found</div>
+                    ) : (
+                      <div className="admin-patients-list">
+                        <div className="admin-patients-header">
+                          <div style={{ fontWeight: 600, fontSize: 13 }}>Department</div>
+                          <div style={{ fontWeight: 600, fontSize: 13 }}>Head Doctor</div>
+                          <div style={{ fontWeight: 600, fontSize: 13, textAlign: "center" }}>Members</div>
+                        </div>
+                        {departments.map(dep => (
+                          <div key={dep.id} className="admin-patient-row">
+                            <div className="admin-patient-col name">{dep.name}</div>
+                            <div className="admin-patient-col">{dep.headDoctorName || "N/A"}</div>
+                            <div className="admin-patient-col" style={{ textAlign: "center", fontSize: 12, color: "#aaa" }}>
+                              {dep.memberCount ?? 0}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </Section>
                 </Section>
               </div>
             )}
@@ -1096,6 +1619,7 @@ const AdminPanel = () => {
           </div>
         </div>
       </div>
+      <ToastContainer position="top-right" autoClose={2500} />
     </>
   );
 };
