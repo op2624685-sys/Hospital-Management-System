@@ -24,6 +24,5 @@ public class OnBoardDoctorRequestDto {
     @Email(message = "email must be valid")
     private String email;
 
-    @NotBlank(message = "branchName is required")
     private String branchName;
 }
