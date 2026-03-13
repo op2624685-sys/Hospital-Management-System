@@ -11,6 +11,7 @@ import com.hms.entity.User;
 import com.hms.service.AppointmentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
+import jakarta.validation.Valid;
 
 
 @RestController
@@ -38,7 +39,7 @@ public class DoctorController {
     @PutMapping("/appointments/{appointmentId}")
     public ResponseEntity<AppointmentResponseDto> updateAppointment(
             @PathVariable String appointmentId,
-            @RequestBody UpdateAppointmentRequestDto updateAppointmentRequestDto) {
+            @Valid @RequestBody UpdateAppointmentRequestDto updateAppointmentRequestDto) {
         return ResponseEntity.ok(appointmentService.updateAppointment(appointmentId, updateAppointmentRequestDto));
     }
     
