@@ -16,17 +16,22 @@ import static com.hms.entity.type.RoleType.*;
 
 import java.util.List;
 
-import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Qualifier;
 import lombok.extern.slf4j.Slf4j;
 
 @Configuration
 @EnableMethodSecurity
 @Slf4j
-@RequiredArgsConstructor
 public class WebSecurityConfig {
 
     private final JwtAuthFilter jwtAuthFilter;
     private final HandlerExceptionResolver handlerExceptionResolver;
+
+    public WebSecurityConfig(JwtAuthFilter jwtAuthFilter, 
+                             @Qualifier("handlerExceptionResolver") HandlerExceptionResolver handlerExceptionResolver) {
+        this.jwtAuthFilter = jwtAuthFilter;
+        this.handlerExceptionResolver = handlerExceptionResolver;
+    }
 
      @Bean
     public CorsConfigurationSource corsConfigurationSource() {
