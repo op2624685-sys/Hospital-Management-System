@@ -1,5 +1,6 @@
 package com.hms.dto;
 
+import java.io.Serializable;
 import java.util.Set;
 
 import lombok.*;
@@ -7,7 +8,7 @@ import lombok.*;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class DepartmentDto {
+public class DepartmentDto implements Serializable {
 
     private Long id;
     private String name;
