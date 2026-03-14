@@ -1,5 +1,6 @@
 package com.hms.dto.Response;
 
+import java.io.Serializable;
 import java.util.Set;
 
 import com.hms.dto.DepartmentDto;
@@ -10,7 +11,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class DoctorResponseDto {
+public class DoctorResponseDto implements Serializable{
     
     private Long id;
     private String name;
