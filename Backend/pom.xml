@@ -63,6 +63,12 @@
     		<artifactId>spring-boot-starter-cache</artifactId>
 		</dependency>
 
+		<!-- JavaTimeModule handle the LocalDate & Time fields in redis -->
+		<dependency>
+    		<groupId>com.fasterxml.jackson.datatype</groupId>
+    		<artifactId>jackson-datatype-jsr310</artifactId>
+		</dependency>
+
 		<!-- Swagger/SpringDoc OpenAPI for API Documentation -->
 		<dependency>
 			<groupId>org.springdoc</groupId>
