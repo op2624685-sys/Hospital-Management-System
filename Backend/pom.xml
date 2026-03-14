@@ -51,6 +51,18 @@
       		<artifactId>spring-boot-starter-oauth2-client</artifactId>
     	</dependency>
 
+		<!-- Redis -->
+		<dependency>
+    		<groupId>org.springframework.boot</groupId>
+    		<artifactId>spring-boot-starter-data-redis</artifactId>
+		</dependency>
+
+		<!-- Caching annotations (@Cacheable, @CacheEvict, etc.) -->
+		<dependency>
+    		<groupId>org.springframework.boot</groupId>
+    		<artifactId>spring-boot-starter-cache</artifactId>
+		</dependency>
+
 		<!-- Swagger/SpringDoc OpenAPI for API Documentation -->
 		<dependency>
 			<groupId>org.springdoc</groupId>
