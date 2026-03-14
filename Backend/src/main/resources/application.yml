@@ -11,6 +11,9 @@
 
 #Email sender 
 spring:
+    data:
+        redis:
+            url: ${REDIS_URL}
     mail:
         host: ${MAIL_HOST:smtp.gmail.com}
         port: ${MAIL_PORT:587}
