@@ -185,7 +185,9 @@ public class OtpServiceImpl implements OtpService {
 
     private String generateOtp() {
         Random random = new Random();
-        int otp = 100000 + random.nextInt(900000);
+        int min = (int) Math.pow(10, OTP_LENGTH - 1);
+        int max = (int) Math.pow(10, OTP_LENGTH) - 1;
+        int otp = min + random.nextInt(max - min + 1);
         return String.valueOf(otp);
     }
 
