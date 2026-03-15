@@ -1,6 +1,7 @@
 package com.hms.controller;
 
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.hms.dto.InsuranceDto;
@@ -39,18 +40,20 @@ public class PatientController {
     }
 
     @GetMapping("/appointments/check/{appointmentId}")
-    public ResponseEntity<AppointmentResponseDto> getAppointmentByAppointmentId(@PathVariable String appointmentId) {
+    public ResponseEntity<AppointmentResponseDto> getAppointmentByAppointmentId(@PathVariable(name = "appointmentId") String appointmentId) {
         return ResponseEntity.ok(appointmentService.getAppointmentByAppointmentId(appointmentId));
     }
 
     @GetMapping("/appointments")
-    public ResponseEntity<List<AppointmentResponseDto>> getAllAppointmentsOfLoggedInPatient() {
+    public ResponseEntity<List<AppointmentResponseDto>> getAllAppointmentsOfLoggedInPatient(
+            @RequestParam(name = "page", defaultValue = "0") int page,
+            @RequestParam(name = "size", defaultValue = "15") int size) {
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        return ResponseEntity.ok(appointmentService.getAllAppointmentsOfPatient(user.getId()));
+        return ResponseEntity.ok(appointmentService.getAllAppointmentsOfPatient(user.getId(), page, size));
     }
 
     @PutMapping("/appointments/{appointmentId}/cancel")
-    public ResponseEntity<AppointmentResponseDto> cancelAppointmentByPatient(@PathVariable String appointmentId) {
+    public ResponseEntity<AppointmentResponseDto> cancelAppointmentByPatient(@PathVariable(name = "appointmentId") String appointmentId) {
         return ResponseEntity.ok(appointmentService.cancelAppointmentByPatient(appointmentId));
     }
 
