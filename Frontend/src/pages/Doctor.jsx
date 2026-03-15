@@ -7,12 +7,17 @@ const Doctor = () => {
   const [doctors, setDoctors] = useState([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
+  const [page, setPage] = useState(0)
+  const [size] = useState(10)
+  const [hasMore, setHasMore] = useState(true)
 
   useEffect(() => {
     const fetchDoctors = async () => {
+      setLoading(true)
       try {
-        const response = await API.get('/public/doctors')
+        const response = await API.get(`/public/doctors?page=${page}&size=${size}`)
         setDoctors(response.data)
+        setHasMore(response.data.length === size)
       } catch (error) {
         console.error('Failed to fetch doctors:', error)
       } finally {
@@ -20,7 +25,7 @@ const Doctor = () => {
       }
     }
     fetchDoctors()
-  }, [])
+  }, [page, size])
 
   const filtered = doctors.filter(doctor => {
     const firstDepartment = Array.isArray(doctor.departments) ? doctor.departments[0] : doctor.department
@@ -470,6 +475,49 @@ const Doctor = () => {
         .doc-result-pill { color: #64748b; }
         .doc-result-pill strong { color: #0f172a; }
         .doc-result-pill span { color: #2563eb; }
+
+        /* ── Pagination ── */
+        .doc-pagination {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 12px;
+          margin-top: 40px;
+          animation: heroIn .8s .4s ease both;
+        }
+        .doc-page-btn {
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+          padding: 10px 20px;
+          background: #fff;
+          border: 1px solid #dbe6ff;
+          border-radius: 12px;
+          font-size: 14px;
+          font-weight: 600;
+          color: #2563eb;
+          cursor: pointer;
+          transition: all .2s;
+          box-shadow: 0 4px 12px rgba(15,23,42,.04);
+        }
+        .doc-page-btn:hover:not(:disabled) {
+          border-color: #93c5fd;
+          background: #eff6ff;
+          transform: translateY(-2px);
+          box-shadow: 0 6px 16px rgba(15,23,42,.08);
+        }
+        .doc-page-btn:disabled {
+          opacity: 0.5;
+          cursor: not-allowed;
+          color: #94a3b8;
+        }
+        .doc-page-num {
+          font-size: 14px;
+          font-weight: 600;
+          color: #475569;
+          min-width: 80px;
+          text-align: center;
+        }
         .doc-loading p,
         .doc-empty p { color: #64748b; }
         .doc-empty h3 { color: #0f172a; }
@@ -598,11 +646,38 @@ const Doctor = () => {
           )}
 
           {!loading && filtered.length > 0 && (
-            <div className="doc-cards-grid">
-              {filtered.map((doctor, i) => (
-                <DoctorCard key={doctor.id} doctor={doctor} index={i} />
-              ))}
-            </div>
+            <>
+              <div className="doc-cards-grid">
+                {filtered.map((doctor, i) => (
+                  <DoctorCard key={doctor.id} doctor={doctor} index={i} />
+                ))}
+              </div>
+
+              {/* Pagination Controls */}
+              <div className="doc-pagination">
+                <button
+                  className="doc-page-btn"
+                  onClick={() => setPage(p => Math.max(0, p - 1))}
+                  disabled={page === 0 || loading}
+                >
+                  <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                  </svg>
+                  Previous
+                </button>
+                <div className="doc-page-num">Page {page + 1}</div>
+                <button
+                  className="doc-page-btn"
+                  onClick={() => setPage(p => p + 1)}
+                  disabled={!hasMore || loading}
+                >
+                  Next
+                  <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </button>
+              </div>
+            </>
           )}
         </section>
       </div>
