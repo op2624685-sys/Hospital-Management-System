@@ -1,5 +1,7 @@
 package com.hms.service.impl;
 
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 import java.util.List;
@@ -22,6 +24,7 @@ public class BranchServiceImpl implements BranchService {
     private final ModelMapper modelMapper;
 
     @Override
+    @CacheEvict(value = "branches", allEntries = true)
     public BranchResponseDto createNewBranch(BranchRequestDto branchRequestDto) {
         Branch branch = new Branch();
         branch.setName(branchRequestDto.getBranchName());
@@ -33,6 +36,7 @@ public class BranchServiceImpl implements BranchService {
     }
 
     @Override
+    @Cacheable(value = "branches", key = "'all'")
     public List<BranchDto> getAllBranches() {
         return branchRepository.findAll()
                 .stream()
