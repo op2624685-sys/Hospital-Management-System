@@ -37,8 +37,8 @@ public class AdminController {
 
     @GetMapping("/patients")
     public ResponseEntity<List<PatientResponseDto>> getAllPatients(
-            @RequestParam(value = "page", defaultValue = "0") Integer pageNumber,
-            @RequestParam(value = "size", defaultValue = "10") Integer pageSize) {
+            @RequestParam(name = "page", defaultValue = "0") Integer pageNumber,
+            @RequestParam(name = "size", defaultValue = "10") Integer pageSize) {
         return ResponseEntity.ok(patientService.getAllPatients(pageNumber, pageSize));
     }
 
@@ -67,19 +67,19 @@ public class AdminController {
 
     @GetMapping("/doctors")
     public ResponseEntity<List<DoctorResponseDto>> getDoctorsForAdminBranch(
-            @RequestParam(value = "page", defaultValue = "0") Integer pageNumber,
-            @RequestParam(value = "size", defaultValue = "10") Integer pageSize,
-            @RequestParam(value = "search", required = false) String search,
-            @RequestParam(value = "specialization", required = false) String specialization,
-            @RequestParam(value = "sort", defaultValue = "name") String sortBy) {
+            @RequestParam(name = "page", defaultValue = "0") Integer pageNumber,
+            @RequestParam(name = "size", defaultValue = "10") Integer pageSize,
+            @RequestParam(name = "search", required = false) String search,
+            @RequestParam(name = "specialization", required = false) String specialization,
+            @RequestParam(name = "sort", defaultValue = "name") String sortBy) {
         return ResponseEntity.ok(doctorService.getDoctorsForAdminBranch(
                 pageNumber, pageSize, search, specialization, sortBy));
     }
 
     @GetMapping("/appointments")
     public ResponseEntity<List<AppointmentResponseDto>> getRecentAppointments(
-            @RequestParam(value = "page", defaultValue = "0") Integer pageNumber,
-            @RequestParam(value = "size", defaultValue = "10") Integer pageSize) {
+            @RequestParam(name = "page", defaultValue = "0") Integer pageNumber,
+            @RequestParam(name = "size", defaultValue = "10") Integer pageSize) {
         return ResponseEntity.ok(appointmentService.getRecentAppointmentsForAdmin(pageNumber, pageSize));
     }
 }
