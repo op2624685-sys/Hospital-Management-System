@@ -4,10 +4,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.Comparator;
-import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.cache.annotation.Caching;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -40,14 +39,12 @@ public class DoctorServiceImpl implements DoctorService {
     private final UserRepository userRepository;
     private final BranchRepository branchRepository;
     private final AdminRepository adminRepository;
-    private final ModelMapper modelMapper;
 
     @Override
     @Transactional(readOnly = true)
-    @Cacheable(value = "doctors", key = "'all'")
-    public List<DoctorDto> getAllDoctors() {
-        List<Doctor> doctors = doctorRepository.findAll();
-        return doctors
+    @Cacheable(value = "doctors", key = "'all:' + #page + ':' + #size")
+    public List<DoctorDto> getAllDoctors(int page, int size) {
+        return doctorRepository.findAll(PageRequest.of(page, size))
                 .stream()
                 .map(this::mapToDoctorDto)
                 .toList();
@@ -75,10 +72,7 @@ public class DoctorServiceImpl implements DoctorService {
 
     @Override
     @Transactional
-    @Caching(evict = {
-            @CacheEvict(value = "doctors", key = "'id:' + #id"),
-            @CacheEvict(value = "doctors", key = "'name:' + #doctor.getName()")
-        })
+    @CacheEvict(value = "doctors", allEntries = true)
     public String deleteDoctorById(Long id) {
         Doctor doctor = doctorRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Doctor not found with id: " + id));
@@ -89,7 +83,7 @@ public class DoctorServiceImpl implements DoctorService {
     @Override
     @Transactional
     @PreAuthorize("hasAnyRole('HEADADMIN', 'ADMIN')")
-    @CacheEvict(value = "doctors", key = "'all'")
+    @CacheEvict(value = "doctors", allEntries = true)
     public DoctorResponseDto onBoardNewDoctor(OnBoardDoctorRequestDto onBoardDoctorRequestDto) {
         String username = onBoardDoctorRequestDto.getUsername() == null ? "" : onBoardDoctorRequestDto.getUsername().trim();
         User currentUser = getCurrentUser();

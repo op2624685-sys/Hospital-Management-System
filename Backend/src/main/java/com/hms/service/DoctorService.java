@@ -8,7 +8,7 @@ import com.hms.dto.Response.DoctorResponseDto;
 
 public interface DoctorService {
 
-    List<DoctorDto> getAllDoctors();
+    List<DoctorDto> getAllDoctors(int page, int size);
 
     DoctorDto getDoctorById(Long id);
 
