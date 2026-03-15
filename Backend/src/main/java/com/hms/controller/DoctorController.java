@@ -23,22 +23,24 @@ public class DoctorController {
 
     @GetMapping("/appointments")
     public ResponseEntity<List<AppointmentResponseDto>> getAllAppointmentsOfDoctor(
-            @RequestParam(value = "doctorId", required = false) Long doctorId) {
+            @RequestParam(name = "doctorId", required = false) Long doctorId,
+            @RequestParam(name = "page", defaultValue = "0") int page,
+            @RequestParam(name = "size", defaultValue = "15") int size) {
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Long targetDoctorId = doctorId != null ? doctorId : user.getId();
-        return ResponseEntity.ok(appointmentService.getAllAppointmentsOfDoctor(targetDoctorId));
+        return ResponseEntity.ok(appointmentService.getAllAppointmentsOfDoctor(targetDoctorId, page, size));
     }
 
     @PutMapping("/appointments/{appointmentId}/status")
     public ResponseEntity<AppointmentResponseDto> updateAppointmentStatus(
-            @PathVariable String appointmentId,
-            @RequestParam AppointmentStatusType status) {
+            @PathVariable(name = "appointmentId") String appointmentId,
+            @RequestParam(name = "status") AppointmentStatusType status) {
         return ResponseEntity.ok(appointmentService.updateAppointmentStatus(appointmentId, status));
     }
 
     @PutMapping("/appointments/{appointmentId}")
     public ResponseEntity<AppointmentResponseDto> updateAppointment(
-            @PathVariable String appointmentId,
+            @PathVariable(name = "appointmentId") String appointmentId,
             @Valid @RequestBody UpdateAppointmentRequestDto updateAppointmentRequestDto) {
         return ResponseEntity.ok(appointmentService.updateAppointment(appointmentId, updateAppointmentRequestDto));
     }
