@@ -17,11 +17,9 @@ import static com.hms.entity.type.RoleType.*;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Qualifier;
-import lombok.extern.slf4j.Slf4j;
 
 @Configuration
 @EnableMethodSecurity
-@Slf4j
 public class WebSecurityConfig {
 
     private final JwtAuthFilter jwtAuthFilter;
