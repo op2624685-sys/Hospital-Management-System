@@ -49,7 +49,7 @@ public class HeadAdminController {
 
     @GetMapping("/branch/{branchId}/details")
     public ResponseEntity<HeadAdminBranchDetailsDto> getBranchDetails(
-            @PathVariable Long branchId) {
+            @PathVariable(name = "branchId") Long branchId) {
         return ResponseEntity.ok(headAdminService.getBranchDetails(branchId));
     }
 

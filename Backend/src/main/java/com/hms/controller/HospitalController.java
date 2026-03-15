@@ -26,14 +26,16 @@ public class HospitalController {
     private final AppointmentService appointmentService;
 
     @GetMapping("/doctors")
-    public ResponseEntity<List<DoctorDto>> getAllDoctors() {
-        return ResponseEntity.ok(doctorService.getAllDoctors());
+    public ResponseEntity<List<DoctorDto>> getAllDoctors(
+            @RequestParam(name = "page", defaultValue = "0") int page,
+            @RequestParam(name = "size", defaultValue = "10") int size) {
+        return ResponseEntity.ok(doctorService.getAllDoctors(page, size));
     }
 
     @GetMapping("/doctors/{doctorId}/booked-slots")
     public ResponseEntity<List<String>> getBookedSlots(
-            @PathVariable Long doctorId,
-            @RequestParam("date") LocalDate date) {
+            @PathVariable(name = "doctorId") Long doctorId,
+            @RequestParam(name = "date") LocalDate date) {
         List<String> slots = appointmentService.getBookedSlotsForDoctor(doctorId, date).stream()
                 .map(LocalDateTime::toString)
                 .toList();
