@@ -10,12 +10,17 @@ const MyAppointments = () => {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [busyId, setBusyId] = useState(null);
+  const [page, setPage] = useState(0);
+  const [size] = useState(15);
+  const [hasMore, setHasMore] = useState(true);
 
   const loadAppointments = async () => {
     setLoading(true);
     try {
-      const response = await appointmentApi.getMyAppointments();
-      setAppointments(response.data || []);
+      const response = await appointmentApi.getMyAppointments(page, size);
+      const data = response.data || [];
+      setAppointments(data);
+      setHasMore(data.length === size);
     } catch (error) {
       console.error(error);
       toast.error("Failed to load appointments");
@@ -26,7 +31,7 @@ const MyAppointments = () => {
 
   useEffect(() => {
     loadAppointments();
-  }, []);
+  }, [page]);
 
   const filtered = useMemo(() => {
     const q = search.toLowerCase().trim();
@@ -171,6 +176,48 @@ const MyAppointments = () => {
         .ux-badge-pending { color: #a16207; background: #fef3c7; border: 1px solid #fde68a; }
         .ux-badge-approved { color: #0f766e; background: #ccfbf1; border: 1px solid #99f6e4; }
         .ux-badge-completed { color: #065f46; background: #d1fae5; border: 1px solid #a7f3d0; }
+
+        /* Pagination */
+        .ux-pagination {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 12px;
+          margin-top: 24px;
+          padding-bottom: 50px;
+        }
+        .ux-page-btn {
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          padding: 8px 16px;
+          background: #fff;
+          border: 1px solid #dbe6ff;
+          border-radius: 12px;
+          font-size: 13px;
+          font-weight: 600;
+          color: #2563eb;
+          cursor: pointer;
+          transition: all .2s;
+          box-shadow: 0 4px 12px rgba(15,23,42,.04);
+        }
+        .ux-page-btn:hover:not(:disabled) {
+          border-color: #93c5fd;
+          background: #eff6ff;
+          transform: translateY(-1px);
+        }
+        .ux-page-btn:disabled {
+          opacity: 0.5;
+          cursor: not-allowed;
+          color: #94a3b8;
+        }
+        .ux-page-num {
+          font-size: 13px;
+          font-weight: 600;
+          color: #475569;
+          min-width: 70px;
+          text-align: center;
+        }
       `}</style>
       <Header />
       <div className="ux-wrap">
@@ -237,6 +284,33 @@ const MyAppointments = () => {
             </div>
           ))}
         </div>
+
+        {/* Pagination Controls */}
+        {!loading && filtered.length > 0 && (
+          <div className="ux-pagination">
+            <button
+              className="ux-page-btn"
+              onClick={() => {
+                setPage((p) => Math.max(0, p - 1));
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
+              disabled={page === 0 || loading}
+            >
+              Previous
+            </button>
+            <div className="ux-page-num">Page {page + 1}</div>
+            <button
+              className="ux-page-btn"
+              onClick={() => {
+                setPage((p) => p + 1);
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
+              disabled={!hasMore || loading}
+            >
+              Next
+            </button>
+          </div>
+        )}
       </div>
       <ToastContainer position="top-right" autoClose={2500} />
     </div>
