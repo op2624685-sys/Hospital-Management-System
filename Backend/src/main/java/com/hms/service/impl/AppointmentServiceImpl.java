@@ -151,24 +151,34 @@ public class AppointmentServiceImpl implements AppointmentService {
     }
 
     @Override
-    @PreAuthorize("hasAnyRole('ADMIN','HEADADMIN') OR (hasRole('DOCTOR') AND #doctorId == authentication.principal.id)")
     @Transactional
-    public List<AppointmentResponseDto> getAllAppointmentsOfDoctor(Long doctorId) {
-        Doctor doctor = doctorRepository.findById(doctorId).orElseThrow();
+    @PreAuthorize("hasAnyRole('DOCTOR','ADMIN','HEADADMIN')")
+    public List<AppointmentResponseDto> getAllAppointmentsOfDoctor(Long doctorId, int page, int size) {
+        com.hms.entity.User user = (com.hms.entity.User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        if (user.getRoles().contains(RoleType.DOCTOR) && !user.getId().equals(doctorId)) {
+             if (!user.getRoles().contains(RoleType.ADMIN) && !user.getRoles().contains(RoleType.HEADADMIN)) {
+                 throw new AccessDeniedException("You can only view your own appointments");
+             }
+        }
 
-        return doctor.getAppointments()
+        var pageable = PageRequest.of(Math.max(page, 0), Math.max(size, 1));
+        return appointmentRepository.findByDoctor_IdOrderByAppointmentTimeDesc(doctorId, pageable)
                 .stream()
                 .map(this::mapToAppointmentResponseDto)
                 .collect(Collectors.toList());
     }
 
     @Override
-    @PreAuthorize("hasRole('PATIENT') AND #patientId == authentication.principal.id")
     @Transactional
-    public List<AppointmentResponseDto> getAllAppointmentsOfPatient(Long patientId) {
-        Patient patient = patientRepository.findById(patientId)
-                .orElseThrow(() -> new EntityNotFoundException("Patient not found with ID: " + patientId));
-        return patient.getAppointments()
+    @PreAuthorize("hasRole('PATIENT')")
+    public List<AppointmentResponseDto> getAllAppointmentsOfPatient(Long patientId, int page, int size) {
+        Long loggedInUserId = getAuthenticatedUserId();
+        if (!patientId.equals(loggedInUserId)) {
+            throw new AccessDeniedException("You can only view your own appointments");
+        }
+
+        var pageable = PageRequest.of(Math.max(page, 0), Math.max(size, 1));
+        return appointmentRepository.findByPatient_IdOrderByAppointmentTimeDesc(patientId, pageable)
                 .stream()
                 .map(this::mapToAppointmentResponseDto)
                 .collect(Collectors.toList());
@@ -189,9 +199,13 @@ public class AppointmentServiceImpl implements AppointmentService {
 
         enforceDoctorCanAccessOwnAppointment(appointment);
 
+        if (appointment.getStatus() == AppointmentStatusType.CANCELLED) {
+            throw new IllegalStateException("Cannot change status of a cancelled appointment");
+        }
+
         appointment.setStatus(status);
         Appointment savedAppointment = appointmentRepository.save(appointment);
-        sendAppointmentUpdatedEmails(savedAppointment, "Status changed to " + status);
+        sendAppointmentStatusNotification(savedAppointment);
         return mapToAppointmentResponseDto(savedAppointment);
     }
 
@@ -222,28 +236,29 @@ public class AppointmentServiceImpl implements AppointmentService {
 
         enforceDoctorCanAccessOwnAppointment(appointment);
 
+        if (appointment.getStatus() == AppointmentStatusType.CANCELLED) {
+            throw new IllegalStateException("Cannot change status of a cancelled appointment");
+        }
+
+        boolean statusChanged = false;
         StringJoiner changeSummary = new StringJoiner(", ");
-        if (updateAppointmentRequestDto.getAppointmentTime() != null) {
-            Doctor lockedDoctor = doctorRepository.findByIdForUpdate(appointment.getDoctor().getId())
-                    .orElseThrow(() -> new RuntimeException("Doctor not found with id: " + appointment.getDoctor().getId()));
-            validateWithinWorkingHours(updateAppointmentRequestDto.getAppointmentTime());
-            validateSlotBoundary(updateAppointmentRequestDto.getAppointmentTime());
-            if (isSlotTaken(lockedDoctor, updateAppointmentRequestDto.getAppointmentTime(), appointment.getAppointmentId())) {
-                throw new IllegalArgumentException("Selected time slot is already booked for this doctor (20 minute slot)");
-            }
-            appointment.setAppointmentTime(updateAppointmentRequestDto.getAppointmentTime());
-            changeSummary.add("Appointment time changed");
+
+        if (updateAppointmentRequestDto.getStatus() != null && !updateAppointmentRequestDto.getStatus().equals(appointment.getStatus())) {
+            appointment.setStatus(updateAppointmentRequestDto.getStatus());
+            changeSummary.add("Status changed to " + updateAppointmentRequestDto.getStatus());
+            statusChanged = true;
         }
-        if (updateAppointmentRequestDto.getReason() != null) {
-            appointment.setReason(updateAppointmentRequestDto.getReason());
-            changeSummary.add("Reason changed");
-        }
+
         if (changeSummary.length() == 0) {
-            throw new IllegalArgumentException("At least one field is required to update appointment");
+            throw new IllegalArgumentException("Status change is required to update appointment");
         }
 
         Appointment savedAppointment = appointmentRepository.save(appointment);
-        sendAppointmentUpdatedEmails(savedAppointment, changeSummary.toString());
+
+        if (statusChanged) {
+            sendAppointmentStatusNotification(savedAppointment);
+        }
+
         return mapToAppointmentResponseDto(savedAppointment);
     }
 
@@ -292,6 +307,54 @@ public class AppointmentServiceImpl implements AppointmentService {
             return user.getId();
         }
         throw new AccessDeniedException("User authentication is required");
+    }
+
+    private void sendAppointmentStatusNotification(Appointment appointment) {
+        Patient patient = appointment.getPatient();
+        Doctor doctor = appointment.getDoctor();
+        AppointmentStatusType status = appointment.getStatus();
+
+        if (StringUtils.hasText(patient.getEmail())) {
+            String subject = "Appointment Status Update: " + status;
+            String message;
+
+            switch (status) {
+                case CONFIRMED -> message = String.format(
+                        "Hello %s,%n%nYour appointment with Dr. %s has been CONFIRMED.%n%nDetails:%nTime: %s%nReason: %s%nLink: %s%n%nPlease arrive 10 minutes before your scheduled time.",
+                        patient.getName(), doctor.getName(), appointment.getAppointmentTime(), appointment.getReason(), getAppointmentLink(appointment));
+                case REJECTED -> message = String.format(
+                        "Hello %s,%n%nWe regret to inform you that your appointment with Dr. %s has been REJECTED.%n%nDetails:%nTime: %s%nReason: %s%n%nPlease contact the hospital or book another slot if needed.",
+                        patient.getName(), doctor.getName(), appointment.getAppointmentTime(), appointment.getReason());
+                case IN_PROGRESS -> message = String.format(
+                        "Hello %s,%n%nYour appointment with Dr. %s is now IN PROGRESS.%n%nLink: %s",
+                        patient.getName(), doctor.getName(), getAppointmentLink(appointment));
+                case COMPLETED -> message = String.format(
+                        "Hello %s,%n%nYour appointment with Dr. %s has been COMPLETED.%n%nWe hope you had a satisfactory experience. You can view your appointment details here: %s",
+                        patient.getName(), doctor.getName(), getAppointmentLink(appointment));
+                case CANCELLED -> message = String.format(
+                        "Hello %s,%n%nYour appointment with Dr. %s has been CANCELLED.%n%nDetails:%nTime: %s",
+                        patient.getName(), doctor.getName(), appointment.getAppointmentTime());
+                default -> message = String.format(
+                        "Hello %s,%n%nThe status of your appointment with Dr. %s has been updated to: %s.%n%nLink: %s",
+                        patient.getName(), doctor.getName(), status, getAppointmentLink(appointment));
+            }
+
+            emailService.sendMail(patient.getEmail(), subject, message + "\n\nThank you,\n" + appointment.getBranch().getName());
+        }
+
+        // Also notify the doctor about the status change if it was changed by someone else (e.g. Admin)
+        if (StringUtils.hasText(doctor.getEmail())) {
+             emailService.sendMail(
+                    doctor.getEmail(),
+                    "Appointment Status Updated",
+                    String.format(
+                            "Hello Dr. %s,%n%nThe status of appointment %s (Patient: %s) has been changed to %s.%nLink: %s",
+                            doctor.getName(),
+                            appointment.getAppointmentId(),
+                            patient.getName(),
+                            status,
+                            getAppointmentLink(appointment)));
+        }
     }
 
     private void sendAppointmentUpdatedEmails(Appointment appointment, String changeSummary) {
@@ -396,13 +459,6 @@ public class AppointmentServiceImpl implements AppointmentService {
         java.time.LocalDateTime end = appointmentTime.plusMinutes(APPOINTMENT_SLOT_MINUTES - 1);
         return appointmentRepository.existsByDoctorAndAppointmentTimeBetweenAndStatusNot(
                 doctor, start, end, AppointmentStatusType.CANCELLED);
-    }
-
-    private boolean isSlotTaken(Doctor doctor, java.time.LocalDateTime appointmentTime, String appointmentId) {
-        java.time.LocalDateTime start = appointmentTime.minusMinutes(APPOINTMENT_SLOT_MINUTES - 1);
-        java.time.LocalDateTime end = appointmentTime.plusMinutes(APPOINTMENT_SLOT_MINUTES - 1);
-        return appointmentRepository.existsByDoctorAndAppointmentTimeBetweenAndStatusNotAndAppointmentIdNot(
-                doctor, start, end, AppointmentStatusType.CANCELLED, appointmentId);
     }
 
     private AppointmentResponseDto mapToAppointmentResponseDto(Appointment appointment) {
