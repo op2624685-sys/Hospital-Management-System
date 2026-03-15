@@ -5,6 +5,9 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -37,6 +40,7 @@ public class DepartmentServiceImpl implements DepartmentService{
     private final AdminRepository adminRepository;
 
     @Override
+    @Cacheable(value = "departments", key = "'all'")
     public List<DepartmentDto> getAllDepartment() {
         List<Department> departments = departmentRepository.findAll();
         return departments
@@ -46,6 +50,7 @@ public class DepartmentServiceImpl implements DepartmentService{
     }
 
     @Override
+    @Cacheable(value = "departments", key = "'id:' + #id")
     public DepartmentDto getDepartmentById(Long id) {
         Department department = departmentRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Department not found with id: " + id));
@@ -54,6 +59,10 @@ public class DepartmentServiceImpl implements DepartmentService{
 
     @Override
     @Transactional
+    @Caching(evict = {
+            @CacheEvict(value = "departments", allEntries = true),
+            @CacheEvict(value = "adminDepartments", allEntries = true)
+    })
     public DepartmentDto createNewDepartment(CreateDepartmentRequestDto createDepartmentRequestDto) {
         Branch branch = resolveBranchForDepartment(createDepartmentRequestDto);
         if (departmentRepository.existsByNameAndBranch_Id(createDepartmentRequestDto.getName(), branch.getId())) {
@@ -103,7 +112,7 @@ public class DepartmentServiceImpl implements DepartmentService{
         throw new RuntimeException("Only admin or head admin can create departments");
     }
 
-    private User getCurrentUser() {
+    public User getCurrentUser() {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         if (principal instanceof User user) {
             return user;
@@ -114,6 +123,7 @@ public class DepartmentServiceImpl implements DepartmentService{
     @Override
     @PreAuthorize("hasRole('ADMIN')")
     @Transactional(readOnly = true)
+    @Cacheable(value = "adminDepartments", key = "#root.target.getCurrentUser().id")
     public List<AdminDepartmentListDto> getDepartmentsForAdminBranch() {
         User currentUser = getCurrentUser();
         Admin admin = adminRepository.findById(currentUser.getId())
