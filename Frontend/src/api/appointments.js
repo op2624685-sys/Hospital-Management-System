@@ -13,13 +13,14 @@ export const appointmentApi = {
     return API.put(`/patients/appointments/${appointmentId}/cancel`);
   },
 
-  getMyAppointments() {
-    return API.get("/patients/appointments");
+  getMyAppointments(page = 0, size = 15) {
+    return API.get("/patients/appointments", { params: { page, size } });
   },
 
-  getDoctorAppointments(doctorId) {
-    const query = doctorId ? `?doctorId=${doctorId}` : "";
-    return API.get(`/doctor/appointments${query}`);
+  getDoctorAppointments(doctorId, page = 0, size = 15) {
+    const params = { page, size };
+    if (doctorId) params.doctorId = doctorId;
+    return API.get("/doctor/appointments", { params });
   },
 
   getBookedSlots(doctorId, date) {

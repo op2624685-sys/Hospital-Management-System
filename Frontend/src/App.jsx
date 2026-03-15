@@ -23,7 +23,7 @@ import CheckAppointments from "./pages/CheckAppointments";
 import AdminPanel from "./pages/AdminPanel";
 import HeadAdminPanel from "./pages/HeadAdminPanel";
 import ProtectedRoute from "./components/ProtectedRoute";
-import DoctorBookedDetails from "./pages/DoctorBookedDetails";
+import DoctorAppointments from "./pages/DoctorAppointments";
 import MyAppointments from "./pages/MyAppointments";
 import RoleBlockedRoute from "./components/RoleBlockedRoute";
 import GlobalBackground from "./components/GlobalBackground";
@@ -95,7 +95,7 @@ const App = () => {
           path="/doctor/booked-details"
           element={
             <ProtectedRoute role="DOCTOR">
-              <DoctorBookedDetails />
+              <DoctorAppointments />
             </ProtectedRoute>
           }
         />
@@ -103,7 +103,7 @@ const App = () => {
           path="/doctor/appointments"
           element={
             <ProtectedRoute role="DOCTOR">
-              <DoctorBookedDetails />
+              <DoctorAppointments />
             </ProtectedRoute>
           }
         />

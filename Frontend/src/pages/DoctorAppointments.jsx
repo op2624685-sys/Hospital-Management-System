@@ -12,22 +12,29 @@ const DoctorAppointments = () => {
   const [savingId, setSavingId] = useState(null);
   const [query, setQuery] = useState("");
   const [formById, setFormById] = useState({});
+  const [page, setPage] = useState(0);
+  const [hasMore, setHasMore] = useState(true);
+  const size = 15;
 
-  const loadAppointments = async () => {
+  const loadAppointments = async (targetPage = 0) => {
     setLoading(true);
     try {
-      const response = await appointmentApi.getDoctorAppointments();
-      setAppointments(response.data || []);
+      const response = await appointmentApi.getDoctorAppointments(null, targetPage, size);
+      const data = response.data || [];
+      setAppointments(data);
+      setPage(targetPage);
+      setHasMore(data.length === size);
     } catch (error) {
       console.error(error);
-      toast.error("Failed to load appointments");
+      const msg = error.response?.data?.message || "Failed to load appointments";
+      toast.error(msg);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    loadAppointments();
+    loadAppointments(0);
   }, []);
 
   const filtered = useMemo(() => {
@@ -62,45 +69,21 @@ const DoctorAppointments = () => {
     }));
   };
 
-  const handleStatusSave = async (appointment) => {
-    const form = getForm(appointment);
+  const handleUpdate = async (appointment) => {
+    const f = getForm(appointment);
+    if (!f) return;
     setSavingId(appointment.appointmentId);
     try {
-      const response = await appointmentApi.updateStatus(
-        appointment.appointmentId,
-        form.status
-      );
-      setAppointments((prev) =>
-        prev.map((item) =>
-          item.appointmentId === appointment.appointmentId ? response.data : item
-        )
-      );
-      toast.success("Status updated and email sent");
+      const payload = {
+        status: f.status,
+      };
+      await appointmentApi.updateDetails(appointment.appointmentId, payload);
+      toast.success("Appointment updated successfully");
+      loadAppointments(page);
     } catch (error) {
       console.error(error);
-      toast.error("Failed to update status");
-    } finally {
-      setSavingId(null);
-    }
-  };
-
-  const handleDetailsSave = async (appointment) => {
-    const form = getForm(appointment);
-    setSavingId(appointment.appointmentId);
-    try {
-      const response = await appointmentApi.updateDetails(appointment.appointmentId, {
-        appointmentTime: form.appointmentTime || null,
-        reason: form.reason || null,
-      });
-      setAppointments((prev) =>
-        prev.map((item) =>
-          item.appointmentId === appointment.appointmentId ? response.data : item
-        )
-      );
-      toast.success("Appointment updated and email sent");
-    } catch (error) {
-      console.error(error);
-      toast.error("Failed to update appointment");
+      const msg = error.response?.data?.message || "Update failed";
+      toast.error(msg);
     } finally {
       setSavingId(null);
     }
@@ -109,8 +92,10 @@ const DoctorAppointments = () => {
   const badgeClassByStatus = (status) => {
     const value = (status || "").toUpperCase();
     if (value === "CONFIRMED") return "dr-badge dr-badge-approved";
-    if (value === "CANCELLED") return "dr-badge dr-badge-pending";
-    return "dr-badge dr-badge-completed";
+    if (value === "CANCELLED" || value === "REJECTED") return "dr-badge dr-badge-rejected";
+    if (value === "COMPLETED") return "dr-badge dr-badge-completed";
+    if (value === "IN_PROGRESS") return "dr-badge dr-badge-progress";
+    return "dr-badge dr-badge-pending";
   };
 
   return (
@@ -208,6 +193,13 @@ const DoctorAppointments = () => {
           font-weight: 700;
           border: 1px solid transparent;
           cursor: pointer;
+          transition: transform 0.1s ease, box-shadow 0.1s ease;
+        }
+        .dr-btn:hover:not(:disabled) {
+          transform: translateY(-1px);
+        }
+        .dr-btn:active:not(:disabled) {
+          transform: scale(0.96);
         }
         .dr-btn-primary {
           background: #2563eb;
@@ -225,6 +217,21 @@ const DoctorAppointments = () => {
           background: #eff6ff;
         }
         .dr-btn-outline:hover { background: #dbeafe; }
+        .dr-pagination {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 14px;
+          margin-top: 30px;
+          padding: 10px;
+        }
+        .dr-page-num {
+          font-weight: 700;
+          color: #1e293b;
+          font-size: 14px;
+          min-width: 80px;
+          text-align: center;
+        }
         .dr-badge {
           display: inline-flex;
           align-items: center;
@@ -236,6 +243,8 @@ const DoctorAppointments = () => {
         .dr-badge-pending { color: #a16207; background: #fef3c7; border: 1px solid #fde68a; }
         .dr-badge-approved { color: #0f766e; background: #ccfbf1; border: 1px solid #99f6e4; }
         .dr-badge-completed { color: #065f46; background: #d1fae5; border: 1px solid #a7f3d0; }
+        .dr-badge-rejected { color: #991b1b; background: #fee2e2; border: 1px solid #fecaca; }
+        .dr-badge-progress { color: #1e40af; background: #dbeafe; border: 1px solid #bfdbfe; }
         @media (max-width: 760px) {
           .dr-form-grid { grid-template-columns: 1fr; }
         }
@@ -270,6 +279,7 @@ const DoctorAppointments = () => {
                     <div className="dr-name">{a.patient?.name || "Unknown patient"}</div>
                     <div className="dr-email">{a.patient?.email}</div>
                     <div className="dr-id">ID: {a.appointmentId}</div>
+                    <div className="dr-id">Branch: {a.branch?.name || "N/A"}</div>
                   </div>
                   <div style={{ fontSize: 12, color: "#475569" }}>
                     Current status: <span className={badgeClassByStatus(a.status)}>{a.status}</span>
@@ -283,7 +293,8 @@ const DoctorAppointments = () => {
                       className="dr-input"
                       type="datetime-local"
                       value={form.appointmentTime}
-                      onChange={(e) => setForm(a.appointmentId, { appointmentTime: e.target.value })}
+                      readOnly
+                      style={{ backgroundColor: "#f1f5f9", cursor: "not-allowed" }}
                     />
                   </label>
 
@@ -293,9 +304,13 @@ const DoctorAppointments = () => {
                       className="dr-input"
                       value={form.status}
                       onChange={(e) => setForm(a.appointmentId, { status: e.target.value })}
+                      disabled={a.status === "CANCELLED"}
                     >
                       <option value="PENDING">PENDING</option>
                       <option value="CONFIRMED">CONFIRMED</option>
+                      <option value="IN_PROGRESS">IN_PROGRESS</option>
+                      <option value="COMPLETED">COMPLETED</option>
+                      <option value="REJECTED">REJECTED</option>
                       <option value="CANCELLED">CANCELLED</option>
                     </select>
                   </label>
@@ -306,28 +321,22 @@ const DoctorAppointments = () => {
                   <input
                     className="dr-input"
                     value={form.reason}
-                    onChange={(e) => setForm(a.appointmentId, { reason: e.target.value })}
+                    readOnly
+                    style={{ backgroundColor: "#f1f5f9", cursor: "not-allowed" }}
                   />
                 </label>
 
                 <div className="dr-actions">
                   <button
-                    disabled={isSaving}
-                    onClick={() => handleStatusSave(a)}
+                    disabled={isSaving || a.status === "CANCELLED"}
+                    onClick={() => handleUpdate(a)}
                     className="dr-btn dr-btn-primary"
                   >
-                    Save Status
+                    {a.status === "CANCELLED" ? "Appointment Cancelled" : "Update Appointment"}
                   </button>
                   <button
                     disabled={isSaving}
-                    onClick={() => handleDetailsSave(a)}
-                    className="dr-btn dr-btn-success"
-                  >
-                    Save Time/Reason
-                  </button>
-                  <button
-                    disabled={isSaving}
-                    onClick={loadAppointments}
+                    onClick={() => loadAppointments(page)}
                     className="dr-btn dr-btn-outline"
                   >
                     Refresh
@@ -336,6 +345,24 @@ const DoctorAppointments = () => {
               </div>
             );
           })}
+        </div>
+
+        <div className="dr-pagination">
+          <button
+            disabled={loading || page === 0}
+            onClick={() => loadAppointments(page - 1)}
+            className="dr-btn dr-btn-outline"
+          >
+            &laquo; Previous
+          </button>
+          <span className="dr-page-num">Page {page + 1}</span>
+          <button
+            disabled={loading || !hasMore}
+            onClick={() => loadAppointments(page + 1)}
+            className="dr-btn dr-btn-outline"
+          >
+            Next &raquo;
+          </button>
         </div>
       </div>
 
