@@ -5,14 +5,14 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>3.5.11</version>
+		<version>3.5.12</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.hms</groupId>
 	<artifactId>hms</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>hms</name>
-	<description>Demo project for Spring Boot</description>
+	<description>Hospital management system</description>
 	<url/>
 	<licenses>
 		<license/>
@@ -27,7 +27,7 @@
 		<url/>
 	</scm>
 	<properties>
-		<java.version>17</java.version>
+		<java.version>21</java.version>
 	</properties>
 	<dependencies>
 		<dependency>
@@ -125,7 +125,6 @@
 		<dependency>
  			<groupId>org.postgresql</groupId>
  			<artifactId>postgresql</artifactId>
- 			<version>42.7.3</version>
 		</dependency>
 		<dependency>
 			<groupId>org.projectlombok</groupId>
@@ -148,7 +147,7 @@
 		<dependency>
   			<groupId>org.modelmapper</groupId>
   			<artifactId>modelmapper</artifactId>
-  			<version>3.2.4</version>
+  			<version>3.2.6</version>
 		</dependency>
 	</dependencies>
 
