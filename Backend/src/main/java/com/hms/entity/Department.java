@@ -32,6 +32,24 @@ public class Department {
     @Column(nullable = false, length = 100)
     private String name;
 
+    @Column(length = 500)
+    private String description;
+
+    @Column(length = 500)
+    private String imageUrl;
+
+    @Column(length = 20)
+    private String accentColor;
+
+    @Column(length = 20)
+    private String bgColor;
+
+    @Column(length = 20)
+    private String icon;
+
+    @Column(columnDefinition = "TEXT")
+    private String sectionsJson;
+
     @OneToOne
     private Doctor headDoctor;
 

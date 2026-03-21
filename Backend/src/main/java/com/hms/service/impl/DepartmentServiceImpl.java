@@ -72,6 +72,12 @@ public class DepartmentServiceImpl implements DepartmentService{
         Department department = new Department();
         department.setName(createDepartmentRequestDto.getName());
         department.setBranch(branch);
+        department.setDescription(createDepartmentRequestDto.getDescription());
+        department.setImageUrl(createDepartmentRequestDto.getImageUrl());
+        department.setAccentColor(createDepartmentRequestDto.getAccentColor());
+        department.setBgColor(createDepartmentRequestDto.getBgColor());
+        department.setIcon(createDepartmentRequestDto.getIcon());
+        department.setSectionsJson(createDepartmentRequestDto.getSectionsJson());
 
         Set<Doctor> doctors = new HashSet<>();
         if (createDepartmentRequestDto.getDoctorIds() != null && !createDepartmentRequestDto.getDoctorIds().isEmpty()) {
@@ -131,12 +137,20 @@ public class DepartmentServiceImpl implements DepartmentService{
         Long branchId = admin.getBranch().getId();
         return departmentRepository.findByBranch_Id(branchId)
                 .stream()
-                .map(dep -> new AdminDepartmentListDto(
-                        dep.getId(),
-                        dep.getName(),
-                        dep.getHeadDoctor() != null ? dep.getHeadDoctor().getName() : "N/A",
-                        dep.getDoctors() == null ? 0 : dep.getDoctors().size()
-                ))
+                .map(dep -> {
+                    AdminDepartmentListDto dto = new AdminDepartmentListDto();
+                    dto.setId(dep.getId());
+                    dto.setName(dep.getName());
+                    dto.setHeadDoctorName(dep.getHeadDoctor() != null ? dep.getHeadDoctor().getName() : "N/A");
+                    dto.setMemberCount(dep.getDoctors() == null ? 0 : dep.getDoctors().size());
+                    dto.setDescription(dep.getDescription());
+                    dto.setImageUrl(dep.getImageUrl());
+                    dto.setAccentColor(dep.getAccentColor());
+                    dto.setBgColor(dep.getBgColor());
+                    dto.setIcon(dep.getIcon());
+                    dto.setSectionsJson(dep.getSectionsJson());
+                    return dto;
+                })
                 .toList();
     }
 
@@ -160,6 +174,14 @@ public class DepartmentServiceImpl implements DepartmentService{
         dto.setHeadDoctorId(department.getHeadDoctor() != null ? department.getHeadDoctor().getId() : null);
         dto.setDoctorIds(department.getDoctors() == null ? Set.of()
                 : department.getDoctors().stream().map(Doctor::getId).collect(Collectors.toSet()));
+        dto.setHeadDoctorName(department.getHeadDoctor() != null ? department.getHeadDoctor().getName() : null);
+        dto.setMemberCount(department.getDoctors() == null ? 0 : department.getDoctors().size());
+        dto.setDescription(department.getDescription());
+        dto.setImageUrl(department.getImageUrl());
+        dto.setAccentColor(department.getAccentColor());
+        dto.setBgColor(department.getBgColor());
+        dto.setIcon(department.getIcon());
+        dto.setSectionsJson(department.getSectionsJson());
         return dto;
     }
 }

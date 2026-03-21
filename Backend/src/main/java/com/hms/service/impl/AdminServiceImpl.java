@@ -208,14 +208,24 @@ public class AdminServiceImpl implements AdminService {
                 doctor.getSpecialization(),
                 doctor.getEmail(),
                 doctor.getDepartments() == null ? java.util.Set.of() : doctor.getDepartments().stream()
-                        .map(dep -> new com.hms.dto.DepartmentDto(
-                                dep.getId(),
-                                dep.getName(),
-                                dep.getBranch() != null ? dep.getBranch().getId() : null,
-                                dep.getHeadDoctor() != null ? dep.getHeadDoctor().getId() : null,
-                                dep.getDoctors() == null ? java.util.Set.of()
-                                        : dep.getDoctors().stream().map(Doctor::getId).collect(Collectors.toSet())
-                        ))
+                        .map(dep -> {
+                            com.hms.dto.DepartmentDto dto = new com.hms.dto.DepartmentDto();
+                            dto.setId(dep.getId());
+                            dto.setName(dep.getName());
+                            dto.setBranchId(dep.getBranch() != null ? dep.getBranch().getId() : null);
+                            dto.setHeadDoctorId(dep.getHeadDoctor() != null ? dep.getHeadDoctor().getId() : null);
+                            dto.setDoctorIds(dep.getDoctors() == null ? java.util.Set.of()
+                                    : dep.getDoctors().stream().map(Doctor::getId).collect(Collectors.toSet()));
+                            dto.setHeadDoctorName(dep.getHeadDoctor() != null ? dep.getHeadDoctor().getName() : null);
+                            dto.setMemberCount(dep.getDoctors() == null ? 0 : dep.getDoctors().size());
+                            dto.setDescription(dep.getDescription());
+                            dto.setImageUrl(dep.getImageUrl());
+                            dto.setAccentColor(dep.getAccentColor());
+                            dto.setBgColor(dep.getBgColor());
+                            dto.setIcon(dep.getIcon());
+                            dto.setSectionsJson(dep.getSectionsJson());
+                            return dto;
+                        })
                         .collect(Collectors.toSet()),
                 doctor.getBranch() == null ? null : new com.hms.dto.Response.BranchResponseDto(
                         doctor.getBranch().getId(),
