@@ -208,14 +208,24 @@ public class DoctorServiceImpl implements DoctorService {
     private Set<DepartmentDto> mapDepartments(Doctor doctor) {
         if (doctor.getDepartments() == null) return Set.of();
         return doctor.getDepartments().stream()
-                .map(department -> new DepartmentDto(
-                        department.getId(),
-                        department.getName(),
-                        department.getBranch() != null ? department.getBranch().getId() : null,
-                        department.getHeadDoctor() != null ? department.getHeadDoctor().getId() : null,
-                        department.getDoctors() == null ? Set.of()
-                                : department.getDoctors().stream().map(Doctor::getId).collect(Collectors.toSet())
-                ))
+                .map(department -> {
+                    DepartmentDto dto = new DepartmentDto();
+                    dto.setId(department.getId());
+                    dto.setName(department.getName());
+                    dto.setBranchId(department.getBranch() != null ? department.getBranch().getId() : null);
+                    dto.setHeadDoctorId(department.getHeadDoctor() != null ? department.getHeadDoctor().getId() : null);
+                    dto.setDoctorIds(department.getDoctors() == null ? Set.of()
+                            : department.getDoctors().stream().map(Doctor::getId).collect(Collectors.toSet()));
+                    dto.setHeadDoctorName(department.getHeadDoctor() != null ? department.getHeadDoctor().getName() : null);
+                    dto.setMemberCount(department.getDoctors() == null ? 0 : department.getDoctors().size());
+                    dto.setDescription(department.getDescription());
+                    dto.setImageUrl(department.getImageUrl());
+                    dto.setAccentColor(department.getAccentColor());
+                    dto.setBgColor(department.getBgColor());
+                    dto.setIcon(department.getIcon());
+                    dto.setSectionsJson(department.getSectionsJson());
+                    return dto;
+                })
                 .collect(Collectors.toSet());
     }
 
