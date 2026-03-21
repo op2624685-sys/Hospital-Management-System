@@ -150,7 +150,33 @@ const AdminPanel = () => {
   const [activeTab, setActiveTab] = useState("overview");
   const [loading, setLoading] = useState(false);
   const [showDepartmentForm, setShowDepartmentForm] = useState(false);
-  const [formData, setFormData] = useState({ name: "", headDoctor: "", branch: "" });
+  const [formData, setFormData] = useState({
+    name: "",
+    headDoctor: "",
+    branch: "",
+    description: "",
+    imageUrl: "",
+    accentColor: "#2563eb",
+    bgColor: "#eff6ff",
+    icon: "DEPT",
+    sections: [
+      {
+        title: "About",
+        icon: "📋",
+        items: ["Department providing specialized medical services"],
+      },
+      {
+        title: "Team",
+        icon: "👥",
+        items: ["Head Doctor: TBD", "Total Members: 0", "Specialized medical professionals"],
+      },
+      {
+        title: "Services",
+        icon: "⚕️",
+        items: ["Specialized medical care", "Patient consultation", "Treatment and diagnosis", "Follow-up support"],
+      },
+    ],
+  });
   const [headDoctorName, setHeadDoctorName] = useState("");
   const [headDoctorSuggestions, setHeadDoctorSuggestions] = useState([]);
   const [headDoctorError, setHeadDoctorError] = useState("");
@@ -270,6 +296,12 @@ const AdminPanel = () => {
         name: formData.name,
         headDoctorId: match.id,
         doctorIds: selectedDepartmentDoctors.map(d => d.id),
+        description: formData.description,
+        imageUrl: formData.imageUrl,
+        accentColor: formData.accentColor,
+        bgColor: formData.bgColor,
+        icon: formData.icon,
+        sectionsJson: JSON.stringify(formData.sections || []),
       };
       const response = await adminApi.createDepartment(payload);
       
@@ -286,13 +318,45 @@ const AdminPanel = () => {
         branchId: null,
         members: 0,
         createdAt: new Date().toISOString(),
+        description: formData.description,
+        imageUrl: formData.imageUrl,
+        accentColor: formData.accentColor,
+        bgColor: formData.bgColor,
+        icon: formData.icon,
+        sectionsJson: JSON.stringify(formData.sections || []),
       };
       
       deptList.push(newDept);
       localStorage.setItem('createdDepartments', JSON.stringify(deptList));
       
       toast.success("Department created successfully!");
-      setFormData({ name: "", headDoctor: "", branch: "" });
+      setFormData({
+        name: "",
+        headDoctor: "",
+        branch: "",
+        description: "",
+        imageUrl: "",
+        accentColor: "#2563eb",
+        bgColor: "#eff6ff",
+        icon: "DEPT",
+        sections: [
+          {
+            title: "About",
+            icon: "📋",
+            items: ["Department providing specialized medical services"],
+          },
+          {
+            title: "Team",
+            icon: "👥",
+            items: ["Head Doctor: TBD", "Total Members: 0", "Specialized medical professionals"],
+          },
+          {
+            title: "Services",
+            icon: "⚕️",
+            items: ["Specialized medical care", "Patient consultation", "Treatment and diagnosis", "Follow-up support"],
+          },
+        ],
+      });
       setHeadDoctorName("");
       setHeadDoctorSuggestions([]);
       setDepartmentDoctorName("");
@@ -355,6 +419,48 @@ const AdminPanel = () => {
     setSelectedDepartmentDoctors([...selectedDepartmentDoctors, { id: match.id, name: match.name }]);
     setDepartmentDoctorName("");
     setDepartmentDoctorSuggestions([]);
+  };
+
+  const updateSectionField = (idx, field, value) => {
+    const next = [...formData.sections];
+    next[idx] = { ...next[idx], [field]: value };
+    setFormData({ ...formData, sections: next });
+  };
+
+  const updateSectionItem = (sectionIdx, itemIdx, value) => {
+    const next = [...formData.sections];
+    const items = Array.isArray(next[sectionIdx].items) ? [...next[sectionIdx].items] : [];
+    items[itemIdx] = value;
+    next[sectionIdx] = { ...next[sectionIdx], items };
+    setFormData({ ...formData, sections: next });
+  };
+
+  const addSection = () => {
+    const next = [
+      ...formData.sections,
+      { title: "New Section", icon: "➕", items: ["New item"] },
+    ];
+    setFormData({ ...formData, sections: next });
+  };
+
+  const removeSection = (idx) => {
+    const next = formData.sections.filter((_, i) => i !== idx);
+    setFormData({ ...formData, sections: next });
+  };
+
+  const addSectionItem = (idx) => {
+    const next = [...formData.sections];
+    const items = Array.isArray(next[idx].items) ? [...next[idx].items] : [];
+    items.push("New item");
+    next[idx] = { ...next[idx], items };
+    setFormData({ ...formData, sections: next });
+  };
+
+  const removeSectionItem = (sectionIdx, itemIdx) => {
+    const next = [...formData.sections];
+    const items = Array.isArray(next[sectionIdx].items) ? [...next[sectionIdx].items] : [];
+    next[sectionIdx] = { ...next[sectionIdx], items: items.filter((_, i) => i !== itemIdx) };
+    setFormData({ ...formData, sections: next });
   };
 
   const removeDepartmentDoctor = (id) => {
@@ -1519,6 +1625,125 @@ const AdminPanel = () => {
                               <option key={d.id} value={d.name} />
                             ))}
                           </datalist>
+                        </div>
+                      </div>
+                      <div className="admin-form-group">
+                        <div>
+                          <label className="admin-form-label">Department Description</label>
+                          <input
+                            type="text"
+                            placeholder="Short description"
+                            value={formData.description}
+                            onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                          />
+                        </div>
+                        <div>
+                          <label className="admin-form-label">Department Photo URL</label>
+                          <input
+                            type="text"
+                            placeholder="https://..."
+                            value={formData.imageUrl}
+                            onChange={(e) => setFormData({ ...formData, imageUrl: e.target.value })}
+                          />
+                        </div>
+                      </div>
+                      <div className="admin-form-group">
+                        <div>
+                          <label className="admin-form-label">Card Accent Color</label>
+                          <input
+                            type="text"
+                            placeholder="#2563eb"
+                            value={formData.accentColor}
+                            onChange={(e) => setFormData({ ...formData, accentColor: e.target.value })}
+                          />
+                        </div>
+                        <div>
+                          <label className="admin-form-label">Card Background Color</label>
+                          <input
+                            type="text"
+                            placeholder="#eff6ff"
+                            value={formData.bgColor}
+                            onChange={(e) => setFormData({ ...formData, bgColor: e.target.value })}
+                          />
+                        </div>
+                      </div>
+                      <div className="admin-form-group">
+                        <div>
+                          <label className="admin-form-label">Card Icon Text</label>
+                          <input
+                            type="text"
+                            placeholder="DEPT"
+                            value={formData.icon}
+                            onChange={(e) => setFormData({ ...formData, icon: e.target.value })}
+                          />
+                        </div>
+                      </div>
+                      <div className="admin-form-group full">
+                        <div>
+                          <label className="admin-form-label">Department Sections</label>
+                          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                            {formData.sections.map((section, idx) => (
+                              <div key={idx} style={{ border: "1px solid #eee", borderRadius: 8, padding: 12 }}>
+                                <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+                                  <input
+                                    type="text"
+                                    placeholder="Section Title"
+                                    value={section.title}
+                                    onChange={(e) => updateSectionField(idx, "title", e.target.value)}
+                                    style={{ flex: 1, minWidth: 180 }}
+                                  />
+                                  <input
+                                    type="text"
+                                    placeholder="Icon (e.g. 📋)"
+                                    value={section.icon}
+                                    onChange={(e) => updateSectionField(idx, "icon", e.target.value)}
+                                    style={{ width: 120 }}
+                                  />
+                                  <button
+                                    type="button"
+                                    className="admin-view-all"
+                                    onClick={() => removeSection(idx)}
+                                  >
+                                    Remove Section
+                                  </button>
+                                </div>
+
+                                <div style={{ marginTop: 10, display: "flex", flexDirection: "column", gap: 8 }}>
+                                  {(section.items || []).map((item, itemIdx) => (
+                                    <div key={itemIdx} style={{ display: "flex", gap: 8 }}>
+                                      <input
+                                        type="text"
+                                        value={item}
+                                        onChange={(e) => updateSectionItem(idx, itemIdx, e.target.value)}
+                                        style={{ flex: 1 }}
+                                      />
+                                      <button
+                                        type="button"
+                                        className="admin-view-all"
+                                        onClick={() => removeSectionItem(idx, itemIdx)}
+                                      >
+                                        Remove
+                                      </button>
+                                    </div>
+                                  ))}
+                                  <button
+                                    type="button"
+                                    className="admin-refresh-btn"
+                                    onClick={() => addSectionItem(idx)}
+                                  >
+                                    + Add Item
+                                  </button>
+                                </div>
+                              </div>
+                            ))}
+                            <button
+                              type="button"
+                              className="admin-refresh-btn"
+                              onClick={addSection}
+                            >
+                              + Add Section
+                            </button>
+                          </div>
                         </div>
                       </div>
                       {headDoctorError && (

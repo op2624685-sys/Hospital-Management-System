@@ -1,38 +1,47 @@
-import React, { useState } from 'react'
+import React, { useMemo, useState } from 'react'
 
-const GenericDepartment = ({ name, icon, description, members, headDoctor }) => {
+const GenericDepartment = ({ name, icon, description, members, headDoctor, accent, bg, imageUrl, sectionsJson }) => {
   const [active, setActive] = useState(0)
 
-  // Default sections for generic departments
-  const sections = [
-    {
-      title: 'About',
-      icon: '📋',
-      items: [description || 'Department providing specialized medical services'],
-    },
-    {
-      title: 'Team',
-      icon: '👥',
-      items: [
-        `Head Doctor: ${headDoctor || 'TBD'}`,
-        `Total Members: ${members || 0}`,
-        'Specialized medical professionals',
-      ],
-    },
-    {
-      title: 'Services',
-      icon: '⚕️',
-      items: [
-        'Specialized medical care',
-        'Patient consultation',
-        'Treatment and diagnosis',
-        'Follow-up support',
-      ],
-    },
-  ]
+  const sections = useMemo(() => {
+    try {
+      const parsed = sectionsJson ? JSON.parse(sectionsJson) : null
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        return parsed
+      }
+    } catch {
+      // ignore invalid JSON, fall back to defaults
+    }
+    return [
+      {
+        title: 'About',
+        icon: '📋',
+        items: [description || 'Department providing specialized medical services'],
+      },
+      {
+        title: 'Team',
+        icon: '👥',
+        items: [
+          `Head Doctor: ${headDoctor || 'TBD'}`,
+          `Total Members: ${members || 0}`,
+          'Specialized medical professionals',
+        ],
+      },
+      {
+        title: 'Services',
+        icon: '⚕️',
+        items: [
+          'Specialized medical care',
+          'Patient consultation',
+          'Treatment and diagnosis',
+          'Follow-up support',
+        ],
+      },
+    ]
+  }, [sectionsJson, description, headDoctor, members])
 
-  const ACCENT = '#2563eb'
-  const BG = '#eff6ff'
+  const ACCENT = accent || '#2563eb'
+  const BG = bg || '#eff6ff'
 
   return (
     <div className='flex flex-col md:flex-row h-full overflow-y-auto md:overflow-visible' style={{ fontFamily: 'system-ui, sans-serif' }}>
@@ -91,6 +100,17 @@ const GenericDepartment = ({ name, icon, description, members, headDoctor }) => 
       {/* ── Right Panel (Info) ── */}
       <div className='w-full md:w-2/5 p-5 md:p-8 flex flex-col justify-between border-t md:border-t-0 md:border-l' style={{ borderColor: `${ACCENT}15`, background: BG }}>
         <div>
+          {imageUrl && (
+            <div
+              className='w-full h-36 rounded-2xl mb-5'
+              style={{
+                backgroundImage: `url(${imageUrl})`,
+                backgroundPosition: 'center',
+                backgroundSize: 'cover',
+                border: `1px solid ${ACCENT}22`,
+              }}
+            />
+          )}
           <p className='text-xs font-black uppercase tracking-widest text-gray-400 mb-4'>Department Info</p>
           <h3 className='text-2xl font-black text-gray-900 mb-6'>{name}</h3>
 

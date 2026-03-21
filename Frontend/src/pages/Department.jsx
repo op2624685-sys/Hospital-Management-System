@@ -2,28 +2,13 @@ import React, { useEffect, useRef, useState } from 'react'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import Header from '../components/Header'
-import Cardiology from '../components/Cardiology'
-import Neurology from '../components/Neurology'
-import Orthopedics from '../components/Orthopedics'
-import Pediatrics from '../components/Pediatrics'
-import Radiology from '../components/Radiology'
-import EmergencyDepartment from '../components/EmergencyDepartment'
 import GenericDepartment from '../components/GenericDepartment'
-import adminApi from '../api/admin'
+import API from '../api/api'
 
 gsap.registerPlugin(ScrollTrigger)
 
-const HARDCODED_DEPARTMENTS = [
-  { component: EmergencyDepartment, accent: '#2563eb', bg: '#eff6ff', label: 'Emergency',  icon: '🚨', number: '01', members: 10, head: 'Dr. John Doe' },
-  { component: Cardiology,          accent: '#0ea5e9', bg: '#ecfeff', label: 'Cardiology',  icon: '❤️', number: '02', members: 18, head: 'Dr. Sarah Lee' },
-  { component: Neurology,           accent: '#14b8a6', bg: '#f0fdfa', label: 'Neurology',   icon: '🧠', number: '03', members: 15, head: 'Dr. Alan Foster' },
-  { component: Orthopedics,         accent: '#10b981', bg: '#ecfdf5', label: 'Orthopedics', icon: '🦴', number: '04', members: 12, head: 'Dr. Robert King' },
-  { component: Pediatrics,          accent: '#22c55e', bg: '#f0fdf4', label: 'Pediatrics',  icon: '👶', number: '05', members: 20, head: 'Dr. Emily Chen' },
-  { component: Radiology,           accent: '#0284c7', bg: '#eff6ff', label: 'Radiology',   icon: '🔬', number: '06', members: 14, head: 'Dr. James Parker' },
-]
-
-const ACCENT_COLORS = ['#2563eb', '#0ea5e9', '#14b8a6', '#10b981', '#22c55e', '#0284c7', '#06b6d4', '#f59e0b', '#d97706', '#ef4444']
-const BG_COLORS = ['#eff6ff', '#ecfeff', '#f0fdfa', '#ecfdf5', '#f0fdf4', '#eff6ff', '#ecfeff', '#fffbeb', '#fffbeb', '#fff5f5']
+const DEFAULT_ACCENT = '#2563eb'
+const DEFAULT_BG = '#eff6ff'
 
 const Department = () => {
   const wrapperRef    = useRef(null)
@@ -36,64 +21,65 @@ const Department = () => {
   const accentBarRef  = useRef(null)
   const currentIdx    = useRef(0)
   
-  const [departments, setDepartments] = useState(HARDCODED_DEPARTMENTS)
+  const [departments, setDepartments] = useState([])
 
   // Fetch departments from backend
   useEffect(() => {
     const fetchDepartments = async () => {
       try {
-        // Fetch departments from backend
-        // Since there's no specific endpoint for all departments, we'll use a mock fetch
-        // In production, this would be: const res = await adminApi.getDepartments();
-        // For now, we'll just use the hardcoded departments
-        // But we'll keep this structure for when the backend endpoint is ready
-        
-        // Simulating loading created departments from localStorage/context if they exist
-        const createdDepts = localStorage.getItem('createdDepartments');
-        if (createdDepts) {
-          try {
-            const parsed = JSON.parse(createdDepts);
-            const customDepts = parsed.map((dept, idx) => {
-              const colorIdx = (HARDCODED_DEPARTMENTS.length + idx) % ACCENT_COLORS.length;
-              const number = String(HARDCODED_DEPARTMENTS.length + idx + 1).padStart(2, '0');
-              return {
-                component: (props) => (
-                  <GenericDepartment 
-                    name={dept.name}
-                    icon="🏥"
-                    description={`${dept.name} - Created via Admin Panel`}
-                    members={dept.members || 0}
-                    headDoctor={dept.headDoctorName || 'Not assigned'}
-                  />
-                ),
-                accent: ACCENT_COLORS[colorIdx],
-                bg: BG_COLORS[colorIdx],
-                label: dept.name,
-                icon: '🏥',
-                number: number,
-                members: dept.members || 0,
-                head: dept.headDoctorName || 'Not assigned',
-              };
-            });
-            setDepartments([...HARDCODED_DEPARTMENTS, ...customDepts]);
-          } catch (err) {
-            console.log('No custom departments found');
-            setDepartments(HARDCODED_DEPARTMENTS);
-          }
-        }
+        const res = await API.get('/departments')
+        const source = Array.isArray(res.data) ? res.data : []
+
+        const mapped = source.map((dept, idx) => {
+          const name = dept.name || 'Department'
+          const accent = dept.accentColor || DEFAULT_ACCENT
+          const bg = dept.bgColor || DEFAULT_BG
+          const icon = dept.icon || 'DEPT'
+          const description = dept.description
+          const members = dept.memberCount ?? dept.members ?? 0
+          const head = dept.headDoctorName || 'Not assigned'
+          const imageUrl = dept.imageUrl || ''
+          const number = String(idx + 1).padStart(2, '0')
+
+          return {
+            component: () => (
+              <GenericDepartment
+                name={name}
+                icon={icon}
+                description={description}
+                members={members}
+                headDoctor={head}
+                accent={accent}
+                bg={bg}
+                imageUrl={imageUrl}
+                sectionsJson={dept.sectionsJson}
+              />
+            ),
+            accent,
+            bg,
+            label: name,
+            icon,
+            number,
+            members,
+            head,
+          };
+        });
+
+        setDepartments(mapped);
       } catch (error) {
         console.error('Error fetching departments:', error);
-        setDepartments(HARDCODED_DEPARTMENTS);
+        setDepartments([]);
       }
     };
 
     fetchDepartments();
-  }, [])
+  }, []);
 
   // Animation and ScrollTrigger setup
   useEffect(() => {
     const cards = cardRefs.current.filter(Boolean)
     const total = cards.length
+    if (total === 0) return
 
     cards.forEach((card, i) => {
       gsap.set(card, {
@@ -368,10 +354,29 @@ const Department = () => {
             </div>
           )
         })}
+        {departments.length === 0 && (
+          <div className='absolute inset-0 flex items-center justify-center'>
+            <div
+              className='px-6 py-4 rounded-2xl text-center'
+              style={{
+                background: 'rgba(15, 23, 42, 0.06)',
+                border: '1px dashed rgba(15, 23, 42, 0.18)',
+                color: '#0f172a',
+              }}>
+              <p className='text-sm font-semibold'>No departments available</p>
+              <p className='text-xs mt-1' style={{ color: '#475569' }}>
+                Ask admin to create departments to see them here.
+              </p>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   )
 }
 
 export default Department
+
+
+
 
