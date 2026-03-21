@@ -32,6 +32,7 @@ const AppointmentBooking = () => {
   const SLOT_MINUTES = 20;
   const START_HOUR = 10;
   const END_HOUR = 19; // exclusive
+  const MAX_ADVANCE_DAYS = 30;
 
   useEffect(() => {
     const fetchMeta = async () => {
@@ -214,6 +215,26 @@ const AppointmentBooking = () => {
     }
     return slots;
   })();
+
+  const today = new Date();
+  const formatDate = (d) => {
+    const yyyy = d.getFullYear();
+    const mm = String(d.getMonth() + 1).padStart(2, '0');
+    const dd = String(d.getDate()).padStart(2, '0');
+    return `${yyyy}-${mm}-${dd}`;
+  };
+  const minDate = formatDate(today);
+  const maxDate = formatDate(new Date(today.getFullYear(), today.getMonth(), today.getDate() + MAX_ADVANCE_DAYS));
+
+  const isSlotInPast = (dateStr, slot) => {
+    if (!dateStr || !slot) return false;
+    const now = new Date();
+    const [hh, mm] = slot.split(':').map(Number);
+    const [yyyy, mon, dd] = dateStr.split('-').map(Number);
+    if (!yyyy || !mon || !dd) return false;
+    const slotDate = new Date(yyyy, mon - 1, dd, hh, mm, 0, 0);
+    return slotDate <= now;
+  };
 
   return (
     <>
@@ -728,6 +749,8 @@ const AppointmentBooking = () => {
                   type="date"
                   value={appointmentDate}
                   onChange={e => { setAppointmentDate(e.target.value); setAppointmentSlot(''); }}
+                  min={minDate}
+                  max={maxDate}
                   required
                 />
               </div>
@@ -762,13 +785,14 @@ const AppointmentBooking = () => {
                         {timeSlots.map((slot) => {
                           const isBooked = bookedSlots.includes(slot);
                           const isSelected = appointmentSlot === slot;
+                          const isPast = isSlotInPast(appointmentDate, slot);
                           return (
                             <button
                               type="button"
                               key={slot}
-                              className={`ab-slot ${isBooked ? 'ab-slot-booked' : ''} ${isSelected ? 'ab-slot-selected' : ''}`}
-                              onClick={() => !isBooked && setAppointmentSlot(slot)}
-                              disabled={isBooked}
+                              className={`ab-slot ${isBooked ? 'ab-slot-booked' : ''} ${isSelected ? 'ab-slot-selected' : ''} ${isPast ? 'ab-slot-disabled' : ''}`}
+                              onClick={() => (!isBooked && !isPast) && setAppointmentSlot(slot)}
+                              disabled={isBooked || isPast}
                             >
                               {slot}
                             </button>

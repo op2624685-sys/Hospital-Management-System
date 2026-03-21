@@ -329,7 +329,7 @@ const AppointmentDetails = () => {
           display: flex; align-items: center; justify-content: center;
           font-family: 'Fraunces', serif; font-size: .85rem; font-weight: 900; color: #fff;
         }
-        .ad-cell-emoji { font-size: 28px; margin-bottom: 8px; }
+        .ad-cell-emoji { width: 26px; height: 26px; margin-bottom: 8px; color: #fff; display: inline-flex; align-items: center; justify-content: center; }
         .ad-cell-name { font-size: 13px; font-weight: 700; color: #fff; margin-bottom: 4px; line-height: 1.3; }
         .ad-cell-meta { font-size: 11.5px; color: rgba(255,255,255,.32); line-height: 1.65; }
 
@@ -459,15 +459,28 @@ const AppointmentDetails = () => {
           .ad-nav-tagline { display: none; }
         }
 
+        .print-only { display: none; }
+
         /* print */
         @media print {
-          .ad-page { background: #fff !important; color: #000 !important; }
-          .ad-grain, .ad-ambient, .ad-back, .ad-actions, .ad-copy-btn { display: none !important; }
-          .ad-ticket { box-shadow: none !important; border: 1px solid #ddd !important; }
-          .ad-ticket-body { background: #fafafa !important; }
-          .ad-info-cell { background: #f5f5f5 !important; border: 1px solid #e0e0e0 !important; }
-          .ad-cell-name, .ad-tbn-title, .ad-heading { color: #111 !important; }
-          .ad-cell-meta, .ad-tbn-subtitle, .ad-subhead { color: #555 !important; }
+          .ad-page { background: #fff !important; color: #111 !important; }
+          .ad-grain, .ad-ambient, .ad-back, .ad-actions, .ad-copy-btn, .ad-nav, .ad-footer { display: none !important; }
+          .ad-success-header { display: none !important; }
+          .print-only { display: block !important; }
+          .ad-container { max-width: 720px; padding: 14px 16px 16px; }
+          .ad-ticket { box-shadow: none !important; border: 1px solid #e5e7eb !important; }
+          .ad-ticket-banner { background: #f8fafc !important; padding: 16px 18px !important; }
+          .ad-tbn-title, .ad-heading { color: #111 !important; }
+          .ad-tbn-subtitle, .ad-subhead { color: #555 !important; }
+          .ad-ticket-body { background: #fff !important; padding: 16px 18px 14px !important; }
+          .ad-info-cell { background: #f8fafc !important; border: 1px solid #e5e7eb !important; }
+          .ad-cell-name { color: #111 !important; }
+          .ad-cell-meta { color: #4b5563 !important; }
+          .ad-cell-emoji { color: #111 !important; }
+          .ad-perf::before, .ad-perf::after { background: #fff !important; }
+          .ad-info-grid { gap: 8px !important; margin-bottom: 14px !important; }
+          .ad-date-band { margin-bottom: 12px !important; }
+          .ad-id-box { margin-bottom: 14px !important; padding: 12px 14px !important; }
         }
 
         ::-webkit-scrollbar { width: 4px; }
@@ -491,7 +504,7 @@ const AppointmentDetails = () => {
         </div>
 
         {/* ── Navbar ── */}
-        <nav className="ad-nav">
+        <nav className="ad-nav no-print">
 
           <Link to="/" className="ad-nav-logo">
             <div className="ad-nav-mark">
@@ -533,13 +546,60 @@ const AppointmentDetails = () => {
           {/* Back */}
           <button className="ad-back no-print" onClick={() => navigate(-1)}>
             <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 12H5M12 5l-7 7 7 7"/>
-            </svg>
-            Back
-          </button>
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 12H5M12 5l-7 7 7 7"/>
+          </svg>
+          Back
+        </button>
 
-          {/* Success header */}
-          <div className="ad-success-header">
+        <div className="print-only" style={{ marginBottom: 16 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
+            <div>
+              <div style={{ fontSize: 12, letterSpacing: '.18em', textTransform: 'uppercase', color: '#64748b', fontWeight: 700, display: 'flex', alignItems: 'center', gap: 6 }}>
+                <svg width="12" height="12" fill="none" stroke="#64748b" strokeWidth="2" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                </svg>
+                Appointment Receipt
+              </div>
+              <div style={{ fontSize: 22, fontWeight: 800, color: '#0f172a', marginTop: 4 }}>
+                {appointment?.branch?.name || 'Hospital'}
+              </div>
+              <div style={{ fontSize: 12, color: '#64748b', marginTop: 4 }}>
+                {appointment?.branch?.address || ''}
+              </div>
+            </div>
+            <div style={{ textAlign: 'right' }}>
+              <div style={{ fontSize: 11, color: '#64748b', fontWeight: 700, letterSpacing: '.14em', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: 6, justifyContent: 'flex-end' }}>
+                <svg width="12" height="12" fill="none" stroke="#64748b" strokeWidth="2" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                Status
+              </div>
+              <div style={{ fontSize: 14, fontWeight: 700, color: '#0f172a' }}>
+                {status.label}
+              </div>
+              <div style={{ fontSize: 11, color: '#64748b', marginTop: 6, display: 'flex', alignItems: 'center', gap: 6, justifyContent: 'flex-end' }}>
+                <svg width="12" height="12" fill="none" stroke="#64748b" strokeWidth="2" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                {formattedDate}
+              </div>
+            </div>
+          </div>
+          <div style={{ marginTop: 12, padding: '10px 12px', border: '1px solid #e5e7eb', borderRadius: 10, background: '#f8fafc' }}>
+            <div style={{ fontSize: 10, letterSpacing: '.18em', textTransform: 'uppercase', color: '#64748b', fontWeight: 700, display: 'flex', alignItems: 'center', gap: 6 }}>
+              <svg width="12" height="12" fill="none" stroke="#64748b" strokeWidth="2" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M7 7h10M7 12h10M7 17h10"/>
+              </svg>
+              Appointment ID
+            </div>
+            <div style={{ fontFamily: 'monospace', fontSize: 13, fontWeight: 700, color: '#0f172a', marginTop: 4 }}>
+              {appointment?.appointmentId}
+            </div>
+          </div>
+        </div>
+
+        {/* Success header */}
+        <div className="ad-success-header">
             <div className="ad-success-badge">
               <div className="ad-success-check">
                 <svg width="10" height="10" fill="none" stroke="#fff" viewBox="0 0 24 24">
@@ -661,7 +721,12 @@ const AppointmentDetails = () => {
                     <div className="ad-cell-dot" style={{ background: '#a78bfa' }} />
                     <span className="ad-cell-lbl">Date &amp; Time</span>
                   </div>
-                  <div className="ad-cell-emoji">🗓️</div>
+                  <div className="ad-cell-emoji">
+                    <svg width="26" height="26" fill="none" stroke="currentColor" strokeWidth="1.7" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 11v4l3 3"/>
+                    </svg>
+                  </div>
                   <div className="ad-cell-name" style={{ fontSize: 13, lineHeight: 1.45 }}>{formattedDate}</div>
                 </div>
 
@@ -671,7 +736,12 @@ const AppointmentDetails = () => {
                     <div className="ad-cell-dot" style={{ background: '#fb923c' }} />
                     <span className="ad-cell-lbl">Reason</span>
                   </div>
-                  <div className="ad-cell-emoji">📋</div>
+                  <div className="ad-cell-emoji">
+                    <svg width="26" height="26" fill="none" stroke="currentColor" strokeWidth="1.7" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 5h6l1 2h3a1 1 0 011 1v11a2 2 0 01-2 2H6a2 2 0 01-2-2V8a1 1 0 011-1h3l1-2z"/>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6M9 16h6"/>
+                    </svg>
+                  </div>
                   <div className="ad-cell-name" style={{ fontSize: 13, lineHeight: 1.5 }}>{appointment.reason}</div>
                 </div>
               </div>
@@ -718,3 +788,4 @@ const AppointmentDetails = () => {
 }
 
 export default AppointmentDetails
+
