@@ -8,13 +8,11 @@ import java.util.stream.Collectors;
 import java.time.LocalTime;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
 
 import com.hms.dto.Request.CreateAppointmentRequestDto;
 import com.hms.dto.Request.UpdateAppointmentRequestDto;
@@ -29,29 +27,30 @@ import com.hms.entity.Patient;
 import com.hms.entity.Admin;
 import com.hms.entity.type.AppointmentStatusType;
 import com.hms.entity.type.RoleType;
+import com.hms.event.AppointmentNotificationEvent;
+import com.hms.event.AppointmentNotificationType;
 import com.hms.repository.AppointmentRepository;
 import com.hms.repository.AdminRepository;
 import com.hms.repository.DoctorRepository;
 import com.hms.repository.PatientRepository;
 import com.hms.service.AppointmentService;
-import com.hms.service.EmailService;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.context.ApplicationEventPublisher;
 
 @Service
 @RequiredArgsConstructor
 public class AppointmentServiceImpl implements AppointmentService {
 
     private static final long APPOINTMENT_SLOT_MINUTES = 20;
+    private static final int MAX_ADVANCE_DAYS = 30;
     private final AppointmentRepository appointmentRepository;
     private final PatientRepository patientRepository;
     private final DoctorRepository doctorRepository;
     private final AdminRepository adminRepository;
-    private final EmailService emailService;
-    @Value("${app.appointment-details-base-url:http://localhost:5173/appointments}")
-    private String appointmentDetailsBaseUrl;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Override
     @Transactional
@@ -62,6 +61,7 @@ public class AppointmentServiceImpl implements AppointmentService {
 
         validateWithinWorkingHours(createAppointmentRequestDto.getAppointmentTime());
         validateSlotBoundary(createAppointmentRequestDto.getAppointmentTime());
+        validateFutureBookingWindow(createAppointmentRequestDto.getAppointmentTime());
 
         Patient patient = patientRepository.findById(patientId)
                 .orElseThrow(() -> new EntityNotFoundException("Patient not found with ID: " + patientId));
@@ -94,43 +94,11 @@ public class AppointmentServiceImpl implements AppointmentService {
         patient.getAppointments().add(appointment); // to maintain consistency
 
         appointment = appointmentRepository.save(appointment);
-        sendAppointmentCreatedEmails(appointment);
+        eventPublisher.publishEvent(new AppointmentNotificationEvent(
+                appointment.getAppointmentId(),
+                AppointmentNotificationType.CREATED,
+                null));
         return mapToAppointmentResponseDto(appointment);
-    }
-
-    private void sendAppointmentCreatedEmails(Appointment appointment) {
-        Patient patient = appointment.getPatient();
-        Doctor doctor = appointment.getDoctor();
-
-        if (StringUtils.hasText(patient.getEmail())) {
-            emailService.sendMail(
-                    patient.getEmail(),
-                    "Appointment Booked Successfully",
-                    String.format(
-                            "Hello %s,%n%nYour appointment has been booked successfully.%nAppointment ID: %s%nDoctor: Dr. %s%nTime: %s%nReason: %s%nStatus: %s%nAppointment Link: %s%n%nThank you.",
-                            patient.getName(),
-                            appointment.getAppointmentId(),
-                            doctor.getName(),
-                            appointment.getAppointmentTime(),
-                            appointment.getReason(),
-                            appointment.getStatus(),
-                            getAppointmentLink(appointment)));
-        }
-
-        if (StringUtils.hasText(doctor.getEmail())) {
-            emailService.sendMail(
-                    doctor.getEmail(),
-                    "New Appointment Booked",
-                    String.format(
-                            "Hello Dr. %s,%n%nA new appointment has been booked.%nAppointment ID: %s%nPatient: %s%nTime: %s%nReason: %s%nStatus: %s%nAppointment Link: %s%n%nPlease review in HMS.",
-                            doctor.getName(),
-                            appointment.getAppointmentId(),
-                            patient.getName(),
-                            appointment.getAppointmentTime(),
-                            appointment.getReason(),
-                            appointment.getStatus(),
-                            getAppointmentLink(appointment)));
-        }
     }
 
     @Transactional
@@ -146,7 +114,10 @@ public class AppointmentServiceImpl implements AppointmentService {
         newDoctor.getAppointments().add(appointment); // Ensure bidirectional consistency
 
         Appointment savedAppointment = appointmentRepository.save(appointment);
-        sendAppointmentUpdatedEmails(savedAppointment, "Doctor was changed");
+        eventPublisher.publishEvent(new AppointmentNotificationEvent(
+                savedAppointment.getAppointmentId(),
+                AppointmentNotificationType.UPDATED,
+                "Doctor was changed"));
         return savedAppointment;
     }
 
@@ -205,7 +176,10 @@ public class AppointmentServiceImpl implements AppointmentService {
 
         appointment.setStatus(status);
         Appointment savedAppointment = appointmentRepository.save(appointment);
-        sendAppointmentStatusNotification(savedAppointment);
+        eventPublisher.publishEvent(new AppointmentNotificationEvent(
+                savedAppointment.getAppointmentId(),
+                AppointmentNotificationType.STATUS_CHANGED,
+                null));
         return mapToAppointmentResponseDto(savedAppointment);
     }
 
@@ -223,7 +197,10 @@ public class AppointmentServiceImpl implements AppointmentService {
 
         appointment.setStatus(AppointmentStatusType.CANCELLED);
         Appointment savedAppointment = appointmentRepository.save(appointment);
-        sendPatientCancelledEmails(savedAppointment);
+        eventPublisher.publishEvent(new AppointmentNotificationEvent(
+                savedAppointment.getAppointmentId(),
+                AppointmentNotificationType.CANCELLED,
+                null));
         return mapToAppointmentResponseDto(savedAppointment);
     }
 
@@ -256,7 +233,10 @@ public class AppointmentServiceImpl implements AppointmentService {
         Appointment savedAppointment = appointmentRepository.save(appointment);
 
         if (statusChanged) {
-            sendAppointmentStatusNotification(savedAppointment);
+            eventPublisher.publishEvent(new AppointmentNotificationEvent(
+                    savedAppointment.getAppointmentId(),
+                    AppointmentNotificationType.UPDATED,
+                    changeSummary.toString()));
         }
 
         return mapToAppointmentResponseDto(savedAppointment);
@@ -309,131 +289,6 @@ public class AppointmentServiceImpl implements AppointmentService {
         throw new AccessDeniedException("User authentication is required");
     }
 
-    private void sendAppointmentStatusNotification(Appointment appointment) {
-        Patient patient = appointment.getPatient();
-        Doctor doctor = appointment.getDoctor();
-        AppointmentStatusType status = appointment.getStatus();
-
-        if (StringUtils.hasText(patient.getEmail())) {
-            String subject = "Appointment Status Update: " + status;
-            String message;
-
-            switch (status) {
-                case CONFIRMED -> message = String.format(
-                        "Hello %s,%n%nYour appointment with Dr. %s has been CONFIRMED.%n%nDetails:%nTime: %s%nReason: %s%nLink: %s%n%nPlease arrive 10 minutes before your scheduled time.",
-                        patient.getName(), doctor.getName(), appointment.getAppointmentTime(), appointment.getReason(), getAppointmentLink(appointment));
-                case REJECTED -> message = String.format(
-                        "Hello %s,%n%nWe regret to inform you that your appointment with Dr. %s has been REJECTED.%n%nDetails:%nTime: %s%nReason: %s%n%nPlease contact the hospital or book another slot if needed.",
-                        patient.getName(), doctor.getName(), appointment.getAppointmentTime(), appointment.getReason());
-                case IN_PROGRESS -> message = String.format(
-                        "Hello %s,%n%nYour appointment with Dr. %s is now IN PROGRESS.%n%nLink: %s",
-                        patient.getName(), doctor.getName(), getAppointmentLink(appointment));
-                case COMPLETED -> message = String.format(
-                        "Hello %s,%n%nYour appointment with Dr. %s has been COMPLETED.%n%nWe hope you had a satisfactory experience. You can view your appointment details here: %s",
-                        patient.getName(), doctor.getName(), getAppointmentLink(appointment));
-                case CANCELLED -> message = String.format(
-                        "Hello %s,%n%nYour appointment with Dr. %s has been CANCELLED.%n%nDetails:%nTime: %s",
-                        patient.getName(), doctor.getName(), appointment.getAppointmentTime());
-                default -> message = String.format(
-                        "Hello %s,%n%nThe status of your appointment with Dr. %s has been updated to: %s.%n%nLink: %s",
-                        patient.getName(), doctor.getName(), status, getAppointmentLink(appointment));
-            }
-
-            emailService.sendMail(patient.getEmail(), subject, message + "\n\nThank you,\n" + appointment.getBranch().getName());
-        }
-
-        // Also notify the doctor about the status change if it was changed by someone else (e.g. Admin)
-        if (StringUtils.hasText(doctor.getEmail())) {
-             emailService.sendMail(
-                    doctor.getEmail(),
-                    "Appointment Status Updated",
-                    String.format(
-                            "Hello Dr. %s,%n%nThe status of appointment %s (Patient: %s) has been changed to %s.%nLink: %s",
-                            doctor.getName(),
-                            appointment.getAppointmentId(),
-                            patient.getName(),
-                            status,
-                            getAppointmentLink(appointment)));
-        }
-    }
-
-    private void sendAppointmentUpdatedEmails(Appointment appointment, String changeSummary) {
-        Patient patient = appointment.getPatient();
-        Doctor doctor = appointment.getDoctor();
-
-        if (StringUtils.hasText(patient.getEmail())) {
-            emailService.sendMail(
-                    patient.getEmail(),
-                    "Appointment Updated",
-                    String.format(
-                            "Hello %s,%n%nYour appointment has been updated.%nChange: %s%nAppointment ID: %s%nDoctor: Dr. %s%nTime: %s%nReason: %s%nStatus: %s%nAppointment Link: %s%n%nThank you.",
-                            patient.getName(),
-                            changeSummary,
-                            appointment.getAppointmentId(),
-                            doctor.getName(),
-                            appointment.getAppointmentTime(),
-                            appointment.getReason(),
-                            appointment.getStatus(),
-                            getAppointmentLink(appointment)));
-        }
-
-        if (StringUtils.hasText(doctor.getEmail())) {
-            emailService.sendMail(
-                    doctor.getEmail(),
-                    "Appointment Updated",
-                    String.format(
-                            "Hello Dr. %s,%n%nAn appointment has been updated.%nChange: %s%nAppointment ID: %s%nPatient: %s%nTime: %s%nReason: %s%nStatus: %s%nAppointment Link: %s%n%nPlease review in HMS.",
-                            doctor.getName(),
-                            changeSummary,
-                            appointment.getAppointmentId(),
-                            patient.getName(),
-                            appointment.getAppointmentTime(),
-                            appointment.getReason(),
-                            appointment.getStatus(),
-                            getAppointmentLink(appointment)));
-        }
-    }
-
-    private void sendPatientCancelledEmails(Appointment appointment) {
-        Patient patient = appointment.getPatient();
-        Doctor doctor = appointment.getDoctor();
-
-        if (StringUtils.hasText(patient.getEmail())) {
-            emailService.sendMail(
-                    patient.getEmail(),
-                    "Appointment Cancelled",
-                    String.format(
-                            "Hello %s,%n%nYour appointment has been cancelled.%nAppointment ID: %s%nDoctor: Dr. %s%nTime: %s%nReason: %s%nStatus: %s%nAppointment Link: %s%n%nThank you.",
-                            patient.getName(),
-                            appointment.getAppointmentId(),
-                            doctor.getName(),
-                            appointment.getAppointmentTime(),
-                            appointment.getReason(),
-                            appointment.getStatus(),
-                            getAppointmentLink(appointment)));
-        }
-
-        if (StringUtils.hasText(doctor.getEmail())) {
-            emailService.sendMail(
-                    doctor.getEmail(),
-                    "Patient Cancelled Appointment",
-                    String.format(
-                            "Hello Dr. %s,%n%nA patient has cancelled an appointment.%nAppointment ID: %s%nPatient: %s%nTime: %s%nReason: %s%nStatus: %s%nAppointment Link: %s%n%nPlease review in HMS.",
-                            doctor.getName(),
-                            appointment.getAppointmentId(),
-                            patient.getName(),
-                            appointment.getAppointmentTime(),
-                            appointment.getReason(),
-                            appointment.getStatus(),
-                            getAppointmentLink(appointment)));
-        }
-    }
-
-    private String getAppointmentLink(Appointment appointment) {
-        String baseUrl = appointmentDetailsBaseUrl.endsWith("/") ? appointmentDetailsBaseUrl : appointmentDetailsBaseUrl + "/";
-        return baseUrl + appointment.getAppointmentId();
-    }
-
     private void validateWithinWorkingHours(java.time.LocalDateTime appointmentTime) {
         if (appointmentTime == null) {
             throw new IllegalArgumentException("Appointment time is required");
@@ -451,6 +306,20 @@ public class AppointmentServiceImpl implements AppointmentService {
         int minute = appointmentTime.getMinute();
         if (appointmentTime.getSecond() != 0 || appointmentTime.getNano() != 0 || (minute % APPOINTMENT_SLOT_MINUTES) != 0) {
             throw new IllegalArgumentException("Appointment time must be on a 20-minute boundary (e.g., 10:00, 10:20, 10:40)");
+        }
+    }
+
+    private void validateFutureBookingWindow(java.time.LocalDateTime appointmentTime) {
+        if (appointmentTime == null) {
+            throw new IllegalArgumentException("Appointment time is required");
+        }
+        java.time.LocalDateTime now = java.time.LocalDateTime.now();
+        if (!appointmentTime.isAfter(now)) {
+            throw new IllegalArgumentException("Appointment time must be in the future");
+        }
+        java.time.LocalDateTime latestAllowed = now.plusDays(MAX_ADVANCE_DAYS);
+        if (appointmentTime.isAfter(latestAllowed)) {
+            throw new IllegalArgumentException("Appointment time must be within the next " + MAX_ADVANCE_DAYS + " days");
         }
     }
 
@@ -488,14 +357,24 @@ public class AppointmentServiceImpl implements AppointmentService {
     private Set<DepartmentDto> mapDepartments(Doctor doctor) {
         if (doctor.getDepartments() == null) return Set.of();
         return doctor.getDepartments().stream()
-                .map(department -> new DepartmentDto(
-                        department.getId(),
-                        department.getName(),
-                        department.getBranch() != null ? department.getBranch().getId() : null,
-                        department.getHeadDoctor() != null ? department.getHeadDoctor().getId() : null,
-                        department.getDoctors() == null ? Set.of()
-                                : department.getDoctors().stream().map(Doctor::getId).collect(Collectors.toSet())
-                ))
+                .map(department -> {
+                    DepartmentDto dto = new DepartmentDto();
+                    dto.setId(department.getId());
+                    dto.setName(department.getName());
+                    dto.setBranchId(department.getBranch() != null ? department.getBranch().getId() : null);
+                    dto.setHeadDoctorId(department.getHeadDoctor() != null ? department.getHeadDoctor().getId() : null);
+                    dto.setDoctorIds(department.getDoctors() == null ? Set.of()
+                            : department.getDoctors().stream().map(Doctor::getId).collect(Collectors.toSet()));
+                    dto.setHeadDoctorName(department.getHeadDoctor() != null ? department.getHeadDoctor().getName() : null);
+                    dto.setMemberCount(department.getDoctors() == null ? 0 : department.getDoctors().size());
+                    dto.setDescription(department.getDescription());
+                    dto.setImageUrl(department.getImageUrl());
+                    dto.setAccentColor(department.getAccentColor());
+                    dto.setBgColor(department.getBgColor());
+                    dto.setIcon(department.getIcon());
+                    dto.setSectionsJson(department.getSectionsJson());
+                    return dto;
+                })
                 .collect(Collectors.toSet());
     }
 

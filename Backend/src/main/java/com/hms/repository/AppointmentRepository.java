@@ -8,6 +8,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import com.hms.entity.Appointment;
 import com.hms.entity.Doctor;
@@ -24,6 +26,15 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
     Page<Appointment> findByBranch_IdOrderByAppointmentTimeDesc(Long branchId, Pageable pageable);
 
     Optional<Appointment> findByAppointmentId(String appointmentId);
+
+    @Query("""
+            SELECT a FROM Appointment a
+            LEFT JOIN FETCH a.patient p
+            LEFT JOIN FETCH a.doctor d
+            LEFT JOIN FETCH a.branch b
+            WHERE a.appointmentId = :appointmentId
+            """)
+    Optional<Appointment> findByAppointmentIdWithDetails(@Param("appointmentId") String appointmentId);
 
     long countByBranch_Id(Long branchId);
 
