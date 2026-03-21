@@ -55,11 +55,12 @@ public class WebSecurityConfig {
                         .requestMatchers(
                                 "/public/**",
                                 "/auth/**",
+                                "/departments/**").permitAll()
+                        .requestMatchers(
+                                "/head-admin/**",
                                 "/swagger-ui/**",
                                 "/swagger-ui.html",
-                                "/v3/api-docs/**")
-                        .permitAll()
-                        .requestMatchers("/head-admin/**").hasRole(HEADADMIN.name())
+                                "/v3/api-docs/**").hasRole(HEADADMIN.name())
                         .requestMatchers("/admin/**").hasAnyRole(ADMIN.name(), HEADADMIN.name())
                         .requestMatchers("/doctor/**").hasAnyRole(DOCTOR.name(), ADMIN.name(), HEADADMIN.name())
                         .requestMatchers("/patients/**").hasRole(PATIENT.name())
