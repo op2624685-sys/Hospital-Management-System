@@ -14,6 +14,8 @@ spring:
     data:
         redis:
             url: ${REDIS_URL}
+            repositories:
+                enabled: false
     mail:
         host: ${MAIL_HOST:smtp.gmail.com}
         port: ${MAIL_PORT:587}
