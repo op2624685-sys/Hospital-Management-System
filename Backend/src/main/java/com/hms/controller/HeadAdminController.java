@@ -13,6 +13,8 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import com.hms.dto.AdminDto;
+import com.hms.dto.DepartmentDto;
+import com.hms.dto.Request.CreateDepartmentTemplateRequestDto;
 import com.hms.dto.Request.BranchRequestDto;
 import com.hms.dto.Request.OnBoardAdminRequestDto;
 import com.hms.dto.Response.AdminResponseDto;
@@ -21,6 +23,7 @@ import com.hms.dto.Response.HeadAdminBranchSummaryDto;
 import com.hms.dto.Response.BranchResponseDto;
 import com.hms.service.AdminService;
 import com.hms.service.BranchService;
+import com.hms.service.DepartmentService;
 import com.hms.service.HeadAdminService;
 
 import jakarta.validation.Valid;
@@ -35,6 +38,7 @@ public class HeadAdminController {
     private final AdminService adminService;
     private final BranchService branchService;
     private final HeadAdminService headAdminService;
+    private final DepartmentService departmentService;
 
     
     @GetMapping("/getAllAdmins")
@@ -63,6 +67,18 @@ public class HeadAdminController {
     public ResponseEntity<List<String>> suggestBranchNames(
             @RequestParam(name = "query", defaultValue = "") String query) {
         return ResponseEntity.ok(headAdminService.suggestBranchNames(query));
+    }
+
+    @GetMapping("/departments")
+    public ResponseEntity<List<DepartmentDto>> getDepartmentTemplates() {
+        return ResponseEntity.ok(departmentService.getDepartmentTemplates());
+    }
+
+    @PostMapping("/departments")
+    public ResponseEntity<DepartmentDto> createDepartmentTemplate(
+            @Valid @RequestBody CreateDepartmentTemplateRequestDto createDepartmentTemplateRequestDto) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(departmentService.createDepartmentTemplate(createDepartmentTemplateRequestDto));
     }
 
     @PostMapping("/onBoardNewAdmin")
