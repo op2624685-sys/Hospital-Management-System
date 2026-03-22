@@ -5,7 +5,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import com.hms.dto.DepartmentDto;
-import com.hms.dto.Request.CreateDepartmentRequestDto;
+import com.hms.dto.Request.AddDepartmentToBranchRequestDto;
 import com.hms.dto.Request.OnBoardDoctorRequestDto;
 import com.hms.dto.Response.AppointmentResponseDto;
 import com.hms.dto.Response.AdminOverviewDto;
@@ -52,17 +52,22 @@ public class AdminController {
         return ResponseEntity.ok(departmentService.getDepartmentsForAdminBranch());
     }
 
+    @GetMapping("/department-templates")
+    public ResponseEntity<List<DepartmentDto>> getDepartmentTemplates() {
+        return ResponseEntity.ok(departmentService.getDepartmentTemplates());
+    }
+
     @PostMapping("/onBoardNewDoctor")
     public ResponseEntity<DoctorResponseDto> onBoardNewDoctor(
             @Valid @RequestBody OnBoardDoctorRequestDto onBoardDoctorRequestDto) {
         return ResponseEntity.status(HttpStatus.CREATED).body(doctorService.onBoardNewDoctor(onBoardDoctorRequestDto));
     }
 
-    @PostMapping("/createNewDepartment")
-    public ResponseEntity<DepartmentDto> createNewDepartment(
-            @Valid @RequestBody CreateDepartmentRequestDto createDepartmentRequestDto) {
+    @PostMapping("/addDepartmentToBranch")
+    public ResponseEntity<DepartmentDto> addDepartmentToBranch(
+            @Valid @RequestBody AddDepartmentToBranchRequestDto addDepartmentToBranchRequestDto) {
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(departmentService.createNewDepartment(createDepartmentRequestDto));
+                .body(departmentService.addDepartmentToBranch(addDepartmentToBranchRequestDto));
     }
 
     @GetMapping("/doctors")
