@@ -3,6 +3,7 @@ package com.hms.service.impl;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.hms.dto.AdminDto;
 import com.hms.dto.Response.HeadAdminBranchDetailsDto;
@@ -37,11 +38,13 @@ public class HeadAdminServiceImpl implements HeadAdminService {
     private final UserRepository userRepository;
 
     @Override
+    @Transactional(readOnly = true)
     public List<HeadAdminBranchSummaryDto> getBranchOverview() {
         return branchRepository.findAll().stream().map(this::toBranchSummary).toList();
     }
 
     @Override
+    @Transactional(readOnly = true)
     public HeadAdminBranchDetailsDto getBranchDetails(Long branchId) {
         Branch branch = branchRepository.findById(branchId)
                 .orElseThrow(() -> new RuntimeException("Branch not found with id: " + branchId));

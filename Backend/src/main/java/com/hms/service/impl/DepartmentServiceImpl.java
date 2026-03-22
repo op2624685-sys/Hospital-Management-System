@@ -12,8 +12,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.hms.dto.DepartmentDto;
-import com.hms.dto.Request.CreateDepartmentRequestDto;
-import com.hms.entity.Branch;
+import com.hms.dto.Request.AddDepartmentToBranchRequestDto;
+import com.hms.dto.Request.CreateDepartmentTemplateRequestDto;
 import com.hms.entity.Department;
 import com.hms.entity.Doctor;
 import com.hms.entity.Admin;
@@ -21,7 +21,6 @@ import com.hms.entity.User;
 import com.hms.entity.type.RoleType;
 import com.hms.dto.Response.AdminDepartmentListDto;
 import com.hms.repository.AdminRepository;
-import com.hms.repository.BranchRepository;
 import com.hms.repository.DepartmentRepository;
 import com.hms.repository.DoctorRepository;
 import com.hms.service.DepartmentService;
@@ -29,28 +28,31 @@ import com.hms.service.DepartmentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.util.StringUtils;
 
 @Service
 @RequiredArgsConstructor
 public class DepartmentServiceImpl implements DepartmentService{
 
     private final DepartmentRepository departmentRepository;
-    private final BranchRepository branchRepository;
     private final DoctorRepository doctorRepository;
     private final AdminRepository adminRepository;
 
     @Override
     @Cacheable(value = "departments", key = "'all'")
+    @Transactional(readOnly = true)
     public List<DepartmentDto> getAllDepartment() {
         List<Department> departments = departmentRepository.findAll();
         return departments
                 .stream()
+                .filter(department -> department.getBranch() != null)
                 .map(this::mapToDepartmentDto)
                 .toList();
     }
 
     @Override
     @Cacheable(value = "departments", key = "'id:' + #id")
+    @Transactional(readOnly = true)
     public DepartmentDto getDepartmentById(Long id) {
         Department department = departmentRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Department not found with id: " + id));
@@ -58,40 +60,73 @@ public class DepartmentServiceImpl implements DepartmentService{
     }
 
     @Override
+    @PreAuthorize("hasRole('HEADADMIN')")
+    @Transactional
+    @Caching(evict = {
+            @CacheEvict(value = "departments", allEntries = true),
+            @CacheEvict(value = "adminDepartments", allEntries = true),
+            @CacheEvict(value = "departmentTemplates", allEntries = true)
+    })
+    public DepartmentDto createDepartmentTemplate(CreateDepartmentTemplateRequestDto createDepartmentTemplateRequestDto) {
+        String name = createDepartmentTemplateRequestDto.getName().trim();
+        if (departmentRepository.existsByNameAndBranchIsNull(name)) {
+            throw new IllegalArgumentException("Department template already exists: " + name);
+        }
+
+        Department department = new Department();
+        department.setName(name);
+        department.setDescription(createDepartmentTemplateRequestDto.getDescription());
+        department.setImageUrl(createDepartmentTemplateRequestDto.getImageUrl());
+        department.setAccentColor(createDepartmentTemplateRequestDto.getAccentColor());
+        department.setBgColor(createDepartmentTemplateRequestDto.getBgColor());
+        department.setIcon(createDepartmentTemplateRequestDto.getIcon());
+        department.setSectionsJson(createDepartmentTemplateRequestDto.getSectionsJson());
+        Department savedDepartment = departmentRepository.save(department);
+        return mapToDepartmentTemplateDto(savedDepartment);
+    }
+
+    @Override
+    @PreAuthorize("hasRole('ADMIN')")
     @Transactional
     @Caching(evict = {
             @CacheEvict(value = "departments", allEntries = true),
             @CacheEvict(value = "adminDepartments", allEntries = true)
     })
-    public DepartmentDto createNewDepartment(CreateDepartmentRequestDto createDepartmentRequestDto) {
-        Branch branch = resolveBranchForDepartment(createDepartmentRequestDto);
-        if (departmentRepository.existsByNameAndBranch_Id(createDepartmentRequestDto.getName(), branch.getId())) {
-            throw new IllegalArgumentException("Department already exists in this branch: " + createDepartmentRequestDto.getName());
+    public DepartmentDto addDepartmentToBranch(AddDepartmentToBranchRequestDto addDepartmentToBranchRequestDto) {
+        Admin admin = resolveAdmin();
+        Department template = departmentRepository.findById(addDepartmentToBranchRequestDto.getTemplateId())
+                .orElseThrow(() -> new RuntimeException("Department template not found with id: " + addDepartmentToBranchRequestDto.getTemplateId()));
+        if (template.getBranch() != null) {
+            throw new IllegalArgumentException("Selected department is already assigned to a branch");
+        }
+
+        if (departmentRepository.existsByNameAndBranch_Id(template.getName(), admin.getBranch().getId())) {
+            throw new IllegalArgumentException("Department already exists in this branch: " + template.getName());
         }
 
         Department department = new Department();
-        department.setName(createDepartmentRequestDto.getName());
-        department.setBranch(branch);
-        department.setDescription(createDepartmentRequestDto.getDescription());
-        department.setImageUrl(createDepartmentRequestDto.getImageUrl());
-        department.setAccentColor(createDepartmentRequestDto.getAccentColor());
-        department.setBgColor(createDepartmentRequestDto.getBgColor());
-        department.setIcon(createDepartmentRequestDto.getIcon());
-        department.setSectionsJson(createDepartmentRequestDto.getSectionsJson());
+        department.setName(template.getName());
+        department.setBranch(admin.getBranch());
+        department.setDescription(pickValue(addDepartmentToBranchRequestDto.getDescription(), template.getDescription()));
+        department.setImageUrl(pickValue(addDepartmentToBranchRequestDto.getImageUrl(), template.getImageUrl()));
+        department.setAccentColor(pickValue(addDepartmentToBranchRequestDto.getAccentColor(), template.getAccentColor()));
+        department.setBgColor(pickValue(addDepartmentToBranchRequestDto.getBgColor(), template.getBgColor()));
+        department.setIcon(pickValue(addDepartmentToBranchRequestDto.getIcon(), template.getIcon()));
+        department.setSectionsJson(pickValue(addDepartmentToBranchRequestDto.getSectionsJson(), template.getSectionsJson()));
 
         Set<Doctor> doctors = new HashSet<>();
-        if (createDepartmentRequestDto.getDoctorIds() != null && !createDepartmentRequestDto.getDoctorIds().isEmpty()) {
-            doctors.addAll(doctorRepository.findAllById(createDepartmentRequestDto.getDoctorIds()));
-            if (doctors.size() != createDepartmentRequestDto.getDoctorIds().size()) {
+        if (addDepartmentToBranchRequestDto.getDoctorIds() != null && !addDepartmentToBranchRequestDto.getDoctorIds().isEmpty()) {
+            doctors.addAll(doctorRepository.findAllById(addDepartmentToBranchRequestDto.getDoctorIds()));
+            if (doctors.size() != addDepartmentToBranchRequestDto.getDoctorIds().size()) {
                 throw new RuntimeException("One or more doctors not found");
             }
-            validateDoctorsBelongToBranch(doctors, branch.getId());
+            validateDoctorsBelongToBranch(doctors, admin.getBranch().getId());
         }
 
-        if (createDepartmentRequestDto.getHeadDoctorId() != null) {
-            Doctor headDoctor = doctorRepository.findById(createDepartmentRequestDto.getHeadDoctorId())
-                    .orElseThrow(() -> new RuntimeException("Head doctor not found with id: " + createDepartmentRequestDto.getHeadDoctorId()));
-            validateDoctorBelongsToBranch(headDoctor, branch.getId());
+        if (addDepartmentToBranchRequestDto.getHeadDoctorId() != null) {
+            Doctor headDoctor = doctorRepository.findById(addDepartmentToBranchRequestDto.getHeadDoctorId())
+                    .orElseThrow(() -> new RuntimeException("Head doctor not found with id: " + addDepartmentToBranchRequestDto.getHeadDoctorId()));
+            validateDoctorBelongsToBranch(headDoctor, admin.getBranch().getId());
             department.setHeadDoctor(headDoctor);
             doctors.add(headDoctor);
         }
@@ -101,21 +136,15 @@ public class DepartmentServiceImpl implements DepartmentService{
         return mapToDepartmentDto(savedDepartment);
     }
 
-    private Branch resolveBranchForDepartment(CreateDepartmentRequestDto dto) {
-        User currentUser = getCurrentUser();
-        if (currentUser.getRoles().contains(RoleType.ADMIN)) {
-            Admin admin = adminRepository.findById(currentUser.getId())
-                    .orElseThrow(() -> new RuntimeException("Admin profile not found for user id: " + currentUser.getId()));
-            return admin.getBranch();
-        }
-        if (currentUser.getRoles().contains(RoleType.HEADADMIN)) {
-            if (dto.getBranchId() == null) {
-                throw new IllegalArgumentException("branchId is required for head admin");
-            }
-            return branchRepository.findById(dto.getBranchId())
-                    .orElseThrow(() -> new RuntimeException("Branch not found with id: " + dto.getBranchId()));
-        }
-        throw new RuntimeException("Only admin or head admin can create departments");
+    @Override
+    @PreAuthorize("hasAnyRole('ADMIN','HEADADMIN')")
+    @Cacheable(value = "departmentTemplates", key = "'all'")
+    @Transactional(readOnly = true)
+    public List<DepartmentDto> getDepartmentTemplates() {
+        return departmentRepository.findByBranchIsNull()
+                .stream()
+                .map(this::mapToDepartmentTemplateDto)
+                .toList();
     }
 
     public User getCurrentUser() {
@@ -131,9 +160,7 @@ public class DepartmentServiceImpl implements DepartmentService{
     @Transactional(readOnly = true)
     @Cacheable(value = "adminDepartments", key = "#root.target.getCurrentUser().id")
     public List<AdminDepartmentListDto> getDepartmentsForAdminBranch() {
-        User currentUser = getCurrentUser();
-        Admin admin = adminRepository.findById(currentUser.getId())
-                .orElseThrow(() -> new RuntimeException("Admin profile not found for user id: " + currentUser.getId()));
+        Admin admin = resolveAdmin();
         Long branchId = admin.getBranch().getId();
         return departmentRepository.findByBranch_Id(branchId)
                 .stream()
@@ -152,6 +179,19 @@ public class DepartmentServiceImpl implements DepartmentService{
                     return dto;
                 })
                 .toList();
+    }
+
+    private Admin resolveAdmin() {
+        User currentUser = getCurrentUser();
+        if (!currentUser.getRoles().contains(RoleType.ADMIN)) {
+            throw new RuntimeException("Only admin can perform this operation");
+        }
+        return adminRepository.findById(currentUser.getId())
+                .orElseThrow(() -> new RuntimeException("Admin profile not found for user id: " + currentUser.getId()));
+    }
+
+    private String pickValue(String candidate, String fallback) {
+        return StringUtils.hasText(candidate) ? candidate : fallback;
     }
 
     private void validateDoctorsBelongToBranch(Set<Doctor> doctors, Long branchId) {
@@ -176,6 +216,24 @@ public class DepartmentServiceImpl implements DepartmentService{
                 : department.getDoctors().stream().map(Doctor::getId).collect(Collectors.toSet()));
         dto.setHeadDoctorName(department.getHeadDoctor() != null ? department.getHeadDoctor().getName() : null);
         dto.setMemberCount(department.getDoctors() == null ? 0 : department.getDoctors().size());
+        dto.setDescription(department.getDescription());
+        dto.setImageUrl(department.getImageUrl());
+        dto.setAccentColor(department.getAccentColor());
+        dto.setBgColor(department.getBgColor());
+        dto.setIcon(department.getIcon());
+        dto.setSectionsJson(department.getSectionsJson());
+        return dto;
+    }
+
+    private DepartmentDto mapToDepartmentTemplateDto(Department department) {
+        DepartmentDto dto = new DepartmentDto();
+        dto.setId(department.getId());
+        dto.setName(department.getName());
+        dto.setBranchId(null);
+        dto.setHeadDoctorId(null);
+        dto.setDoctorIds(Set.of());
+        dto.setHeadDoctorName(null);
+        dto.setMemberCount(0);
         dto.setDescription(department.getDescription());
         dto.setImageUrl(department.getImageUrl());
         dto.setAccentColor(department.getAccentColor());
