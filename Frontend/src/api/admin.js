@@ -27,9 +27,14 @@ export const adminApi = {
     return API.get("/admin/departments");
   },
 
-  // Create new department
-  createDepartment(payload) {
-    return API.post("/admin/createNewDepartment", payload);
+  // Department templates for admin selection
+  getDepartmentTemplates() {
+    return API.get("/admin/department-templates");
+  },
+
+  // Add a department to admin's branch
+  addDepartmentToBranch(payload) {
+    return API.post("/admin/addDepartmentToBranch", payload);
   },
 
   // Onboard new doctor (branch auto-assigned on backend for admins)
