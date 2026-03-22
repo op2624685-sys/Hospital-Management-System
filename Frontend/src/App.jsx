@@ -9,6 +9,7 @@ import AppointmentDetails from "./pages/AppointmentDetails";
 import Appointment from "./pages/Appointment";
 import Doctor from "./pages/Doctor";
 import Branch from "./pages/Branch";
+import BranchDetails from "./pages/BranchDetails";
 import Department from "./pages/Department";
 import Services from "./pages/Services";
 import About from "./pages/About";
@@ -51,6 +52,7 @@ const App = () => {
         } />
         <Route path="/doctors" element={<Doctor />} />
         <Route path="/branches" element={<Branch />} />
+        <Route path="/branches/:branchId" element={<BranchDetails />} />
         <Route path="/services" element={
           <RoleBlockedRoute blockedRoles={["DOCTOR", "ADMIN", "HEADADMIN"]}>
             <Services />
