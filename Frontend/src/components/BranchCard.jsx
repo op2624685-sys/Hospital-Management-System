@@ -1,5 +1,5 @@
-import React from 'react'
-import { MapPin, Phone, Navigation, Calendar } from 'lucide-react'
+﻿import React from 'react'
+import { MapPin, Phone, Navigation, Calendar, Eye } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 
 const tagColors = {
@@ -23,6 +23,10 @@ const BranchCard = ({ branch, index }) => {
     })
   }
 
+  const handleViewBranch = () => {
+    navigate(`/branches/${branch.id}`)
+  }
+
   return (
     <>
       <style>{`
@@ -37,24 +41,72 @@ const BranchCard = ({ branch, index }) => {
         .card-inner {
           background: #fff;
           border: 1.5px solid #ebebeb;
-          border-radius: 20px;
-          padding: 24px;
+          border-radius: 24px;
+          padding: 18px;
           height: 100%;
           display: flex;
           flex-direction: column;
-          gap: 16px;
+          gap: 14px;
           transition: transform .25s ease, box-shadow .25s ease, border-color .25s;
           cursor: default;
+          overflow: hidden;
         }
         .card-inner:hover {
           transform: translateY(-6px);
-          box-shadow: 0 20px 50px rgba(0,0,0,.09);
-          border-color: #e42320;
+          box-shadow: 0 22px 60px rgba(0,0,0,.12);
+          border-color: #0f172a;
         }
-        .card-header {
+        .card-hero {
+          position: relative;
+          height: 150px;
+          border-radius: 18px;
+          overflow: hidden;
+          background: #f1f5f9;
+          border: 1px solid #e2e8f0;
+        }
+        .card-hero::after {
+          content: '';
+          position: absolute;
+          inset: 0;
+          background: linear-gradient(180deg, rgba(15,23,42,0.0) 40%, rgba(15,23,42,0.55) 100%);
+        }
+        .card-hero-img {
+          position: absolute;
+          inset: 0;
+          background-size: cover;
+          background-position: center;
+          transform: scale(1.02);
+          transition: transform .35s ease;
+        }
+        .card-inner:hover .card-hero-img {
+          transform: scale(1.08);
+        }
+        .hero-tag {
+          position: absolute;
+          top: 12px;
+          left: 12px;
+          z-index: 2;
+        }
+        .hero-meta {
+          position: absolute;
+          left: 14px;
+          right: 14px;
+          bottom: 12px;
+          z-index: 2;
           display: flex;
           align-items: center;
           justify-content: space-between;
+          gap: 12px;
+          color: #fff;
+          font-weight: 700;
+        }
+        .hero-title {
+          font-family: 'Playfair Display', serif;
+          font-size: 1.05rem;
+          line-height: 1.25;
+        }
+        .card-header {
+          display: none;
         }
         .tag {
           font-size: 11px;
@@ -63,6 +115,7 @@ const BranchCard = ({ branch, index }) => {
           text-transform: uppercase;
           padding: 4px 12px;
           border-radius: 999px;
+          backdrop-filter: blur(6px);
         }
         .pulse-dot {
           width: 10px; height: 10px;
@@ -81,13 +134,6 @@ const BranchCard = ({ branch, index }) => {
         @keyframes pulse {
           0%,100% { transform: scale(1); opacity: 1; }
           50% { transform: scale(1.6); opacity: 0; }
-        }
-        .card-title {
-          font-family: 'Playfair Display', serif;
-          font-size: 1.15rem;
-          font-weight: 600;
-          color: #1a1a1a;
-          line-height: 1.35;
         }
         .card-info {
           display: flex;
@@ -113,9 +159,13 @@ const BranchCard = ({ branch, index }) => {
           min-width: 32px;
         }
         .card-actions {
-          display: flex;
+          display: grid;
+          grid-template-columns: repeat(2, minmax(0, 1fr));
           gap: 10px;
-          margin-top: 4px;
+          margin-top: 6px;
+        }
+        .btn-wide {
+          grid-column: 1 / -1;
         }
         .btn-primary {
           flex: 1;
@@ -163,14 +213,21 @@ const BranchCard = ({ branch, index }) => {
 
       <div className="branch-card" style={{ animationDelay: `${index * 0.08}s` }}>
         <div className="card-inner">
-          <div className="card-header">
-            <span className={`tag ${tagColors[branch.tag] || 'bg-gray-100 text-gray-600'}`}>
-              {branch.tag}
-            </span>
-            <div className="pulse-dot" />
+          <div className="card-hero">
+            <div
+              className="card-hero-img"
+              style={{ backgroundImage: branch.imageUrl ? `url(${branch.imageUrl})` : 'none' }}
+            />
+            <div className="hero-tag">
+              <span className={`tag ${tagColors[branch.tag] || 'bg-gray-100 text-gray-600'}`}>
+                {branch.tag}
+              </span>
+            </div>
+            <div className="hero-meta">
+              <div className="hero-title">{branch.name}</div>
+              <div className="pulse-dot" />
+            </div>
           </div>
-
-          <h3 className="card-title">{branch.name}</h3>
 
           <div className="card-info">
             <div className="info-row">
@@ -192,11 +249,15 @@ const BranchCard = ({ branch, index }) => {
           </div>
 
           <div className="card-actions">
+            <button className="btn-secondary" onClick={handleViewBranch}>
+              <Eye size={14} />
+              View Details
+            </button>
             <button className="btn-primary" onClick={handleBookAppointment}>
               <Calendar size={14} />
               Book Appointment
             </button>
-            <a className="btn-secondary" href={mapUrl} target="_blank" rel="noreferrer">
+            <a className="btn-secondary btn-wide" href={mapUrl} target="_blank" rel="noreferrer">
               <Navigation size={14} />
               Directions
             </a>
@@ -208,3 +269,4 @@ const BranchCard = ({ branch, index }) => {
 }
 
 export default BranchCard
+
