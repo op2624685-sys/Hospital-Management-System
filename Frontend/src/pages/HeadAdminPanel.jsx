@@ -1,9 +1,9 @@
-import React, { useEffect, useMemo, useState } from "react";
+﻿import React, { useEffect, useMemo, useState } from "react";
 import { Building2, IndianRupee, RefreshCw, Stethoscope, Users, Plus, UserCog, ChevronRight, Activity, Sparkles } from "lucide-react";
 import API from "../api/api";
 import Header from "../components/Header";
 
-/* ─── Google Fonts injected once ─── */
+/* â”€â”€â”€ Google Fonts injected once â”€â”€â”€ */
 const FontLoader = () => (
   <style>{`
     @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Outfit:wght@300;400;500;600;700;800&display=swap');
@@ -11,18 +11,18 @@ const FontLoader = () => (
     .had-root *, .had-root *::before, .had-root *::after { box-sizing: border-box; }
 
     :root {
-      --bg:        #0b0f1a;
-      --surface:   #111827;
-      --surface2:  #1a2236;
-      --border:    rgba(255,255,255,0.07);
-      --gold:      #c9a84c;
-      --gold-soft: rgba(201,168,76,0.15);
-      --teal:      #2dd4bf;
-      --teal-soft: rgba(45,212,191,0.12);
+      --bg:        #0a0f14;
+      --surface:   #0f1720;
+      --surface2:  #141f2b;
+      --border:    rgba(148,163,184,0.16);
+      --gold:      #d7b76b;
+      --gold-soft: rgba(215,183,107,0.18);
+      --teal:      #22d3ee;
+      --teal-soft: rgba(34,211,238,0.12);
       --rose:      #fb7185;
       --violet:    #a78bfa;
-      --text:      #f1f5f9;
-      --muted:     #64748b;
+      --text:      #e6edf5;
+      --muted:     #8aa0b6;
       --radius:    16px;
     }
 
@@ -30,8 +30,9 @@ const FontLoader = () => (
       min-height: 100vh;
       background: var(--bg);
       background-image:
-        radial-gradient(ellipse 80% 50% at 70% -10%, rgba(45,212,191,0.07) 0%, transparent 60%),
-        radial-gradient(ellipse 60% 40% at 0% 80%,  rgba(201,168,76,0.05) 0%, transparent 60%);
+        radial-gradient(ellipse 70% 50% at 70% -10%, rgba(34,211,238,0.10) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 40% at 0% 80%,  rgba(215,183,107,0.07) 0%, transparent 60%),
+        radial-gradient(ellipse 55% 45% at 100% 60%, rgba(167,139,250,0.06) 0%, transparent 60%);
     }
 
     /* Only apply our font/color inside the content area, not the Header */
@@ -40,15 +41,15 @@ const FontLoader = () => (
       color: var(--text);
     }
 
-    /* ── Hero banner ── */
+    /* â”€â”€ Hero banner â”€â”€ */
     .had-hero {
-      background: linear-gradient(135deg, #0f1f3d 0%, #0b1929 50%, #0a1a2e 100%);
-      border: 1px solid rgba(45,212,191,0.15);
-      border-radius: 24px;
+      background: linear-gradient(135deg, #0f2336 0%, #0c1a2a 55%, #0a1b2f 100%);
+      border: 1px solid rgba(34,211,238,0.18);
+      border-radius: 26px;
       padding: 36px 40px;
       position: relative;
       overflow: hidden;
-      box-shadow: 0 24px 64px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.06);
+      box-shadow: 0 26px 70px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.05);
     }
     .had-hero::before {
       content: '';
@@ -57,11 +58,21 @@ const FontLoader = () => (
       background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%232dd4bf' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
       pointer-events: none;
     }
+    .had-hero::after {
+      content: '';
+      position: absolute;
+      inset: -40% -30% auto auto;
+      height: 200px;
+      width: 300px;
+      background: radial-gradient(circle, rgba(34,211,238,0.18) 0%, transparent 70%);
+      opacity: 0.7;
+      animation: heroFloat 6s ease-in-out infinite;
+    }
     .had-hero-glow {
       position: absolute;
-      width: 320px; height: 320px;
-      right: -60px; top: -80px;
-      background: radial-gradient(circle, rgba(45,212,191,0.18) 0%, transparent 70%);
+      width: 300px; height: 300px;
+      right: -40px; top: -60px;
+      background: radial-gradient(circle, rgba(167,139,250,0.2) 0%, transparent 70%);
       pointer-events: none;
     }
     .had-hero-title {
@@ -74,7 +85,7 @@ const FontLoader = () => (
       -webkit-text-fill-color: transparent;
     }
     .had-hero-sub {
-      font-size: 13px;
+      font-size: 12px;
       letter-spacing: 0.18em;
       text-transform: uppercase;
       color: var(--teal);
@@ -93,7 +104,7 @@ const FontLoader = () => (
       align-items: center;
       gap: 8px;
       background: rgba(255,255,255,0.05);
-      border: 1px solid rgba(45,212,191,0.3);
+      border: 1px solid rgba(34,211,238,0.35);
       border-radius: 12px;
       padding: 10px 20px;
       font-size: 13px;
@@ -105,7 +116,7 @@ const FontLoader = () => (
       letter-spacing: 0.02em;
     }
     .had-refresh-btn:hover {
-      background: rgba(45,212,191,0.1);
+      background: rgba(34,211,238,0.12);
       border-color: var(--teal);
       transform: translateY(-1px);
       box-shadow: 0 8px 24px rgba(45,212,191,0.15);
@@ -114,7 +125,7 @@ const FontLoader = () => (
     .had-spin { animation: spin 1s linear infinite; }
     @keyframes spin { to { transform: rotate(360deg); } }
 
-    /* ── Stat cards ── */
+    /* â”€â”€ Stat cards â”€â”€ */
     .had-stat-grid {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
@@ -124,24 +135,25 @@ const FontLoader = () => (
     @media (max-width: 500px)  { .had-stat-grid { grid-template-columns: 1fr; } }
 
     .had-stat {
-      background: var(--surface);
+      background: linear-gradient(145deg, rgba(255,255,255,0.02), rgba(255,255,255,0));
       border: 1px solid var(--border);
       border-radius: var(--radius);
       padding: 22px 24px;
       position: relative;
       overflow: hidden;
-      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
       animation: fadeUp 0.5s ease both;
     }
     .had-stat:hover {
       transform: translateY(-3px);
       box-shadow: 0 16px 40px rgba(0,0,0,0.4);
+      border-color: rgba(255,255,255,0.18);
     }
     .had-stat::after {
       content: '';
       position: absolute;
       bottom: 0; left: 0; right: 0;
-      height: 2px;
+      height: 3px;
       opacity: 0;
       transition: opacity 0.3s;
     }
@@ -156,6 +168,7 @@ const FontLoader = () => (
       border-radius: 12px;
       display: flex; align-items: center; justify-content: center;
       margin-bottom: 16px;
+      border: 1px solid rgba(255,255,255,0.08);
     }
     .had-stat-label {
       font-size: 11px;
@@ -172,13 +185,13 @@ const FontLoader = () => (
       line-height: 1;
     }
 
-    /* ── Section card ── */
+    /* â”€â”€ Section card â”€â”€ */
     .had-card {
-      background: var(--surface);
+      background: linear-gradient(145deg, rgba(255,255,255,0.02), rgba(255,255,255,0));
       border: 1px solid var(--border);
-      border-radius: 20px;
+      border-radius: 22px;
       padding: 28px 32px;
-      box-shadow: 0 4px 24px rgba(0,0,0,0.2);
+      box-shadow: 0 10px 36px rgba(0,0,0,0.35);
       animation: fadeUp 0.5s ease both;
     }
     .had-section-title {
@@ -198,7 +211,7 @@ const FontLoader = () => (
       flex-shrink: 0;
     }
 
-    /* ── Table ── */
+    /* â”€â”€ Table â”€â”€ */
     .had-table { width: 100%; border-collapse: collapse; font-size: 13px; }
     .had-table th {
       text-align: left;
@@ -220,7 +233,7 @@ const FontLoader = () => (
       cursor: pointer;
       transition: background 0.15s;
     }
-    .had-table tbody tr:hover { background: rgba(255,255,255,0.03); }
+    .had-table tbody tr:hover { background: rgba(255,255,255,0.04); }
     .had-table-row-active { background: rgba(45,212,191,0.07) !important; }
     .had-table-row-active td { color: var(--text) !important; }
     .had-branch-name { font-weight: 600; color: var(--text); font-size: 13.5px; }
@@ -236,7 +249,7 @@ const FontLoader = () => (
     .had-revenue { font-weight: 700; color: var(--gold); }
     .had-unassigned { color: var(--muted); font-style: italic; font-size: 12px; }
 
-    /* ── Forms grid ── */
+    /* â”€â”€ Forms grid â”€â”€ */
     .had-forms-grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
@@ -245,16 +258,25 @@ const FontLoader = () => (
     @media (max-width: 1024px) { .had-forms-grid { grid-template-columns: 1fr; } }
 
     .had-form-card {
-      background: var(--surface);
+      background: linear-gradient(145deg, rgba(255,255,255,0.02), rgba(255,255,255,0));
       border: 1px solid var(--border);
       border-radius: 20px;
       padding: 28px 24px;
-      box-shadow: 0 4px 24px rgba(0,0,0,0.2);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.32);
       animation: fadeUp 0.5s ease both;
       display: flex;
       flex-direction: column;
       gap: 0;
     }
+    .had-form-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+    }
+    @media (max-width: 700px) {
+      .had-form-grid { grid-template-columns: 1fr; }
+    }
+    .had-field-full { grid-column: 1 / -1; }
     .had-form-header {
       display: flex;
       align-items: center;
@@ -281,15 +303,15 @@ const FontLoader = () => (
       margin-top: 1px;
     }
 
-    /* ── Floating label input ── */
+    /* â”€â”€ Floating label input â”€â”€ */
     .had-field {
       position: relative;
       margin-bottom: 14px;
     }
     .had-field-input {
       width: 100%;
-      background: var(--surface2);
-      border: 1px solid rgba(255,255,255,0.09);
+      background: rgba(15,23,32,0.7);
+      border: 1px solid rgba(255,255,255,0.12);
       border-radius: 10px;
       padding: 13px 14px 5px;
       font-size: 13.5px;
@@ -299,9 +321,15 @@ const FontLoader = () => (
       transition: border-color 0.2s, box-shadow 0.2s;
       appearance: none;
     }
+    .had-field-hint {
+      font-size: 10.5px;
+      color: var(--muted);
+      margin-top: 6px;
+      letter-spacing: 0.02em;
+    }
     .had-field-input:focus {
       border-color: var(--teal);
-      box-shadow: 0 0 0 3px rgba(45,212,191,0.1);
+      box-shadow: 0 0 0 3px rgba(34,211,238,0.14);
     }
     .had-field-label {
       position: absolute;
@@ -323,7 +351,7 @@ const FontLoader = () => (
       letter-spacing: 0.06em;
     }
 
-    /* ── Submit buttons ── */
+    /* â”€â”€ Submit buttons â”€â”€ */
     .had-btn {
       width: 100%;
       border: none;
@@ -343,6 +371,15 @@ const FontLoader = () => (
       position: relative;
       overflow: hidden;
     }
+    .had-form-actions {
+      display: flex;
+      gap: 12px;
+      margin-top: 8px;
+    }
+    .had-form-actions .had-btn {
+      flex: 1;
+      margin-top: 0;
+    }
     .had-btn::before {
       content: '';
       position: absolute;
@@ -355,10 +392,10 @@ const FontLoader = () => (
     .had-btn:disabled { opacity: 0.55; cursor: not-allowed; }
 
     .had-btn-slate {
-      background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+      background: linear-gradient(135deg, #162433 0%, #0f172a 100%);
       color: #e2e8f0;
-      border: 1px solid rgba(255,255,255,0.12);
-      box-shadow: 0 4px 16px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.14);
+      box-shadow: 0 6px 18px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.05);
     }
     .had-btn-slate:not(:disabled):hover {
       box-shadow: 0 8px 24px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.08);
@@ -392,7 +429,7 @@ const FontLoader = () => (
       animation: spin 0.7s linear infinite;
     }
 
-    /* ── Branch detail panel ── */
+    /* â”€â”€ Branch detail panel â”€â”€ */
     .had-detail-grid {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
@@ -401,10 +438,11 @@ const FontLoader = () => (
     @media (max-width: 700px) { .had-detail-grid { grid-template-columns: 1fr; } }
 
     .had-detail-pane {
-      background: var(--surface2);
+      background: rgba(18,28,40,0.7);
       border: 1px solid var(--border);
       border-radius: 14px;
       padding: 18px 20px;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.03);
     }
     .had-detail-pane-title {
       font-size: 12px;
@@ -452,7 +490,7 @@ const FontLoader = () => (
     .had-scroll::-webkit-scrollbar-track { background: transparent; }
     .had-scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
 
-    /* ── Error toast ── */
+    /* â”€â”€ Error toast â”€â”€ */
     .had-error {
       display: inline-flex;
       align-items: center;
@@ -466,7 +504,7 @@ const FontLoader = () => (
       color: #fda4af;
     }
 
-    /* ── Placeholder / loading ── */
+    /* â”€â”€ Placeholder / loading â”€â”€ */
     .had-placeholder {
       text-align: center;
       padding: 48px 20px;
@@ -481,10 +519,56 @@ const FontLoader = () => (
       margin: 0 auto 12px;
     }
 
-    /* ── Animations ── */
+    .had-summary {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+      justify-content: space-between;
+      background: rgba(18,28,40,0.7);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 16px 18px;
+      margin-bottom: 16px;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.04);
+    }
+    .had-summary-main {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .had-summary-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text);
+    }
+    .had-summary-sub {
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .had-summary-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .had-summary-pill {
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.04);
+      border-radius: 999px;
+      padding: 4px 10px;
+      font-size: 11px;
+      font-weight: 600;
+      color: #cbd5e1;
+    }
+
+    /* â”€â”€ Animations â”€â”€ */
     @keyframes fadeUp {
       from { opacity: 0; transform: translateY(18px); }
       to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes heroFloat {
+      0%, 100% { transform: translateY(0); opacity: 0.6; }
+      50% { transform: translateY(8px); opacity: 0.8; }
     }
     .had-stat:nth-child(1) { animation-delay: 0.05s; }
     .had-stat:nth-child(2) { animation-delay: 0.10s; }
@@ -493,17 +577,28 @@ const FontLoader = () => (
   `}</style>
 );
 
-/* ─── Floating label input ─── */
-const Field = ({ label, ...props }) => (
-  <div className="had-field">
+/* â”€â”€â”€ Floating label input â”€â”€â”€ */
+const Field = ({ label, className = "", hint, ...props }) => (
+  <div className={`had-field ${className}`.trim()}>
     <input className="had-field-input" placeholder=" " {...props} />
     <label className="had-field-label">{label}</label>
+    {hint && <div className="had-field-hint">{hint}</div>}
   </div>
 );
 
 const emptyBranchForm = { branchName: "", branchAddress: "", branchContactNumber: "", branchEmail: "" };
 const emptyAdminForm  = { username: "", name: "", email: "", branchName: "" };
 const emptyDoctorForm = { username: "", name: "", specialization: "", email: "", branchName: "" };
+
+const DEPT_LIMITS = {
+  name: 100,
+  description: 2000,
+  imageUrl: 2000,
+  accentColor: 20,
+  bgColor: 20,
+  icon: 20,
+  sectionsJson: 10000,
+};
 
 const HeadAdminPanel = () => {
   const [overview, setOverview]               = useState([]);
@@ -512,6 +607,7 @@ const HeadAdminPanel = () => {
   const [loading, setLoading]                 = useState(true);
   const [detailsLoading, setDetailsLoading]   = useState(false);
   const [error, setError]                     = useState("");
+  const [detailsError, setDetailsError]       = useState("");
   const [spinning, setSpinning]               = useState(false);
 
   const [branchForm, setBranchForm] = useState(emptyBranchForm);
@@ -521,6 +617,44 @@ const HeadAdminPanel = () => {
   const [doctorUsernameSuggestions, setDoctorUsernameSuggestions] = useState([]);
   const [branchNameSuggestions,     setBranchNameSuggestions]     = useState([]);
   const [submitting, setSubmitting] = useState(false);
+  const [departmentTemplates, setDepartmentTemplates] = useState([]);
+  const [departmentForm, setDepartmentForm] = useState({
+    name: "",
+    description: "",
+    imageUrl: "",
+    accentColor: "#2563eb",
+    bgColor: "#eff6ff",
+    icon: "DEPT",
+  });
+  const [departmentSubmitting, setDepartmentSubmitting] = useState(false);
+  const [departmentError, setDepartmentError] = useState("");
+
+  const getApiErrorMessage = (err, fallback) => {
+    return err?.response?.data?.error || err?.response?.data?.message || fallback;
+  };
+
+  const validateDepartmentTemplate = () => {
+    const errors = [];
+    if (departmentForm.name && departmentForm.name.length > DEPT_LIMITS.name) {
+      errors.push(`Name must be at most ${DEPT_LIMITS.name} characters`);
+    }
+    if (departmentForm.description && departmentForm.description.length > DEPT_LIMITS.description) {
+      errors.push(`Description must be at most ${DEPT_LIMITS.description} characters`);
+    }
+    if (departmentForm.imageUrl && departmentForm.imageUrl.length > DEPT_LIMITS.imageUrl) {
+      errors.push(`Image URL must be at most ${DEPT_LIMITS.imageUrl} characters`);
+    }
+    if (departmentForm.accentColor && departmentForm.accentColor.length > DEPT_LIMITS.accentColor) {
+      errors.push(`Accent color must be at most ${DEPT_LIMITS.accentColor} characters`);
+    }
+    if (departmentForm.bgColor && departmentForm.bgColor.length > DEPT_LIMITS.bgColor) {
+      errors.push(`Background color must be at most ${DEPT_LIMITS.bgColor} characters`);
+    }
+    if (departmentForm.icon && departmentForm.icon.length > DEPT_LIMITS.icon) {
+      errors.push(`Icon text must be at most ${DEPT_LIMITS.icon} characters`);
+    }
+    return errors;
+  };
 
   const totalEstimatedRevenue = useMemo(
     () => overview.reduce((sum, b) => sum + (b.estimatedRevenue || 0), 0),
@@ -539,16 +673,29 @@ const HeadAdminPanel = () => {
     setDetailsLoading(true);
     try {
       const res = await API.get(`/head-admin/branch/${branchId}/details`);
-      setDetails(res.data); setError("");
+      setDetails(res.data);
+      setDetailsError("");
     } catch (e) {
-      setError(e?.response?.data?.message || "Failed to load branch details"); setDetails(null);
+      setDetailsError(getApiErrorMessage(e, "Failed to load branch details"));
+      setDetails(null);
     } finally { setDetailsLoading(false); }
+  };
+
+  const loadDepartmentTemplates = async () => {
+    try {
+      const res = await API.get("/head-admin/departments");
+      setDepartmentTemplates(Array.isArray(res.data) ? res.data : []);
+      setDepartmentError("");
+    } catch (e) {
+      setDepartmentError(getApiErrorMessage(e, "Failed to load department templates"));
+      setDepartmentTemplates([]);
+    }
   };
 
   const refreshAll = async () => {
     setLoading(true); setSpinning(true);
-    try { await loadOverview(); setError(""); }
-    catch (e) { setError(e?.response?.data?.message || "Failed to load dashboard"); }
+    try { await Promise.all([loadOverview(), loadDepartmentTemplates()]); setError(""); }
+    catch (e) { setError(getApiErrorMessage(e, "Failed to load dashboard")); }
     finally { setLoading(false); setTimeout(() => setSpinning(false), 800); }
   };
 
@@ -588,7 +735,7 @@ const HeadAdminPanel = () => {
   const handleCreateBranch = async (e) => {
     e.preventDefault(); setSubmitting(true);
     try { await API.post("/head-admin/createNewBranch", branchForm); setBranchForm(emptyBranchForm); await refreshAll(); }
-    catch (err) { setError(err?.response?.data?.message || "Failed to create branch"); }
+    catch (err) { setError(getApiErrorMessage(err, "Failed to create branch")); }
     finally { setSubmitting(false); }
   };
 
@@ -602,7 +749,7 @@ const HeadAdminPanel = () => {
       });
       setAdminForm(emptyAdminForm); await refreshAll();
       if (selectedBranchId) await loadBranchDetails(selectedBranchId);
-    } catch (err) { setError(err?.response?.data?.message || "Failed to assign branch admin"); }
+    } catch (err) { setError(getApiErrorMessage(err, "Failed to assign branch admin")); }
     finally { setSubmitting(false); }
   };
 
@@ -616,8 +763,40 @@ const HeadAdminPanel = () => {
       });
       setDoctorForm(emptyDoctorForm); await refreshAll();
       if (selectedBranchId) await loadBranchDetails(selectedBranchId);
-    } catch (err) { setError(err?.response?.data?.message || "Failed to onboard doctor"); }
+    } catch (err) { setError(getApiErrorMessage(err, "Failed to onboard doctor")); }
     finally { setSubmitting(false); }
+  };
+
+  const handleCreateDepartmentTemplate = async (e) => {
+    e.preventDefault(); setDepartmentSubmitting(true);
+    try {
+      setDepartmentError("");
+      const errors = validateDepartmentTemplate();
+      if (errors.length > 0) {
+        setDepartmentError(errors[0]);
+        return;
+      }
+      await API.post("/head-admin/departments", {
+        ...departmentForm,
+        name: departmentForm.name.trim(),
+        description: departmentForm.description.trim(),
+        imageUrl: departmentForm.imageUrl.trim(),
+        accentColor: departmentForm.accentColor.trim(),
+        bgColor: departmentForm.bgColor.trim(),
+        icon: departmentForm.icon.trim(),
+      });
+      setDepartmentForm({
+        name: "",
+        description: "",
+        imageUrl: "",
+        accentColor: "#2563eb",
+        bgColor: "#eff6ff",
+        icon: "DEPT",
+      });
+      await loadDepartmentTemplates();
+    } catch (err) {
+      setDepartmentError(getApiErrorMessage(err, "Failed to create department template"));
+    } finally { setDepartmentSubmitting(false); }
   };
 
   return (
@@ -628,14 +807,14 @@ const HeadAdminPanel = () => {
       <div className="had-body" style={{ paddingTop: 88, paddingBottom: 64, paddingInline: "clamp(16px, 4vw, 48px)" }}>
         <div style={{ maxWidth: 1280, margin: "0 auto", display: "flex", flexDirection: "column", gap: 20 }}>
 
-          {/* ── Hero ── */}
+          {/* â”€â”€ Hero â”€â”€ */}
           <div className="had-hero">
             <div className="had-hero-glow" />
             <div style={{ display: "flex", flexWrap: "wrap", alignItems: "flex-start", justifyContent: "space-between", gap: 20, position: "relative", zIndex: 1 }}>
               <div>
                 <p className="had-hero-sub">Hospital Governance</p>
                 <h1 className="had-hero-title">Head Admin<br/>Command Center</h1>
-                <p className="had-hero-desc">Branch operations, admin assignment, doctor onboarding, and organization-wide visibility — all in one place.</p>
+                <p className="had-hero-desc">Branch operations, admin assignment, doctor onboarding, and organization-wide visibility - all in one place.</p>
               </div>
               <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 12 }}>
                 <button className={`had-refresh-btn${spinning ? " had-spin-wrap" : ""}`} onClick={refreshAll}>
@@ -644,14 +823,14 @@ const HeadAdminPanel = () => {
                 </button>
                 {error && (
                   <div className="had-error">
-                    <span style={{ fontSize: 15 }}>⚠</span> {error}
+                    <span style={{ fontSize: 15 }}>âš </span> {error}
                   </div>
                 )}
               </div>
             </div>
           </div>
 
-          {/* ── Stats ── */}
+          {/* â”€â”€ Stats â”€â”€ */}
           <div className="had-stat-grid">
             <div className="had-stat had-stat-teal">
               <div className="had-stat-icon" style={{ background: "rgba(45,212,191,0.1)" }}>
@@ -680,12 +859,12 @@ const HeadAdminPanel = () => {
               </div>
               <p className="had-stat-label">Estimated Revenue</p>
               <p className="had-stat-value" style={{ color: "var(--rose)", fontSize: totalEstimatedRevenue > 9999999 ? 22 : 28 }}>
-                ₹{totalEstimatedRevenue.toLocaleString("en-IN")}
+                â‚¹{totalEstimatedRevenue.toLocaleString("en-IN")}
               </p>
             </div>
           </div>
 
-          {/* ── Branch overview table ── */}
+          {/* â”€â”€ Branch overview table â”€â”€ */}
           <div className="had-card">
             <h2 className="had-section-title">
               <span className="had-section-title-dot" />
@@ -697,7 +876,7 @@ const HeadAdminPanel = () => {
             {loading ? (
               <div className="had-placeholder">
                 <div className="had-placeholder-icon"><Activity size={20} color="var(--muted)" /></div>
-                Loading branches…
+                Loading branches...
               </div>
             ) : (
               <div style={{ overflowX: "auto" }}>
@@ -732,7 +911,7 @@ const HeadAdminPanel = () => {
                         <td><span className="had-badge had-badge-teal">{branch.doctorCount}</span></td>
                         <td>{branch.patientCount}</td>
                         <td>{branch.departmentCount}</td>
-                        <td className="had-revenue">₹{(branch.estimatedRevenue || 0).toLocaleString("en-IN")}</td>
+                        <td className="had-revenue">â‚¹{(branch.estimatedRevenue || 0).toLocaleString("en-IN")}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -741,7 +920,7 @@ const HeadAdminPanel = () => {
             )}
           </div>
 
-          {/* ── Three forms ── */}
+          {/* â”€â”€ Three forms â”€â”€ */}
           <div className="had-forms-grid">
 
             {/* Create Branch */}
@@ -755,14 +934,18 @@ const HeadAdminPanel = () => {
                   <p className="had-form-subtitle">Register a new hospital branch</p>
                 </div>
               </div>
-              <Field label="Branch Name" value={branchForm.branchName} onChange={(e) => setBranchForm(p => ({ ...p, branchName: e.target.value }))} required />
-              <Field label="Address" value={branchForm.branchAddress} onChange={(e) => setBranchForm(p => ({ ...p, branchAddress: e.target.value }))} required />
-              <Field label="Contact Number" value={branchForm.branchContactNumber} onChange={(e) => setBranchForm(p => ({ ...p, branchContactNumber: e.target.value }))} required />
-              <Field label="Email" type="email" value={branchForm.branchEmail} onChange={(e) => setBranchForm(p => ({ ...p, branchEmail: e.target.value }))} required />
-              <button type="submit" disabled={submitting} className={`had-btn had-btn-slate${submitting ? " had-btn-loading" : ""}`}>
-                {!submitting && <Plus size={15} />}
-                {submitting ? "" : "Create Branch"}
-              </button>
+              <div className="had-form-grid">
+                <Field label="Branch Name" className="had-field-full" value={branchForm.branchName} onChange={(e) => setBranchForm(p => ({ ...p, branchName: e.target.value }))} required />
+                <Field label="Address" className="had-field-full" value={branchForm.branchAddress} onChange={(e) => setBranchForm(p => ({ ...p, branchAddress: e.target.value }))} required />
+                <Field label="Contact Number" value={branchForm.branchContactNumber} onChange={(e) => setBranchForm(p => ({ ...p, branchContactNumber: e.target.value }))} required />
+                <Field label="Email" type="email" value={branchForm.branchEmail} onChange={(e) => setBranchForm(p => ({ ...p, branchEmail: e.target.value }))} required />
+              </div>
+              <div className="had-form-actions">
+                <button type="submit" disabled={submitting} className={`had-btn had-btn-slate${submitting ? " had-btn-loading" : ""}`}>
+                  {!submitting && <Plus size={15} />}
+                  {submitting ? "" : "Create Branch"}
+                </button>
+              </div>
             </form>
 
             {/* Assign Admin */}
@@ -776,14 +959,18 @@ const HeadAdminPanel = () => {
                   <p className="had-form-subtitle">Onboard a branch administrator</p>
                 </div>
               </div>
-              <Field label="Username" type="text" list="admin-username-suggestions" value={adminForm.username} onChange={(e) => setAdminForm(p => ({ ...p, username: e.target.value }))} required />
-              <Field label="Full Name" value={adminForm.name} onChange={(e) => setAdminForm(p => ({ ...p, name: e.target.value }))} required />
-              <Field label="Email" type="email" value={adminForm.email} onChange={(e) => setAdminForm(p => ({ ...p, email: e.target.value }))} required />
-              <Field label="Branch Name" type="text" list="branch-name-suggestions" value={adminForm.branchName} onChange={(e) => setAdminForm(p => ({ ...p, branchName: e.target.value }))} required />
-              <button type="submit" disabled={submitting} className={`had-btn had-btn-gold${submitting ? " had-btn-loading" : ""}`}>
-                {!submitting && <ChevronRight size={15} />}
-                {submitting ? "" : "Assign Admin"}
-              </button>
+              <div className="had-form-grid">
+                <Field label="Username" type="text" list="admin-username-suggestions" value={adminForm.username} onChange={(e) => setAdminForm(p => ({ ...p, username: e.target.value }))} required />
+                <Field label="Full Name" value={adminForm.name} onChange={(e) => setAdminForm(p => ({ ...p, name: e.target.value }))} required />
+                <Field label="Email" type="email" value={adminForm.email} onChange={(e) => setAdminForm(p => ({ ...p, email: e.target.value }))} required />
+                <Field label="Branch Name" type="text" list="branch-name-suggestions" value={adminForm.branchName} onChange={(e) => setAdminForm(p => ({ ...p, branchName: e.target.value }))} required />
+              </div>
+              <div className="had-form-actions">
+                <button type="submit" disabled={submitting} className={`had-btn had-btn-gold${submitting ? " had-btn-loading" : ""}`}>
+                  {!submitting && <ChevronRight size={15} />}
+                  {submitting ? "" : "Assign Admin"}
+                </button>
+              </div>
             </form>
 
             {/* Onboard Doctor */}
@@ -797,28 +984,95 @@ const HeadAdminPanel = () => {
                   <p className="had-form-subtitle">Add a specialist to a branch</p>
                 </div>
               </div>
-              <Field label="Username" type="text" list="doctor-username-suggestions" value={doctorForm.username} onChange={(e) => setDoctorForm(p => ({ ...p, username: e.target.value }))} required />
-              <Field label="Doctor Name" value={doctorForm.name} onChange={(e) => setDoctorForm(p => ({ ...p, name: e.target.value }))} required />
-              <Field label="Specialization" value={doctorForm.specialization} onChange={(e) => setDoctorForm(p => ({ ...p, specialization: e.target.value }))} required />
-              <Field label="Email" type="email" value={doctorForm.email} onChange={(e) => setDoctorForm(p => ({ ...p, email: e.target.value }))} required />
-              <Field label="Branch Name" type="text" list="branch-name-suggestions" value={doctorForm.branchName} onChange={(e) => setDoctorForm(p => ({ ...p, branchName: e.target.value }))} required />
-              <button type="submit" disabled={submitting} className={`had-btn had-btn-teal${submitting ? " had-btn-loading" : ""}`}>
-                {!submitting && <Sparkles size={15} />}
-                {submitting ? "" : "Onboard Doctor"}
-              </button>
+              <div className="had-form-grid">
+                <Field label="Username" type="text" list="doctor-username-suggestions" value={doctorForm.username} onChange={(e) => setDoctorForm(p => ({ ...p, username: e.target.value }))} required />
+                <Field label="Doctor Name" value={doctorForm.name} onChange={(e) => setDoctorForm(p => ({ ...p, name: e.target.value }))} required />
+                <Field label="Specialization" value={doctorForm.specialization} onChange={(e) => setDoctorForm(p => ({ ...p, specialization: e.target.value }))} required />
+                <Field label="Email" type="email" value={doctorForm.email} onChange={(e) => setDoctorForm(p => ({ ...p, email: e.target.value }))} required />
+                <Field label="Branch Name" type="text" list="branch-name-suggestions" value={doctorForm.branchName} onChange={(e) => setDoctorForm(p => ({ ...p, branchName: e.target.value }))} required />
+              </div>
+              <div className="had-form-actions">
+                <button type="submit" disabled={submitting} className={`had-btn had-btn-teal${submitting ? " had-btn-loading" : ""}`}>
+                  {!submitting && <Sparkles size={15} />}
+                  {submitting ? "" : "Onboard Doctor"}
+                </button>
+              </div>
+            </form>
+
+            {/* Create Department Template */}
+            <form className="had-form-card" onSubmit={handleCreateDepartmentTemplate}>
+              <div className="had-form-header">
+                <div className="had-form-icon" style={{ background: "rgba(167,139,250,0.12)" }}>
+                  <Activity size={18} color="var(--violet)" />
+                </div>
+                <div>
+                  <p className="had-form-title">Department Template</p>
+                  <p className="had-form-subtitle">Create a department type (not public until added)</p>
+                </div>
+              </div>
+              <div className="had-form-grid">
+                <Field label="Department Name" className="had-field-full" maxLength={DEPT_LIMITS.name} value={departmentForm.name} onChange={(e) => setDepartmentForm(p => ({ ...p, name: e.target.value }))} required />
+                <Field label="Description (optional)" className="had-field-full" maxLength={DEPT_LIMITS.description} value={departmentForm.description} onChange={(e) => setDepartmentForm(p => ({ ...p, description: e.target.value }))} />
+                <Field label="Image URL (optional)" className="had-field-full" maxLength={DEPT_LIMITS.imageUrl} value={departmentForm.imageUrl} onChange={(e) => setDepartmentForm(p => ({ ...p, imageUrl: e.target.value }))} hint="Use a full URL (https://...)" />
+                <Field label="Accent Color" maxLength={DEPT_LIMITS.accentColor} value={departmentForm.accentColor} onChange={(e) => setDepartmentForm(p => ({ ...p, accentColor: e.target.value }))} />
+                <Field label="Background Color" maxLength={DEPT_LIMITS.bgColor} value={departmentForm.bgColor} onChange={(e) => setDepartmentForm(p => ({ ...p, bgColor: e.target.value }))} />
+                <Field label="Icon Text" maxLength={DEPT_LIMITS.icon} value={departmentForm.icon} onChange={(e) => setDepartmentForm(p => ({ ...p, icon: e.target.value }))} hint="2-4 letters (e.g. CARD)" />
+              </div>
+              <div className="had-form-actions">
+                <button type="submit" disabled={departmentSubmitting} className={`had-btn had-btn-slate${departmentSubmitting ? " had-btn-loading" : ""}`}>
+                  {!departmentSubmitting && <Plus size={15} />}
+                  {departmentSubmitting ? "" : "Create Template"}
+                </button>
+              </div>
+              {departmentError && (
+                <div className="had-error" style={{ marginTop: 10 }}>
+                  <span style={{ fontSize: 15 }}>âš </span> {departmentError}
+                </div>
+              )}
             </form>
           </div>
 
-          {/* ── Branch detail panel ── */}
+          {/* Department Templates */}
+          <div className="had-card">
+            <h2 className="had-section-title">
+              <span className="had-section-title-dot" style={{ background: "var(--violet)" }} />
+              Department Templates
+            </h2>
+            {departmentTemplates.length === 0 ? (
+              <div className="had-placeholder">
+                <div className="had-placeholder-icon"><Activity size={20} color="var(--muted)" /></div>
+                No department templates created yet.
+              </div>
+            ) : (
+              <div className="had-detail-pane had-scroll">
+                {(departmentTemplates || []).map(dep => (
+                  <div key={dep.id} className="had-detail-item" style={{ justifyContent: "space-between" }}>
+                    <div>
+                      <p className="had-detail-name">{dep.name}</p>
+                      {dep.description && <p className="had-detail-sub">{dep.description}</p>}
+                    </div>
+                    <span className="had-detail-id">#{dep.id}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* â”€â”€ Branch detail panel â”€â”€ */}
           <div className="had-card">
             <h2 className="had-section-title">
               <span className="had-section-title-dot" style={{ background: "var(--gold)" }} />
               Selected Branch Details
             </h2>
+            {detailsError && (
+              <div className="had-error" style={{ marginBottom: 12 }}>
+                <span style={{ fontSize: 15 }}>!</span> {detailsError}
+              </div>
+            )}
             {detailsLoading ? (
               <div className="had-placeholder">
                 <div className="had-placeholder-icon"><Activity size={20} color="var(--muted)" /></div>
-                Loading branch data…
+                Loading branch data...
               </div>
             ) : !details ? (
               <div className="had-placeholder">
@@ -826,7 +1080,22 @@ const HeadAdminPanel = () => {
                 Select a branch in the table above to view its doctors, patients, admins, and departments.
               </div>
             ) : (
-              <div className="had-detail-grid">
+              <div>
+                {details?.summary && (
+                  <div className="had-summary">
+                    <div className="had-summary-main">
+                      <div className="had-summary-title">{details.summary.branchName}</div>
+                      <div className="had-summary-sub">{details.summary.branchAddress}</div>
+                    </div>
+                    <div className="had-summary-pills">
+                      <span className="had-summary-pill">Admin: {details.summary.adminName || "Unassigned"}</span>
+                      <span className="had-summary-pill">Doctors: {details.summary.doctorCount || 0}</span>
+                      <span className="had-summary-pill">Patients: {details.summary.patientCount || 0}</span>
+                      <span className="had-summary-pill">Departments: {details.summary.departmentCount || 0}</span>
+                    </div>
+                  </div>
+                )}
+                <div className="had-detail-grid">
                 {/* Admins */}
                 <div className="had-detail-pane">
                   <p className="had-detail-pane-title">
@@ -873,11 +1142,12 @@ const HeadAdminPanel = () => {
                   {(details.departments || []).map(dep => (
                     <div key={dep.id} className="had-detail-item" style={{ flexDirection: "column", alignItems: "flex-start", gap: 3 }}>
                       <p className="had-detail-name">{dep.name}</p>
-                      <p className="had-detail-sub">Head: {dep.headDoctorName || "N/A"} · {dep.doctorCount} doctors · {dep.patientCount} patients</p>
+                      <p className="had-detail-sub">Head: {dep.headDoctorName || "N/A"} - {dep.doctorCount} doctors - {dep.patientCount} patients</p>
                     </div>
                   ))}
                 </div>
               </div>
+            </div>
             )}
           </div>
 
@@ -899,3 +1169,6 @@ const HeadAdminPanel = () => {
 };
 
 export default HeadAdminPanel;
+
+
+

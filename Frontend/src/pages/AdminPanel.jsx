@@ -82,6 +82,34 @@ const deptColor = {
   default:      "#059669",
 };
 
+const DEFAULT_DEPARTMENT_SECTIONS = [
+  {
+    title: "About",
+    icon: "📋",
+    items: ["Department providing specialized medical services"],
+  },
+  {
+    title: "Team",
+    icon: "👥",
+    items: ["Head Doctor: TBD", "Total Members: 0", "Specialized medical professionals"],
+  },
+  {
+    title: "Services",
+    icon: "⚕️",
+    items: ["Specialized medical care", "Patient consultation", "Treatment and diagnosis", "Follow-up support"],
+  },
+];
+
+const DEPT_LIMITS = {
+  name: 100,
+  description: 2000,
+  imageUrl: 2000,
+  accentColor: 20,
+  bgColor: 20,
+  icon: 20,
+  sectionsJson: 10000,
+};
+
 // ── Stat Card ─────────────────────────────────────────────────────────────────
 const StatCard = ({ label, value, sub, icon, accent, delay }) => {
   const ref = useRef(null);
@@ -152,30 +180,12 @@ const AdminPanel = () => {
   const [showDepartmentForm, setShowDepartmentForm] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
-    headDoctor: "",
-    branch: "",
     description: "",
     imageUrl: "",
     accentColor: "#2563eb",
     bgColor: "#eff6ff",
     icon: "DEPT",
-    sections: [
-      {
-        title: "About",
-        icon: "📋",
-        items: ["Department providing specialized medical services"],
-      },
-      {
-        title: "Team",
-        icon: "👥",
-        items: ["Head Doctor: TBD", "Total Members: 0", "Specialized medical professionals"],
-      },
-      {
-        title: "Services",
-        icon: "⚕️",
-        items: ["Specialized medical care", "Patient consultation", "Treatment and diagnosis", "Follow-up support"],
-      },
-    ],
+    sections: DEFAULT_DEPARTMENT_SECTIONS,
   });
   const [headDoctorName, setHeadDoctorName] = useState("");
   const [headDoctorSuggestions, setHeadDoctorSuggestions] = useState([]);
@@ -186,6 +196,10 @@ const AdminPanel = () => {
   const [departments, setDepartments] = useState([]);
   const [departmentsLoading, setDepartmentsLoading] = useState(false);
   const [departmentsError, setDepartmentsError] = useState("");
+  const [departmentTemplates, setDepartmentTemplates] = useState([]);
+  const [templatesLoading, setTemplatesLoading] = useState(false);
+  const [templatesError, setTemplatesError] = useState("");
+  const [selectedTemplateId, setSelectedTemplateId] = useState("");
   const [doctorForm, setDoctorForm] = useState({
     username: "",
     name: "",
@@ -198,6 +212,34 @@ const AdminPanel = () => {
   const [_totalPatients, _setTotalPatients] = useState(0);
   const headerRef = useRef(null);
 
+  const getApiErrorMessage = (err, fallback) => {
+    return err?.response?.data?.error || err?.response?.data?.message || fallback;
+  };
+
+  const validateDepartmentPayload = () => {
+    const errors = [];
+    if (formData.description && formData.description.length > DEPT_LIMITS.description) {
+      errors.push(`Description must be at most ${DEPT_LIMITS.description} characters`);
+    }
+    if (formData.imageUrl && formData.imageUrl.length > DEPT_LIMITS.imageUrl) {
+      errors.push(`Image URL must be at most ${DEPT_LIMITS.imageUrl} characters`);
+    }
+    if (formData.accentColor && formData.accentColor.length > DEPT_LIMITS.accentColor) {
+      errors.push(`Accent color must be at most ${DEPT_LIMITS.accentColor} characters`);
+    }
+    if (formData.bgColor && formData.bgColor.length > DEPT_LIMITS.bgColor) {
+      errors.push(`Background color must be at most ${DEPT_LIMITS.bgColor} characters`);
+    }
+    if (formData.icon && formData.icon.length > DEPT_LIMITS.icon) {
+      errors.push(`Icon text must be at most ${DEPT_LIMITS.icon} characters`);
+    }
+    const sectionsJson = JSON.stringify(formData.sections || []);
+    if (sectionsJson.length > DEPT_LIMITS.sectionsJson) {
+      errors.push(`Sections must be at most ${DEPT_LIMITS.sectionsJson} characters`);
+    }
+    return { errors, sectionsJson };
+  };
+
   const fetchPatients = useCallback(async () => {
     try {
       setLoading(true);
@@ -206,7 +248,7 @@ const AdminPanel = () => {
       _setTotalPatients(response.data.totalElements || response.data.length);
     } catch (error) {
       console.error("Error fetching patients:", error);
-      alert("Failed to load patients");
+      alert(getApiErrorMessage(error, "Failed to load patients"));
     } finally {
       setLoading(false);
     }
@@ -225,7 +267,7 @@ const AdminPanel = () => {
       });
       setDoctors(response.data || []);
     } catch (error) {
-      setDoctorsError(error?.response?.data?.message || "Failed to load doctors");
+      setDoctorsError(getApiErrorMessage(error, "Failed to load doctors"));
       setDoctors([]);
     } finally {
       setDoctorsLoading(false);
@@ -259,104 +301,122 @@ const AdminPanel = () => {
       const response = await adminApi.getDepartments();
       setDepartments(response.data || []);
     } catch (error) {
-      setDepartmentsError(error?.response?.data?.message || "Failed to load departments");
+      setDepartmentsError(getApiErrorMessage(error, "Failed to load departments"));
       setDepartments([]);
     } finally {
       setDepartmentsLoading(false);
     }
   }, []);
 
+  const fetchDepartmentTemplates = useCallback(async () => {
+    try {
+      setTemplatesError("");
+      setTemplatesLoading(true);
+      const response = await adminApi.getDepartmentTemplates();
+      setDepartmentTemplates(response.data || []);
+    } catch (error) {
+      setTemplatesError(getApiErrorMessage(error, "Failed to load department templates"));
+      setDepartmentTemplates([]);
+    } finally {
+      setTemplatesLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
     if (activeTab === "departments") {
       fetchDepartments();
+      fetchDepartmentTemplates();
     }
-  }, [activeTab, fetchDepartments]);
+  }, [activeTab, fetchDepartments, fetchDepartmentTemplates]);
+
+  useEffect(() => {
+    const selected = departmentTemplates.find(t => String(t.id) === String(selectedTemplateId));
+    if (!selected) {
+      setFormData({
+        name: "",
+        description: "",
+        imageUrl: "",
+        accentColor: "#2563eb",
+        bgColor: "#eff6ff",
+        icon: "DEPT",
+        sections: DEFAULT_DEPARTMENT_SECTIONS,
+      });
+      return;
+    }
+    let sections = DEFAULT_DEPARTMENT_SECTIONS;
+    if (selected.sectionsJson) {
+      try {
+        const parsed = JSON.parse(selected.sectionsJson);
+        if (Array.isArray(parsed) && parsed.length) {
+          sections = parsed;
+        }
+      } catch {
+        // ignore invalid JSON
+      }
+    }
+    setFormData({
+      name: selected.name || "",
+      description: selected.description || "",
+      imageUrl: selected.imageUrl || "",
+      accentColor: selected.accentColor || "#2563eb",
+      bgColor: selected.bgColor || "#eff6ff",
+      icon: selected.icon || "DEPT",
+      sections,
+    });
+  }, [selectedTemplateId, departmentTemplates]);
 
 
 
-  const handleCreateDepartment = async (e) => {
+  const handleAddDepartment = async (e) => {
     e.preventDefault();
-    if (!formData.name || !headDoctorName) {
-      alert("Please fill all fields");
+    if (!selectedTemplateId) {
+      alert("Please select a department template");
       return;
     }
 
     try {
       setLoading(true);
       setHeadDoctorError("");
-      const match = headDoctorSuggestions.find(
-        d => d.name && d.name.toLowerCase() === headDoctorName.trim().toLowerCase()
-      );
-      if (!match) {
-        setHeadDoctorError("Please select a valid head doctor from suggestions");
-        setLoading(false);
+      const { errors, sectionsJson } = validateDepartmentPayload();
+      if (errors.length > 0) {
+        toast.error(errors[0]);
         return;
       }
+      let headDoctorId = null;
+      if (headDoctorName.trim()) {
+        const match = headDoctorSuggestions.find(
+          d => d.name && d.name.toLowerCase() === headDoctorName.trim().toLowerCase()
+        );
+        if (!match) {
+          setHeadDoctorError("Please select a valid head doctor from suggestions");
+          setLoading(false);
+          return;
+        }
+        headDoctorId = match.id;
+      }
       const payload = {
-        name: formData.name,
-        headDoctorId: match.id,
+        templateId: Number(selectedTemplateId),
+        headDoctorId,
         doctorIds: selectedDepartmentDoctors.map(d => d.id),
         description: formData.description,
         imageUrl: formData.imageUrl,
         accentColor: formData.accentColor,
         bgColor: formData.bgColor,
         icon: formData.icon,
-        sectionsJson: JSON.stringify(formData.sections || []),
+        sectionsJson,
       };
-      const response = await adminApi.createDepartment(payload);
-      
-      // Store created department in localStorage for display on Department page
-      const createdDepts = localStorage.getItem('createdDepartments') || '[]';
-      const deptList = JSON.parse(createdDepts);
-      
-      // Add new department with additional info for display
-      const newDept = {
-        id: response.data?.id || Date.now(),
-        name: formData.name,
-        headDoctorId: match.id,
-        headDoctorName: `Dr. ${match.name}`,
-        branchId: null,
-        members: 0,
-        createdAt: new Date().toISOString(),
-        description: formData.description,
-        imageUrl: formData.imageUrl,
-        accentColor: formData.accentColor,
-        bgColor: formData.bgColor,
-        icon: formData.icon,
-        sectionsJson: JSON.stringify(formData.sections || []),
-      };
-      
-      deptList.push(newDept);
-      localStorage.setItem('createdDepartments', JSON.stringify(deptList));
-      
-      toast.success("Department created successfully!");
+      await adminApi.addDepartmentToBranch(payload);
+      toast.success("Department added to your branch!");
       setFormData({
         name: "",
-        headDoctor: "",
-        branch: "",
         description: "",
         imageUrl: "",
         accentColor: "#2563eb",
         bgColor: "#eff6ff",
         icon: "DEPT",
-        sections: [
-          {
-            title: "About",
-            icon: "📋",
-            items: ["Department providing specialized medical services"],
-          },
-          {
-            title: "Team",
-            icon: "👥",
-            items: ["Head Doctor: TBD", "Total Members: 0", "Specialized medical professionals"],
-          },
-          {
-            title: "Services",
-            icon: "⚕️",
-            items: ["Specialized medical care", "Patient consultation", "Treatment and diagnosis", "Follow-up support"],
-          },
-        ],
+        sections: DEFAULT_DEPARTMENT_SECTIONS,
       });
+      setSelectedTemplateId("");
       setHeadDoctorName("");
       setHeadDoctorSuggestions([]);
       setDepartmentDoctorName("");
@@ -365,8 +425,8 @@ const AdminPanel = () => {
       setShowDepartmentForm(false);
       await fetchDepartments();
     } catch (error) {
-      console.error("Error creating department:", error);
-      toast.error("Failed to create department. " + (error.response?.data?.message || ""));
+      console.error("Error adding department to branch:", error);
+      toast.error("Failed to add department. " + getApiErrorMessage(error, ""));
     } finally {
       setLoading(false);
     }
@@ -487,7 +547,7 @@ const AdminPanel = () => {
       setDoctorMessage("Doctor onboarded successfully");
       setDoctorForm({ username: "", name: "", specialization: "", email: "" });
     } catch (error) {
-      setDoctorMessage(error?.response?.data?.message || "Failed to onboard doctor");
+      setDoctorMessage(getApiErrorMessage(error, "Failed to onboard doctor"));
     } finally {
       setDoctorSubmitting(false);
     }
@@ -502,7 +562,7 @@ const AdminPanel = () => {
       const response = await adminApi.getAppointments(page, size);
       setAppointments(response.data || []);
     } catch (error) {
-      setAppointmentsError(error?.response?.data?.message || "Failed to load appointments");
+      setAppointmentsError(getApiErrorMessage(error, "Failed to load appointments"));
       setAppointments([]);
     } finally {
       setAppointmentsLoading(false);
@@ -530,7 +590,7 @@ const AdminPanel = () => {
       setDepartmentLoad(data.departmentLoad || []);
       setWeeklyAppointments(data.weeklyAppointments || []);
     } catch (error) {
-      setOverviewError(error?.response?.data?.message || "Failed to load overview");
+      setOverviewError(getApiErrorMessage(error, "Failed to load overview"));
     }
   }, []);
 
@@ -1590,35 +1650,46 @@ const AdminPanel = () => {
 
             {activeTab === "departments" && (
               <div className="admin-section full">
-                <Section title="Department Management" subtitle="Create and manage departments">
+                <Section title="Department Management" subtitle="Add department templates to your branch and manage details">
                   {!showDepartmentForm ? (
                     <button className="admin-refresh-btn" 
                       onClick={() => setShowDepartmentForm(true)}
                       style={{ marginBottom: "20px" }}>
-                      + Create New Department
+                      + Add Department to Branch
                     </button>
                   ) : (
-                    <form className="admin-form-wrapper" onSubmit={handleCreateDepartment}>
+                    <form className="admin-form-wrapper" onSubmit={handleAddDepartment}>
                       <div className="admin-form-group">
                         <div>
-                          <label className="admin-form-label">Department Name</label>
-                          <input
-                            type="text"
-                            placeholder="e.g., Cardiology"
-                            value={formData.name}
-                            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                          <label className="admin-form-label">Department Template</label>
+                          <select
+                            value={selectedTemplateId}
+                            onChange={(e) => setSelectedTemplateId(e.target.value)}
                             required
-                          />
+                          >
+                            <option value="">Select department</option>
+                            {departmentTemplates.map(dep => (
+                              <option key={dep.id} value={dep.id}>{dep.name}</option>
+                            ))}
+                          </select>
+                          {templatesLoading && (
+                            <div className="admin-form-message">Loading templates…</div>
+                          )}
+                          {templatesError && (
+                            <div className="admin-form-message">{templatesError}</div>
+                          )}
+                          {!templatesLoading && !templatesError && departmentTemplates.length === 0 && (
+                            <div className="admin-form-message">No templates found. Ask head admin to create one.</div>
+                          )}
                         </div>
                         <div>
-                          <label className="admin-form-label">Head Doctor Name</label>
+                          <label className="admin-form-label">Head Doctor Name (optional)</label>
                           <input
                             type="text"
                             list="head-doctor-suggestions"
                             placeholder="Search doctor by name"
                             value={headDoctorName}
                             onChange={(e) => setHeadDoctorName(e.target.value)}
-                            required
                           />
                           <datalist id="head-doctor-suggestions">
                             {headDoctorSuggestions.map(d => (
@@ -1635,6 +1706,7 @@ const AdminPanel = () => {
                             placeholder="Short description"
                             value={formData.description}
                             onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                            maxLength={DEPT_LIMITS.description}
                           />
                         </div>
                         <div>
@@ -1644,6 +1716,7 @@ const AdminPanel = () => {
                             placeholder="https://..."
                             value={formData.imageUrl}
                             onChange={(e) => setFormData({ ...formData, imageUrl: e.target.value })}
+                            maxLength={DEPT_LIMITS.imageUrl}
                           />
                         </div>
                       </div>
@@ -1655,6 +1728,7 @@ const AdminPanel = () => {
                             placeholder="#2563eb"
                             value={formData.accentColor}
                             onChange={(e) => setFormData({ ...formData, accentColor: e.target.value })}
+                            maxLength={DEPT_LIMITS.accentColor}
                           />
                         </div>
                         <div>
@@ -1664,6 +1738,7 @@ const AdminPanel = () => {
                             placeholder="#eff6ff"
                             value={formData.bgColor}
                             onChange={(e) => setFormData({ ...formData, bgColor: e.target.value })}
+                            maxLength={DEPT_LIMITS.bgColor}
                           />
                         </div>
                       </div>
@@ -1675,6 +1750,7 @@ const AdminPanel = () => {
                             placeholder="DEPT"
                             value={formData.icon}
                             onChange={(e) => setFormData({ ...formData, icon: e.target.value })}
+                            maxLength={DEPT_LIMITS.icon}
                           />
                         </div>
                       </div>
@@ -1799,14 +1875,22 @@ const AdminPanel = () => {
                         <button 
                           type="button" 
                           className="btn-cancel"
-                          onClick={() => setShowDepartmentForm(false)}>
+                          onClick={() => {
+                            setShowDepartmentForm(false);
+                            setSelectedTemplateId("");
+                            setHeadDoctorName("");
+                            setHeadDoctorSuggestions([]);
+                            setDepartmentDoctorName("");
+                            setDepartmentDoctorSuggestions([]);
+                            setSelectedDepartmentDoctors([]);
+                          }}>
                           Cancel
                         </button>
                         <button 
                           type="submit" 
                           className="btn-primary"
                           disabled={loading}>
-                          {loading ? "Creating..." : "Create Department"}
+                          {loading ? "Adding..." : "Add Department"}
                         </button>
                       </div>
                     </form>
@@ -1850,3 +1934,5 @@ const AdminPanel = () => {
 };
 
 export default AdminPanel;
+
+
