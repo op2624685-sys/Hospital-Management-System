@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react'
+﻿import React, { useEffect, useRef, useState } from 'react'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import Header from '../components/Header'
@@ -9,6 +9,9 @@ gsap.registerPlugin(ScrollTrigger)
 
 const DEFAULT_ACCENT = '#2563eb'
 const DEFAULT_BG = '#eff6ff'
+
+const getApiErrorMessage = (err, fallback) =>
+  err?.response?.data?.error || err?.response?.data?.message || fallback
 
 const Department = () => {
   const wrapperRef    = useRef(null)
@@ -22,11 +25,13 @@ const Department = () => {
   const currentIdx    = useRef(0)
   
   const [departments, setDepartments] = useState([])
+  const [error, setError] = useState('')
 
   // Fetch departments from backend
   useEffect(() => {
     const fetchDepartments = async () => {
       try {
+        setError('')
         const res = await API.get('/departments')
         const source = Array.isArray(res.data) ? res.data : []
 
@@ -68,6 +73,7 @@ const Department = () => {
         setDepartments(mapped);
       } catch (error) {
         console.error('Error fetching departments:', error);
+        setError(getApiErrorMessage(error, 'Failed to load departments'));
         setDepartments([]);
       }
     };
@@ -191,22 +197,22 @@ const Department = () => {
 
       <Header />
 
-      {/* ═══════════════════════════════════
+      {/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
           PINNED VIEWPORT
-      ═══════════════════════════════════ */}
+      â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */}
       <div
         ref={containerRef}
         className='relative w-full overflow-hidden'
         style={{ height: '100vh', perspective: '1600px', perspectiveOrigin: 'center 20%', zIndex: 1 }}>
 
-        {/* ── Top accent bar ── */}
+        {/* â”€â”€ Top accent bar â”€â”€ */}
         <div
           ref={accentBarRef}
           className='absolute top-0 left-0 w-full h-0.5 z-50'
           style={{ background: departments[0]?.accent || '#2563eb' }}
         />
 
-        {/* ── Progress line ── */}
+        {/* â”€â”€ Progress line â”€â”€ */}
         <div className='absolute top-0.5 left-0 w-full h-0.5 z-50'
           style={{ background: 'rgba(255,255,255,0.05)' }}>
           <div
@@ -216,9 +222,9 @@ const Department = () => {
           />
         </div>
 
-        {/* ══════════════════
+        {/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
             LEFT SIDEBAR
-        ══════════════════ */}
+        â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */}
         <div className='hidden md:flex absolute left-6 top-1/2 -translate-y-1/2 z-50 flex-col items-start gap-3'>
           <p
             ref={counterRef}
@@ -248,9 +254,9 @@ const Department = () => {
           </p>
         </div>
 
-        {/* ══════════════════
+        {/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
             SCROLL HINT
-        ══════════════════ */}
+        â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */}
         <div className='absolute bottom-5 right-8 z-50 flex items-center gap-2 opacity-30'>
           <p className='text-[10px] uppercase tracking-widest font-semibold' style={{ color: '#64748b' }}>Scroll</p>
           <div className='w-4 h-7 border rounded-full flex items-start justify-center pt-1' style={{ borderColor: '#94a3b8' }}>
@@ -258,9 +264,9 @@ const Department = () => {
           </div>
         </div>
 
-        {/* ══════════════════
+        {/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
             CARDS
-        ══════════════════ */}
+        â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */}
         {departments.map((dept, i) => {
           const DeptComponent = dept.component
           return (
@@ -281,7 +287,7 @@ const Department = () => {
                 boxShadow:       `0 8px 60px rgba(0,0,0,0.60), 0 2px 8px rgba(0,0,0,0.40), 0 0 0 1px rgba(255,255,255,0.04)`,
               }}>
 
-              {/* ── Card top strip ── */}
+              {/* â”€â”€ Card top strip â”€â”€ */}
               <div
                 className='flex flex-col sm:flex-row sm:items-center justify-between px-4 sm:px-8 py-3 border-b gap-3 sm:gap-0'
                 style={{
@@ -333,20 +339,20 @@ const Department = () => {
                 </div>
               </div>
 
-              {/* ── Dept content ── */}
+              {/* â”€â”€ Dept content â”€â”€ */}
               <div
                 className='overflow-y-auto'
                 style={{ height: 'calc(100% - 62px)', background: '#f8fafc' }}>
                 <DeptComponent />
               </div>
 
-              {/* ── Bottom left accent line ── */}
+              {/* â”€â”€ Bottom left accent line â”€â”€ */}
               <div
                 className='absolute bottom-0 left-0 h-0.5 rounded-br-xl'
                 style={{ width: '30%', background: `linear-gradient(to right, ${dept.accent}, transparent)` }}
               />
 
-              {/* ── Subtle top-right glow ── */}
+              {/* â”€â”€ Subtle top-right glow â”€â”€ */}
               <div
                 className='absolute -top-10 -right-10 w-40 h-40 rounded-full pointer-events-none'
                 style={{ background: `radial-gradient(circle, ${dept.accent}10, transparent 70%)` }}
@@ -363,9 +369,11 @@ const Department = () => {
                 border: '1px dashed rgba(15, 23, 42, 0.18)',
                 color: '#0f172a',
               }}>
-              <p className='text-sm font-semibold'>No departments available</p>
+              <p className='text-sm font-semibold'>
+                {error ? 'Unable to load departments' : 'No departments available'}
+              </p>
               <p className='text-xs mt-1' style={{ color: '#475569' }}>
-                Ask admin to create departments to see them here.
+                {error || 'Ask admin to add departments to branches to see them here.'}
               </p>
             </div>
           </div>
@@ -376,6 +384,7 @@ const Department = () => {
 }
 
 export default Department
+
 
 
 

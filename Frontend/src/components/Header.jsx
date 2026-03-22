@@ -21,7 +21,6 @@ const baseNavLinks = [
   { to: '/appointment', label: 'Appointment', icon: CalendarDays },
   { to: '/doctors', label: 'Doctors', icon: Stethoscope },
   { to: '/branches', label: 'Branches', icon: Building2 },
-  { to: '/departments', label: 'Departments', icon: LayoutDashboard },
   { to: '/services', label: 'Services', icon: UserPlus },
   { to: '/about', label: 'About Us', icon: Users },
   { to: '/contact', label: 'Contact Us', icon: Phone },

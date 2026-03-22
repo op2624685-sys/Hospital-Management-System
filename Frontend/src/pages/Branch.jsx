@@ -1,8 +1,9 @@
-import React, { useEffect, useMemo, useState } from 'react'
+﻿import React, { useEffect, useMemo, useState } from 'react'
 import { Heart, Search } from 'lucide-react'
 import Header from '../components/Header'
 import BranchCard from '../components/BranchCard'
 import API from '../api/api'
+import { getBranchImage } from '../utils/branchImages'
 
 const Branch = () => {
   const [query, setQuery] = useState('')
@@ -16,7 +17,8 @@ const Branch = () => {
         const mapped = (response.data || []).map((branch, index) => ({
           ...branch,
           contact: branch.contactNumber,
-          tag: index === 0 ? 'Flagship' : index % 3 === 0 ? '24�7' : index % 2 === 0 ? 'ICU' : 'New',
+          imageUrl: getBranchImage(branch, index),
+          tag: index === 0 ? 'Flagship' : index % 3 === 0 ? '24×7' : index % 2 === 0 ? 'ICU' : 'New',
         }))
         setBranches(mapped)
       } catch (error) {
@@ -40,6 +42,13 @@ const Branch = () => {
       b.contact?.toLowerCase().includes(term)
     )
   }, [branches, query])
+
+  const stats = useMemo(() => {
+    const total = branches.length
+    const openAllDay = branches.filter((b) => b.tag === '24×7').length
+    const icuReady = branches.filter((b) => b.tag === 'ICU').length
+    return { total, openAllDay, icuReady }
+  }, [branches])
 
   return (
     <div className="min-h-screen bg-slate-950 text-white">
@@ -65,7 +74,20 @@ const Branch = () => {
             onChange={(e) => setQuery(e.target.value)}
           />
         </div>
-
+        <div className="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm text-slate-200">
+          <div className="rounded-2xl border border-slate-800 bg-slate-900/70 px-4 py-3">
+            <div className="text-xs uppercase tracking-widest text-slate-400">Total Branches</div>
+            <div className="mt-1 text-2xl font-semibold">{stats.total}</div>
+          </div>
+          <div className="rounded-2xl border border-slate-800 bg-slate-900/70 px-4 py-3">
+            <div className="text-xs uppercase tracking-widest text-slate-400">24×7 Ready</div>
+            <div className="mt-1 text-2xl font-semibold">{stats.openAllDay}</div>
+          </div>
+          <div className="rounded-2xl border border-slate-800 bg-slate-900/70 px-4 py-3">
+            <div className="text-xs uppercase tracking-widest text-slate-400">ICU Support</div>
+            <div className="mt-1 text-2xl font-semibold">{stats.icuReady}</div>
+          </div>
+        </div>
         <div className="mt-6 text-sm text-slate-400">
           {loading ? 'Loading branches...' : `${filtered.length} branch${filtered.length !== 1 ? 'es' : ''} found`}
         </div>
@@ -85,3 +107,7 @@ const Branch = () => {
 }
 
 export default Branch
+
+
+
+
