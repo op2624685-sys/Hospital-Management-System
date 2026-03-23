@@ -6,6 +6,7 @@ import org.springframework.data.annotation.Id;
 
 import com.hms.entity.type.PaymentStatus;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -32,8 +33,9 @@ public class Payment {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(unique = true, nullable = false)
     private String paymentIntentId;   // pi_xxx from Stripe
-    
+
     private Long amount;               // in paise
 
     @Enumerated(EnumType.STRING)
