@@ -51,4 +51,9 @@ public class EmailServiceImpl implements EmailService {
             throw new RuntimeException("Failed to send email", e);
         }
     }
+
+    @Override
+    public void sendPaymentSuccessEmail(String to, String subject, String body) {
+        // later implement this 
+    }
 }
