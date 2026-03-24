@@ -36,12 +36,14 @@ const MyAppointments = () => {
   const filtered = useMemo(() => {
     const q = search.toLowerCase().trim();
     if (!q) return appointments;
-    return appointments.filter((a) => {
-      const doctor = a.doctor?.name?.toLowerCase() || "";
-      const reason = a.reason?.toLowerCase() || "";
-      const id = a.appointmentId?.toLowerCase() || "";
-      return doctor.includes(q) || reason.includes(q) || id.includes(q);
-    });
+    return appointments
+      .filter((a) => a.status !== "PENDING")
+      .filter((a) => {
+        const doctor = a.doctor?.name?.toLowerCase() || "";
+        const reason = a.reason?.toLowerCase() || "";
+        const id = a.appointmentId?.toLowerCase() || "";
+        return doctor.includes(q) || reason.includes(q) || id.includes(q);
+      });
   }, [appointments, search]);
 
   const handleCancel = async (appointment) => {
