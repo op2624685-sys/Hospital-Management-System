@@ -28,6 +28,7 @@ import DoctorAppointments from "./pages/DoctorAppointments";
 import MyAppointments from "./pages/MyAppointments";
 import RoleBlockedRoute from "./components/RoleBlockedRoute";
 import GlobalBackground from "./components/GlobalBackground";
+import PaymentPage from "./pages/PaymentPage";
 
 const App = () => {
   return (
@@ -48,6 +49,11 @@ const App = () => {
         <Route path="/appointment/:appointmentId" element={
           <RoleBlockedRoute blockedRoles={["DOCTOR", "ADMIN", "HEADADMIN"]}>
             <AppointmentDetails />
+          </RoleBlockedRoute>
+        } />
+        <Route path="/payment" element={
+          <RoleBlockedRoute blockedRoles={["DOCTOR", "ADMIN", "HEADADMIN"]}>
+            <PaymentPage />
           </RoleBlockedRoute>
         } />
         <Route path="/doctors" element={<Doctor />} />
