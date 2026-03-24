@@ -2,8 +2,7 @@ package com.hms.entity;
 
 import java.time.LocalDateTime;
 
-import org.springframework.data.annotation.Id;
-
+import jakarta.persistence.Id;
 import com.hms.entity.type.PaymentStatus;
 
 import jakarta.persistence.Column;
@@ -36,10 +35,10 @@ public class Payment {
     @Column(unique = true, nullable = false)
     private String paymentIntentId;   // pi_xxx from Stripe
 
-    private Long amount;               // in paise
+    private Long amount;
 
     @Enumerated(EnumType.STRING)
-    private PaymentStatus status;             // succeeded / failed
+    private PaymentStatus status;
     
     @ManyToOne
     @JoinColumn(name = "appointment_id", nullable = false)
