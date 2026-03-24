@@ -20,7 +20,7 @@ public interface AppointmentService{
     
     List<AppointmentResponseDto> getAllAppointmentsOfPatient(Long patientId, int page, int size);
 
-    AppointmentResponseDto createNewAppointment(CreateAppointmentRequestDto createAppointmentRequestDto);
+    AppointmentResponseDto createConfirmedAppointment(CreateAppointmentRequestDto createAppointmentRequestDto);
 
     AppointmentResponseDto updateAppointmentStatus(String appointmentId, AppointmentStatusType status);
 

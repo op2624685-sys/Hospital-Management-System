@@ -54,8 +54,7 @@ public class AppointmentServiceImpl implements AppointmentService {
 
     @Override
     @Transactional
-    @Secured("ROLE_PATIENT")
-    public AppointmentResponseDto createNewAppointment(CreateAppointmentRequestDto createAppointmentRequestDto) {
+    public AppointmentResponseDto createConfirmedAppointment(CreateAppointmentRequestDto createAppointmentRequestDto) {
         Long doctorId = createAppointmentRequestDto.getDoctorId();
         Long patientId = createAppointmentRequestDto.getPatientId();
 
@@ -67,37 +66,28 @@ public class AppointmentServiceImpl implements AppointmentService {
                 .orElseThrow(() -> new EntityNotFoundException("Patient not found with ID: " + patientId));
         Doctor doctor = doctorRepository.findByIdForUpdate(doctorId)
                 .orElseThrow(() -> new EntityNotFoundException("Doctor not found with ID: " + doctorId));
-        if (doctor.getBranch() == null) {
-            throw new IllegalStateException("Doctor is not assigned to any branch");
-        }
 
-        if (createAppointmentRequestDto.getBranchId() != null
-                && !createAppointmentRequestDto.getBranchId().equals(doctor.getBranch().getId())) {
-            throw new IllegalArgumentException("Doctor does not belong to the requested branch");
-        }
         if (isSlotTaken(doctor, createAppointmentRequestDto.getAppointmentTime())) {
-            throw new IllegalArgumentException("Selected time slot is already booked for this doctor (20 minute slot)");
+            throw new IllegalArgumentException("Selected time slot is already confirmed by another patient.");
         }
 
         Appointment appointment = Appointment.builder()
                 .reason(createAppointmentRequestDto.getReason())
                 .appointmentTime(createAppointmentRequestDto.getAppointmentTime())
+                .status(AppointmentStatusType.CONFIRMED)
+                .patient(patient)
+                .doctor(doctor)
+                .branch(doctor.getBranch())
+                .amount(doctor.getConsultationFee())
                 .build();
 
-        appointment.setStatus(AppointmentStatusType.PENDING);
-        appointment.setPatient(patient);
-        appointment.setDoctor(doctor);
-        appointment.setBranch(doctor.getBranch());
-        if (patient.getAppointments() == null) {
-            patient.setAppointments(new ArrayList<>());
-        }
-        patient.getAppointments().add(appointment); // to maintain consistency
-
         appointment = appointmentRepository.save(appointment);
+        
         eventPublisher.publishEvent(new AppointmentNotificationEvent(
                 appointment.getAppointmentId(),
                 AppointmentNotificationType.CREATED,
                 null));
+
         return mapToAppointmentResponseDto(appointment);
     }
 
@@ -335,6 +325,7 @@ public class AppointmentServiceImpl implements AppointmentService {
                 appointment.getAppointmentId(),
                 appointment.getAppointmentTime(),
                 appointment.getReason(),
+                appointment.getAmount(),
                 mapDoctorResponse(appointment.getDoctor()),
                 appointment.getStatus(),
                 mapPatientResponse(appointment.getPatient()),
@@ -363,10 +354,10 @@ public class AppointmentServiceImpl implements AppointmentService {
                     dto.setName(department.getName());
                     dto.setBranchId(department.getBranch() != null ? department.getBranch().getId() : null);
                     dto.setHeadDoctorId(department.getHeadDoctor() != null ? department.getHeadDoctor().getId() : null);
-                    dto.setDoctorIds(department.getDoctors() == null ? Set.of()
-                            : department.getDoctors().stream().map(Doctor::getId).collect(Collectors.toSet()));
+                    // Avoid loading all doctors for efficiency
+                    dto.setDoctorIds(Set.of());
                     dto.setHeadDoctorName(department.getHeadDoctor() != null ? department.getHeadDoctor().getName() : null);
-                    dto.setMemberCount(department.getDoctors() == null ? 0 : department.getDoctors().size());
+                    dto.setMemberCount(0);
                     dto.setDescription(department.getDescription());
                     dto.setImageUrl(department.getImageUrl());
                     dto.setAccentColor(department.getAccentColor());
