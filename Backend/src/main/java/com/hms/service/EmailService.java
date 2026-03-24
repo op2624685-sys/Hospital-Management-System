@@ -5,4 +5,6 @@ public interface EmailService {
     void sendOtpEmail(String toEmail, String otp);
     
     void sendMail(String to, String subject, String body);
+
+    void sendPaymentSuccessEmail(String to, String subject, String body);
 }
