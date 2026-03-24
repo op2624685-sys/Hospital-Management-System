@@ -2,7 +2,7 @@ package com.hms.entity.type;
 
 public enum PaymentStatus {
 
-    PENDING,
+    SUCCESS,
     FAILED,
-    SUCCEEDED,
+    REFUND
 }
