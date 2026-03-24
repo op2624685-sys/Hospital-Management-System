@@ -34,6 +34,17 @@ export const appointmentApi = {
   updateDetails(appointmentId, payload) {
     return API.put(`/doctor/appointments/${appointmentId}`, payload);
   },
+
+  // Payment methods
+  createPaymentIntentForDoctor(doctorId) {
+    return API.post(`/payments/create-for-doctor/${doctorId}`);
+  },
+  confirmAndBook(payload, paymentIntentId) {
+    return API.post(`/payments/confirm-and-book?paymentIntentId=${paymentIntentId}`, payload);
+  },
+  verifyPayment(paymentIntentId) {
+    return API.get(`/payments/verify/${paymentIntentId}`);
+  },
 };
 
 export default appointmentApi;
