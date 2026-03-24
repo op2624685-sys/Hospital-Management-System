@@ -16,6 +16,7 @@ public class AppointmentResponseDto {
     private String appointmentId;
     private LocalDateTime appointmentTime;
     private String reason;
+    private Long amount;
     private DoctorResponseDto doctor;
     private AppointmentStatusType status;
     private PatientResponseDto patient;

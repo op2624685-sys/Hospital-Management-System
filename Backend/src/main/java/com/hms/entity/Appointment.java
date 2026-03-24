@@ -62,6 +62,8 @@ public class Appointment {
     @Column(length = 500)
     private String reason;
 
+    private Long amount;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private AppointmentStatusType status;
