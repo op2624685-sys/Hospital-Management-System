@@ -63,7 +63,7 @@ public class WebSecurityConfig {
                                 "/v3/api-docs/**").hasRole(HEADADMIN.name())
                         .requestMatchers("/admin/**").hasAnyRole(ADMIN.name(), HEADADMIN.name())
                         .requestMatchers("/doctor/**").hasAnyRole(DOCTOR.name(), ADMIN.name(), HEADADMIN.name())
-                        .requestMatchers("/patients/**").hasRole(PATIENT.name())
+                        .requestMatchers("/patients/**", "/payments/**").hasRole(PATIENT.name())
                         .anyRequest().authenticated())
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
                 .exceptionHandling(exceptionHandlingConfigurer -> 
