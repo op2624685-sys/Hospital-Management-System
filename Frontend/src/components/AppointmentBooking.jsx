@@ -177,21 +177,19 @@ const AppointmentBooking = () => {
     setLoading(true);
     try {
       const appointmentTime = `${appointmentDate}T${appointmentSlot}`;
-      const response = await appointmentApi.create({
+      const payload = {
         doctorId,
         patientId: user.id,
         reason,
         appointmentTime,
         branchId,
-      });
-      const bookedAt = appointmentTime
-        ? new Date(appointmentTime).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' })
-        : '';
-      toast.success(bookedAt ? `Appointment booked for ${bookedAt}` : 'Appointment booked successfully!');
-      setBranchName(''); setBranchId(null);
-      setDoctorName(''); setDoctorId(null); setSelectedDoctor(null);
-      setReason(''); setAppointmentDate(''); setAppointmentSlot(''); setBookedSlots([]);
-      navigate(`/appointment/${response.data.appointmentId}`);
+      };
+      
+      toast.info('Redirecting to secure payment page...');
+      
+      setTimeout(() => {
+        navigate("/payment", { state: { bookingPayload: payload, doctorId } });
+      }, 500);
     } catch (error) {
       toast.error('Booking failed. Please try again.');
       console.error(error);
@@ -832,13 +830,13 @@ const AppointmentBooking = () => {
             {/* Submit */}
             <button className="ab-submit" type="submit" disabled={loading}>
               {loading ? (
-                <><div className="ab-spinner" /> Booking...</>
+                <><div className="ab-spinner" /> Redirecting to payment...</>
               ) : (
                 <>
                   <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                   </svg>
-                  Confirm Appointment
+                  Pay & Confirm Appointment
                 </>
               )}
             </button>
