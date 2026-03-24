@@ -3,9 +3,17 @@ package com.hms.service.impl;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.Locale;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.TextStyle;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import com.hms.dto.AdminDto;
 import com.hms.dto.Request.OnBoardAdminRequestDto;
@@ -31,15 +39,6 @@ import com.hms.repository.UserRepository;
 import com.hms.service.AdminService;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.context.SecurityContextHolder;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.format.TextStyle;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.Locale;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -55,73 +54,86 @@ public class AdminServiceImpl implements AdminService {
     
     @Override
     public List<AdminDto> getAllAdmins() {
-        List<Admin> admins = adminRepository.findAll();
-        return admins
-                .stream()
-                .map(this::mapToAdminDto)
-                .toList();
+        return adminRepository.findAll().stream().map(this::mapToAdminDto).toList();
     }
 
     @Override
     public AdminDto getAdminById(Long id) {
-        Admin admin = adminRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Admin not found with id: " + id));
+        Admin admin = adminRepository.findById(id).orElseThrow(() -> new RuntimeException("Admin not found"));
         return mapToAdminDto(admin);
     }
 
     @Override
     public List<AdminDto> getAdminByName(String name) {
-        List<Admin> admins = adminRepository.findByName(name);
-        return admins
-                .stream()
-                .map(this::mapToAdminDto)
-                .toList();
+        return adminRepository.findByName(name).stream().map(this::mapToAdminDto).toList();
     }
 
     @Override
     public String deleteAdminById(Long id) {
-        Admin admin = adminRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Admin not found with id: " + id));
-        adminRepository.delete(admin);
-        return "Admin deleted successfully with id: " + id;
+        adminRepository.deleteById(id);
+        return "Admin deleted";
     }
 
     @Override
     @Transactional
-    public AdminResponseDto onBoardNewAdmin(OnBoardAdminRequestDto onBoardAdminRequestDto) {
-        String username = onBoardAdminRequestDto.getUsername() == null ? "" : onBoardAdminRequestDto.getUsername().trim();
-        String branchName = onBoardAdminRequestDto.getBranchName() == null ? "" : onBoardAdminRequestDto.getBranchName().trim();
-
-        User user = userRepository.findByUsernameIgnoreCase(username)
-                .orElseThrow(() -> new RuntimeException("User not found with username: " + username));
-        Branch branch = resolveBranchByName(branchName);
-        if (adminRepository.existsByEmail(onBoardAdminRequestDto.getEmail())) {
-            throw new RuntimeException("Admin already exists with email: " + onBoardAdminRequestDto.getEmail());
-        }
-        if (adminRepository.existsByBranch_Id(branch.getId())) {
-            throw new RuntimeException("This branch already has an admin assigned");
-        }
+    public AdminResponseDto onBoardNewAdmin(OnBoardAdminRequestDto dto) {
+        User user = userRepository.findByUsernameIgnoreCase(dto.getUsername())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        Branch branch = branchRepository.findByNameIgnoreCase(dto.getBranchName())
+                .orElseThrow(() -> new RuntimeException("Branch not found"));
+        
         Admin admin = Admin.builder()
-                .name(onBoardAdminRequestDto.getName())
-                .email(onBoardAdminRequestDto.getEmail())
+                .name(dto.getName())
+                .email(dto.getEmail())
                 .branch(branch)
                 .user(user)
                 .build();
+        
         user.setRoles(new HashSet<>(Set.of(RoleType.ADMIN)));
-        user.setEmail(onBoardAdminRequestDto.getEmail());
+        user.setEmail(dto.getEmail());
         userRepository.save(user);
-        Admin savedAdmin = adminRepository.save(admin);
-        return mapToAdminResponseDto(savedAdmin);
+        return mapToAdminResponseDto(adminRepository.save(admin));
     }
 
-    private Branch resolveBranchByName(String branchName) {
-        return branchRepository.findByNameIgnoreCase(branchName).orElseGet(() -> {
-            List<Branch> partialMatches = branchRepository.findByNameContainingIgnoreCase(branchName);
-            if (partialMatches.size() == 1) {
-                return partialMatches.get(0);
-            }
-            throw new RuntimeException("Branch not found with name: " + branchName);
-        });
+    @Override
+    @PreAuthorize("hasRole('ADMIN')")
+    public AdminOverviewDto getAdminOverview() {
+        Long adminUserId = getAuthenticatedUserId();
+        Admin admin = adminRepository.findById(adminUserId).orElseThrow(() -> new RuntimeException("Admin profile not found"));
+        Long branchId = admin.getBranch().getId();
+
+        long totalDoctors = doctorRepository.countByBranch_Id(branchId);
+        long totalPatients = patientRepository.countByBranches_Id(branchId);
+
+        LocalDate today = LocalDate.now();
+        LocalDateTime start = today.atStartOfDay();
+        LocalDateTime end = today.plusDays(1).atStartOfDay().minusNanos(1);
+        long todayAppointments = appointmentRepository.countByBranch_IdAndAppointmentTimeBetween(branchId, start, end);
+        long confirmedAppointments = appointmentRepository.countByBranch_IdAndStatus(branchId, AppointmentStatusType.CONFIRMED);
+
+        AdminStatsDto stats = new AdminStatsDto(totalDoctors, totalPatients, todayAppointments, 0L, confirmedAppointments);
+
+        List<DoctorResponseDto> recentDoctors = doctorRepository.findByBranch_IdOrderByIdDesc(branchId)
+                .stream().limit(5).map(this::mapToDoctorResponseDto).toList();
+
+        List<AdminDepartmentLoadDto> departmentLoad = departmentRepository.findByBranch_Id(branchId).stream()
+                .map(dep -> new AdminDepartmentLoadDto(dep.getName(), dep.getPatients() == null ? 0 : dep.getPatients().size()))
+                .sorted(Comparator.comparing(AdminDepartmentLoadDto::getPatientCount).reversed()).toList();
+
+        List<AdminWeeklyCountDto> weekly = new ArrayList<>();
+        for (int i = 6; i >= 0; i--) {
+            LocalDate day = today.minusDays(i);
+            long count = appointmentRepository.countByBranch_IdAndAppointmentTimeBetween(branchId, day.atStartOfDay(), day.plusDays(1).atStartOfDay().minusNanos(1));
+            weekly.add(new AdminWeeklyCountDto(day.getDayOfWeek().getDisplayName(TextStyle.SHORT, Locale.ENGLISH), count));
+        }
+
+        return new AdminOverviewDto(stats, recentDoctors, departmentLoad, weekly);
+    }
+
+    private Long getAuthenticatedUserId() {
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        if (principal instanceof User user) return user.getId();
+        throw new RuntimeException("User authentication required");
     }
 
     private AdminDto mapToAdminDto(Admin admin) {
@@ -134,70 +146,10 @@ public class AdminServiceImpl implements AdminService {
 
     private AdminResponseDto mapToAdminResponseDto(Admin admin) {
         return new AdminResponseDto(
-                admin.getId(),
+                admin.getUser() != null ? admin.getUser().getId() : admin.getId(),
                 admin.getName(),
                 admin.getEmail(),
                 admin.getBranch() != null ? admin.getBranch().getId() : null);
-    }
-
-    @Override
-    @PreAuthorize("hasRole('ADMIN')")
-    public AdminOverviewDto getAdminOverview() {
-        Long adminUserId = getAuthenticatedUserId();
-        Admin admin = adminRepository.findById(adminUserId)
-                .orElseThrow(() -> new RuntimeException("Admin profile not found for user id: " + adminUserId));
-        Long branchId = admin.getBranch().getId();
-
-        long totalDoctors = doctorRepository.countByBranch_Id(branchId);
-        long totalPatients = patientRepository.countByBranches_Id(branchId);
-
-        LocalDate today = LocalDate.now();
-        LocalDateTime start = today.atStartOfDay();
-        LocalDateTime end = today.plusDays(1).atStartOfDay().minusNanos(1);
-        long todayAppointments = appointmentRepository.countByBranch_IdAndAppointmentTimeBetween(branchId, start, end);
-        long pendingAppointments = appointmentRepository.countByBranch_IdAndStatus(branchId, AppointmentStatusType.PENDING);
-        long confirmedAppointments = appointmentRepository.countByBranch_IdAndStatus(branchId, AppointmentStatusType.CONFIRMED);
-
-        AdminStatsDto stats = new AdminStatsDto(
-                totalDoctors,
-                totalPatients,
-                todayAppointments,
-                pendingAppointments,
-                confirmedAppointments
-        );
-
-        List<DoctorResponseDto> recentDoctors = doctorRepository.findByBranch_IdOrderByIdDesc(branchId)
-                .stream()
-                .sorted(Comparator.comparing(Doctor::getId).reversed())
-                .limit(5)
-                .map(this::mapToDoctorResponseDto)
-                .toList();
-
-        List<AdminDepartmentLoadDto> departmentLoad = departmentRepository.findByBranch_Id(branchId)
-                .stream()
-                .map(dep -> new AdminDepartmentLoadDto(dep.getName(), dep.getPatients() == null ? 0 : dep.getPatients().size()))
-                .sorted(Comparator.comparing(AdminDepartmentLoadDto::getPatientCount).reversed())
-                .toList();
-
-        List<AdminWeeklyCountDto> weeklyAppointments = new ArrayList<>();
-        for (int i = 6; i >= 0; i--) {
-            LocalDate day = today.minusDays(i);
-            LocalDateTime dayStart = day.atStartOfDay();
-            LocalDateTime dayEnd = day.plusDays(1).atStartOfDay().minusNanos(1);
-            long count = appointmentRepository.countByBranch_IdAndAppointmentTimeBetween(branchId, dayStart, dayEnd);
-            String label = day.getDayOfWeek().getDisplayName(TextStyle.SHORT, Locale.ENGLISH);
-            weeklyAppointments.add(new AdminWeeklyCountDto(label, count));
-        }
-
-        return new AdminOverviewDto(stats, recentDoctors, departmentLoad, weeklyAppointments);
-    }
-
-    private Long getAuthenticatedUserId() {
-        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        if (principal instanceof com.hms.entity.User user) {
-            return user.getId();
-        }
-        throw new RuntimeException("User authentication is required");
     }
 
     private DoctorResponseDto mapToDoctorResponseDto(Doctor doctor) {
@@ -207,33 +159,8 @@ public class AdminServiceImpl implements AdminService {
                 doctor.getName(),
                 doctor.getSpecialization(),
                 doctor.getEmail(),
-                doctor.getDepartments() == null ? java.util.Set.of() : doctor.getDepartments().stream()
-                        .map(dep -> {
-                            com.hms.dto.DepartmentDto dto = new com.hms.dto.DepartmentDto();
-                            dto.setId(dep.getId());
-                            dto.setName(dep.getName());
-                            dto.setBranchId(dep.getBranch() != null ? dep.getBranch().getId() : null);
-                            dto.setHeadDoctorId(dep.getHeadDoctor() != null ? dep.getHeadDoctor().getId() : null);
-                            dto.setDoctorIds(dep.getDoctors() == null ? java.util.Set.of()
-                                    : dep.getDoctors().stream().map(Doctor::getId).collect(Collectors.toSet()));
-                            dto.setHeadDoctorName(dep.getHeadDoctor() != null ? dep.getHeadDoctor().getName() : null);
-                            dto.setMemberCount(dep.getDoctors() == null ? 0 : dep.getDoctors().size());
-                            dto.setDescription(dep.getDescription());
-                            dto.setImageUrl(dep.getImageUrl());
-                            dto.setAccentColor(dep.getAccentColor());
-                            dto.setBgColor(dep.getBgColor());
-                            dto.setIcon(dep.getIcon());
-                            dto.setSectionsJson(dep.getSectionsJson());
-                            return dto;
-                        })
-                        .collect(Collectors.toSet()),
-                doctor.getBranch() == null ? null : new com.hms.dto.Response.BranchResponseDto(
-                        doctor.getBranch().getId(),
-                        doctor.getBranch().getName(),
-                        doctor.getBranch().getAddress(),
-                        doctor.getBranch().getEmail(),
-                        doctor.getBranch().getContactNumber()
-                )
+                new HashSet<>(), // Empty departments set
+                null           // No branch mapping here
         );
     }
 }
