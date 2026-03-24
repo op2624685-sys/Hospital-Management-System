@@ -92,12 +92,6 @@ public class AppointmentNotificationListener {
                 case CONFIRMED -> message = String.format(
                         "Hello %s,%n%nYour appointment with Dr. %s has been CONFIRMED.%n%nDetails:%nTime: %s%nReason: %s%nLink: %s%n%nPlease arrive 10 minutes before your scheduled time.",
                         patient.getName(), doctor.getName(), appointment.getAppointmentTime(), appointment.getReason(), getAppointmentLink(appointment));
-                case REJECTED -> message = String.format(
-                        "Hello %s,%n%nWe regret to inform you that your appointment with Dr. %s has been REJECTED.%n%nDetails:%nTime: %s%nReason: %s%n%nPlease contact the hospital or book another slot if needed.",
-                        patient.getName(), doctor.getName(), appointment.getAppointmentTime(), appointment.getReason());
-                case IN_PROGRESS -> message = String.format(
-                        "Hello %s,%n%nYour appointment with Dr. %s is now IN PROGRESS.%n%nLink: %s",
-                        patient.getName(), doctor.getName(), getAppointmentLink(appointment));
                 case COMPLETED -> message = String.format(
                         "Hello %s,%n%nYour appointment with Dr. %s has been COMPLETED.%n%nWe hope you had a satisfactory experience. You can view your appointment details here: %s",
                         patient.getName(), doctor.getName(), getAppointmentLink(appointment));
