@@ -16,6 +16,7 @@ import com.hms.payment.PaymentService;
 import com.hms.repository.AppointmentRepository;
 import com.hms.repository.PaymentRepository;
 import com.hms.repository.DoctorRepository;
+import com.hms.dto.Response.PaymentInitiationResponse;
 import com.hms.service.AppointmentService;
 import com.hms.dto.Request.CreateAppointmentRequestDto;
 import com.hms.dto.Response.AppointmentResponseDto;
@@ -23,8 +24,11 @@ import com.stripe.model.PaymentIntent;
 import com.stripe.param.PaymentIntentCreateParams;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
-
 import lombok.RequiredArgsConstructor;
+
+import java.util.UUID;
+import java.util.HashMap;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/payments")
@@ -38,7 +42,8 @@ public class PaymentController {
     private final AppointmentService appointmentService;
 
     @PostMapping("/create-for-doctor/{doctorId}")
-    public ResponseEntity<String> createPaymentForDoctor(@PathVariable Long doctorId) throws Exception {
+    public ResponseEntity<PaymentInitiationResponse> createPaymentForDoctor(@PathVariable Long doctorId, 
+                                                                          @RequestBody CreateAppointmentRequestDto request) throws Exception {
         Doctor doctor = doctorRepository.findById(doctorId)
                 .orElseThrow(() -> new RuntimeException("Doctor not found"));
 
@@ -46,13 +51,28 @@ public class PaymentController {
             throw new RuntimeException("Doctor does not have a valid consultation fee");
         }
 
+        String appointmentId = UUID.randomUUID().toString();
+
+        Map<String, String> metadata = new HashMap<>();
+        metadata.put("appointment_id", appointmentId);
+        metadata.put("doctor_id", String.valueOf(doctorId));
+        metadata.put("patient_id", String.valueOf(request.getPatientId()));
+        metadata.put("appointment_time", request.getAppointmentTime().toString());
+        metadata.put("branch_id", String.valueOf(request.getBranchId()));
+        metadata.put("reason", request.getReason());
+
         PaymentIntentCreateParams params = PaymentIntentCreateParams.builder()
-                .setAmount(doctor.getConsultationFee() * 100)
+                .setAmount((long)(doctor.getConsultationFee() * 100))
                 .setCurrency("inr")
+                .putAllMetadata(metadata)
                 .build();
 
         PaymentIntent intent = PaymentIntent.create(params);
-        return ResponseEntity.ok(intent.getClientSecret());
+        
+        return ResponseEntity.ok(PaymentInitiationResponse.builder()
+                .clientSecret(intent.getClientSecret())
+                .appointmentId(appointmentId)
+                .build());
     }
 
     @PostMapping("/confirm-and-book")
