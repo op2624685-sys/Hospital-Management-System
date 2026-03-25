@@ -35,7 +35,7 @@ public class RedisConfig {
 
         RedisCacheConfiguration config = RedisCacheConfiguration
             .defaultCacheConfig()
-            .entryTtl(Duration.ofMinutes(30))
+            .entryTtl(Duration.ofMinutes(60))
             .serializeKeysWith(
                 RedisSerializationContext.SerializationPair
                     .fromSerializer(new StringRedisSerializer()))
