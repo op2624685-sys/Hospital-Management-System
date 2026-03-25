@@ -22,6 +22,7 @@ public class DepartmentDto implements Serializable {
     private String accentColor;
     private String bgColor;
     private String icon;
+    private Integer patientCount;
     private String sectionsJson;
 
 }
