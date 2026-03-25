@@ -8,6 +8,9 @@ import java.util.stream.Collectors;
 import java.time.LocalTime;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -24,6 +27,7 @@ import com.hms.dto.DepartmentDto;
 import com.hms.entity.Appointment;
 import com.hms.entity.Doctor;
 import com.hms.entity.Patient;
+import com.hms.entity.Branch;
 import com.hms.entity.Admin;
 import com.hms.entity.type.AppointmentStatusType;
 import com.hms.entity.type.RoleType;
@@ -33,6 +37,7 @@ import com.hms.repository.AppointmentRepository;
 import com.hms.repository.AdminRepository;
 import com.hms.repository.DoctorRepository;
 import com.hms.repository.PatientRepository;
+import com.hms.repository.BranchRepository;
 import com.hms.service.AppointmentService;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
@@ -50,10 +55,17 @@ public class AppointmentServiceImpl implements AppointmentService {
     private final PatientRepository patientRepository;
     private final DoctorRepository doctorRepository;
     private final AdminRepository adminRepository;
+    private final BranchRepository branchRepository;
     private final ApplicationEventPublisher eventPublisher;
 
     @Override
     @Transactional
+    @Caching(evict = {
+        @CacheEvict(value = "patientAppointments", key = "#createAppointmentRequestDto.patientId + ':*'"),
+        @CacheEvict(value = "doctorAppointments", key = "#createAppointmentRequestDto.doctorId + ':*'"),
+        @CacheEvict(value = "recentAdminAppointments", allEntries = true),
+        @CacheEvict(value = "bookedSlots", key = "#createAppointmentRequestDto.doctorId + ':*'")
+    })
     public AppointmentResponseDto createConfirmedAppointment(CreateAppointmentRequestDto createAppointmentRequestDto) {
         Long doctorId = createAppointmentRequestDto.getDoctorId();
         Long patientId = createAppointmentRequestDto.getPatientId();
@@ -71,15 +83,49 @@ public class AppointmentServiceImpl implements AppointmentService {
             throw new IllegalArgumentException("Selected time slot is already confirmed by another patient.");
         }
 
+        // Determine the branch: use branchId from request if provided, otherwise fallback to doctor's branch
+        final Branch branchToUse;
+        if (createAppointmentRequestDto.getBranchId() != null) {
+            branchToUse = branchRepository.findById(createAppointmentRequestDto.getBranchId())
+                    .orElseThrow(() -> new EntityNotFoundException("Branch not found with ID: " + createAppointmentRequestDto.getBranchId()));
+        } else {
+            branchToUse = doctor.getBranch();
+        }
+
         Appointment appointment = Appointment.builder()
                 .reason(createAppointmentRequestDto.getReason())
                 .appointmentTime(createAppointmentRequestDto.getAppointmentTime())
                 .status(AppointmentStatusType.CONFIRMED)
                 .patient(patient)
                 .doctor(doctor)
-                .branch(doctor.getBranch())
+                .branch(branchToUse)
                 .amount(doctor.getConsultationFee())
+                .appointmentId(createAppointmentRequestDto.getAppointmentId()) // Use provided ID if present
                 .build();
+
+        // Update branch_patients join table
+        if (branchToUse != null) {
+            if (branchToUse.getPatients() == null) {
+                branchToUse.setPatients(new ArrayList<>());
+            }
+            
+            boolean alreadyAssociated = branchToUse.getPatients().stream()
+                    .anyMatch(p -> p.getId().equals(patient.getId()));
+            
+            if (!alreadyAssociated) {
+                branchToUse.getPatients().add(patient);
+                if (patient.getBranches() == null) {
+                    patient.setBranches(new ArrayList<>());
+                }
+                boolean branchInPatientList = patient.getBranches().stream()
+                        .anyMatch(b -> b.getId().equals(branchToUse.getId()));
+                if (!branchInPatientList) {
+                    patient.getBranches().add(branchToUse);
+                }
+            }
+            // Explicitly save the branch to ensure many-to-many relationship is updated
+            branchRepository.save(branchToUse);
+        }
 
         appointment = appointmentRepository.save(appointment);
         
@@ -91,7 +137,13 @@ public class AppointmentServiceImpl implements AppointmentService {
         return mapToAppointmentResponseDto(appointment);
     }
 
+    @Override
     @Transactional
+    @Caching(evict = {
+        @CacheEvict(value = "doctorAppointments", allEntries = true),
+        @CacheEvict(value = "appointmentDetails", key = "#appointmentId"),
+        @CacheEvict(value = "bookedSlots", allEntries = true)
+    })
     public Appointment reAssignAppointmentToAnotherDoctor(Long appointmentId, Long newDoctorId) {
         Appointment appointment = appointmentRepository.findById(appointmentId).orElseThrow();
         Doctor newDoctor = doctorRepository.findById(newDoctorId).orElseThrow();
@@ -114,6 +166,7 @@ public class AppointmentServiceImpl implements AppointmentService {
     @Override
     @Transactional
     @PreAuthorize("hasAnyRole('DOCTOR','ADMIN','HEADADMIN')")
+    @Cacheable(value = "doctorAppointments", key = "#doctorId + ':' + #page + ':' + #size")
     public List<AppointmentResponseDto> getAllAppointmentsOfDoctor(Long doctorId, int page, int size) {
         com.hms.entity.User user = (com.hms.entity.User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         if (user.getRoles().contains(RoleType.DOCTOR) && !user.getId().equals(doctorId)) {
@@ -132,6 +185,7 @@ public class AppointmentServiceImpl implements AppointmentService {
     @Override
     @Transactional
     @PreAuthorize("hasRole('PATIENT')")
+    @Cacheable(value = "patientAppointments", key = "#patientId + ':' + #page + ':' + #size")
     public List<AppointmentResponseDto> getAllAppointmentsOfPatient(Long patientId, int page, int size) {
         Long loggedInUserId = getAuthenticatedUserId();
         if (!patientId.equals(loggedInUserId)) {
@@ -146,6 +200,7 @@ public class AppointmentServiceImpl implements AppointmentService {
     }
     @Transactional
     @Override
+    @Cacheable(value = "appointmentDetails", key = "#appointmentId")
     public AppointmentResponseDto getAppointmentByAppointmentId(String appointmentId) {
         Appointment appointment = appointmentRepository.findByAppointmentId(appointmentId).orElseThrow(() -> new RuntimeException("Appointment not found with ID: " + appointmentId));
         return mapToAppointmentResponseDto(appointment);
@@ -154,6 +209,13 @@ public class AppointmentServiceImpl implements AppointmentService {
     @Override
     @Transactional
     @PreAuthorize("hasAnyRole('DOCTOR','ADMIN','HEADADMIN')")
+    @Caching(evict = {
+        @CacheEvict(value = "appointmentDetails", key = "#appointmentId"),
+        @CacheEvict(value = "doctorAppointments", allEntries = true),
+        @CacheEvict(value = "patientAppointments", allEntries = true),
+        @CacheEvict(value = "recentAdminAppointments", allEntries = true),
+        @CacheEvict(value = "bookedSlots", allEntries = true)
+    })
     public AppointmentResponseDto updateAppointmentStatus(String appointmentId, AppointmentStatusType status) {
         Appointment appointment = appointmentRepository.findByAppointmentId(appointmentId)
                 .orElseThrow(() -> new RuntimeException("Appointment not found with ID: " + appointmentId));
@@ -176,6 +238,13 @@ public class AppointmentServiceImpl implements AppointmentService {
     @Override
     @Transactional
     @Secured("ROLE_PATIENT")
+    @Caching(evict = {
+        @CacheEvict(value = "appointmentDetails", key = "#appointmentId"),
+        @CacheEvict(value = "doctorAppointments", allEntries = true),
+        @CacheEvict(value = "patientAppointments", allEntries = true),
+        @CacheEvict(value = "recentAdminAppointments", allEntries = true),
+        @CacheEvict(value = "bookedSlots", allEntries = true)
+    })
     public AppointmentResponseDto cancelAppointmentByPatient(String appointmentId) {
         Appointment appointment = appointmentRepository.findByAppointmentId(appointmentId)
                 .orElseThrow(() -> new RuntimeException("Appointment not found with ID: " + appointmentId));
@@ -197,6 +266,13 @@ public class AppointmentServiceImpl implements AppointmentService {
     @Override
     @Transactional
     @PreAuthorize("hasAnyRole('DOCTOR','ADMIN','HEADADMIN')")
+    @Caching(evict = {
+        @CacheEvict(value = "appointmentDetails", key = "#appointmentId"),
+        @CacheEvict(value = "doctorAppointments", allEntries = true),
+        @CacheEvict(value = "patientAppointments", allEntries = true),
+        @CacheEvict(value = "recentAdminAppointments", allEntries = true),
+        @CacheEvict(value = "bookedSlots", allEntries = true)
+    })
     public AppointmentResponseDto updateAppointment(String appointmentId, UpdateAppointmentRequestDto updateAppointmentRequestDto) {
         Appointment appointment = appointmentRepository.findByAppointmentId(appointmentId)
                 .orElseThrow(() -> new RuntimeException("Appointment not found with ID: " + appointmentId));
@@ -234,6 +310,7 @@ public class AppointmentServiceImpl implements AppointmentService {
 
     @Override
     @Transactional
+    @Cacheable(value = "bookedSlots", key = "#doctorId + ':' + #date")
     public List<LocalDateTime> getBookedSlotsForDoctor(Long doctorId, LocalDate date) {
         Doctor doctor = doctorRepository.findById(doctorId)
                 .orElseThrow(() -> new EntityNotFoundException("Doctor not found with ID: " + doctorId));
@@ -250,6 +327,7 @@ public class AppointmentServiceImpl implements AppointmentService {
     @Override
     @Transactional
     @PreAuthorize("hasRole('ADMIN')")
+    @Cacheable(value = "recentAdminAppointments", key = "#root.target.getAuthenticatedUserId() + ':' + #page + ':' + #size")
     public List<AppointmentResponseDto> getRecentAppointmentsForAdmin(int page, int size) {
         Long adminUserId = getAuthenticatedUserId();
         Admin admin = adminRepository.findById(adminUserId)
