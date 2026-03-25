@@ -1,5 +1,5 @@
-import React from "react";
-import "./index.css";
+import DoctorDepartment from "./pages/DoctorDepartment";
+import DepartmentControl from "./pages/Departmentcontrol";
 import Login from "./pages/AuthPages/Login";
 import Signup from "./pages/AuthPages/Signup";
 import ForgotPassword from "./pages/AuthPages/ForgotPassword";
@@ -112,6 +112,22 @@ const App = () => {
           element={
             <ProtectedRoute role="DOCTOR">
               <DoctorAppointments />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/doctor/my-department"
+          element={
+            <ProtectedRoute role="DOCTOR">
+              <DoctorDepartment />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/doctor/department-head"
+          element={
+            <ProtectedRoute role="DOCTOR">
+              <DepartmentControl />
             </ProtectedRoute>
           }
         />
