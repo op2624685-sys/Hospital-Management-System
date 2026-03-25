@@ -8,7 +8,10 @@ import com.hms.dto.Request.UpdateAppointmentRequestDto;
 import com.hms.dto.Response.AppointmentResponseDto;
 import com.hms.entity.type.AppointmentStatusType;
 import com.hms.entity.User;
+import com.hms.dto.DoctorDto;
+import com.hms.dto.DepartmentDto;
 import com.hms.service.AppointmentService;
+import com.hms.service.DoctorService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import jakarta.validation.Valid;
@@ -20,6 +23,36 @@ import jakarta.validation.Valid;
 public class DoctorController {
 
     private final AppointmentService appointmentService;
+    private final DoctorService doctorService;
+
+    @GetMapping("/my-departments")
+    public ResponseEntity<List<DepartmentDto>> getMyDepartments() {
+        return ResponseEntity.ok(doctorService.getMyDepartments());
+    }
+
+    @GetMapping("/profile")
+    public ResponseEntity<DoctorDto> getDoctorProfile() {
+        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        return ResponseEntity.ok(doctorService.getDoctorById(user.getId()));
+    }
+
+    @PostMapping("/departments/{deptId}/doctors/{doctorId}")
+    public ResponseEntity<String> addDoctorToDepartment(@PathVariable Long deptId, @PathVariable Long doctorId) {
+        doctorService.addDoctorToDepartment(deptId, doctorId);
+        return ResponseEntity.ok("Doctor added successfully");
+    }
+
+    @DeleteMapping("/departments/{deptId}/doctors/{doctorId}")
+    public ResponseEntity<String> removeDoctorFromDepartment(@PathVariable Long deptId, @PathVariable Long doctorId) {
+        doctorService.removeDoctorFromDepartment(deptId, doctorId);
+        return ResponseEntity.ok("Doctor removed successfully");
+    }
+
+    @PutMapping("/departments/{deptId}")
+    public ResponseEntity<String> updateDepartment(@PathVariable Long deptId, @RequestBody DepartmentDto deptDto) {
+        doctorService.updateDepartment(deptId, deptDto);
+        return ResponseEntity.ok("Department updated successfully");
+    }
 
     @GetMapping("/appointments")
     public ResponseEntity<List<AppointmentResponseDto>> getAllAppointmentsOfDoctor(
