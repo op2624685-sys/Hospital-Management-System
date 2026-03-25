@@ -17,5 +17,7 @@ public interface DepartmentRepository extends JpaRepository<Department, Long> {
     java.util.List<Department> findByBranchIsNull();
 
     java.util.List<Department> findByBranchIsNotNull();
+    
+    boolean existsByHeadDoctor_Id(Long doctorId);
 
 }
