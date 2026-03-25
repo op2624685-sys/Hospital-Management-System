@@ -32,4 +32,6 @@ public class CreateAppointmentRequestDto {
 
     @Positive(message = "branchId must be positive")
     private Long branchId;
+
+    private String appointmentId;
 }
