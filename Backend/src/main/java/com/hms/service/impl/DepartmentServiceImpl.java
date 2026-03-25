@@ -90,7 +90,8 @@ public class DepartmentServiceImpl implements DepartmentService{
     @Transactional
     @Caching(evict = {
             @CacheEvict(value = "departments", allEntries = true),
-            @CacheEvict(value = "adminDepartments", allEntries = true)
+            @CacheEvict(value = "adminDepartments", allEntries = true),
+            @CacheEvict(value = "doctors", key = "'id:' + #addDepartmentToBranchRequestDto.headDoctorId", condition = "#addDepartmentToBranchRequestDto.headDoctorId != null")
     })
     public DepartmentDto addDepartmentToBranch(AddDepartmentToBranchRequestDto addDepartmentToBranchRequestDto) {
         Admin admin = resolveAdmin();
