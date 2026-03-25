@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { Link as RouterLink, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { doctorAPI } from '../api/api';
 
 const baseNavLinks = [
   { to: '/', label: 'Home', icon: Activity },
@@ -35,6 +36,21 @@ const Header = () => {
   const isAdmin = hasRole('ADMIN');
   const isDoctor = hasRole('DOCTOR');
   const isPatient = hasRole('PATIENT');
+  const [isHead, setIsHead] = useState(false);
+
+  useEffect(() => {
+    const fetchDoctorProfile = async () => {
+      if (isDoctor && isLoggedIn) {
+        try {
+          const { data } = await doctorAPI.getProfile();
+          setIsHead(data.isHead);
+        } catch (error) {
+          console.error("Error fetching doctor profile:", error);
+        }
+      }
+    };
+    fetchDoctorProfile();
+  }, [isDoctor, isLoggedIn]);
 
   let navLinks = baseNavLinks;
   if (isHeadAdmin) {
@@ -53,8 +69,12 @@ const Header = () => {
     navLinks = [
       { to: '/', label: 'Home', icon: Activity },
       { to: '/doctor/booked-details', label: 'Booked Details', icon: CalendarDays },
+      { to: '/doctor/my-department', label: 'Department', icon: Building2 },
       { to: '/contact', label: 'Contact Us', icon: Phone },
     ];
+    if (isHead) {
+      navLinks.splice(3, 0, { to: '/doctor/department-head', label: 'Dept Head', icon: LayoutDashboard });
+    }
   } else if (isPatient) {
     navLinks = [...baseNavLinks, { to: '/my-appointments', label: 'My Appointments', icon: CalendarDays }];
   }
@@ -96,6 +116,12 @@ const Header = () => {
                   }`}>
                 <link.icon size={14} />
                 <span>{link.label}</span>
+                {link.label === 'Dept Head' && (
+                  <span className="absolute -top-1 -right-1 flex h-3 w-3">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-3 w-3 bg-amber-500 border-2 border-white"></span>
+                  </span>
+                )}
               </RouterLink>
             ))}
           </nav>
