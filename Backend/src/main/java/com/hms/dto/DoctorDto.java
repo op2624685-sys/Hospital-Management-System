@@ -16,4 +16,5 @@ public class DoctorDto implements Serializable{
     private String email;
     private Set<DepartmentDto> departments;
     private BranchDto branch;
+    private boolean isHead;
 }
