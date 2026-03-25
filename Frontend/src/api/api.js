@@ -22,4 +22,10 @@ export const forgotPasswordAPI = {
     API.post('/auth/reset-password', { email, newPassword, confirmPassword })
 };
 
+// Doctor API Endpoints
+export const doctorAPI = {
+  getProfile: () => API.get('/doctor/profile'),
+  getMyDepartments: () => API.get('/doctor/my-departments'),
+};
+
 export default API;

@@ -36,8 +36,8 @@ export const appointmentApi = {
   },
 
   // Payment methods
-  createPaymentIntentForDoctor(doctorId) {
-    return API.post(`/payments/create-for-doctor/${doctorId}`);
+  createPaymentIntentForDoctor(doctorId, payload) {
+    return API.post(`/payments/create-for-doctor/${doctorId}`, payload);
   },
   confirmAndBook(payload, paymentIntentId) {
     return API.post(`/payments/confirm-and-book?paymentIntentId=${paymentIntentId}`, payload);
