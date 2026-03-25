@@ -13,6 +13,9 @@ import com.hms.entity.Patient;
 import com.hms.repository.PatientRepository;
 import com.hms.service.PatientService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 
 @Service
 @RequiredArgsConstructor
@@ -22,15 +25,17 @@ public class PatientServiceImpl implements PatientService {
     private final ModelMapper modelMapper;
 
     @Override
+    @Cacheable(value = "patients", key = "'all'")
     public List<PatientDto> getAllPatients() {
         List<Patient> patients = patientRepository.findAll();
         return patients
                 .stream()
-                .map(Patient -> modelMapper.map(patients, PatientDto.class))
+                .map(patient -> modelMapper.map(patient, PatientDto.class))
                 .toList();
     }
 
     @Override
+    @Cacheable(value = "patients", key = "#id")
     public PatientDto getPatientById(Long id) {
         Patient patient = patientRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Patient not found with id: " + id));
@@ -38,6 +43,7 @@ public class PatientServiceImpl implements PatientService {
     }
 
     @Override
+    @Cacheable(value = "patients", key = "'name:' + #name")
     public List<PatientDto> getPatientByName(String name) {
         List<Patient> patients = patientRepository.findByName(name);
         return patients
@@ -56,6 +62,9 @@ public class PatientServiceImpl implements PatientService {
     }
 
     @Override
+    @Caching(evict = {
+        @CacheEvict(value = "patients", allEntries = true)
+    })
     public PatientDto createNewPatient(PatientRequest patientRequest) {
         Patient patient = modelMapper.map(patientRequest, Patient.class);
         Patient savedPatient = patientRepository.save(patient);
@@ -63,6 +72,9 @@ public class PatientServiceImpl implements PatientService {
     }
 
     @Override
+    @Caching(evict = {
+        @CacheEvict(value = "patients", allEntries = true)
+    })
     public String deletePatientById(Long id) {
         Patient patient = patientRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Patient not found with id: " + id));
@@ -71,6 +83,9 @@ public class PatientServiceImpl implements PatientService {
     }
 
     @Override
+    @Caching(evict = {
+        @CacheEvict(value = "patients", allEntries = true)
+    })
     public PatientDto updatePatientById(PatientRequest patientRequest) {
         Patient patient = modelMapper.map(patientRequest, Patient.class);
         Patient updatedPatient = patientRepository.save(patient);
@@ -78,6 +93,7 @@ public class PatientServiceImpl implements PatientService {
     }
 
     @Override
+    @Cacheable(value = "patients", key = "'all:' + #pageNumber + ':' + #pageSize")
     public List<PatientResponseDto> getAllPatients(Integer pageNumber, Integer pageSize) {
         return patientRepository.findAllPatients(PageRequest.of(pageNumber, pageSize))
                 .stream()
