@@ -24,7 +24,7 @@ import {
 
 const stripePromise = loadStripe("pk_test_51QuHNoF7xZ6nC99F1lZp0r4qW5VjYm6n7jYm6n7jYm6n7jYm6n7jYm6n7jYm6n7jYm6n7jYm6n7j");
 
-const CheckoutForm = ({ bookingPayload, clientSecret }) => {
+const CheckoutForm = ({ bookingPayload, clientSecret, appointmentId }) => {
   const stripe = useStripe();
   const elements = useElements();
   const navigate = useNavigate();
@@ -48,13 +48,14 @@ const CheckoutForm = ({ bookingPayload, clientSecret }) => {
         toast.error(error.message);
         setIsProcessing(false);
       } else if (paymentIntent.status === "succeeded") {
-        await appointmentApi.confirmAndBook(bookingPayload, paymentIntent.id);
+        const finalPayload = { ...bookingPayload, appointmentId };
+        await appointmentApi.confirmAndBook(finalPayload, paymentIntent.id);
         toast.success("Payment successful! Your appointment is now confirmed.");
         navigate("/my-appointments", { replace: true });
       }
     } catch (err) {
       console.error(err);
-      toast.error("An error occurred during booking: " + (err.response?.data || "Unknown error"));
+      toast.error("An error occurred during booking: " + (err.response?.data?.message || err.message || "Unknown error"));
       setIsProcessing(false);
     }
   };
@@ -93,6 +94,7 @@ const PaymentPage = () => {
   const bookingPayload = location.state?.bookingPayload;
   const doctorId = location.state?.doctorId;
   const [clientSecret, setClientSecret] = useState(null);
+  const [appointmentId, setAppointmentId] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -103,8 +105,10 @@ const PaymentPage = () => {
     }
     const initPayment = async () => {
       try {
-        const response = await appointmentApi.createPaymentIntentForDoctor(doctorId);
-        setClientSecret(response.data);
+        const response = await appointmentApi.createPaymentIntentForDoctor(doctorId, bookingPayload);
+        // backend now returns { clientSecret, appointmentId }
+        setClientSecret(response.data.clientSecret);
+        setAppointmentId(response.data.appointmentId);
         setLoading(false);
       } catch (err) {
         console.error(err);
@@ -177,7 +181,7 @@ const PaymentPage = () => {
                 </div>
               ) : clientSecret ? (
                 <Elements stripe={stripePromise} options={{ clientSecret }}>
-                  <CheckoutForm bookingPayload={bookingPayload} clientSecret={clientSecret} />
+                  <CheckoutForm bookingPayload={bookingPayload} clientSecret={clientSecret} appointmentId={appointmentId} />
                 </Elements>
               ) : (
                 <p className="text-center text-red-500">Initialization failed.</p>
