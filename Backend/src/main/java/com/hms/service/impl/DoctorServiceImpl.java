@@ -7,9 +7,11 @@ import java.util.Comparator;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.security.access.AccessDeniedException;
 import com.hms.dto.DoctorDto;
 import com.hms.dto.Request.OnBoardDoctorRequestDto;
 import com.hms.dto.Response.DoctorResponseDto;
@@ -21,11 +23,13 @@ import com.hms.entity.Branch;
 import com.hms.entity.Admin;
 import com.hms.entity.Doctor;
 import com.hms.entity.User;
+import com.hms.entity.Department;
 import com.hms.entity.type.RoleType;
 import com.hms.repository.AdminRepository;
 import com.hms.repository.BranchRepository;
 import com.hms.repository.DoctorRepository;
 import com.hms.repository.UserRepository;
+import com.hms.repository.DepartmentRepository;
 import com.hms.service.DoctorService;
 import lombok.RequiredArgsConstructor;
 import java.util.stream.Collectors;
@@ -39,6 +43,7 @@ public class DoctorServiceImpl implements DoctorService {
     private final UserRepository userRepository;
     private final BranchRepository branchRepository;
     private final AdminRepository adminRepository;
+    private final DepartmentRepository departmentRepository;
 
     @Override
     @Transactional(readOnly = true)
@@ -72,7 +77,10 @@ public class DoctorServiceImpl implements DoctorService {
 
     @Override
     @Transactional
-    @CacheEvict(value = "doctors", allEntries = true)
+    @Caching(evict = {
+        @CacheEvict(value = "doctors", allEntries = true),
+        @CacheEvict(value = "branchDoctors", allEntries = true)
+    })
     public String deleteDoctorById(Long id) {
         Doctor doctor = doctorRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Doctor not found with id: " + id));
@@ -83,7 +91,10 @@ public class DoctorServiceImpl implements DoctorService {
     @Override
     @Transactional
     @PreAuthorize("hasAnyRole('HEADADMIN', 'ADMIN')")
-    @CacheEvict(value = "doctors", allEntries = true)
+    @Caching(evict = {
+        @CacheEvict(value = "doctors", allEntries = true),
+        @CacheEvict(value = "branchDoctors", allEntries = true)
+    })
     public DoctorResponseDto onBoardNewDoctor(OnBoardDoctorRequestDto onBoardDoctorRequestDto) {
         String username = onBoardDoctorRequestDto.getUsername() == null ? "" : onBoardDoctorRequestDto.getUsername().trim();
         User currentUser = getCurrentUser();
@@ -114,6 +125,7 @@ public class DoctorServiceImpl implements DoctorService {
     @Override
     @Transactional(readOnly = true)
     @PreAuthorize("hasRole('ADMIN')")
+    @Cacheable(value = "branchDoctors", key = "#root.target.getCurrentUser().id + ':' + #page + ':' + #size + ':' + #search + ':' + #specialization + ':' + #sortBy")
     public List<DoctorResponseDto> getDoctorsForAdminBranch(int page, int size, String search, String specialization, String sortBy) {
         User currentUser = getCurrentUser();
         Admin admin = adminRepository.findById(currentUser.getId())
@@ -142,6 +154,15 @@ public class DoctorServiceImpl implements DoctorService {
                 .stream()
                 .map(this::mapToDoctorResponseDto)
                 .toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<DepartmentDto> getMyDepartments() {
+        User currentUser = getCurrentUser();
+        Doctor doctor = doctorRepository.findById(currentUser.getId())
+                .orElseThrow(() -> new RuntimeException("Doctor profile not found for user id: " + currentUser.getId()));
+        return mapDepartments(doctor).stream().toList();
     }
 
     private String getPrimaryDepartmentName(Doctor doctor) {
@@ -190,7 +211,8 @@ public class DoctorServiceImpl implements DoctorService {
                 doctor.getSpecialization(),
                 doctor.getEmail(),
                 mapDepartments(doctor),
-                mapBranch(doctor.getBranch())
+                mapBranch(doctor.getBranch()),
+                isDoctorHeadOfAnyDepartment(doctor)
         );
     }
 
@@ -203,6 +225,59 @@ public class DoctorServiceImpl implements DoctorService {
                 mapDepartments(doctor),
                 mapBranchResponse(doctor.getBranch())
         );
+    }
+
+    private boolean isDoctorHeadOfAnyDepartment(Doctor doctor) {
+        return departmentRepository.existsByHeadDoctor_Id(doctor.getId());
+    }
+
+    @Override
+    @Transactional
+    public void addDoctorToDepartment(Long deptId, Long doctorId) {
+        Department dept = departmentRepository.findById(deptId)
+                .orElseThrow(() -> new RuntimeException("Department not found"));
+        User currentUser = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        if (dept.getHeadDoctor() == null || !dept.getHeadDoctor().getId().equals(currentUser.getId())) {
+            throw new AccessDeniedException("You are not the head of this department");
+        }
+        Doctor doctor = doctorRepository.findById(doctorId)
+                .orElseThrow(() -> new RuntimeException("Doctor not found"));
+        
+        dept.getDoctors().add(doctor);
+        doctor.getDepartments().add(dept);
+        departmentRepository.save(dept);
+    }
+
+    @Override
+    @Transactional
+    public void removeDoctorFromDepartment(Long deptId, Long doctorId) {
+        Department dept = departmentRepository.findById(deptId)
+                .orElseThrow(() -> new RuntimeException("Department not found"));
+        User currentUser = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        if (dept.getHeadDoctor() == null || !dept.getHeadDoctor().getId().equals(currentUser.getId())) {
+            throw new AccessDeniedException("You are not the head of this department");
+        }
+        Doctor doctor = doctorRepository.findById(doctorId)
+                .orElseThrow(() -> new RuntimeException("Doctor not found"));
+        
+        dept.getDoctors().remove(doctor);
+        doctor.getDepartments().remove(dept);
+        departmentRepository.save(dept);
+    }
+
+    @Override
+    @Transactional
+    public void updateDepartment(Long deptId, DepartmentDto deptDto) {
+        Department dept = departmentRepository.findById(deptId)
+                .orElseThrow(() -> new RuntimeException("Department not found"));
+        User currentUser = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        if (dept.getHeadDoctor() == null || !dept.getHeadDoctor().getId().equals(currentUser.getId())) {
+            throw new AccessDeniedException("You are not the head of this department");
+        }
+        
+        dept.setDescription(deptDto.getDescription());
+        // Map other fields as needed, e.g., services if they exist in Entity
+        departmentRepository.save(dept);
     }
 
     private Set<DepartmentDto> mapDepartments(Doctor doctor) {
@@ -223,6 +298,7 @@ public class DoctorServiceImpl implements DoctorService {
                     dto.setAccentColor(department.getAccentColor());
                     dto.setBgColor(department.getBgColor());
                     dto.setIcon(department.getIcon());
+                    dto.setPatientCount(department.getPatients() == null ? 0 : department.getPatients().size());
                     dto.setSectionsJson(department.getSectionsJson());
                     return dto;
                 })
