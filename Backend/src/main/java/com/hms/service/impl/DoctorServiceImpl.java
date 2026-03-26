@@ -31,6 +31,7 @@ import com.hms.repository.DoctorRepository;
 import com.hms.repository.UserRepository;
 import com.hms.repository.DepartmentRepository;
 import com.hms.service.DoctorService;
+import com.hms.service.AuditLogService;
 import lombok.RequiredArgsConstructor;
 import java.util.stream.Collectors;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -44,6 +45,7 @@ public class DoctorServiceImpl implements DoctorService {
     private final BranchRepository branchRepository;
     private final AdminRepository adminRepository;
     private final DepartmentRepository departmentRepository;
+    private final AuditLogService auditLogService;
 
     @Override
     @Transactional(readOnly = true)
@@ -246,6 +248,13 @@ public class DoctorServiceImpl implements DoctorService {
         dept.getDoctors().add(doctor);
         doctor.getDepartments().add(dept);
         departmentRepository.save(dept);
+
+        auditLogService.logAction(
+                "ASSIGN_DOCTOR_TO_DEPARTMENT",
+                "Department",
+                deptId,
+                "Assigned doctor ID " + doctorId + " to department ID " + deptId
+        );
     }
 
     @Override
@@ -263,6 +272,13 @@ public class DoctorServiceImpl implements DoctorService {
         dept.getDoctors().remove(doctor);
         doctor.getDepartments().remove(dept);
         departmentRepository.save(dept);
+
+        auditLogService.logAction(
+                "REMOVE_DOCTOR_FROM_DEPARTMENT",
+                "Department",
+                deptId,
+                "Removed doctor ID " + doctorId + " from department ID " + deptId
+        );
     }
 
     @Override
