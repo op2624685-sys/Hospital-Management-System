@@ -3,6 +3,7 @@ import { Building2, Users, UserRound, LayoutDashboard, Plus, Trash2, Save, X, Ac
 import { doctorAPI } from "../api/api";
 import { useAuth } from "../context/AuthContext";
 import Header from "../components/Header";
+import PageLoader from "../components/PageLoader";
 
 const STATUS_STYLES = {
   confirmed: { bg: "#D1FAE5", text: "#065F46", label: "Confirmed" },
@@ -70,23 +71,7 @@ export default function DepartmentControl() {
   };
 
   if (loading) return (
-    <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-slate-50 via-white to-blue-50">
-      <style>{`
-        @keyframes float {
-          0%, 100% { transform: translateY(0px); }
-          50% { transform: translateY(-20px); }
-        }
-        .float-spinner {
-          animation: float 3s ease-in-out infinite;
-        }
-      `}</style>
-      <div className="flex flex-col items-center gap-6">
-        <div className="float-spinner">
-          <div className="w-16 h-16 rounded-full border-3 border-slate-300 border-t-blue-500 animate-spin"></div>
-        </div>
-        <p className="text-slate-600 font-semibold tracking-wide">Loading your department...</p>
-      </div>
-    </div>
+    <PageLoader />
   );
 
   if (departments.length === 0) return (

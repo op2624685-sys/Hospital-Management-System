@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import {
     Building2, Users, UserRound, ArrowRight,
-    Search, Sparkles, Settings, Activity, Star
+    Search, Sparkles, Settings, Star
 } from 'lucide-react';
+import PageLoader from '../components/PageLoader';
 import { doctorAPI } from '../api/api';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
@@ -291,26 +292,7 @@ const DoctorDepartment = () => {
         d.name.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
-    if (loading) return (
-        <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center',
-            justifyContent: 'center',
-            background: 'linear-gradient(145deg,#eef2ff,#f0f9ff,#f0fdf4)' }}>
-            <style>{GLOBAL_CSS}</style>
-            <div style={{ position: 'relative', width: 72, height: 72 }}>
-                <div style={{ position: 'absolute', inset: 0, borderRadius: '50%', border: '4px solid #dbeafe' }} />
-                <div style={{ position: 'absolute', inset: 0, borderRadius: '50%',
-                    border: '4px solid transparent', borderTopColor: '#2563eb',
-                    animation: 'dd-spin-slow .9s linear infinite' }} />
-                <div style={{ position: 'absolute', inset: 10, borderRadius: '50%',
-                    border: '4px solid transparent', borderTopColor: '#818cf8',
-                    animation: 'dd-spin-rev 1.3s linear infinite' }} />
-                <div style={{ position: 'absolute', inset: 0, display: 'flex',
-                    alignItems: 'center', justifyContent: 'center' }}>
-                    <Activity size={20} style={{ color: '#2563eb' }} />
-                </div>
-            </div>
-        </div>
-    );
+    if (loading) return <PageLoader message="Fetching departments…" />;
 
     const totalDoctors  = departments.reduce((a, d) => a + (d.memberCount  || 0), 0);
     const totalPatients = departments.reduce((a, d) => a + (d.patientCount || 0), 0);
