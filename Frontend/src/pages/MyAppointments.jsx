@@ -4,6 +4,7 @@ import Header from "../components/Header";
 import appointmentApi from "../api/appointments";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import PageLoader from "../components/PageLoader";
 
 const MyAppointments = () => {
   const [appointments, setAppointments] = useState([]);
@@ -237,7 +238,7 @@ const MyAppointments = () => {
           placeholder="Search by doctor, reason, or appointment ID"
         />
 
-        {loading && <p className="ux-msg">Loading appointments...</p>}
+        {loading && page === 0 && <PageLoader message="Loading appointments..."/>}
         {!loading && filtered.length === 0 && (
           <p className="ux-msg">No appointments found.</p>
         )}
