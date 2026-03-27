@@ -97,7 +97,7 @@ const Header = () => {
 
         <div className='flex justify-between items-center px-4 lg:px-10'>
           <RouterLink to="/" className='group flex items-center gap-2'>
-            <div className='w-10 h-10 bg-gradient-to-br from-blue-600 to-cyan-500 rounded-xl flex items-center justify-center shadow-md group-hover:scale-110 transition-transform duration-300'>
+            <div className='w-10 h-10 bg-linear-to-br from-blue-600 to-cyan-500 rounded-xl flex items-center justify-center shadow-md group-hover:scale-110 transition-transform duration-300'>
               <Activity size={18} className='text-white' />
             </div>
             <h1 className='text-2xl font-black tracking-tight'>
@@ -138,7 +138,7 @@ const Header = () => {
             ) : (
               <RouterLink
                 to="/login"
-                className='group flex items-center gap-2 bg-gradient-to-r from-blue-600 to-teal-500 text-white text-sm font-semibold py-2.5 px-5 rounded-xl transition-all duration-300 hover:scale-105 active:scale-95 shadow-md hover:shadow-cyan-200 hover:shadow-lg'>
+                className='group flex items-center gap-2 bg-linear-to-r from-blue-600 to-teal-500 text-white text-sm font-semibold py-2.5 px-5 rounded-xl transition-all duration-300 hover:scale-105 active:scale-95 shadow-md hover:shadow-cyan-200 hover:shadow-lg'>
                 <LogIn size={15} className='group-hover:-rotate-12 transition-transform duration-300' />
                 <span>Login</span>
               </RouterLink>
@@ -207,7 +207,7 @@ const Header = () => {
                 <RouterLink
                   to="/login"
                   onClick={() => setMenuOpen(false)}
-                  className='w-full flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 to-teal-500 text-white py-3 rounded-xl font-semibold text-sm transition-all duration-300'>
+                  className='w-full flex items-center justify-center gap-2 bg-linear-to-r from-blue-600 to-teal-500 text-white py-3 rounded-xl font-semibold text-sm transition-all duration-300'>
                   <LogIn size={15} />
                   Login
                 </RouterLink>
