@@ -70,7 +70,7 @@ export default function DepartmentControl() {
   };
 
   if (loading) return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-white to-blue-50">
+    <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-slate-50 via-white to-blue-50">
       <style>{`
         @keyframes float {
           0%, 100% { transform: translateY(0px); }
@@ -90,12 +90,12 @@ export default function DepartmentControl() {
   );
 
   if (departments.length === 0) return (
-    <div className="min-h-screen pt-24 px-8 bg-gradient-to-br from-slate-50 via-white to-blue-50 flex flex-col items-center justify-center">
+    <div className="min-h-screen pt-24 px-8 bg-linear-to-br from-slate-50 via-white to-blue-50 flex flex-col items-center justify-center">
       <div className="max-w-lg w-full">
         <div className="relative">
-          <div className="absolute inset-0 bg-gradient-to-r from-blue-400 to-cyan-400 rounded-3xl blur-3xl opacity-10 animate-pulse"></div>
+          <div className="absolute inset-0 bg-linear-to-r from-blue-400 to-cyan-400 rounded-3xl blur-3xl opacity-10 animate-pulse"></div>
           <div className="relative bg-white p-12 rounded-3xl border border-slate-200 shadow-lg text-center">
-            <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-2xl flex items-center justify-center mx-auto mb-8 shadow-lg">
+            <div className="w-20 h-20 bg-linear-to-br from-blue-500 to-cyan-500 rounded-2xl flex items-center justify-center mx-auto mb-8 shadow-lg">
               <Shield size={40} className="text-white" />
             </div>
             <h2 className="text-3xl font-bold text-slate-900 mb-4" style={{ fontFamily: "'Poppins', sans-serif" }}>Access Restricted</h2>
@@ -107,7 +107,7 @@ export default function DepartmentControl() {
   );
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50 pt-20 pb-16">
+    <div className="min-h-screen bg-linear-to-br from-slate-50 via-white to-blue-50 pt-20 pb-16">
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
         
@@ -204,11 +204,11 @@ export default function DepartmentControl() {
 
                 {/* Stats Grid */}
                 <div className="grid grid-cols-2 gap-4 w-full md:w-auto animate-slide-in-up">
-                  <div className="card-hover group bg-gradient-to-br from-blue-50 to-cyan-50 rounded-2xl p-6 border border-blue-200 text-center">
+                  <div className="card-hover group bg-linear-to-br from-blue-50 to-cyan-50 rounded-2xl p-6 border border-blue-200 text-center">
                     <div className="text-slate-600 text-xs font-semibold uppercase tracking-wider mb-2" style={{ fontFamily: "'Poppins', sans-serif" }}>
                       Total Patients
                     </div>
-                    <div className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent mb-2">
+                    <div className="text-4xl font-bold bg-linear-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent mb-2">
                       {selectedDept?.patientCount || 0}
                     </div>
                     <div className="flex items-center justify-center gap-1 text-green-600 text-xs font-semibold">
@@ -216,7 +216,7 @@ export default function DepartmentControl() {
                     </div>
                   </div>
 
-                  <div className="card-hover group bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl p-6 border border-purple-200 text-center">
+                  <div className="card-hover group bg-linear-to-br from-purple-50 to-pink-50 rounded-2xl p-6 border border-purple-200 text-center">
                     <div className="text-slate-600 text-xs font-semibold uppercase tracking-wider mb-2" style={{ fontFamily: "'Poppins', sans-serif" }}>
                       Staff Members
                     </div>
