@@ -2,6 +2,7 @@ package com.hms.dto.Request;
 
 import java.time.LocalDate;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.hms.entity.type.BloodGroupType;
 import com.hms.entity.type.GenderType;
 
@@ -40,4 +41,7 @@ public class SignupRequestDto {
     @Email(message = "Invalid email address")
     @NotBlank(message = "Email is required")
     private String email;
+
+    @JsonIgnore
+    private boolean agreeToTerms; // This field is currenlty ignored
 }
