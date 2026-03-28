@@ -29,7 +29,7 @@ public class SwaggerConfig {
                         .license(new License()
                                 .name("Apache 2.0")
                                 .url("https://www.apache.org/licenses/LICENSE-2.0")))
-                .addServersItem(new Server()
+                        .addServersItem(new Server()
                         .url("http://localhost:8080")
                         .description("Local Development Server"));
     }
