@@ -44,7 +44,7 @@ resilience4j:
         configs:
             default:
                 limitRefreshPeriod: 1m
-                limitForPeriod: 100
+                limitForPeriod: 10
                 timeoutDuration: 1s
         instances:
             globalRateLimiter:
@@ -55,11 +55,11 @@ resilience4j:
                 timeoutDuration: 1s
             userRateLimiter:
                 limitRefreshPeriod: 1m
-                limitForPeriod: 50
+                limitForPeriod: 20
                 timeoutDuration: 1s
             readOnlyRateLimiter:
                 limitRefreshPeriod: 1m
-                limitForPeriod: 200
+                limitForPeriod: 20
                 timeoutDuration: 1s
             adminRateLimiter:
                 limitRefreshPeriod: 1m
