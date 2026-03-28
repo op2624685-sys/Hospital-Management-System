@@ -4,6 +4,7 @@ import appointmentApi from "../api/appointments";
 import { useAuth } from "../context/AuthContext";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import PageLoader from "../components/PageLoader";
 
 const DoctorAppointments = () => {
   const { user } = useAuth();
@@ -263,7 +264,7 @@ const DoctorAppointments = () => {
           placeholder="Search by patient name, appointment ID, reason"
         />
 
-        {loading && <p className="dr-msg">Loading appointments...</p>}
+        {loading && page === 0 && <PageLoader message="Loading appointments..." />}
         {!loading && filtered.length === 0 && (
           <p className="dr-msg">No appointments found.</p>
         )}
