@@ -89,10 +89,10 @@ const Header = () => {
 
   return (
     <>
-      <header className={`fixed top-0 left-0 w-full z-50 transition-all duration-500
+      <header className={`fixed top-0 left-0 w-full z-50 transition-all duration-500 rounded-2xl mt-1 p-2
         ${scrolled
-          ? 'bg-white/88 backdrop-blur-xl border-b border-blue-100/70 shadow-[0_8px_32px_rgba(37,99,235,0.08)] py-3'
-          : 'bg-white/55 backdrop-blur-md py-4'
+          ? 'bg-white/5 backdrop-blur-xl border-b shadow-md py-3'
+          : 'bg-transparent/33 backdrop-blur-md py-4'
         }`}>
 
         <div className='flex justify-between items-center px-4 lg:px-10'>
