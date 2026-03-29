@@ -97,6 +97,7 @@ public class AdminServiceImpl implements AdminService {
 
     @Override
     @PreAuthorize("hasRole('ADMIN')")
+    @Transactional(readOnly = true)
     public AdminOverviewDto getAdminOverview() {
         Long adminUserId = getAuthenticatedUserId();
         Admin admin = adminRepository.findById(adminUserId).orElseThrow(() -> new RuntimeException("Admin profile not found"));
