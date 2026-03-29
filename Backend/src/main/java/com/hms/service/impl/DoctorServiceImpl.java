@@ -172,7 +172,7 @@ public class DoctorServiceImpl implements DoctorService {
         return doctor.getDepartments().iterator().next().getName() == null ? "" : doctor.getDepartments().iterator().next().getName();
     }
 
-    private User getCurrentUser() {
+    public User getCurrentUser() {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         if (principal instanceof User user) {
             return user;
