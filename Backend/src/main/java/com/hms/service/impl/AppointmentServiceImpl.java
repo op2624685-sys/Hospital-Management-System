@@ -349,7 +349,7 @@ public class AppointmentServiceImpl implements AppointmentService {
         }
     }
 
-    private Long getAuthenticatedUserId() {
+    public Long getAuthenticatedUserId() {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         if (principal instanceof com.hms.entity.User user) {
             return user.getId();
