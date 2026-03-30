@@ -23,6 +23,9 @@ import com.hms.entity.PasswordResetToken;
 import com.hms.entity.Patient;
 import com.hms.entity.User;
 import com.hms.entity.type.RoleType;
+import com.hms.error.ConflictException;
+import com.hms.error.NotFoundException;
+import com.hms.error.ValidationException;
 import com.hms.repository.PatientRepository;
 import com.hms.repository.UserRepository;
 import com.hms.service.OtpService;
@@ -56,7 +59,9 @@ public class AuthService {
     @Transactional
     public SignupResponseDto signup(SignupRequestDto signupRequestDto) {
         User user = userRepository.findByUsername(signupRequestDto.getUsername()).orElse(null);
-        if (user != null) throw new IllegalArgumentException("User already exists");
+        if (user != null) {
+            throw new ConflictException("User already exists");
+        }
         
 
         //# This is made with using modelMapper !!!!
@@ -103,11 +108,11 @@ public class AuthService {
         
         // Get the user and their email directly from the User entity
         User user = userRepository.findByUsernameIgnoreCase(username)
-                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+                .orElseThrow(() -> new NotFoundException("User not found"));
         
         String email = user.getEmail();
         if (email == null) {
-            throw new IllegalArgumentException("Email not found for user");
+            throw new ValidationException("Email not found for user");
         }
         
         return PasswordResetResponseDto.builder()
@@ -125,7 +130,7 @@ public class AuthService {
         boolean isVerified = otpService.verifyOtp(email, otp);
         
         if (!isVerified) {
-            throw new IllegalArgumentException("Invalid or expired OTP");
+            throw new ValidationException("Invalid or expired OTP");
         }
         
         log.info("OTP verified successfully for email: {}", email);
@@ -144,13 +149,13 @@ public class AuthService {
         String confirmPassword = resetPasswordRequestDto.getConfirmPassword();
         
         if (!newPassword.equals(confirmPassword)) {
-            throw new IllegalArgumentException("Passwords do not match");
+            throw new ValidationException("Passwords do not match");
         }
         
         // Verify token exists and is verified
         PasswordResetToken token = otpService.getVerifiedToken(email);
         if (token == null) {
-            throw new IllegalArgumentException("Please verify OTP first");
+            throw new ValidationException("Please verify OTP first");
         }
         
         // Get user from the token (already associated)
@@ -181,11 +186,11 @@ public class AuthService {
         
         // Get the user and their email directly from the User entity
         User user = userRepository.findByUsernameIgnoreCase(username)
-                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+                .orElseThrow(() -> new NotFoundException("User not found"));
         
         String email = user.getEmail();
         if (email == null) {
-            throw new IllegalArgumentException("Email not found for user");
+            throw new ValidationException("Email not found for user");
         }
         
         return PasswordResetResponseDto.builder()
