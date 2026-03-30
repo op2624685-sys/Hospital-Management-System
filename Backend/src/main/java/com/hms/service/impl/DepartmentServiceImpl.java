@@ -20,6 +20,9 @@ import com.hms.entity.Admin;
 import com.hms.entity.User;
 import com.hms.entity.type.RoleType;
 import com.hms.dto.Response.AdminDepartmentListDto;
+import com.hms.error.ForbiddenException;
+import com.hms.error.NotFoundException;
+import com.hms.error.ValidationException;
 import com.hms.repository.AdminRepository;
 import com.hms.repository.DepartmentRepository;
 import com.hms.repository.DoctorRepository;
@@ -39,7 +42,7 @@ public class DepartmentServiceImpl implements DepartmentService{
     private final AdminRepository adminRepository;
 
     @Override
-    @Cacheable(value = "departments", key = "'all'")
+    @Cacheable(value = "departmentListAll", key = "'all'")
     @Transactional(readOnly = true)
     public List<DepartmentDto> getAllDepartment() {
         List<Department> departments = departmentRepository.findAll();
@@ -51,11 +54,11 @@ public class DepartmentServiceImpl implements DepartmentService{
     }
 
     @Override
-    @Cacheable(value = "departments", key = "'id:' + #id")
+    @Cacheable(value = "departmentById", key = "'id:' + #id")
     @Transactional(readOnly = true)
     public DepartmentDto getDepartmentById(Long id) {
         Department department = departmentRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Department not found with id: " + id));
+                .orElseThrow(() -> new NotFoundException("Department not found with id: " + id));
         return mapToDepartmentDto(department);
     }
 
@@ -63,7 +66,8 @@ public class DepartmentServiceImpl implements DepartmentService{
     @PreAuthorize("hasRole('HEADADMIN')")
     @Transactional
     @Caching(evict = {
-            @CacheEvict(value = "departments", allEntries = true),
+            @CacheEvict(value = "departmentListAll", allEntries = true),
+            @CacheEvict(value = "departmentById", allEntries = true),
             @CacheEvict(value = "adminDepartments", allEntries = true),
             @CacheEvict(value = "departmentTemplates", allEntries = true)
     })
@@ -89,14 +93,18 @@ public class DepartmentServiceImpl implements DepartmentService{
     @PreAuthorize("hasRole('ADMIN')")
     @Transactional
     @Caching(evict = {
-            @CacheEvict(value = "departments", allEntries = true),
+            @CacheEvict(value = "departmentListAll", allEntries = true),
+            @CacheEvict(value = "departmentById", allEntries = true),
             @CacheEvict(value = "adminDepartments", allEntries = true),
-            @CacheEvict(value = "doctors", key = "'id:' + #addDepartmentToBranchRequestDto.headDoctorId", condition = "#addDepartmentToBranchRequestDto.headDoctorId != null")
+            @CacheEvict(value = "doctorById", key = "'id:' + #addDepartmentToBranchRequestDto.headDoctorId", condition = "#addDepartmentToBranchRequestDto.headDoctorId != null"),
+            @CacheEvict(value = "doctorListPaged", allEntries = true),
+            @CacheEvict(value = "doctorListByName", allEntries = true),
+            @CacheEvict(value = "branchDoctors", allEntries = true)
     })
     public DepartmentDto addDepartmentToBranch(AddDepartmentToBranchRequestDto addDepartmentToBranchRequestDto) {
         Admin admin = resolveAdmin();
         Department template = departmentRepository.findById(addDepartmentToBranchRequestDto.getTemplateId())
-                .orElseThrow(() -> new RuntimeException("Department template not found with id: " + addDepartmentToBranchRequestDto.getTemplateId()));
+                .orElseThrow(() -> new NotFoundException("Department template not found with id: " + addDepartmentToBranchRequestDto.getTemplateId()));
         if (template.getBranch() != null) {
             throw new IllegalArgumentException("Selected department is already assigned to a branch");
         }
@@ -119,14 +127,14 @@ public class DepartmentServiceImpl implements DepartmentService{
         if (addDepartmentToBranchRequestDto.getDoctorIds() != null && !addDepartmentToBranchRequestDto.getDoctorIds().isEmpty()) {
             doctors.addAll(doctorRepository.findAllById(addDepartmentToBranchRequestDto.getDoctorIds()));
             if (doctors.size() != addDepartmentToBranchRequestDto.getDoctorIds().size()) {
-                throw new RuntimeException("One or more doctors not found");
+                throw new NotFoundException("One or more doctors not found");
             }
             validateDoctorsBelongToBranch(doctors, admin.getBranch().getId());
         }
 
         if (addDepartmentToBranchRequestDto.getHeadDoctorId() != null) {
             Doctor headDoctor = doctorRepository.findById(addDepartmentToBranchRequestDto.getHeadDoctorId())
-                    .orElseThrow(() -> new RuntimeException("Head doctor not found with id: " + addDepartmentToBranchRequestDto.getHeadDoctorId()));
+                    .orElseThrow(() -> new NotFoundException("Head doctor not found with id: " + addDepartmentToBranchRequestDto.getHeadDoctorId()));
             validateDoctorBelongsToBranch(headDoctor, admin.getBranch().getId());
             department.setHeadDoctor(headDoctor);
             doctors.add(headDoctor);
@@ -153,7 +161,7 @@ public class DepartmentServiceImpl implements DepartmentService{
         if (principal instanceof User user) {
             return user;
         }
-        throw new RuntimeException("Authenticated user not found");
+        throw new ForbiddenException("Authenticated user not found");
     }
 
     @Override
@@ -185,10 +193,10 @@ public class DepartmentServiceImpl implements DepartmentService{
     private Admin resolveAdmin() {
         User currentUser = getCurrentUser();
         if (!currentUser.getRoles().contains(RoleType.ADMIN)) {
-            throw new RuntimeException("Only admin can perform this operation");
+            throw new ForbiddenException("Only admin can perform this operation");
         }
         return adminRepository.findById(currentUser.getId())
-                .orElseThrow(() -> new RuntimeException("Admin profile not found for user id: " + currentUser.getId()));
+                .orElseThrow(() -> new NotFoundException("Admin profile not found for user id: " + currentUser.getId()));
     }
 
     private String pickValue(String candidate, String fallback) {
@@ -203,7 +211,7 @@ public class DepartmentServiceImpl implements DepartmentService{
 
     private void validateDoctorBelongsToBranch(Doctor doctor, Long branchId) {
         if (doctor.getBranch() == null || !branchId.equals(doctor.getBranch().getId())) {
-            throw new IllegalArgumentException("Doctor does not belong to the department branch: " + doctor.getId());
+            throw new ValidationException("Doctor does not belong to the department branch: " + doctor.getId());
         }
     }
 
