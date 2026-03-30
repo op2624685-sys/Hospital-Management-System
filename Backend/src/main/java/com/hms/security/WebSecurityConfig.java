@@ -1,7 +1,17 @@
 package com.hms.security;
 
+import com.hms.config.CorrelationIdFilter;
+import com.hms.config.CorsProperties;
+import static com.hms.entity.type.RoleType.ADMIN;
+import static com.hms.entity.type.RoleType.DOCTOR;
+import static com.hms.entity.type.RoleType.HEADADMIN;
+import static com.hms.entity.type.RoleType.PATIENT;
+import java.util.List;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -12,35 +22,37 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.servlet.HandlerExceptionResolver;
 
-import static com.hms.entity.type.RoleType.*;
-
-import java.util.List;
-
-import org.springframework.beans.factory.annotation.Qualifier;
-
 @Configuration
 @EnableMethodSecurity
+@EnableConfigurationProperties(CorsProperties.class)
 public class WebSecurityConfig {
 
     private final JwtAuthFilter jwtAuthFilter;
+    private final CorrelationIdFilter correlationIdFilter;
+    private final CorsProperties corsProperties;
     private final HandlerExceptionResolver handlerExceptionResolver;
 
-    public WebSecurityConfig(JwtAuthFilter jwtAuthFilter, 
-                             @Qualifier("handlerExceptionResolver") HandlerExceptionResolver handlerExceptionResolver) {
+    public WebSecurityConfig(
+            JwtAuthFilter jwtAuthFilter,
+            CorrelationIdFilter correlationIdFilter,
+            CorsProperties corsProperties,
+            @Qualifier("handlerExceptionResolver") HandlerExceptionResolver handlerExceptionResolver) {
         this.jwtAuthFilter = jwtAuthFilter;
+        this.correlationIdFilter = correlationIdFilter;
+        this.corsProperties = corsProperties;
         this.handlerExceptionResolver = handlerExceptionResolver;
     }
 
-     @Bean
+    @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(List.of("http://localhost:5173")); // ← React port
+        config.setAllowedOrigins(corsProperties.getAllowedOrigins());
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
         config.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", config); // ← applies to ALL endpoints
+        source.registerCorsConfiguration("/**", config);
         return source;
     }
 
@@ -52,34 +64,23 @@ public class WebSecurityConfig {
                 .sessionManagement(
                         sessionConfig -> sessionConfig.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(
-                                "/public/**",
-                                "/auth/**",
-                                "/departments/**").permitAll()
-                        .requestMatchers(
-                                "/head-admin/**",
-                                "/swagger-ui/**",
-                                "/swagger-ui.html",
-                                "/v3/api-docs/**").hasRole(HEADADMIN.name())
+                        .requestMatchers("/public/**", "/auth/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/departments/**").permitAll()
+                        .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**").permitAll()
+                        .requestMatchers("/head-admin/**").hasRole(HEADADMIN.name())
                         .requestMatchers("/admin/**").hasAnyRole(ADMIN.name(), HEADADMIN.name())
                         .requestMatchers("/doctor/**").hasAnyRole(DOCTOR.name(), ADMIN.name(), HEADADMIN.name())
                         .requestMatchers("/patients/**", "/payments/**").hasRole(PATIENT.name())
                         .anyRequest().authenticated())
+                .addFilterBefore(correlationIdFilter, UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
-                .exceptionHandling(exceptionHandlingConfigurer -> 
-                        exceptionHandlingConfigurer.accessDeniedHandler((request, response, accessDeniedException) -> {
-                                handlerExceptionResolver.resolveException(request, response, null, accessDeniedException);
-                            }));
+                .exceptionHandling(exceptionHandlingConfigurer ->
+                        exceptionHandlingConfigurer
+                                .authenticationEntryPoint((request, response, authException) ->
+                                        handlerExceptionResolver.resolveException(request, response, null, authException))
+                                .accessDeniedHandler((request, response, accessDeniedException) ->
+                                        handlerExceptionResolver.resolveException(request, response, null, accessDeniedException)));
 
-                //      These are for google and github [OAuth] login !!!
-                // .oauth2Login(oAuth2 -> oAuth2                            
-                //        .failureHandler((request, response, exception) -> {
-                //            log.error("OAuth2 error: {}", exception.getMessage());
-                //         }));
-
-                // Configure form login with defaults settings !!!
-                //      .formLogin(Customizer.withDefaults());       
         return httpSecurity.build();
     }
-
 }
