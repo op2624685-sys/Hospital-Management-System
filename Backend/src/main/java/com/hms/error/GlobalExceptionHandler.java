@@ -9,58 +9,53 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import io.jsonwebtoken.JwtException;
-
 import jakarta.validation.ConstraintViolationException;
-
+import jakarta.servlet.http.HttpServletRequest;
 import java.util.stream.Collectors;
+import org.slf4j.MDC;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(jakarta.persistence.EntityNotFoundException.class)
-    public ResponseEntity<ApiError> handleEntityNotFoundException(jakarta.persistence.EntityNotFoundException ex){
-        ApiError apiError = new ApiError(ex.getMessage(), HttpStatus.NOT_FOUND);
-        return new ResponseEntity<>(apiError, HttpStatus.NOT_FOUND);
+    public ResponseEntity<ApiError> handleEntityNotFoundException(
+            jakarta.persistence.EntityNotFoundException ex,
+            HttpServletRequest request) {
+        return build(HttpStatus.NOT_FOUND, ErrorCode.NOT_FOUND, ex.getMessage(), request);
     }
 
-    @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<ApiError> handleIllegalArgumentException(IllegalArgumentException ex){
-        ApiError apiError = new ApiError(ex.getMessage(), HttpStatus.BAD_REQUEST);
-        return new ResponseEntity<>(apiError, HttpStatus.BAD_REQUEST);
+    @ExceptionHandler(AppException.class)
+    public ResponseEntity<ApiError> handleAppException(AppException ex, HttpServletRequest request) {
+        return build(ex.getStatus(), ex.getCode(), ex.getMessage(), request);
     }
 
-    @ExceptionHandler(IllegalStateException.class)
-    public ResponseEntity<ApiError> handleIllegalStateException(IllegalStateException ex){
-        ApiError apiError = new ApiError(ex.getMessage(), HttpStatus.BAD_REQUEST);
-        return new ResponseEntity<>(apiError, HttpStatus.BAD_REQUEST);
+    @ExceptionHandler({IllegalArgumentException.class, IllegalStateException.class})
+    public ResponseEntity<ApiError> handleValidationExceptions(RuntimeException ex, HttpServletRequest request) {
+        return build(HttpStatus.BAD_REQUEST, ErrorCode.VALIDATION_FAILED, ex.getMessage(), request);
     }
 
     @ExceptionHandler(UsernameNotFoundException.class)
-    public ResponseEntity<ApiError> handleUsernameExceptionNotFound(UsernameNotFoundException ex){
-        ApiError apiError = new ApiError("Username not found with username: " + ex.getMessage(), HttpStatus.NOT_FOUND);
-        return new ResponseEntity<>(apiError, apiError.getStatusCode());
+    public ResponseEntity<ApiError> handleUsernameExceptionNotFound(UsernameNotFoundException ex, HttpServletRequest request) {
+        return build(HttpStatus.NOT_FOUND, ErrorCode.NOT_FOUND, "Username not found with username: " + ex.getMessage(), request);
     }
 
     @ExceptionHandler(AuthenticationException.class)
-    public ResponseEntity<ApiError> handleAuthenticationException(AuthenticationException ex){
-        ApiError apiError = new ApiError("Authentication failed: " + ex.getMessage(), HttpStatus.UNAUTHORIZED);
-        return new ResponseEntity<>(apiError, HttpStatus.UNAUTHORIZED);
+    public ResponseEntity<ApiError> handleAuthenticationException(AuthenticationException ex, HttpServletRequest request) {
+        return build(HttpStatus.UNAUTHORIZED, ErrorCode.AUTHENTICATION_FAILED, "Authentication failed: " + ex.getMessage(), request);
     }
 
     @ExceptionHandler(JwtException.class)
-    public ResponseEntity<ApiError> handleJetException(JwtException ex){
-        ApiError apiError = new ApiError("Invalid JWT Token: " + ex.getMessage(), HttpStatus.BAD_REQUEST);
-        return new ResponseEntity<>(apiError, HttpStatus.UNAUTHORIZED);
+    public ResponseEntity<ApiError> handleJetException(JwtException ex, HttpServletRequest request) {
+        return build(HttpStatus.UNAUTHORIZED, ErrorCode.UNAUTHORIZED, "Invalid JWT token", request);
     }
 
     @ExceptionHandler(AccessDeniedException.class)
-    public ResponseEntity<ApiError> handleAccessDeniedException(AccessDeniedException ex){
-        ApiError apiError = new ApiError("Access Denied: Insufficient permissions " +ex.getMessage(), HttpStatus.FORBIDDEN);
-        return new ResponseEntity<>(apiError, HttpStatus.FORBIDDEN);
+    public ResponseEntity<ApiError> handleAccessDeniedException(AccessDeniedException ex, HttpServletRequest request) {
+        return build(HttpStatus.FORBIDDEN, ErrorCode.FORBIDDEN, "Access denied: insufficient permissions", request);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ApiError> handleMethodArgumentNotValid(MethodArgumentNotValidException ex){
+    public ResponseEntity<ApiError> handleMethodArgumentNotValid(MethodArgumentNotValidException ex, HttpServletRequest request) {
         String message = ex.getBindingResult()
                 .getFieldErrors()
                 .stream()
@@ -69,12 +64,11 @@ public class GlobalExceptionHandler {
         if (message.isBlank()) {
             message = "Validation failed";
         }
-        ApiError apiError = new ApiError(message, HttpStatus.BAD_REQUEST);
-        return new ResponseEntity<>(apiError, HttpStatus.BAD_REQUEST);
+        return build(HttpStatus.BAD_REQUEST, ErrorCode.VALIDATION_FAILED, message, request);
     }
 
     @ExceptionHandler(ConstraintViolationException.class)
-    public ResponseEntity<ApiError> handleConstraintViolation(ConstraintViolationException ex){
+    public ResponseEntity<ApiError> handleConstraintViolation(ConstraintViolationException ex, HttpServletRequest request) {
         String message = ex.getConstraintViolations()
                 .stream()
                 .map(v -> v.getPropertyPath() + " " + v.getMessage())
@@ -82,13 +76,26 @@ public class GlobalExceptionHandler {
         if (message.isBlank()) {
             message = "Validation failed";
         }
-        ApiError apiError = new ApiError(message, HttpStatus.BAD_REQUEST);
-        return new ResponseEntity<>(apiError, HttpStatus.BAD_REQUEST);
+        return build(HttpStatus.BAD_REQUEST, ErrorCode.VALIDATION_FAILED, message, request);
     }
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ApiError> handleException(Exception ex){
-        ApiError apiError = new ApiError("An unexpected error occurred: " +ex.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
-        return new ResponseEntity<>(apiError, HttpStatus.INTERNAL_SERVER_ERROR);
+    public ResponseEntity<ApiError> handleException(Exception ex, HttpServletRequest request) {
+        return build(HttpStatus.INTERNAL_SERVER_ERROR, ErrorCode.INTERNAL_ERROR, "An unexpected error occurred", request);
+    }
+
+    private ResponseEntity<ApiError> build(
+            HttpStatus status,
+            ErrorCode code,
+            String message,
+            HttpServletRequest request) {
+        ApiError apiError = new ApiError(
+                status.value(),
+                code.name(),
+                message,
+                request.getRequestURI(),
+                MDC.get("traceId")
+        );
+        return new ResponseEntity<>(apiError, status);
     }
 }
