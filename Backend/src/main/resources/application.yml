@@ -65,3 +65,18 @@ resilience4j:
                 limitRefreshPeriod: 1m
                 limitForPeriod: 30
                 timeoutDuration: 1s
+
+app:
+    redis:
+        cache:
+            prefix: "hms:v1:"
+            default-ttl: 60m
+            ttl:
+                bookedSlots: 5m
+                appointmentDetails: 15m
+                doctorAppointments: 10m
+                patientAppointments: 10m
+                recentAdminAppointments: 10m
+                doctorById: 30m
+                patientById: 30m
+                departmentById: 30m
