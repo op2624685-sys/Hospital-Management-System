@@ -2,20 +2,24 @@ package com.hms.error;
 
 import java.time.LocalDateTime;
 
-import org.springframework.http.HttpStatus;
-
 import lombok.Data;
 
 @Data
 public class ApiError {
 
-    private LocalDateTime timeStamp;
-    private String error;
-    private HttpStatus statusCode;
+    private LocalDateTime timestamp;
+    private int status;
+    private String code;
+    private String message;
+    private String path;
+    private String traceId;
 
-    public ApiError(String error, HttpStatus statusCode) {
-        this.timeStamp = LocalDateTime.now();
-        this.error = error;
-        this.statusCode = statusCode;
+    public ApiError(int status, String code, String message, String path, String traceId) {
+        this.timestamp = LocalDateTime.now();
+        this.status = status;
+        this.code = code;
+        this.message = message;
+        this.path = path;
+        this.traceId = traceId;
     }
 }
