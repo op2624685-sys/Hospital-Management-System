@@ -1,6 +1,7 @@
 package com.hms.security;
 
 import java.io.IOException;
+import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -9,6 +10,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 import org.springframework.web.servlet.HandlerExceptionResolver;
 import com.hms.entity.User;
+import com.hms.error.UnauthorizedException;
 import com.hms.repository.UserRepository;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -19,6 +21,13 @@ import lombok.extern.slf4j.Slf4j;
 @Component
 @Slf4j
 public class JwtAuthFilter extends OncePerRequestFilter {
+
+    private static final Set<String> PUBLIC_PATH_PREFIXES = Set.of(
+            "/public/",
+            "/auth/",
+            "/swagger-ui/",
+            "/v3/api-docs/"
+    );
 
     private final UserRepository userRepository;
     private final AuthUtil authUtil;
@@ -34,10 +43,8 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
-        boolean isPublicEndpoint = isPublicEndpoint(request.getRequestURI());
+        boolean isPublicEndpoint = isPublicEndpoint(request.getServletPath());
         try {
-            log.info("Incoming request: {}", request.getRequestURI());
-
             final String requestTokenHeader = request.getHeader("Authorization");
 
             if (requestTokenHeader == null || !requestTokenHeader.startsWith("Bearer ")) {
@@ -49,7 +56,8 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             String username = authUtil.getUsernameFromToken(token);
 
             if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-                User user = userRepository.findByUsername(username).orElseThrow();
+                User user = userRepository.findByUsernameIgnoreCase(username)
+                        .orElseThrow(() -> new UnauthorizedException("Authenticated user no longer exists"));
                 UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken 
                 = new UsernamePasswordAuthenticationToken(
                         user, null, user.getAuthorities());
@@ -68,7 +76,13 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     }
 
     private boolean isPublicEndpoint(String uri) {
-        return uri != null && (uri.startsWith("/api/v1/public") || uri.startsWith("/api/v1/auth"));
+        if (uri == null) {
+            return false;
+        }
+        if ("/swagger-ui.html".equals(uri)) {
+            return true;
+        }
+        return PUBLIC_PATH_PREFIXES.stream().anyMatch(uri::startsWith);
     }
 
 }
