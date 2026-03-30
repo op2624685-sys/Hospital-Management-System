@@ -3,8 +3,8 @@ package com.hms.service.impl;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.Comparator;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;
@@ -25,6 +25,9 @@ import com.hms.entity.Doctor;
 import com.hms.entity.User;
 import com.hms.entity.Department;
 import com.hms.entity.type.RoleType;
+import com.hms.error.ForbiddenException;
+import com.hms.error.NotFoundException;
+import com.hms.error.ValidationException;
 import com.hms.repository.AdminRepository;
 import com.hms.repository.BranchRepository;
 import com.hms.repository.DoctorRepository;
@@ -49,7 +52,7 @@ public class DoctorServiceImpl implements DoctorService {
 
     @Override
     @Transactional(readOnly = true)
-    @Cacheable(value = "doctors", key = "'all:' + #page + ':' + #size")
+    @Cacheable(value = "doctorListPaged", key = "'all:' + #page + ':' + #size")
     public List<DoctorDto> getAllDoctors(int page, int size) {
         return doctorRepository.findAll(PageRequest.of(page, size))
                 .stream()
@@ -59,16 +62,16 @@ public class DoctorServiceImpl implements DoctorService {
 
     @Override
     @Transactional(readOnly = true)
-    @Cacheable(value = "doctors", key = "'id:' + #id")
+    @Cacheable(value = "doctorById", key = "'id:' + #id")
     public DoctorDto getDoctorById(Long id) {
         Doctor doctor = doctorRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Doctor not found with id: " + id));
+                .orElseThrow(() -> new NotFoundException("Doctor not found with id: " + id));
         return mapToDoctorDto(doctor);
     }
 
     @Override
     @Transactional(readOnly = true)
-    @Cacheable(value = "doctors", key = "'name:' + #name")
+    @Cacheable(value = "doctorListByName", key = "'name:' + #name")
     public List<DoctorDto> getDoctorByName(String name) {
         List<Doctor> doctors = doctorRepository.findByName(name);
         return doctors
@@ -80,12 +83,14 @@ public class DoctorServiceImpl implements DoctorService {
     @Override
     @Transactional
     @Caching(evict = {
-        @CacheEvict(value = "doctors", allEntries = true),
+        @CacheEvict(value = "doctorById", allEntries = true),
+        @CacheEvict(value = "doctorListPaged", allEntries = true),
+        @CacheEvict(value = "doctorListByName", allEntries = true),
         @CacheEvict(value = "branchDoctors", allEntries = true)
     })
     public String deleteDoctorById(Long id) {
         Doctor doctor = doctorRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Doctor not found with id: " + id));
+                .orElseThrow(() -> new NotFoundException("Doctor not found with id: " + id));
         doctorRepository.delete(doctor);
         return "Doctor deleted successfully with id: " + id;
     }
@@ -94,7 +99,9 @@ public class DoctorServiceImpl implements DoctorService {
     @Transactional
     @PreAuthorize("hasAnyRole('HEADADMIN', 'ADMIN')")
     @Caching(evict = {
-        @CacheEvict(value = "doctors", allEntries = true),
+        @CacheEvict(value = "doctorById", allEntries = true),
+        @CacheEvict(value = "doctorListPaged", allEntries = true),
+        @CacheEvict(value = "doctorListByName", allEntries = true),
         @CacheEvict(value = "branchDoctors", allEntries = true)
     })
     public DoctorResponseDto onBoardNewDoctor(OnBoardDoctorRequestDto onBoardDoctorRequestDto) {
@@ -102,11 +109,11 @@ public class DoctorServiceImpl implements DoctorService {
         User currentUser = getCurrentUser();
 
         User user = userRepository.findByUsernameIgnoreCase(username)
-                .orElseThrow(() -> new RuntimeException("User not found with username: " + username));
+                .orElseThrow(() -> new NotFoundException("User not found with username: " + username));
         Branch branch = resolveBranchForOnboarding(onBoardDoctorRequestDto, currentUser);
 
         if (doctorRepository.existsById(user.getId())) {
-            throw new IllegalArgumentException("Already a doctor");
+            throw new ValidationException("Already a doctor");
         }
 
         Doctor doctor = Doctor.builder()
@@ -131,28 +138,19 @@ public class DoctorServiceImpl implements DoctorService {
     public List<DoctorResponseDto> getDoctorsForAdminBranch(int page, int size, String search, String specialization, String sortBy) {
         User currentUser = getCurrentUser();
         Admin admin = adminRepository.findById(currentUser.getId())
-                .orElseThrow(() -> new RuntimeException("Admin profile not found for user id: " + currentUser.getId()));
+                .orElseThrow(() -> new NotFoundException("Admin profile not found for user id: " + currentUser.getId()));
         String safeSearch = search == null ? "" : search.trim().toLowerCase();
         String safeSpec = specialization == null ? "" : specialization.trim().toLowerCase();
         String safeSort = sortBy == null ? "name" : sortBy.trim().toLowerCase();
-
-        Comparator<Doctor> comparator = Comparator.comparing(d -> (d.getName() == null ? "" : d.getName()).toLowerCase());
-        if ("department".equals(safeSort)) {
-            comparator = Comparator.comparing(d -> (getPrimaryDepartmentName(d)).toLowerCase());
+        String sortField = "name";
+        if ("specialization".equals(safeSort)) {
+            sortField = "specialization";
         }
-
-        List<Doctor> filtered = doctorRepository.findByBranch_Id(admin.getBranch().getId())
-                .stream()
-                .filter(d -> safeSearch.isBlank() || (d.getName() != null && d.getName().toLowerCase().contains(safeSearch)))
-                .filter(d -> safeSpec.isBlank() || (d.getSpecialization() != null && d.getSpecialization().toLowerCase().contains(safeSpec)))
-                .sorted(comparator)
-                .toList();
 
         int safePage = Math.max(page, 0);
         int safeSize = Math.max(size, 1);
-        int from = Math.min(safePage * safeSize, filtered.size());
-        int to = Math.min(from + safeSize, filtered.size());
-        return filtered.subList(from, to)
+        var pageable = PageRequest.of(safePage, safeSize, Sort.by(Sort.Direction.ASC, sortField));
+        return doctorRepository.findBranchDoctors(admin.getBranch().getId(), safeSearch, safeSpec, pageable)
                 .stream()
                 .map(this::mapToDoctorResponseDto)
                 .toList();
@@ -163,13 +161,8 @@ public class DoctorServiceImpl implements DoctorService {
     public List<DepartmentDto> getMyDepartments() {
         User currentUser = getCurrentUser();
         Doctor doctor = doctorRepository.findById(currentUser.getId())
-                .orElseThrow(() -> new RuntimeException("Doctor profile not found for user id: " + currentUser.getId()));
+                .orElseThrow(() -> new NotFoundException("Doctor profile not found for user id: " + currentUser.getId()));
         return mapDepartments(doctor).stream().toList();
-    }
-
-    private String getPrimaryDepartmentName(Doctor doctor) {
-        if (doctor.getDepartments() == null || doctor.getDepartments().isEmpty()) return "";
-        return doctor.getDepartments().iterator().next().getName() == null ? "" : doctor.getDepartments().iterator().next().getName();
     }
 
     public User getCurrentUser() {
@@ -177,13 +170,13 @@ public class DoctorServiceImpl implements DoctorService {
         if (principal instanceof User user) {
             return user;
         }
-        throw new RuntimeException("Authenticated user not found");
+        throw new ForbiddenException("Authenticated user not found");
     }
 
     private Branch resolveBranchForOnboarding(OnBoardDoctorRequestDto dto, User currentUser) {
         if (currentUser.getRoles().contains(RoleType.ADMIN)) {
             Admin admin = adminRepository.findById(currentUser.getId())
-                    .orElseThrow(() -> new RuntimeException("Admin profile not found for user id: " + currentUser.getId()));
+                    .orElseThrow(() -> new NotFoundException("Admin profile not found for user id: " + currentUser.getId()));
             return admin.getBranch();
         }
         if (currentUser.getRoles().contains(RoleType.HEADADMIN)) {
@@ -193,7 +186,7 @@ public class DoctorServiceImpl implements DoctorService {
             }
             return resolveBranchByName(branchName);
         }
-        throw new RuntimeException("Only admin or head admin can onboard doctors");
+        throw new ForbiddenException("Only admin or head admin can onboard doctors");
     }
 
     private Branch resolveBranchByName(String branchName) {
@@ -202,7 +195,7 @@ public class DoctorServiceImpl implements DoctorService {
             if (partialMatches.size() == 1) {
                 return partialMatches.get(0);
             }
-            throw new RuntimeException("Branch not found with name: " + branchName);
+            throw new NotFoundException("Branch not found with name: " + branchName);
         });
     }
 
@@ -235,15 +228,24 @@ public class DoctorServiceImpl implements DoctorService {
 
     @Override
     @Transactional
+    @Caching(evict = {
+        @CacheEvict(value = "doctorById", allEntries = true),
+        @CacheEvict(value = "doctorListPaged", allEntries = true),
+        @CacheEvict(value = "doctorListByName", allEntries = true),
+        @CacheEvict(value = "branchDoctors", allEntries = true),
+        @CacheEvict(value = "departmentListAll", allEntries = true),
+        @CacheEvict(value = "departmentById", key = "'id:' + #deptId"),
+        @CacheEvict(value = "adminDepartments", allEntries = true)
+    })
     public void addDoctorToDepartment(Long deptId, Long doctorId) {
         Department dept = departmentRepository.findById(deptId)
-                .orElseThrow(() -> new RuntimeException("Department not found"));
+                .orElseThrow(() -> new NotFoundException("Department not found"));
         User currentUser = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         if (dept.getHeadDoctor() == null || !dept.getHeadDoctor().getId().equals(currentUser.getId())) {
             throw new AccessDeniedException("You are not the head of this department");
         }
         Doctor doctor = doctorRepository.findById(doctorId)
-                .orElseThrow(() -> new RuntimeException("Doctor not found"));
+                .orElseThrow(() -> new NotFoundException("Doctor not found"));
         
         dept.getDoctors().add(doctor);
         doctor.getDepartments().add(dept);
@@ -259,15 +261,24 @@ public class DoctorServiceImpl implements DoctorService {
 
     @Override
     @Transactional
+    @Caching(evict = {
+        @CacheEvict(value = "doctorById", allEntries = true),
+        @CacheEvict(value = "doctorListPaged", allEntries = true),
+        @CacheEvict(value = "doctorListByName", allEntries = true),
+        @CacheEvict(value = "branchDoctors", allEntries = true),
+        @CacheEvict(value = "departmentListAll", allEntries = true),
+        @CacheEvict(value = "departmentById", key = "'id:' + #deptId"),
+        @CacheEvict(value = "adminDepartments", allEntries = true)
+    })
     public void removeDoctorFromDepartment(Long deptId, Long doctorId) {
         Department dept = departmentRepository.findById(deptId)
-                .orElseThrow(() -> new RuntimeException("Department not found"));
+                .orElseThrow(() -> new NotFoundException("Department not found"));
         User currentUser = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         if (dept.getHeadDoctor() == null || !dept.getHeadDoctor().getId().equals(currentUser.getId())) {
             throw new AccessDeniedException("You are not the head of this department");
         }
         Doctor doctor = doctorRepository.findById(doctorId)
-                .orElseThrow(() -> new RuntimeException("Doctor not found"));
+                .orElseThrow(() -> new NotFoundException("Doctor not found"));
         
         dept.getDoctors().remove(doctor);
         doctor.getDepartments().remove(dept);
@@ -283,9 +294,18 @@ public class DoctorServiceImpl implements DoctorService {
 
     @Override
     @Transactional
+    @Caching(evict = {
+        @CacheEvict(value = "doctorById", allEntries = true),
+        @CacheEvict(value = "doctorListPaged", allEntries = true),
+        @CacheEvict(value = "doctorListByName", allEntries = true),
+        @CacheEvict(value = "branchDoctors", allEntries = true),
+        @CacheEvict(value = "departmentListAll", allEntries = true),
+        @CacheEvict(value = "departmentById", key = "'id:' + #deptId"),
+        @CacheEvict(value = "adminDepartments", allEntries = true)
+    })
     public void updateDepartment(Long deptId, DepartmentDto deptDto) {
         Department dept = departmentRepository.findById(deptId)
-                .orElseThrow(() -> new RuntimeException("Department not found"));
+                .orElseThrow(() -> new NotFoundException("Department not found"));
         User currentUser = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         if (dept.getHeadDoctor() == null || !dept.getHeadDoctor().getId().equals(currentUser.getId())) {
             throw new AccessDeniedException("You are not the head of this department");
