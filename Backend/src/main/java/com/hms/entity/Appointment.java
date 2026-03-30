@@ -20,6 +20,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
+import jakarta.persistence.Index;
 import jakarta.persistence.UniqueConstraint;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -36,6 +37,11 @@ import lombok.ToString;
 @ToString
 @Builder
 @Table(
+    indexes = {
+        @Index(name = "idx_appointment_branch_time", columnList = "branch_id, appointment_time"),
+        @Index(name = "idx_appointment_patient_time", columnList = "patient_id, appointment_time"),
+        @Index(name = "idx_appointment_status_time", columnList = "status, appointment_time")
+    },
     uniqueConstraints = {
         @UniqueConstraint(name = "uk_appointment_doctor_time", columnNames = { "doctor_id", "appointment_time" })
     }
