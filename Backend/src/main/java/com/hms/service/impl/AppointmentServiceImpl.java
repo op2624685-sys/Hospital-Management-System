@@ -33,6 +33,8 @@ import com.hms.entity.type.AppointmentStatusType;
 import com.hms.entity.type.RoleType;
 import com.hms.event.AppointmentNotificationEvent;
 import com.hms.event.AppointmentNotificationType;
+import com.hms.error.NotFoundException;
+import com.hms.error.ValidationException;
 import com.hms.repository.AppointmentRepository;
 import com.hms.repository.AdminRepository;
 import com.hms.repository.DoctorRepository;
@@ -61,10 +63,10 @@ public class AppointmentServiceImpl implements AppointmentService {
     @Override
     @Transactional
     @Caching(evict = {
-        @CacheEvict(value = "patientAppointments", key = "#createAppointmentRequestDto.patientId + ':*'"),
-        @CacheEvict(value = "doctorAppointments", key = "#createAppointmentRequestDto.doctorId + ':*'"),
+        @CacheEvict(value = "patientAppointments", allEntries = true),
+        @CacheEvict(value = "doctorAppointments", allEntries = true),
         @CacheEvict(value = "recentAdminAppointments", allEntries = true),
-        @CacheEvict(value = "bookedSlots", key = "#createAppointmentRequestDto.doctorId + ':*'")
+        @CacheEvict(value = "bookedSlots", allEntries = true)
     })
     public AppointmentResponseDto createConfirmedAppointment(CreateAppointmentRequestDto createAppointmentRequestDto) {
         Long doctorId = createAppointmentRequestDto.getDoctorId();
@@ -80,7 +82,7 @@ public class AppointmentServiceImpl implements AppointmentService {
                 .orElseThrow(() -> new EntityNotFoundException("Doctor not found with ID: " + doctorId));
 
         if (isSlotTaken(doctor, createAppointmentRequestDto.getAppointmentTime())) {
-            throw new IllegalArgumentException("Selected time slot is already confirmed by another patient.");
+            throw new ValidationException("Selected time slot is already confirmed by another patient.");
         }
 
         // Determine the branch: use branchId from request if provided, otherwise fallback to doctor's branch
@@ -141,12 +143,14 @@ public class AppointmentServiceImpl implements AppointmentService {
     @Transactional
     @Caching(evict = {
         @CacheEvict(value = "doctorAppointments", allEntries = true),
-        @CacheEvict(value = "appointmentDetails", key = "#appointmentId"),
+        @CacheEvict(value = "appointmentDetails", key = "#result.appointmentId", condition = "#result != null"),
         @CacheEvict(value = "bookedSlots", allEntries = true)
     })
     public Appointment reAssignAppointmentToAnotherDoctor(Long appointmentId, Long newDoctorId) {
-        Appointment appointment = appointmentRepository.findById(appointmentId).orElseThrow();
-        Doctor newDoctor = doctorRepository.findById(newDoctorId).orElseThrow();
+        Appointment appointment = appointmentRepository.findById(appointmentId)
+                .orElseThrow(() -> new NotFoundException("Appointment not found with id: " + appointmentId));
+        Doctor newDoctor = doctorRepository.findById(newDoctorId)
+                .orElseThrow(() -> new NotFoundException("Doctor not found with id: " + newDoctorId));
 
         appointment.setDoctor(newDoctor);
 
@@ -202,7 +206,8 @@ public class AppointmentServiceImpl implements AppointmentService {
     @Override
     @Cacheable(value = "appointmentDetails", key = "#appointmentId")
     public AppointmentResponseDto getAppointmentByAppointmentId(String appointmentId) {
-        Appointment appointment = appointmentRepository.findByAppointmentId(appointmentId).orElseThrow(() -> new RuntimeException("Appointment not found with ID: " + appointmentId));
+        Appointment appointment = appointmentRepository.findByAppointmentId(appointmentId)
+                .orElseThrow(() -> new NotFoundException("Appointment not found with ID: " + appointmentId));
         return mapToAppointmentResponseDto(appointment);
     }
 
@@ -218,7 +223,7 @@ public class AppointmentServiceImpl implements AppointmentService {
     })
     public AppointmentResponseDto updateAppointmentStatus(String appointmentId, AppointmentStatusType status) {
         Appointment appointment = appointmentRepository.findByAppointmentId(appointmentId)
-                .orElseThrow(() -> new RuntimeException("Appointment not found with ID: " + appointmentId));
+                .orElseThrow(() -> new NotFoundException("Appointment not found with ID: " + appointmentId));
 
         enforceDoctorCanAccessOwnAppointment(appointment);
 
@@ -247,7 +252,7 @@ public class AppointmentServiceImpl implements AppointmentService {
     })
     public AppointmentResponseDto cancelAppointmentByPatient(String appointmentId) {
         Appointment appointment = appointmentRepository.findByAppointmentId(appointmentId)
-                .orElseThrow(() -> new RuntimeException("Appointment not found with ID: " + appointmentId));
+                .orElseThrow(() -> new NotFoundException("Appointment not found with ID: " + appointmentId));
 
         Long loggedInPatientId = getAuthenticatedUserId();
         if (!appointment.getPatient().getId().equals(loggedInPatientId)) {
@@ -275,7 +280,7 @@ public class AppointmentServiceImpl implements AppointmentService {
     })
     public AppointmentResponseDto updateAppointment(String appointmentId, UpdateAppointmentRequestDto updateAppointmentRequestDto) {
         Appointment appointment = appointmentRepository.findByAppointmentId(appointmentId)
-                .orElseThrow(() -> new RuntimeException("Appointment not found with ID: " + appointmentId));
+                .orElseThrow(() -> new NotFoundException("Appointment not found with ID: " + appointmentId));
 
         enforceDoctorCanAccessOwnAppointment(appointment);
 
@@ -331,7 +336,7 @@ public class AppointmentServiceImpl implements AppointmentService {
     public List<AppointmentResponseDto> getRecentAppointmentsForAdmin(int page, int size) {
         Long adminUserId = getAuthenticatedUserId();
         Admin admin = adminRepository.findById(adminUserId)
-                .orElseThrow(() -> new RuntimeException("Admin profile not found for user id: " + adminUserId));
+                .orElseThrow(() -> new NotFoundException("Admin profile not found for user id: " + adminUserId));
         var pageable = PageRequest.of(Math.max(page, 0), Math.max(size, 1));
         return appointmentRepository.findByBranch_IdOrderByAppointmentTimeDesc(admin.getBranch().getId(), pageable)
                 .stream()
