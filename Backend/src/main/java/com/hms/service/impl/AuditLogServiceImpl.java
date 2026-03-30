@@ -2,8 +2,6 @@ package com.hms.service.impl;
 
 import java.time.LocalDateTime;
 
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.security.core.Authentication;
@@ -27,7 +25,6 @@ public class AuditLogServiceImpl implements AuditLogService {
 
     @Override
     @Transactional
-    @CacheEvict(value = "auditLogs", allEntries = true)
     public void logAction(String action, String entityName, Long entityId, String details) {
         String performedBy = "SYSTEM";
         
@@ -54,7 +51,6 @@ public class AuditLogServiceImpl implements AuditLogService {
 
     @Override
     @Transactional(readOnly = true)
-    @Cacheable(value = "auditLogs", key = "'all:' + #page + ':' + #size")
     public Page<AuditLogDto> getAuditLogs(int page, int size) {
         return auditLogRepository.findAllByOrderByTimestampDesc(PageRequest.of(page, size))
                 .map(log -> AuditLogDto.builder()
