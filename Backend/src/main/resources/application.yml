@@ -78,5 +78,7 @@ app:
                 patientAppointments: 10m
                 recentAdminAppointments: 10m
                 doctorById: 30m
+                doctorListPaged: 30m
                 patientById: 30m
                 departmentById: 30m
+

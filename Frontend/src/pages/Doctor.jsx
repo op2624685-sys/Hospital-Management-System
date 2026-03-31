@@ -16,10 +16,13 @@ const Doctor = () => {
       setLoading(true)
       try {
         const response = await API.get(`/public/doctors?page=${page}&size=${size}`)
-        setDoctors(response.data)
-        setHasMore(response.data.length === size)
+        const doctorList = Array.isArray(response.data) ? response.data : []
+        setDoctors(doctorList)
+        setHasMore(doctorList.length === size)
       } catch (error) {
         console.error('Failed to fetch doctors:', error)
+        setDoctors([])
+        setHasMore(false)
       } finally {
         setLoading(false)
       }
@@ -27,13 +30,18 @@ const Doctor = () => {
     fetchDoctors()
   }, [page, size])
 
+  const normalizedSearch = search.toLowerCase().trim()
   const filtered = doctors.filter(doctor => {
     const firstDepartment = Array.isArray(doctor.departments) ? doctor.departments[0] : doctor.department
+    const doctorName = (doctor?.name || '').toLowerCase()
+    const doctorSpeciality = (doctor?.speciality || '').toLowerCase()
+    const doctorSpecialization = (doctor?.specialization || '').toLowerCase()
+    const departmentName = (firstDepartment?.name || '').toLowerCase()
     return (
-      doctor.name.toLowerCase().includes(search.toLowerCase()) ||
-      doctor.speciality?.toLowerCase().includes(search.toLowerCase()) ||
-      doctor.specialization?.toLowerCase().includes(search.toLowerCase()) ||
-      firstDepartment?.name?.toLowerCase().includes(search.toLowerCase())
+      doctorName.includes(normalizedSearch) ||
+      doctorSpeciality.includes(normalizedSearch) ||
+      doctorSpecialization.includes(normalizedSearch) ||
+      departmentName.includes(normalizedSearch)
     )
   }
   )

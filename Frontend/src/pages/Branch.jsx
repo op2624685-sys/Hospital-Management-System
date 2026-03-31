@@ -94,7 +94,7 @@ const Branch = () => {
 
         <div className="mt-6 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
           {!loading && filtered.map((branch, i) => (
-            <BranchCard key={branch.id} branch={branch} index={i} />
+            <BranchCard key={branch.id ?? `${branch.name}-${i}`} branch={branch} index={i} />
           ))}
         </div>
 
