@@ -2,9 +2,13 @@ package com.hms.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.databind.jsontype.BasicPolymorphicTypeValidator;
 import com.fasterxml.jackson.databind.json.JsonMapper;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.cache.annotation.CachingConfigurer;
 import org.springframework.cache.annotation.EnableCaching;
+import org.springframework.cache.interceptor.CacheErrorHandler;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -23,14 +27,26 @@ import java.util.stream.Collectors;
 @Configuration
 @EnableCaching
 @EnableConfigurationProperties(RedisCacheProperties.class)
-public class RedisConfig {
+public class RedisConfig implements CachingConfigurer {
+
+    private final NoFailCacheErrorHandler noFailCacheErrorHandler;
+
+    public RedisConfig(NoFailCacheErrorHandler noFailCacheErrorHandler) {
+        this.noFailCacheErrorHandler = noFailCacheErrorHandler;
+    }
 
     @Bean(name = "redisObjectMapper")
     public ObjectMapper redisObjectMapper() {
-        return JsonMapper.builder()
+        ObjectMapper mapper = JsonMapper.builder()
                 .findAndAddModules()
                 .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
                 .build();
+        mapper.activateDefaultTyping(
+                BasicPolymorphicTypeValidator.builder().allowIfBaseType(Object.class).build(),
+                ObjectMapper.DefaultTyping.NON_FINAL,
+                JsonTypeInfo.As.PROPERTY
+        );
+        return mapper;
     }
 
     @Bean
@@ -85,5 +101,10 @@ public class RedisConfig {
                 .serializeValuesWith(
                         RedisSerializationContext.SerializationPair
                                 .fromSerializer(serializer));
+    }
+
+    @Override
+    public CacheErrorHandler errorHandler() {
+        return noFailCacheErrorHandler;
     }
 }
