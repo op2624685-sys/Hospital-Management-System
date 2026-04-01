@@ -5,21 +5,21 @@ import { useAuth } from '../context/AuthContext'
 
 const statusConfig = {
   PENDING: {
-    label: 'Pending Confirmation',
-    banner: 'linear-gradient(135deg, #92400e, #b45309, #d97706)',
-    glow: 'rgba(217,119,6,.4)',
+    label: 'Awaiting Confirmation',
+    banner: 'linear-gradient(135deg, #644a40, #8b5e52, #a07060)',
+    glow: 'rgba(100,74,64,0.4)',
     icon: <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>,
   },
   CONFIRMED: {
     label: 'Confirmed',
-    banner: 'linear-gradient(135deg, #064e3b, #059669, #10b981)',
-    glow: 'rgba(5,150,105,.4)',
+    banner: 'linear-gradient(135deg, #644a40, #d97706, #ffdfb5)',
+    glow: 'rgba(217,119,6,0.4)',
     icon: <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>,
   },
   CANCELLED: {
     label: 'Cancelled',
     banner: 'linear-gradient(135deg, #7f1d1d, #e42320, #ef4444)',
-    glow: 'rgba(228,35,32,.4)',
+    glow: 'rgba(228,35,32,0.4)',
     icon: <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>,
   },
 }
@@ -30,13 +30,12 @@ const initials = (n = '') => n.split(' ').map(w => w[0]).join('').toUpperCase().
 const LoadingScreen = () => (
   <>
     <style>{`
-      @import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,700;0,900;1,700&family=DM+Sans:wght@400;500;600&display=swap');
-      .ad-load { min-height:100vh; background:#0f0f0f; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:20px; font-family:'DM Sans',sans-serif; }
-      .ad-load-ring { width:48px; height:48px; border-radius:50%; border:3px solid rgba(228,35,32,.2); border-top-color:#e42320; animation:adSpin .8s linear infinite; }
+      .ad-load { min-height:100vh; background:var(--background); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:20px; font-family:'Outfit',sans-serif; }
+      .ad-load-ring { width:48px; height:48px; border-radius:50%; border:3px solid var(--border); border-top-color:var(--primary); animation:adSpin .8s linear infinite; }
       @keyframes adSpin { to{transform:rotate(360deg)} }
-      .ad-load-text { font-size:14px; color:rgba(255,255,255,.3); letter-spacing:.05em; }
+      .ad-load-text { font-size:14px; color:var(--muted-foreground); letter-spacing:.05em; font-weight:600; }
     `}</style>
-    <div className="ad-load"><div className="ad-load-ring"/><p className="ad-load-text">Loading appointment…</p></div>
+    <div className="ad-load"><div className="ad-load-ring"/><p className="ad-load-text">Fetching clinical details…</p></div>
   </>
 )
 
@@ -44,19 +43,17 @@ const LoadingScreen = () => (
 const ErrorScreen = ({ onBack }) => (
   <>
     <style>{`
-      @import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,700;0,900;1,700&family=DM+Sans:wght@400;500;600&display=swap');
-      .ad-err { min-height:100vh; background:#0f0f0f; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:16px; font-family:'DM Sans',sans-serif; text-align:center; padding:24px; }
+      .ad-err { min-height:100vh; background:var(--background); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:16px; font-family:'Outfit',sans-serif; text-align:center; padding:24px; }
       .ad-err-icon { font-size:52px; margin-bottom:8px; }
-      .ad-err h2 { font-family:'Fraunces',serif; font-size:2rem; font-weight:900; color:#fff; }
-      .ad-err p { font-size:14px; color:rgba(255,255,255,.3); }
-      .ad-err-btn { margin-top:8px; background:#e42320; color:#fff; border:none; border-radius:12px; padding:12px 28px; font-family:'DM Sans',sans-serif; font-size:14px; font-weight:600; cursor:pointer; transition:background .2s; }
-      .ad-err-btn:hover { background:#c41c1a; }
+      .ad-err h2 { font-size:2rem; font-weight:900; color:var(--foreground); }
+      .ad-err p { font-size:14px; color:var(--muted-foreground); max-width: 320px; }
+      .ad-err-btn { margin-top:8px; background:var(--primary); color:var(--primary-foreground); border:none; border-radius:12px; padding:12px 28px; font-size:14px; font-weight:600; cursor:pointer; }
     `}</style>
     <div className="ad-err">
-      <div className="ad-err-icon">😕</div>
+      <div className="ad-err-icon">𖦹</div>
       <h2>Not Found</h2>
-      <p>We couldn't locate this appointment. It may have been removed or the ID is incorrect.</p>
-      <button className="ad-err-btn" onClick={onBack}>Go Back</button>
+      <p>We couldn't locate this appointment record in our system.</p>
+      <button className="ad-err-btn" onClick={onBack}>Return Back</button>
     </div>
   </>
 )
@@ -113,7 +110,6 @@ const AppointmentDetails = () => {
       setAppointment(res.data)
     } catch (e) {
       console.error(e)
-      alert('Failed to cancel appointment')
     } finally {
       setCancelling(false)
     }
@@ -133,41 +129,26 @@ const AppointmentDetails = () => {
   return (
     <>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,700;0,900;1,700;1,900&family=DM+Sans:wght@300;400;500;600;700&display=swap');
-        *, *::before, *::after { box-sizing: border-box; margin:0; padding:0; }
-
         .ad-page {
           min-height: 100vh;
-          background: #0f0f0f;
-          font-family: 'DM Sans', sans-serif;
-          color: #fff;
-          overflow-x: hidden;
-        }
-
-        /* grain */
-        .ad-grain {
-          position: fixed; inset: 0; z-index: 0; pointer-events: none;
-          background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
-          opacity: .7;
+          background: var(--background);
+          font-family: 'Outfit', sans-serif;
+          color: var(--foreground);
         }
 
         /* ambient */
         .ad-ambient { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
         .ad-glow {
           position: absolute; border-radius: 50%; filter: blur(130px);
-          transition: background .8s ease;
+          transition: background .8s ease; opacity: 0.15;
         }
         .ad-glow-1 {
           width: 700px; height: 700px; top: -300px; left: -200px;
-          animation: adG1 18s ease-in-out infinite;
         }
         .ad-glow-2 {
           width: 500px; height: 500px; bottom: -200px; right: -150px;
-          background: radial-gradient(circle, rgba(124,58,237,.1), transparent);
-          animation: adG2 22s ease-in-out infinite;
+          background: radial-gradient(circle, var(--secondary), transparent);
         }
-        @keyframes adG1 { 0%,100%{transform:translate(0,0)} 50%{transform:translate(40px,50px)} }
-        @keyframes adG2 { 0%,100%{transform:translate(0,0)} 50%{transform:translate(-30px,-40px)} }
 
         /* layout */
         .ad-container {
@@ -181,13 +162,12 @@ const AppointmentDetails = () => {
         /* back btn */
         .ad-back {
           display: inline-flex; align-items: center; gap: 8px;
-          background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.1);
-          color: rgba(255,255,255,.4); font-size: 13px; font-weight: 600;
-          padding: 9px 18px; border-radius: 12px; cursor: pointer;
+          background: var(--card); border: 1.5px solid var(--border);
+          color: var(--muted-foreground); font-size: 13px; font-weight: 700;
+          padding: 10px 20px; border-radius: 14px; cursor: pointer;
           transition: all .2s; margin-bottom: 36px;
-          font-family: 'DM Sans', sans-serif;
         }
-        .ad-back:hover { border-color: rgba(255,255,255,.2); color: rgba(255,255,255,.7); background: rgba(255,255,255,.09); }
+        .ad-back:hover { border-color: var(--primary); color: var(--primary); background: var(--secondary); }
 
         /* success header */
         .ad-success-header {
@@ -197,44 +177,39 @@ const AppointmentDetails = () => {
         }
         .ad-success-badge {
           display: inline-flex; align-items: center; gap: 9px;
-          background: rgba(34,197,94,.1); border: 1px solid rgba(34,197,94,.25);
-          color: #4ade80; font-size: 13px; font-weight: 700;
-          padding: 9px 22px; border-radius: 999px; margin-bottom: 18px;
-          letter-spacing: .02em;
+          background: var(--secondary); border: 1px solid color-mix(in srgb, var(--primary) 20%, transparent);
+          color: var(--secondary-foreground); font-size: 13px; font-weight: 800;
+          padding: 10px 24px; border-radius: 999px; margin-bottom: 18px;
+          text-transform: uppercase; letter-spacing: 0.05em;
         }
         .ad-success-check {
           width: 20px; height: 20px; border-radius: 50%;
-          background: linear-gradient(135deg, #22c55e, #15803d);
+          background: var(--primary);
           display: flex; align-items: center; justify-content: center;
-          flex-shrink: 0;
         }
         .ad-heading {
-          font-family: 'Fraunces', serif;
           font-size: clamp(2.4rem, 5vw, 3.8rem);
-          font-weight: 900; color: #fff; line-height: 1.0;
-          letter-spacing: -.02em; margin-bottom: 10px;
+          font-weight: 900; color: var(--foreground); line-height: 1.0;
+          letter-spacing: -.03em; margin-bottom: 12px;
         }
-        .ad-heading em { font-style: italic; color: #e42320; }
-        .ad-subhead { font-size: 14px; color: rgba(255,255,255,.3); }
+        .ad-heading em { font-style: italic; color: var(--primary); font-family: serif; }
+        .ad-subhead { font-size: 15px; color: var(--muted-foreground); font-weight: 500; }
 
         /* ── TICKET CARD ── */
         .ad-ticket {
-          border-radius: 24px; overflow: hidden;
-          border: 1px solid rgba(255,255,255,.09);
-          box-shadow: 0 32px 80px rgba(0,0,0,.5);
+          border-radius: 28px; overflow: hidden;
+          border: 1px solid var(--border);
+          box-shadow: 0 40px 100px -20px rgba(0,0,0,0.1);
           animation: adIn .6s .2s ease both; opacity: 0;
           animation-fill-mode: forwards;
+          background: var(--card);
         }
 
         /* ticket top banner */
         .ad-ticket-banner {
-          position: relative; padding: 26px 32px; overflow: hidden;
+          position: relative; padding: 32px; overflow: hidden;
         }
         .ad-tbn-bg { position: absolute; inset: 0; z-index: 0; }
-        .ad-tbn-noise {
-          position: absolute; inset: 0; z-index: 1; opacity: .1;
-          background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-        }
         .ad-tbn-ring {
           position: absolute; border-radius: 50%;
           border: 1.5px solid rgba(255,255,255,.1); pointer-events: none;
@@ -245,387 +220,158 @@ const AppointmentDetails = () => {
           position: relative; z-index: 2;
           display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; flex-wrap: wrap;
         }
-        .ad-tbn-left {}
         .ad-tbn-hospital {
-          font-size: 11px; font-weight: 700; letter-spacing: .16em; text-transform: uppercase;
-          color: rgba(255,255,255,.45); margin-bottom: 6px;
+          font-size: 11px; font-weight: 900; letter-spacing: .2em; text-transform: uppercase;
+          color: rgba(255,255,255,.6); margin-bottom: 8px;
         }
         .ad-tbn-title {
-          font-family: 'Fraunces', serif;
-          font-size: 1.7rem; font-weight: 900; color: #fff; line-height: 1.1;
+          font-size: 1.8rem; font-weight: 900; color: #fff; line-height: 1.1; letter-spacing: -0.02em;
         }
-        .ad-tbn-subtitle { font-size: 13px; color: rgba(255,255,255,.45); margin-top: 4px; }
+        .ad-tbn-subtitle { font-size: 13px; color: rgba(255,255,255,.7); margin-top: 6px; font-weight: 500; }
         .ad-tbn-status {
           display: inline-flex; align-items: center; gap: 8px;
-          background: rgba(255,255,255,.14); backdrop-filter: blur(10px);
-          border: 1px solid rgba(255,255,255,.2);
-          padding: 8px 16px; border-radius: 999px;
-          font-size: 12px; font-weight: 700; color: #fff; white-space: nowrap;
+          background: rgba(255,255,255,.2); backdrop-filter: blur(12px);
+          border: 1.5px solid rgba(255,255,255,.3);
+          padding: 8px 18px; border-radius: 999px;
+          font-size: 12px; font-weight: 800; color: #fff; white-space: nowrap;
+          text-transform: uppercase;
         }
 
-        /* ── perforated separator ── */
-        .ad-perf {
-          position: relative; height: 0; overflow: visible;
-          background: rgba(255,255,255,.04);
-        }
+        /* separator */
+        .ad-perf { position: relative; height: 0; overflow: visible; background: var(--border); }
         .ad-perf::before, .ad-perf::after {
           content: ''; position: absolute; top: -14px;
           width: 28px; height: 28px; border-radius: 50%;
-          background: #0f0f0f; z-index: 10;
+          background: var(--background); z-index: 10;
+          border: 1px solid var(--border);
         }
         .ad-perf::before { left: -14px; }
         .ad-perf::after  { right: -14px; }
         .ad-perf-line {
           position: absolute; top: 0; left: 28px; right: 28px;
-          border-top: 1.5px dashed rgba(255,255,255,.12);
+          border-top: 2px dashed var(--border);
         }
 
         /* ticket body */
-        .ad-ticket-body { background: rgba(255,255,255,.03); padding: 32px 32px 28px; }
+        .ad-ticket-body { padding: 32px 32px 28px; }
 
         /* ID box */
         .ad-id-box {
-          background: rgba(255,255,255,.05); border: 1px dashed rgba(255,255,255,.12);
-          border-radius: 14px; padding: 18px 20px; margin-bottom: 26px;
+          background: var(--sidebar); border: 1.5px dashed var(--border);
+          border-radius: 18px; padding: 20px; margin-bottom: 28px;
         }
-        .ad-id-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
-        .ad-id-label { font-size: 10px; font-weight: 700; letter-spacing: .15em; text-transform: uppercase; color: rgba(255,255,255,.25); margin-bottom: 7px; }
-        .ad-id-val { font-family: monospace; font-size: 13px; font-weight: 700; color: #ff6b6b; word-break: break-all; line-height: 1.4; flex: 1; }
+        .ad-id-label { font-size: 11px; font-weight: 800; letter-spacing: .15em; text-transform: uppercase; color: var(--muted-foreground); margin-bottom: 8px; }
+        .ad-id-val { font-family: monospace; font-size: 15px; font-weight: 800; color: var(--primary); word-break: break-all; line-height: 1.4; flex: 1; }
         .ad-copy-btn {
-          display: flex; align-items: center; gap: 6px;
-          padding: 9px 16px; border-radius: 10px;
-          border: 1px solid rgba(255,255,255,.1);
-          background: rgba(255,255,255,.05);
-          color: rgba(255,255,255,.4); font-size: 12px; font-weight: 600;
-          cursor: pointer; transition: all .2s; white-space: nowrap; flex-shrink: 0;
-          font-family: 'DM Sans', sans-serif;
+          padding: 10px 18px; border-radius: 12px;
+          border: 1px solid var(--border);
+          background: var(--card);
+          color: var(--foreground); font-size: 12px; font-weight: 700;
+          cursor: pointer; transition: all .2s;
         }
-        .ad-copy-btn:hover { border-color: rgba(255,255,255,.2); color: rgba(255,255,255,.7); }
-        .ad-copy-btn.copied { border-color: rgba(34,197,94,.4); background: rgba(34,197,94,.1); color: #4ade80; }
+        .ad-copy-btn:hover { border-color: var(--primary); color: var(--primary); }
+        .ad-copy-btn.copied { border-color: #4ade80; background: rgba(74,222,128,0.1); color: #16a34a; }
 
-        /* section divider */
-        .ad-section-div {
-          display: flex; align-items: center; gap: 12px; margin-bottom: 20px;
-        }
-        .ad-section-line { flex: 1; height: 1px; background: rgba(255,255,255,.07); }
-        .ad-section-label { font-size: 10px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: rgba(255,255,255,.22); }
-
-        /* info grid */
-        .ad-info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 24px; }
-
+        /* info cells */
+        .ad-info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 28px; }
         .ad-info-cell {
-          background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.07);
-          border-radius: 16px; padding: 16px;
-          transition: background .2s, border-color .2s, transform .2s;
+          background: var(--sidebar); border: 1px solid var(--border);
+          border-radius: 20px; padding: 20px;
+          transition: all 0.2s;
         }
-        .ad-info-cell:hover { background: rgba(255,255,255,.07); border-color: rgba(255,255,255,.12); transform: translateY(-2px); }
-
-        .ad-cell-top { display: flex; align-items: center; gap: 7px; margin-bottom: 10px; }
-        .ad-cell-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
-        .ad-cell-lbl { font-size: 10px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: rgba(255,255,255,.28); }
-
+        .ad-info-cell:hover { border-color: var(--primary); transform: translateY(-3px); }
+        .ad-cell-lbl { font-size: 10px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; color: var(--muted-foreground); }
         .ad-cell-avatar {
-          width: 36px; height: 36px; border-radius: 50%; margin-bottom: 8px;
+          width: 40px; height: 40px; border-radius: 12px; margin-bottom: 12px;
           display: flex; align-items: center; justify-content: center;
-          font-family: 'Fraunces', serif; font-size: .85rem; font-weight: 900; color: #fff;
+          font-size: 1rem; font-weight: 900; color: #fff;
         }
-        .ad-cell-emoji { width: 26px; height: 26px; margin-bottom: 8px; color: #fff; display: inline-flex; align-items: center; justify-content: center; }
-        .ad-cell-name { font-size: 13px; font-weight: 700; color: #fff; margin-bottom: 4px; line-height: 1.3; }
-        .ad-cell-meta { font-size: 11.5px; color: rgba(255,255,255,.32); line-height: 1.65; }
+        .ad-cell-name { font-size: 14px; font-weight: 800; color: var(--foreground); margin-bottom: 4px; }
+        .ad-cell-meta { font-size: 12px; color: var(--muted-foreground); line-height: 1.5; font-weight: 500; }
 
-        /* ── date highlight band ── */
+        /* date band */
         .ad-date-band {
           display: flex; align-items: center; gap: 0;
-          background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.07);
-          border-radius: 16px; overflow: hidden; margin-bottom: 24px;
+          border: 1.5px solid var(--border);
+          border-radius: 20px; overflow: hidden; margin-bottom: 28px;
         }
         .ad-date-block {
-          flex: 1; padding: 16px 20px; text-align: center;
-          border-right: 1px solid rgba(255,255,255,.07);
+          flex: 1; padding: 24px; text-align: center;
+          border-right: 1.5px solid var(--border);
         }
         .ad-date-block:last-child { border-right: none; }
         .ad-date-big {
-          font-family: 'Fraunces', serif;
-          font-size: 2rem; font-weight: 900; color: #fff; line-height: 1;
-          margin-bottom: 4px;
+          font-size: 1.6rem; font-weight: 900; color: var(--foreground); line-height: 1;
+          margin-bottom: 6px; letter-spacing: -0.02em;
         }
-        .ad-date-small { font-size: 11px; color: rgba(255,255,255,.3); letter-spacing: .06em; text-transform: uppercase; }
+        .ad-date-small { font-size: 11px; color: var(--muted-foreground); font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
 
-        /* ── action buttons ── */
-        .ad-actions { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+        /* buttons */
+        .ad-actions { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; }
         .ad-btn {
           display: flex; align-items: center; justify-content: center; gap: 8px;
-          padding: 13px 14px; border-radius: 13px;
-          font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 600;
-          cursor: pointer; transition: all .2s; letter-spacing: .02em;
-          border: none;
+          padding: 14px 16px; border-radius: 16px;
+          font-size: 14px; font-weight: 700;
+          cursor: pointer; transition: all .2s; border: none;
         }
-        .ad-btn-ghost {
-          background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.09); color: rgba(255,255,255,.45);
-        }
-        .ad-btn-ghost:hover { background: rgba(255,255,255,.09); border-color: rgba(255,255,255,.18); color: rgba(255,255,255,.75); }
         .ad-btn-outline {
-          background: transparent; border: 1px solid rgba(255,255,255,.14); color: rgba(255,255,255,.55);
+          background: var(--card); border: 1.5px solid var(--border); color: var(--foreground);
         }
-        .ad-btn-outline:hover { border-color: rgba(255,255,255,.28); color: rgba(255,255,255,.8); background: rgba(255,255,255,.05); }
+        .ad-btn-outline:hover { border-color: var(--primary); background: var(--secondary); color: var(--primary); }
         .ad-btn-primary {
-          background: linear-gradient(135deg, #e42320, #c41c1a);
-          color: #fff; box-shadow: 0 6px 24px rgba(228,35,32,.28);
+          background: var(--primary); color: var(--primary-foreground);
+          box-shadow: 0 8px 24px color-mix(in srgb, var(--primary) 20%, transparent);
         }
-        .ad-btn-primary:hover { transform: translateY(-2px); box-shadow: 0 10px 32px rgba(228,35,32,.4); }
+        .ad-btn-primary:hover { opacity: 0.95; transform: translateY(-2px); }
 
-        /* footer */
         .ad-footer {
-          text-align: center; margin-top: 24px;
-          font-size: 12px; color: rgba(255,255,255,.15);
-          display: flex; align-items: center; justify-content: center; gap: 8px;
+          text-align: center; margin-top: 32px;
+          font-size: 13px; color: var(--muted-foreground); font-weight: 600;
         }
-        .ad-footer::before, .ad-footer::after { content: ''; flex:1; height:1px; background: rgba(255,255,255,.06); }
-
-        /* ── navbar ── */
-        .ad-nav {
-          position: sticky; top: 0; z-index: 100;
-          height: 64px;
-          display: flex; align-items: center; justify-content: space-between;
-          padding: 0 40px;
-          background: rgba(10,10,10,.88);
-          backdrop-filter: saturate(180%) blur(24px);
-          -webkit-backdrop-filter: saturate(180%) blur(24px);
-          border-bottom: 1px solid rgba(255,255,255,.06);
-          box-shadow: 0 1px 0 rgba(255,255,255,.04);
-        }
-        .ad-nav-logo { display: flex; align-items: center; gap: 11px; text-decoration: none; flex-shrink: 0; }
-        .ad-nav-mark {
-          width: 36px; height: 36px; border-radius: 11px; flex-shrink: 0;
-          background: linear-gradient(145deg, #e42320 0%, #9b1c1c 100%);
-          display: flex; align-items: center; justify-content: center;
-          box-shadow: 0 0 0 1px rgba(228,35,32,.4), 0 4px 16px rgba(228,35,32,.3);
-        }
-        .ad-nav-wordmark { display: flex; flex-direction: column; line-height: 1; }
-        .ad-nav-name {
-          font-family: 'Fraunces', serif;
-          font-size: 15px; font-weight: 900; color: #fff; letter-spacing: -.01em;
-        }
-        .ad-nav-name em { font-style: italic; color: #e42320; }
-        .ad-nav-tagline {
-          font-size: 10px; color: rgba(255,255,255,.28);
-          letter-spacing: .08em; text-transform: uppercase; margin-top: 2px;
-        }
-        .ad-nav-center {
-          display: flex; align-items: center;
-          background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.08);
-          border-radius: 14px; padding: 4px; gap: 2px;
-        }
-        .ad-nav-link {
-          padding: 7px 16px; border-radius: 10px;
-          font-family: 'DM Sans', sans-serif;
-          font-size: 13px; font-weight: 500; color: rgba(255,255,255,.4);
-          text-decoration: none; transition: color .18s, background .18s; white-space: nowrap;
-        }
-        .ad-nav-link:hover { color: rgba(255,255,255,.85); background: rgba(255,255,255,.08); }
-        .ad-nav-link.ad-active { color: #fff; background: rgba(255,255,255,.12); font-weight: 600; }
-        .ad-nav-right { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
-        .ad-nav-live {
-          display: flex; align-items: center; gap: 7px;
-          background: rgba(34,197,94,.07); border: 1px solid rgba(34,197,94,.15);
-          padding: 6px 13px; border-radius: 999px;
-          font-size: 11px; font-weight: 700; color: #4ade80;
-          letter-spacing: .06em; text-transform: uppercase;
-        }
-        .ad-nav-live-dot {
-          width: 6px; height: 6px; border-radius: 50%;
-          background: #22c55e; position: relative; flex-shrink: 0;
-        }
-        .ad-nav-live-dot::after {
-          content: ''; position: absolute; inset: -3px; border-radius: 50%;
-          background: rgba(34,197,94,.3); animation: adNavPulse 2s ease-in-out infinite;
-        }
-        @keyframes adNavPulse { 0%,100%{transform:scale(1);opacity:1} 50%{transform:scale(1.8);opacity:0} }
-        .ad-nav-btn {
-          display: flex; align-items: center; gap: 7px;
-          background: #e42320; color: #fff;
-          border: none; border-radius: 11px; padding: 9px 18px;
-          font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 600;
-          text-decoration: none; cursor: pointer; letter-spacing: .01em;
-          transition: background .18s, transform .15s, box-shadow .18s;
-          box-shadow: 0 4px 18px rgba(228,35,32,.32);
-        }
-        .ad-nav-btn:hover { background: #c41c1a; transform: translateY(-1px); box-shadow: 0 8px 28px rgba(228,35,32,.45); }
-        @media (max-width: 900px) { .ad-nav-center { display: none; } }
-        @media (max-width: 640px) {
-          .ad-nav { padding: 0 20px; }
-          .ad-nav-live { display: none; }
-          .ad-nav-btn { padding: 9px 14px; font-size: 12px; }
-          .ad-nav-tagline { display: none; }
-        }
-
-        .print-only { display: none; }
-
-        /* print */
-        @media print {
-          .ad-page { background: #fff !important; color: #111 !important; }
-          .ad-grain, .ad-ambient, .ad-back, .ad-actions, .ad-copy-btn, .ad-nav, .ad-footer { display: none !important; }
-          .ad-success-header { display: none !important; }
-          .print-only { display: block !important; }
-          .ad-container { max-width: 720px; padding: 14px 16px 16px; }
-          .ad-ticket { box-shadow: none !important; border: 1px solid #e5e7eb !important; }
-          .ad-ticket-banner { background: #f8fafc !important; padding: 16px 18px !important; }
-          .ad-tbn-title, .ad-heading { color: #111 !important; }
-          .ad-tbn-subtitle, .ad-subhead { color: #555 !important; }
-          .ad-ticket-body { background: #fff !important; padding: 16px 18px 14px !important; }
-          .ad-info-cell { background: #f8fafc !important; border: 1px solid #e5e7eb !important; }
-          .ad-cell-name { color: #111 !important; }
-          .ad-cell-meta { color: #4b5563 !important; }
-          .ad-cell-emoji { color: #111 !important; }
-          .ad-perf::before, .ad-perf::after { background: #fff !important; }
-          .ad-info-grid { gap: 8px !important; margin-bottom: 14px !important; }
-          .ad-date-band { margin-bottom: 12px !important; }
-          .ad-id-box { margin-bottom: 14px !important; padding: 12px 14px !important; }
-        }
-
-        ::-webkit-scrollbar { width: 4px; }
-        ::-webkit-scrollbar-thumb { background: #e42320; border-radius: 2px; }
-
-        @media (max-width: 520px) {
+        
+        @media (max-width: 540px) {
           .ad-info-grid { grid-template-columns: 1fr; }
-          .ad-actions { grid-template-columns: 1fr; }
-          .ad-ticket-banner, .ad-ticket-body { padding: 20px; }
           .ad-date-band { flex-direction: column; }
-          .ad-date-block { border-right: none; border-bottom: 1px solid rgba(255,255,255,.07); }
-          .ad-date-block:last-child { border-bottom: none; }
+          .ad-date-block { border-right: none; border-bottom: 1.5px solid var(--border); width: 100%; }
         }
       `}</style>
 
       <div className="ad-page">
-        <div className="ad-grain" />
         <div className="ad-ambient">
           <div className="ad-glow ad-glow-1" style={{ background: `radial-gradient(circle, ${status.glow}, transparent)` }} />
           <div className="ad-glow ad-glow-2" />
         </div>
 
-        {/* ── Navbar ── */}
-        <nav className="ad-nav no-print">
-
-          <Link to="/" className="ad-nav-logo">
-            <div className="ad-nav-mark">
-              <svg width="17" height="17" fill="none" stroke="#fff" strokeWidth={2.2} viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
-              </svg>
-            </div>
-            <div className="ad-nav-wordmark">
-              <span className="ad-nav-name">Sarda <em>HMS</em></span>
-              <span className="ad-nav-tagline">Hospital Management</span>
-            </div>
-          </Link>
-
-          <div className="ad-nav-center">
-            <Link to="/"                   className="ad-nav-link">Home</Link>
-            <Link to="/doctors"            className="ad-nav-link">Doctors</Link>
-            <Link to="/appointment"        className="ad-nav-link ad-active">Book</Link>
-            <Link to="/appointment/check"  className="ad-nav-link">Track</Link>
-            <Link to="/branch"             className="ad-nav-link">Branches</Link>
-          </div>
-
-          <div className="ad-nav-right">
-            <div className="ad-nav-live">
-              <div className="ad-nav-live-dot" />
-              Live
-            </div>
-            <Link to="/appointment/check" className="ad-nav-btn">
-              <svg width="13" height="13" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
-              </svg>
-              Track Status
-            </Link>
-          </div>
-
-        </nav>
+        <Header />
 
         <div className="ad-container">
+          <button className="ad-back" onClick={() => navigate(-1)}>
+            ← Previous Page
+          </button>
 
-          {/* Back */}
-          <button className="ad-back no-print" onClick={() => navigate(-1)}>
-            <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 12H5M12 5l-7 7 7 7"/>
-          </svg>
-          Back
-        </button>
-
-        <div className="print-only" style={{ marginBottom: 16 }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
-            <div>
-              <div style={{ fontSize: 12, letterSpacing: '.18em', textTransform: 'uppercase', color: '#64748b', fontWeight: 700, display: 'flex', alignItems: 'center', gap: 6 }}>
-                <svg width="12" height="12" fill="none" stroke="#64748b" strokeWidth="2" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                </svg>
-                Appointment Receipt
-              </div>
-              <div style={{ fontSize: 22, fontWeight: 800, color: '#0f172a', marginTop: 4 }}>
-                {appointment?.branch?.name || 'Hospital'}
-              </div>
-              <div style={{ fontSize: 12, color: '#64748b', marginTop: 4 }}>
-                {appointment?.branch?.address || ''}
-              </div>
-            </div>
-            <div style={{ textAlign: 'right' }}>
-              <div style={{ fontSize: 11, color: '#64748b', fontWeight: 700, letterSpacing: '.14em', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: 6, justifyContent: 'flex-end' }}>
-                <svg width="12" height="12" fill="none" stroke="#64748b" strokeWidth="2" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                </svg>
-                Status
-              </div>
-              <div style={{ fontSize: 14, fontWeight: 700, color: '#0f172a' }}>
-                {status.label}
-              </div>
-              <div style={{ fontSize: 11, color: '#64748b', marginTop: 6, display: 'flex', alignItems: 'center', gap: 6, justifyContent: 'flex-end' }}>
-                <svg width="12" height="12" fill="none" stroke="#64748b" strokeWidth="2" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                </svg>
-                {formattedDate}
-              </div>
-            </div>
-          </div>
-          <div style={{ marginTop: 12, padding: '10px 12px', border: '1px solid #e5e7eb', borderRadius: 10, background: '#f8fafc' }}>
-            <div style={{ fontSize: 10, letterSpacing: '.18em', textTransform: 'uppercase', color: '#64748b', fontWeight: 700, display: 'flex', alignItems: 'center', gap: 6 }}>
-              <svg width="12" height="12" fill="none" stroke="#64748b" strokeWidth="2" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M7 7h10M7 12h10M7 17h10"/>
-              </svg>
-              Appointment ID
-            </div>
-            <div style={{ fontFamily: 'monospace', fontSize: 13, fontWeight: 700, color: '#0f172a', marginTop: 4 }}>
-              {appointment?.appointmentId}
-            </div>
-          </div>
-        </div>
-
-        {/* Success header */}
-        <div className="ad-success-header">
+          <div className="ad-success-header">
             <div className="ad-success-badge">
               <div className="ad-success-check">
                 <svg width="10" height="10" fill="none" stroke="#fff" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7"/>
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={4} d="M5 13l4 4L19 7"/>
                 </svg>
               </div>
-              Booking Confirmed
+              Appointment Confirmed
             </div>
-            <h1 className="ad-heading">Your <em>Appointment</em><br/>is Booked!</h1>
-            <p className="ad-subhead">Save your booking ID below — you'll need it to check your status</p>
+            <h1 className="ad-heading">Slot <em>Secured</em> Successfully</h1>
+            <p className="ad-subhead">Your clinical visit has been registered in our central records.</p>
           </div>
 
-          {/* ── TICKET ── */}
           <div className="ad-ticket">
-
-            {/* Banner */}
             <div className="ad-ticket-banner">
               <div className="ad-tbn-bg" style={{ background: status.banner }} />
-              <div className="ad-tbn-noise" />
               <div className="ad-tbn-ring ad-tbn-ring-1" />
               <div className="ad-tbn-ring ad-tbn-ring-2" />
               <div className="ad-tbn-content">
-                <div className="ad-tbn-left">
-                  <div className="ad-tbn-hospital">Sarda Heart Hospital · HMS</div>
-                  <div className="ad-tbn-title">Appointment Receipt</div>
-                  <div className="ad-tbn-subtitle">Booking reference document</div>
+                <div>
+                  <div className="ad-tbn-hospital">SARS · Healthcare Solutions</div>
+                  <div className="ad-tbn-title">Clinical Receipt</div>
+                  <div className="ad-tbn-subtitle">Verified Appointment Document</div>
                 </div>
                 <div className="ad-tbn-status">
                   {status.icon}
@@ -634,78 +380,48 @@ const AppointmentDetails = () => {
               </div>
             </div>
 
-            {/* Perforated divider */}
             <div className="ad-perf">
               <div className="ad-perf-line" />
             </div>
 
-            {/* Body */}
             <div className="ad-ticket-body">
-
-              {/* ID */}
               <div className="ad-id-box">
                 <div className="ad-id-label">Appointment ID</div>
-                <div className="ad-id-row">
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
                   <span className="ad-id-val">{appointment.appointmentId}</span>
-                  <button className={`ad-copy-btn no-print ${copied ? 'copied' : ''}`} onClick={handleCopy}>
-                    {copied
-                      ? <><svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7"/></svg> Copied!</>
-                      : <><svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg> Copy ID</>
-                    }
+                  <button className={`ad-copy-btn ${copied ? 'copied' : ''}`} onClick={handleCopy}>
+                    {copied ? '✔ Copied' : 'Copy'}
                   </button>
                 </div>
               </div>
 
-              {/* Date band */}
               <div className="ad-date-band">
                 <div className="ad-date-block">
                   <div className="ad-date-big">{dateOnly}</div>
-                  <div className="ad-date-small">Appointment Date</div>
+                  <div className="ad-date-small">Schedule Date</div>
                 </div>
                 <div className="ad-date-block">
-                  <div className="ad-date-big" style={{ color: '#e42320' }}>{timeOnly}</div>
-                  <div className="ad-date-small">Scheduled Time</div>
-                </div>
-                <div className="ad-date-block">
-                  <div className="ad-date-big" style={{ fontSize: '1.3rem', color: '#a78bfa' }}>
-                    {appointment.doctor.department?.name || 'General'}
-                  </div>
-                  <div className="ad-date-small">Department</div>
+                  <div className="ad-date-big" style={{ color: 'var(--primary)' }}>{timeOnly}</div>
+                  <div className="ad-date-small">Slot Time</div>
                 </div>
               </div>
 
-              <div className="ad-section-div">
-                <div className="ad-section-line" />
-                <span className="ad-section-label">Booking Details</span>
-                <div className="ad-section-line" />
-              </div>
-
-              {/* Info grid */}
               <div className="ad-info-grid">
-
-                {/* Doctor */}
                 <div className="ad-info-cell">
-                  <div className="ad-cell-top">
-                    <div className="ad-cell-dot" style={{ background: '#e42320' }} />
-                    <span className="ad-cell-lbl">Doctor</span>
-                  </div>
-                  <div className="ad-cell-avatar" style={{ background: 'linear-gradient(135deg,#e42320,#7c0a08)' }}>
+                  <div className="ad-cell-lbl" style={{ marginBottom: 12 }}>Assigned Doctor</div>
+                  <div className="ad-cell-avatar" style={{ background: 'var(--primary)' }}>
                     {initials(appointment.doctor.name)}
                   </div>
                   <div className="ad-cell-name">Dr. {appointment.doctor.name}</div>
                   <div className="ad-cell-meta">
                     {appointment.doctor.specialization}<br/>
-                    {appointment.doctor.department?.name}
+                    {appointment.doctor.department?.name || 'General Medicine'}
                   </div>
                 </div>
 
-                {/* Patient */}
                 <div className="ad-info-cell">
-                  <div className="ad-cell-top">
-                    <div className="ad-cell-dot" style={{ background: '#22c55e' }} />
-                    <span className="ad-cell-lbl">Patient</span>
-                  </div>
-                  <div className="ad-cell-avatar" style={{ background: 'linear-gradient(135deg,#059669,#022c22)' }}>
+                  <div className="ad-cell-lbl" style={{ marginBottom: 12 }}>Patient Profile</div>
+                  <div className="ad-cell-avatar" style={{ background: '#d97706' }}>
                     {initials(appointment.patient.name)}
                   </div>
                   <div className="ad-cell-name">{appointment.patient.name}</div>
@@ -714,73 +430,27 @@ const AppointmentDetails = () => {
                     {appointment.patient.gender}
                   </div>
                 </div>
-
-                {/* Date */}
-                <div className="ad-info-cell">
-                  <div className="ad-cell-top">
-                    <div className="ad-cell-dot" style={{ background: '#a78bfa' }} />
-                    <span className="ad-cell-lbl">Date &amp; Time</span>
-                  </div>
-                  <div className="ad-cell-emoji">
-                    <svg width="26" height="26" fill="none" stroke="currentColor" strokeWidth="1.7" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 11v4l3 3"/>
-                    </svg>
-                  </div>
-                  <div className="ad-cell-name" style={{ fontSize: 13, lineHeight: 1.45 }}>{formattedDate}</div>
-                </div>
-
-                {/* Reason */}
-                <div className="ad-info-cell">
-                  <div className="ad-cell-top">
-                    <div className="ad-cell-dot" style={{ background: '#fb923c' }} />
-                    <span className="ad-cell-lbl">Reason</span>
-                  </div>
-                  <div className="ad-cell-emoji">
-                    <svg width="26" height="26" fill="none" stroke="currentColor" strokeWidth="1.7" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 5h6l1 2h3a1 1 0 011 1v11a2 2 0 01-2 2H6a2 2 0 01-2-2V8a1 1 0 011-1h3l1-2z"/>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6M9 16h6"/>
-                    </svg>
-                  </div>
-                  <div className="ad-cell-name" style={{ fontSize: 13, lineHeight: 1.5 }}>{appointment.reason}</div>
-                </div>
               </div>
 
-              {/* Actions */}
-              <div className="ad-actions no-print">
-                <button className="ad-btn ad-btn-ghost" onClick={() => navigate('/appointment')}>
-                  <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4"/>
-                  </svg>
-                  Book Again
-                </button>
+              <div className="ad-actions">
                 <button className="ad-btn ad-btn-outline" onClick={() => window.print()}>
-                  <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/>
-                  </svg>
-                  Print
+                  Print Receipt
                 </button>
-                <button className="ad-btn ad-btn-outline" onClick={handleCopyLink}>
-                  {copiedLink ? 'Link Copied' : 'Copy Link'}
-                </button>
-                <button className="ad-btn ad-btn-primary" onClick={() => navigate('/appointment/check')}>
-                  <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
-                  </svg>
-                  Check Status
+                <button className="ad-btn ad-btn-primary" onClick={() => navigate('/my-appointments')}>
+                  My Appointments
                 </button>
                 {canPatientCancel && (
-                  <button className="ad-btn ad-btn-primary" onClick={handleCancelByPatient} disabled={cancelling}>
-                    {cancelling ? 'Cancelling...' : 'Cancel Appointment'}
+                  <button className="ad-btn ad-btn-outline" style={{ borderColor: 'var(--destructive)', color: 'var(--destructive)' }} onClick={handleCancelByPatient} disabled={cancelling}>
+                    {cancelling ? '...' : 'Cancel'}
                   </button>
                 )}
               </div>
             </div>
           </div>
 
-          <div className="ad-footer no-print">
-            Please arrive 10 minutes before your scheduled appointment time
-          </div>
+          <p className="ad-footer">
+            Please present this receipt at the front desk 15 minutes before your time.
+          </p>
         </div>
       </div>
     </>
@@ -788,4 +458,3 @@ const AppointmentDetails = () => {
 }
 
 export default AppointmentDetails
-
