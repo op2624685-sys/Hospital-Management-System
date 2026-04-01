@@ -48,13 +48,13 @@ const fmt = (n) => n >= 100000
   : n >= 1000 ? `₹${(n / 1000).toFixed(1)}k` : `₹${n}`;
 
 const statusColor = {
-  Completed:    { bg: "#f0fdf4", color: "#16a34a", dot: "#22c55e" },
-  "In Progress":{ bg: "#fff8f4", color: "#e42320", dot: "#e42320" },
-  Pending:      { bg: "#fffbeb", color: "#d97706", dot: "#f59e0b" },
-  Confirmed:    { bg: "#eff6ff", color: "#2563eb", dot: "#3b82f6" },
-  Cancelled:    { bg: "#fef2f2", color: "#dc2626", dot: "#ef4444" },
-  Success:      { bg: "#f0fdf4", color: "#16a34a", dot: "#22c55e" },
-  Refunded:     { bg: "#f5f3ff", color: "#7c3aed", dot: "#8b5cf6" },
+  Completed:    { bg: "color-mix(in srgb, var(--primary) 10%, transparent)", color: "var(--primary)", dot: "var(--primary)" },
+  "In Progress":{ bg: "color-mix(in srgb, var(--primary) 20%, transparent)", color: "var(--primary)", dot: "var(--chart-5)" },
+  Pending:      { bg: "var(--secondary)", color: "var(--secondary-foreground)", dot: "var(--primary)" },
+  Confirmed:    { bg: "var(--secondary)", color: "var(--primary)", dot: "var(--primary)" },
+  Cancelled:    { bg: "color-mix(in srgb, var(--destructive) 10%, transparent)", color: "var(--destructive)", dot: "var(--destructive)" },
+  Success:      { bg: "color-mix(in srgb, var(--primary) 10%, transparent)", color: "var(--primary)", dot: "var(--primary)" },
+  Refunded:     { bg: "var(--muted)", color: "var(--muted-foreground)", dot: "var(--muted-foreground)" },
 };
 
 const formatStatus = (status) => {
@@ -74,12 +74,12 @@ const formatTime = (value) => {
 };
 
 const deptColor = {
-  Cardiology:   "#e42320",
-  Neurology:    "#7c3aed",
-  Orthopedics:  "#0891b2",
-  Pediatrics:   "#d97706",
-  Dermatology:  "#db2777",
-  default:      "#059669",
+  Cardiology:   "var(--primary)",
+  Neurology:    "var(--chart-5)",
+  Orthopedics:  "var(--primary)",
+  Pediatrics:   "var(--primary)",
+  Dermatology:  "var(--chart-5)",
+  default:      "var(--primary)",
 };
 
 const DEFAULT_DEPARTMENT_SECTIONS = [
@@ -182,8 +182,8 @@ const AdminPanel = () => {
     name: "",
     description: "",
     imageUrl: "",
-    accentColor: "#2563eb",
-    bgColor: "#eff6ff",
+    accentColor: "var(--primary)",
+    bgColor: "var(--secondary)",
     icon: "DEPT",
     sections: DEFAULT_DEPARTMENT_SECTIONS,
   });
@@ -611,554 +611,158 @@ const AdminPanel = () => {
   return (
     <>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=Outfit:wght@300;400;500;600;700&display=swap');
-
-        *, *::before, *::after { box-sizing: border-box; }
-
+        .admin-root, .admin-root * { font-family: 'Outfit', sans-serif; box-sizing: border-box; }
+        
         .admin-page {
           min-height: 100vh;
-          background: #f9f6f2;
-          font-family: 'Outfit', sans-serif;
+          background: var(--background);
+          color: var(--foreground);
           overflow-x: hidden;
+          position: relative;
         }
 
-        /* ambient */
-        .admin-ambient { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
-        .admin-orb {
-          position: absolute; border-radius: 50%; filter: blur(100px);
-        }
-        .admin-orb-1 {
-          width: 500px; height: 500px; top: -200px; right: -100px;
-          background: radial-gradient(circle, rgba(228,35,32,.12), transparent);
-          animation: adO 16s ease-in-out infinite;
-        }
-        .admin-orb-2 {
-          width: 400px; height: 400px; bottom: -150px; left: -100px;
-          background: radial-gradient(circle, rgba(245,158,11,.10), transparent);
-          animation: adO 20s ease-in-out infinite reverse;
-        }
-        @keyframes adO { 0%,100%{transform:translate(0,0)} 50%{transform:translate(25px,-35px)} }
+        .admin-ambient { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
+        .admin-orb { position: absolute; border-radius: 50%; filter: blur(120px); opacity: 0.1; }
+        .admin-orb-1 { width: 700px; height: 700px; top: -200px; left: -100px; background: radial-gradient(circle, var(--primary), transparent); }
+        .admin-orb-2 { width: 500px; height: 500px; bottom: -100px; right: -50px; background: radial-gradient(circle, var(--secondary), transparent); }
+
         .admin-grid-bg {
-          position: fixed; inset: 0; pointer-events: none; z-index: 0;
-          background-image:
-            linear-gradient(rgba(0,0,0,.03) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(0,0,0,.03) 1px, transparent 1px);
-          background-size: 52px 52px;
+          position: absolute; inset: 0; opacity: 0.03; z-index: 0;
+          background-image: radial-gradient(var(--foreground) 1px, transparent 1px);
+          background-size: 32px 32px;
         }
 
-        /* container */
         .admin-container {
-          position: relative; z-index: 1;
-          max-width: 1440px; margin: 0 auto;
-          padding: 32px 48px 80px;
+          position: relative; z-index: 10;
+          max-width: 1400px; margin: 0 auto;
+          padding: 120px 48px 80px;
         }
 
-        /* top bar */
-        .admin-topbar {
-          display: flex; align-items: center; justify-content: space-between;
-          margin-bottom: 36px;
-        }
-        .admin-topbar-left {}
+        /* Top Bar */
+        .admin-topbar { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 48px; gap: 24px; flex-wrap: wrap; }
         .admin-eyebrow {
-          display: inline-flex; align-items: center; gap: 8px;
-          font-size: 11px; font-weight: 600; letter-spacing: .16em; text-transform: uppercase;
-          color: #e42320; background: rgba(228,35,32,.08);
-          border: 1px solid rgba(228,35,32,.18);
-          padding: 4px 14px; border-radius: 999px; margin-bottom: 10px;
-        }
-        .admin-live { width: 7px; height: 7px; background: #22c55e; border-radius: 50%; position: relative; }
-        .admin-live::after {
-          content: ''; position: absolute; inset: -2px; border-radius: 50%;
-          background: #22c55e40; animation: livP 1.8s ease-in-out infinite;
-        }
-        @keyframes livP { 0%,100%{transform:scale(1);opacity:1} 50%{transform:scale(1.9);opacity:0} }
-        .admin-title {
-          font-family: 'Cormorant Garamond', serif;
-          font-size: 2.8rem; font-weight: 700; color: #1a1a1a; line-height: 1; margin: 0;
-        }
-        .admin-title em { font-style: italic; color: #e42320; }
-        .admin-date {
-          font-size: 13px; color: #aaa; margin-top: 6px;
-        }
-        .admin-topbar-right { display: flex; align-items: center; gap: 12px; }
-        .admin-badge {
-          display: flex; align-items: center; gap: 8px;
-          background: #fff; border: 1.5px solid #ebe8e2;
-          border-radius: 14px; padding: 10px 18px;
-          font-size: 13px; font-weight: 600; color: #1a1a1a;
-          box-shadow: 0 2px 12px rgba(0,0,0,.05);
-        }
-        .admin-badge svg { color: #e42320; }
-        .admin-refresh-btn {
-          display: flex; align-items: center; gap: 7px;
-          background: #1a1a1a; color: #fff;
-          border: none; border-radius: 12px; padding: 10px 18px;
-          font-family: 'Outfit', sans-serif; font-size: 13px; font-weight: 600;
-          cursor: pointer; transition: background .2s, transform .15s;
-        }
-        .admin-refresh-btn:hover { background: #333; transform: translateY(-1px); }
-
-        /* tabs */
-        .admin-tabs {
-          display: flex; gap: 4px;
-          background: #fff; border: 1.5px solid #ebe8e2;
-          border-radius: 16px; padding: 6px;
-          width: fit-content; margin-bottom: 32px;
-          box-shadow: 0 2px 12px rgba(0,0,0,.04);
-        }
-        .admin-tab {
-          padding: 9px 22px; border-radius: 11px;
-          font-size: 13px; font-weight: 600;
-          border: none; background: transparent; cursor: pointer;
-          color: #aaa; transition: all .2s;
-          text-transform: capitalize; letter-spacing: .02em;
-        }
-        .admin-tab.active {
-          background: #1a1a1a; color: #fff;
-          box-shadow: 0 4px 12px rgba(0,0,0,.15);
-        }
-        .admin-tab:not(.active):hover { color: #555; background: #f5f0ea; }
-
-        /* stat cards */
-        .admin-stats-grid {
-          display: grid;
-          grid-template-columns: repeat(4, 1fr);
-          gap: 16px; margin-bottom: 28px;
-        }
-        .admin-stat-card {
-          position: relative; overflow: hidden;
-          background: #fff; border: 1.5px solid #ebe8e2;
-          border-radius: 20px; padding: 22px;
-          display: flex; align-items: flex-start; gap: 16px;
-          box-shadow: 0 4px 16px rgba(0,0,0,.05);
-          transition: transform .25s, box-shadow .25s, border-color .25s;
-          opacity: 0;
-        }
-        .admin-stat-card:hover {
-          transform: translateY(-4px);
-          box-shadow: 0 16px 40px rgba(0,0,0,.09);
-          border-color: var(--accent);
-        }
-        .admin-stat-icon {
-          width: 48px; height: 48px; border-radius: 14px;
-          background: color-mix(in srgb, var(--accent) 12%, transparent);
-          border: 1px solid color-mix(in srgb, var(--accent) 20%, transparent);
-          display: flex; align-items: center; justify-content: center;
-          flex-shrink: 0; font-size: 1.3rem;
-        }
-        .admin-stat-body { display: flex; flex-direction: column; gap: 3px; flex: 1; }
-        .admin-stat-label { font-size: 11px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: #bbb; }
-        .admin-stat-value { font-family: 'Cormorant Garamond', serif; font-size: 2.2rem; font-weight: 700; color: #1a1a1a; line-height: 1; }
-        .admin-stat-sub { font-size: 12px; color: #aaa; }
-        .admin-stat-glow {
-          position: absolute; bottom: -20px; right: -20px;
-          width: 80px; height: 80px; border-radius: 50%;
-          background: radial-gradient(circle, color-mix(in srgb, var(--accent) 20%, transparent), transparent);
-          pointer-events: none;
-        }
-
-        /* sections grid */
-        .admin-sections-grid {
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: 20px; margin-bottom: 20px;
-        }
-        .admin-section {
-          background: #fff; border: 1.5px solid #ebe8e2;
-          border-radius: 22px; padding: 28px;
-          box-shadow: 0 4px 16px rgba(0,0,0,.05);
-          animation: secIn .5s ease both;
-        }
-        @keyframes secIn {
-          from { opacity: 0; transform: translateY(16px); }
-          to   { opacity: 1; transform: translateY(0); }
-        }
-        .admin-section.full { grid-column: 1 / -1; }
-        .admin-section-header {
-          display: flex; justify-content: space-between; align-items: flex-start;
-          margin-bottom: 20px;
-        }
-        .admin-section-title {
-          font-family: 'Cormorant Garamond', serif;
-          font-size: 1.35rem; font-weight: 700; color: #1a1a1a; margin: 0 0 3px;
-        }
-        .admin-section-sub { font-size: 12px; color: #bbb; }
-        .admin-view-all {
-          font-size: 12px; font-weight: 600; color: #e42320;
-          background: rgba(228,35,32,.08); border: 1px solid rgba(228,35,32,.18);
-          padding: 5px 14px; border-radius: 999px; cursor: pointer;
-          transition: background .2s; border: none;
-        }
-        .admin-view-all:hover { background: rgba(228,35,32,.14); }
-
-        /* appointments table */
-        .admin-table { width: 100%; border-collapse: collapse; }
-        .admin-table th {
-          text-align: left; font-size: 10px; font-weight: 700;
-          letter-spacing: .12em; text-transform: uppercase; color: #ccc;
-          padding: 0 12px 12px; border-bottom: 1px solid #f0ece6;
-        }
-        .admin-table td {
-          padding: 12px; font-size: 13px; color: #444;
-          border-bottom: 1px solid #f9f6f2;
-          vertical-align: middle;
-        }
-        .admin-table tr:last-child td { border-bottom: none; }
-        .admin-table tr:hover td { background: #faf8f5; }
-        .admin-apt-id { font-family: monospace; font-size: 11px; color: #bbb; }
-        .admin-patient-name { font-weight: 600; color: #1a1a1a; }
-        .admin-status-pill {
-          display: inline-flex; align-items: center; gap: 5px;
-          font-size: 11px; font-weight: 600;
-          padding: 4px 10px; border-radius: 999px;
-        }
-        .admin-status-dot { width: 6px; height: 6px; border-radius: 50%; }
-        .admin-dept-tag {
-          font-size: 11px; font-weight: 600;
-          padding: 3px 10px; border-radius: 999px;
-          background: rgba(0,0,0,.04); color: #666;
-        }
-        .admin-amount { font-weight: 600; color: #1a1a1a; }
-
-        /* doctor list */
-        .admin-doctor-list { display: flex; flex-direction: column; gap: 10px; }
-        .admin-doctor-row {
-          display: flex; align-items: center; gap: 14px;
-          padding: 12px; border-radius: 14px;
-          border: 1px solid #f5f0ea;
-          transition: background .15s, transform .2s;
-        }
-        .admin-doctor-row:hover { background: #faf8f5; transform: translateX(4px); }
-        .admin-doc-avatar {
-          width: 42px; height: 42px; border-radius: 50%;
-          background: linear-gradient(135deg, #e42320, #a01a18);
-          display: flex; align-items: center; justify-content: center;
-          font-family: 'Cormorant Garamond', serif;
-          font-size: .9rem; font-weight: 700; color: #fff; flex-shrink: 0;
-        }
-        .admin-doc-info { flex: 1; }
-        .admin-doc-name { font-size: 13px; font-weight: 600; color: #1a1a1a; }
-        .admin-doc-spec { font-size: 11px; color: #aaa; }
-        .admin-doc-meta { display: flex; align-items: center; gap: 10px; }
-        .admin-doc-pts { font-size: 12px; font-weight: 600; color: #555; }
-        .admin-doc-status {
-          font-size: 11px; font-weight: 600; padding: 3px 10px;
-          border-radius: 999px;
-        }
-        .admin-doc-status.active   { background: #f0fdf4; color: #16a34a; }
-        .admin-doc-status.leave    { background: #fffbeb; color: #d97706; }
-
-        /* payment list */
-        .admin-payment-list { display: flex; flex-direction: column; gap: 10px; }
-        .admin-payment-row {
-          display: flex; align-items: center; gap: 14px;
-          padding: 12px 14px; border-radius: 14px;
-          border: 1px solid #f5f0ea;
-          transition: background .15s;
-        }
-        .admin-payment-row:hover { background: #faf8f5; }
-        .admin-pay-icon {
-          width: 38px; height: 38px; border-radius: 12px;
-          background: #f5f0ea;
-          display: flex; align-items: center; justify-content: center;
-          font-size: 1.1rem; flex-shrink: 0;
-        }
-        .admin-pay-info { flex: 1; }
-        .admin-pay-patient { font-size: 13px; font-weight: 600; color: #1a1a1a; }
-        .admin-pay-meta { font-size: 11px; color: #aaa; }
-        .admin-pay-right { text-align: right; }
-        .admin-pay-amount { font-family: 'Cormorant Garamond', serif; font-size: 1.2rem; font-weight: 700; color: #1a1a1a; }
-        .admin-pay-method { font-size: 11px; color: #bbb; }
-
-        /* overview bar chart placeholder */
-        .admin-chart-bars {
-          display: flex; align-items: flex-end; gap: 8px;
-          height: 120px; padding-top: 12px;
-        }
-        .admin-bar-wrap { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px; }
-        .admin-bar {
-          width: 100%; border-radius: 6px 6px 0 0;
-          background: linear-gradient(to top, #e42320, #ff6b6b);
-          transition: height .6s cubic-bezier(.34,1.56,.64,1);
-        }
-        .admin-bar.secondary { background: linear-gradient(to top, #1a1a1a, #555); }
-        .admin-bar-label { font-size: 10px; color: #bbb; letter-spacing: .05em; }
-
-        /* progress bar */
-        .admin-progress-wrap { display: flex; flex-direction: column; gap: 10px; }
-        .admin-progress-row { display: flex; flex-direction: column; gap: 5px; }
-        .admin-progress-head { display: flex; justify-content: space-between; align-items: center; }
-        .admin-progress-label { font-size: 12px; font-weight: 600; color: #555; }
-        .admin-progress-val { font-size: 12px; font-weight: 700; color: #1a1a1a; }
-        .admin-progress-track {
-          height: 6px; background: #f0ece6; border-radius: 999px; overflow: hidden;
-        }
-        .admin-progress-fill {
-          height: 100%; border-radius: 999px;
-          transition: width 1s cubic-bezier(.34,1.56,.64,1);
-        }
-
-        /* scrollbar */
-        ::-webkit-scrollbar { width: 5px; }
-        ::-webkit-scrollbar-track { background: #f0f0f0; }
-        ::-webkit-scrollbar-thumb { background: #2563eb; border-radius: 3px; }
-
-        /* department form styles */
-        .admin-form-wrapper {
-          background: #fff;
-          border: 1.5px solid #ebe8e2;
-          border-radius: 16px;
-          padding: 24px;
-          margin-bottom: 20px;
-        }
-        .admin-form-message {
-          margin-top: 12px;
-          font-size: 12px;
-          color: #e42320;
-        }
-        .admin-form-group {
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: 16px;
+          display: inline-flex; align-items: center; gap: 10px;
+          padding: 8px 20px; border-radius: 999px;
+          background: var(--secondary); border: 1.5px solid color-mix(in srgb, var(--primary) 20%, transparent);
+          color: var(--primary); font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em;
           margin-bottom: 16px;
         }
-        .admin-form-group.full { grid-template-columns: 1fr; }
-        .admin-form-group input,
-        .admin-form-group select {
-          padding: 10px 14px;
-          border: 1.5px solid #ebe8e2;
-          border-radius: 10px;
-          font-family: 'Outfit', sans-serif;
-          font-size: 13px;
-          transition: border-color .2s, box-shadow .2s;
-        }
-        .admin-form-group input:focus,
-        .admin-form-group select:focus {
-          outline: none;
-          border-color: #2563eb;
-          box-shadow: 0 0 0 3px rgba(37,99,235,.1);
-        }
-        .admin-form-label {
-          font-size: 12px;
-          font-weight: 600;
-          color: #555;
-          margin-bottom: 6px;
-          display: block;
-          text-transform: uppercase;
-          letter-spacing: .02em;
-        }
-        .admin-form-actions {
-          display: flex;
-          gap: 10px;
-          justify-content: flex-end;
-        }
-        .admin-form-actions button {
-          padding: 10px 20px;
-          border-radius: 10px;
-          border: 1.5px solid #ebe8e2;
-          font-family: 'Outfit', sans-serif;
-          font-size: 13px;
-          font-weight: 600;
-          cursor: pointer;
-          transition: all .2s;
-        }
-        .admin-form-actions .btn-primary {
-          background: #2563eb;
-          color: #fff;
-          border-color: #2563eb;
-        }
-        .admin-form-actions .btn-primary:hover {
-          background: #1d4ed8;
-          transform: translateY(-1px);
-          box-shadow: 0 8px 16px rgba(37,99,235,.3);
-        }
-        .admin-form-actions .btn-cancel {
-          background: #fff;
-          color: #1a1a1a;
-        }
-        .admin-form-actions .btn-cancel:hover {
-          background: #f9f6f2;
-        }
+        .admin-live { width: 8px; height: 8px; border-radius: 50%; background: #22c55e; animation: adminPulse 2s infinite; }
+        @keyframes adminPulse { 0% { box-shadow: 0 0 0 0 rgba(34,197,94,0.4); } 70% { box-shadow: 0 0 0 10px rgba(34,197,94,0); } 100% { box-shadow: 0 0 0 0 rgba(34,197,94,0); } }
 
-        /* patients table styles */
-        .admin-patients-list {
-          background: #fff;
-          border: 1.5px solid #ebe8e2;
-          border-radius: 16px;
-          overflow: hidden;
-        }
-        .admin-patients-header {
-          padding: 20px 24px;
-          border-bottom: 1px solid #f9f6f2;
-          display: grid;
-          grid-template-columns: 2fr 1fr 1fr;
-          align-items: center;
-          gap: 12px;
-        }
-        .admin-patient-row {
-          display: grid;
-          grid-template-columns: 2fr 1fr 1fr;
-          align-items: center;
-          gap: 12px;
-          padding: 12px 24px;
-          border-bottom: 1px solid #f9f6f2;
-          transition: background .15s;
-        }
-        .admin-patient-row:hover { background: #faf8f5; }
-        .admin-patient-row:last-child { border-bottom: none; }
-        .admin-patient-col {
-          font-size: 13px;
-          color: #444;
-        }
-        .admin-patient-col.name {
-          font-weight: 600;
-          color: #1a1a1a;
-          display: flex;
-          flex-direction: column;
-          gap: 2px;
-        }
-        .admin-patient-sub {
-          font-size: 12px;
-          color: #888;
-          font-weight: 400;
-        }
-        .admin-patient-col.email {
-          color: #666;
-        }
-        .admin-patient-col.id {
-          font-family: monospace;
-          font-size: 11px;
-          color: #bbb;
-          flex: 1;
-        }
-        .admin-patient-col.date {
-          color: #aaa;
-          flex: 1;
-        }
-        .admin-pagination {
-          display: flex;
-          justify-content: center;
-          gap: 8px;
-          padding: 16px;
-          border-top: 1px solid #f9f6f2;
-        }
-        .admin-pagination button {
-          padding: 6px 12px;
-          border: 1px solid #ebe8e2;
-          background: #fff;
-          border-radius: 6px;
-          cursor: pointer;
-          font-size: 12px;
-          font-weight: 600;
-          transition: all .2s;
-        }
-        .admin-pagination button:hover:not(:disabled) {
-          background: #2563eb;
-          color: #fff;
-          border-color: #2563eb;
-        }
-        .admin-pagination button:disabled {
-          opacity: 0.5;
-          cursor: not-allowed;
-        }
-        .admin-loading {
-          text-align: center;
-          padding: 40px 20px;
-          color: #aaa;
-        }
-        .admin-empty-state {
-          text-align: center;
-          padding: 40px 20px;
-          color: #bbb;
-        }
+        .admin-title { font-size: clamp(2.4rem, 5vw, 3.8rem); font-weight: 900; color: var(--foreground); line-height: 1.0; letter-spacing: -.03em; margin: 0; }
+        .admin-title em { font-style: italic; color: var(--primary); font-family: serif; }
+        .admin-date { font-size: 14px; color: var(--muted-foreground); margin-top: 8px; font-weight: 600; }
 
-        /* theme override: healthcare SaaS */
-        .admin-page {
-          background:
-            radial-gradient(circle at 0 0, rgba(37,99,235,.12), transparent 42%),
-            radial-gradient(circle at 100% 100%, rgba(20,184,166,.10), transparent 44%),
-            linear-gradient(180deg, #f8fbff 0%, #f8fafc 100%);
-        }
-        .admin-grid-bg {
-          background-image:
-            linear-gradient(rgba(37,99,235,.06) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(37,99,235,.06) 1px, transparent 1px);
-        }
-        .admin-orb-1 {
-          background: radial-gradient(circle, rgba(37,99,235,.2), transparent);
-        }
-        .admin-orb-2 {
-          background: radial-gradient(circle, rgba(20,184,166,.16), transparent);
-        }
-        .admin-eyebrow {
-          color: #2563eb;
-          background: rgba(37,99,235,.08);
-          border-color: rgba(37,99,235,.24);
-        }
-        .admin-title em { color: #14b8a6; }
-        .admin-date { color: #64748b; }
         .admin-badge {
-          border-color: #dbe6ff;
-          background: #fff;
+          display: inline-flex; align-items: center; gap: 8px;
+          background: var(--card); border: 1.5px solid var(--border);
+          padding: 10px 18px; border-radius: 14px;
+          font-size: 12px; font-weight: 800; color: var(--foreground);
         }
-        .admin-badge svg { color: #2563eb; }
         .admin-refresh-btn {
-          background: linear-gradient(120deg, #2563eb 0%, #14b8a6 100%);
+          display: inline-flex; align-items: center; gap: 8px;
+          background: var(--primary); color: #fff; border: none;
+          padding: 12px 24px; border-radius: 14px;
+          font-size: 13px; font-weight: 800; cursor: pointer;
+          transition: all .2s; box-shadow: 0 10px 25px -5px color-mix(in srgb, var(--primary) 40%, transparent);
         }
-        .admin-refresh-btn:hover { background: linear-gradient(120deg, #1d4ed8 0%, #0f9f91 100%); }
+        .admin-refresh-btn:hover { transform: translateY(-2px); filter: brightness(1.1); }
+
+        /* Tabs */
         .admin-tabs {
-          border-color: #dbe6ff;
-          box-shadow: 0 8px 24px rgba(37,99,235,.08);
+          display: flex; gap: 10px; margin-bottom: 48px;
+          background: var(--card); padding: 8px; border-radius: 20px;
+          border: 1.5px solid var(--border); box-shadow: 0 10px 30px rgba(0,0,0,0.03);
+          overflow-x: auto; scroll-hide: true;
         }
-        .admin-tab.active {
-          background: #2563eb;
-          box-shadow: 0 8px 18px rgba(37,99,235,.25);
+        .admin-tab {
+          padding: 12px 24px; border-radius: 14px; border: none; background: transparent;
+          font-size: 13px; font-weight: 800; color: var(--muted-foreground); cursor: pointer;
+          transition: all .2s; text-transform: uppercase; letter-spacing: 0.05em;
         }
-        .admin-tab:not(.active):hover {
-          background: #eff6ff;
-          color: #1e40af;
+        .admin-tab.active { background: var(--primary); color: #fff; box-shadow: 0 8px 16px -4px color-mix(in srgb, var(--primary) 40%, transparent); }
+        .admin-tab:not(.active):hover { background: var(--secondary); color: var(--primary); }
+
+        /* Stats Grid */
+        .admin-stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 20px; }
+        .admin-stat-card {
+          position: relative; background: var(--card); border: 1.5px solid var(--border); padding: 28px; border-radius: 24px;
+          display: flex; align-items: flex-start; gap: 20px; overflow: hidden; transition: all .3s;
         }
-        .admin-stat-card,
-        .admin-section {
-          border-color: #dbe6ff;
-          box-shadow: 0 10px 26px rgba(15,23,42,.06);
+        .admin-stat-card:hover { border-color: var(--primary); transform: translateY(-4px); box-shadow: 0 20px 40px -10px rgba(0,0,0,0.05); }
+        .admin-stat-icon {
+          width: 52px; height: 52px; border-radius: 16px;
+          background: var(--secondary); display: flex; align-items: center; justify-content: center;
+          font-size: 24px; flex-shrink: 0;
         }
-        .admin-stat-card:hover {
-          box-shadow: 0 16px 34px rgba(15,23,42,.1);
-        }
-        .admin-stat-label,
-        .admin-section-sub,
-        .admin-table th {
-          color: #64748b;
-        }
-        .admin-view-all {
-          color: #2563eb;
-          background: #eff6ff;
-          border: 1px solid #bfdbfe;
-        }
-        .admin-view-all:hover { background: #dbeafe; }
-        .admin-table td {
-          border-bottom-color: #e2e8f0;
-          color: #334155;
-        }
-        .admin-table tr:hover td { background: #f8fbff; }
-        .admin-dept-tag {
-          background: #f1f5f9;
-          color: #334155;
-        }
-        .admin-doctor-row,
-        .admin-payment-row {
-          border-color: #e2e8f0;
-        }
-        .admin-doctor-row:hover,
-        .admin-payment-row:hover { background: #f8fbff; }
-        .admin-doc-avatar {
-          background: linear-gradient(135deg, #2563eb, #14b8a6);
-        }
-        .admin-pay-icon { background: #eff6ff; }
-        .admin-progress-track { background: #e2e8f0; }
-        .admin-bar { background: linear-gradient(to top, #2563eb, #3b82f6); }
-        .admin-bar.secondary { background: linear-gradient(to top, #14b8a6, #2dd4bf); }
+        .admin-stat-body { display: flex; flex-direction: column; }
+        .admin-stat-label { font-size: 11px; font-weight: 800; text-transform: uppercase; color: var(--muted-foreground); letter-spacing: .12em; margin-bottom: 4px; }
+        .admin-stat-value { font-size: 28px; font-weight: 900; color: var(--foreground); line-height: 1; }
+        .admin-stat-sub { font-size: 12px; color: var(--muted-foreground); margin-top: 6px; font-weight: 600; }
+
+        /* Sections Grid */
+        .admin-sections-grid { display: grid; grid-template-columns: repeat(12, 1fr); gap: 32px; }
+        .admin-section { grid-column: span 6; background: var(--card); border: 1.5px solid var(--border); border-radius: 32px; padding: 32px; box-shadow: 0 10px 30px rgba(0,0,0,0.02); }
+        .admin-section.full { grid-column: span 12; }
+        .admin-section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; padding-bottom: 20px; border-bottom: 1.5px solid var(--border); }
+        .admin-section-title { font-size: 20px; font-weight: 900; color: var(--foreground); margin: 0; }
+        .admin-section-sub { font-size: 13px; color: var(--muted-foreground); margin-top: 4px; font-weight: 600; }
+        .admin-view-all { padding: 8px 18px; border-radius: 12px; background: var(--secondary); color: var(--primary); border: none; font-size: 12px; font-weight: 800; cursor: pointer; transition: all .2s; }
+        .admin-view-all:hover { filter: brightness(0.95); }
+
+        /* Table */
+        .admin-table { width: 100%; border-collapse: collapse; }
+        .admin-table th { text-align: left; padding: 16px; font-size: 11px; font-weight: 800; color: var(--muted-foreground); text-transform: uppercase; letter-spacing: .1em; border-bottom: 1.5px solid var(--border); }
+        .admin-table td { padding: 18px 16px; border-bottom: 1.5px solid var(--border); vertical-align: middle; }
+        .admin-table tr:last-child td { border-bottom: none; }
+        .admin-table tr:hover td { background: var(--secondary); }
+
+        .admin-apt-id { font-family: monospace; font-weight: 800; color: var(--primary); }
+        .admin-patient-name { font-weight: 800; color: var(--foreground); font-size: 14px; }
+        .admin-dept-tag { padding: 4px 10px; border-radius: 8px; background: var(--secondary); font-size: 11px; font-weight: 800; }
+        .admin-status-pill { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 20px; font-size: 11px; font-weight: 800; }
+        .admin-status-dot { width: 6px; height: 6px; border-radius: 50%; }
+
+        /* Doctors & Payments */
+        .admin-doctor-row, .admin-payment-row { display: flex; align-items: center; gap: 16px; padding: 16px; border-bottom: 1.5px solid var(--border); transition: all .2s; }
+        .admin-doctor-row:hover, .admin-payment-row:hover { background: var(--secondary); }
+        .admin-doc-avatar { width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: 900; color: #fff; font-size: 16px; }
+        .admin-doc-info { flex: 1; }
+        .admin-doc-name { font-weight: 800; color: var(--foreground); font-size: 14px; }
+        .admin-doc-spec { font-size: 12px; color: var(--muted-foreground); font-weight: 500; }
+        .admin-doc-pts { font-size: 12px; color: var(--primary); font-weight: 700; }
+
+        .admin-pay-icon { width: 40px; height: 40px; border-radius: 10px; background: var(--secondary); display: flex; align-items: center; justify-content: center; font-size: 18px; }
+        .admin-pay-info { flex: 1; }
+        .admin-pay-amount { font-weight: 900; color: var(--foreground); font-size: 15px; }
+        .admin-pay-meta { font-size: 11px; color: var(--muted-foreground); font-weight: 600; margin-top: 2px; }
+
+        /* Progress & Charts */
+        .admin-progress-row { margin-bottom: 20px; }
+        .admin-progress-head { display: flex; justify-content: space-between; margin-bottom: 8px; }
+        .admin-progress-label { font-size: 12px; font-weight: 800; color: var(--muted-foreground); text-transform: uppercase; }
+        .admin-progress-val { font-size: 13px; font-weight: 900; color: var(--foreground); }
+        .admin-progress-track { height: 8px; background: var(--secondary); border-radius: 999px; overflow: hidden; }
+        .admin-progress-fill { height: 100%; border-radius: 999px; transition: width 1s ease-out; }
+
+        .admin-chart-bars { display: flex; align-items: flex-end; gap: 12px; height: 180px; padding-top: 20px; }
+        .admin-chart-col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 12px; height: 100%; justify-content: flex-end; }
+        .admin-bar-wrap { width: 100%; flex: 1; display: flex; align-items: flex-end; justify-content: center; position: relative; }
+        .admin-bar { width: 16px; border-radius: 8px 8px 4px 4px; transition: height .6s cubic-bezier(0.2, 0.8, 0.2, 1); min-height: 4px; }
+        .admin-bar.secondary { width: 12px; opacity: 0.4; margin-left: -6px; }
+        .admin-bar-label { font-size: 10px; font-weight: 800; color: var(--muted-foreground); text-transform: uppercase; }
+
+        /* Forms */
+        .admin-form { display: flex; flex-direction: column; gap: 24px; padding: 24px; background: var(--sidebar); border-radius: 20px; border: 1.5px solid var(--border); margin-bottom: 32px; }
+        .admin-form-group { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .admin-form-group.full { grid-template-columns: 1fr; }
+        .admin-form-label { font-size: 11px; font-weight: 800; text-transform: uppercase; color: var(--muted-foreground); letter-spacing: .1em; margin-bottom: 8px; display: block; }
+        .admin-form input, .admin-form select { width: 100%; padding: 12px 16px; border-radius: 12px; border: 1.5px solid var(--border); background: var(--card); color: var(--foreground); font-family: inherit; font-size: 14px; outline: none; transition: all .2s; }
+        .admin-form input:focus { border-color: var(--primary); box-shadow: 0 0 0 4px color-mix(in srgb, var(--primary) 12%, transparent); }
+        .admin-form-actions { display: flex; gap: 12px; justify-content: flex-end; margin-top: 12px; }
+        .btn-primary { background: var(--primary); color: #fff; border: none; padding: 12px 24px; border-radius: 12px; font-weight: 800; cursor: pointer; transition: all .2s; }
+        .btn-cancel { background: var(--card); border: 1.5px solid var(--border); color: var(--foreground); padding: 12px 24px; border-radius: 12px; font-weight: 800; cursor: pointer; }
 
         @media (max-width: 1200px) {
           .admin-stats-grid { grid-template-columns: repeat(2, 1fr); }
@@ -1167,7 +771,8 @@ const AdminPanel = () => {
         }
         @media (max-width: 640px) {
           .admin-stats-grid { grid-template-columns: 1fr; }
-          .admin-title { font-size: 2rem; }
+          .admin-form-group { grid-template-columns: 1fr; }
+          .admin-topbar { flex-direction: column; align-items: flex-start; }
         }
       `}</style>
 
@@ -1226,17 +831,17 @@ const AdminPanel = () => {
 
           {/* ── Stats Grid ── */}
           <div className="admin-stats-grid">
-            <StatCard delay={0}    label="Total Doctors"         value={stats.totalDoctors}          sub={`${stats.activeDoctors} active now`}             icon="👨‍⚕️" accent="#e42320" />
-            <StatCard delay={0.08} label="Total Patients"        value={stats.totalPatients.toLocaleString()} sub="Registered patients"                   icon="🏥"   accent="#059669" />
-            <StatCard delay={0.16} label="Today's Appointments"  value={stats.todayAppointments}     sub={`${stats.pendingAppointments} pending`}           icon="📅"   accent="#d97706" />
-            <StatCard delay={0.24} label="Total Revenue"         value={fmt(stats.totalRevenue)}     sub={`${fmt(stats.todayRevenue)} today`}               icon="💰"   accent="#7c3aed" />
+            <StatCard delay={0}    label="Total Doctors"         value={stats.totalDoctors}          sub={`${stats.activeDoctors} active now`}             icon="👨‍⚕️" accent="var(--primary)" />
+            <StatCard delay={0.08} label="Total Patients"        value={stats.totalPatients.toLocaleString()} sub="Registered patients"                   icon="🏥"   accent="var(--chart-5)" />
+            <StatCard delay={0.16} label="Today's Appointments"  value={stats.todayAppointments}     sub={`${stats.pendingAppointments} pending`}           icon="📅"   accent="var(--primary)" />
+            <StatCard delay={0.24} label="Total Revenue"         value={fmt(stats.totalRevenue)}     sub={`${fmt(stats.todayRevenue)} today`}               icon="💰"   accent="var(--chart-5)" />
           </div>
 
           <div className="admin-stats-grid">
-            <StatCard delay={0.30} label="Completed Appointments" value={stats.completedAppointments.toLocaleString()} sub="All time"       icon="✅"   accent="#22c55e" />
-            <StatCard delay={0.36} label="Pending Appointments"   value={stats.pendingAppointments}                     sub="Require action" icon="⏳"   accent="#f59e0b" />
-            <StatCard delay={0.42} label="Active Doctors"         value={stats.activeDoctors}                           sub="On duty today"  icon="🩺"   accent="#0891b2" />
-            <StatCard delay={0.48} label="Today's Revenue"        value={fmt(stats.todayRevenue)}                       sub="Live earnings"  icon="📈"   accent="#db2777" />
+            <StatCard delay={0.30} label="Completed Appointments" value={stats.completedAppointments.toLocaleString()} sub="All time"       icon="✅"   accent="var(--primary)" />
+            <StatCard delay={0.36} label="Pending Appointments"   value={stats.pendingAppointments}                     sub="Require action" icon="⏳"   accent="var(--chart-5)" />
+            <StatCard delay={0.42} label="Active Doctors"         value={stats.activeDoctors}                           sub="On duty today"  icon="🩺"   accent="var(--primary)" />
+            <StatCard delay={0.48} label="Today's Revenue"        value={fmt(stats.todayRevenue)}                       sub="Live earnings"  icon="📈"   accent="var(--chart-5)" />
           </div>
 
           {/* ── Sections ── */}

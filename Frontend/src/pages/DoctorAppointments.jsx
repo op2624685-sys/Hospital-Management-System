@@ -104,169 +104,171 @@ const DoctorAppointments = () => {
       <style>{`
         .dr-page {
           min-height: 100vh;
-          background:
-            radial-gradient(circle at 100% 0%, rgba(37,99,235,.15), transparent 40%),
-            radial-gradient(circle at 0% 100%, rgba(20,184,166,.15), transparent 42%),
-            linear-gradient(170deg, #f8fbff 0%, #f8fafc 100%);
+          background: var(--background);
+          font-family: 'Outfit', sans-serif;
         }
         .dr-wrap {
           max-width: 1120px;
           margin: 0 auto;
-          padding: 110px 20px 30px;
-          color: #0f172a;
+          padding: 110px 20px 60px;
+          color: var(--foreground);
         }
         .dr-title {
           margin: 0;
-          font-size: clamp(1.8rem, 2.6vw, 2.4rem);
-          letter-spacing: -.02em;
+          font-size: clamp(2.2rem, 3.5vw, 2.8rem);
+          font-weight: 800;
+          letter-spacing: -.03em;
+          color: var(--primary);
         }
         .dr-sub {
-          color: #64748b;
-          margin: 8px 0 18px;
+          color: var(--muted-foreground);
+          margin: 10px 0 24px;
+          font-size: 1.1rem;
         }
         .dr-search {
           width: 100%;
-          padding: 12px 14px;
-          border-radius: 12px;
-          border: 1px solid #dbe6ff;
-          background: #fff;
-          color: #0f172a;
-          margin-bottom: 20px;
-          box-shadow: 0 8px 26px rgba(37,99,235,0.06);
+          padding: 14px 18px;
+          border-radius: 16px;
+          border: 1.5px solid var(--border);
+          background: var(--card);
+          color: var(--foreground);
+          margin-bottom: 28px;
+          box-shadow: 0 4px 20px rgba(0,0,0,0.03);
           outline: none;
+          transition: all 0.2s;
         }
         .dr-search:focus {
-          border-color: #93c5fd;
-          box-shadow: 0 0 0 4px rgba(37,99,235,.12);
+          border-color: var(--primary);
+          box-shadow: 0 0 0 4px color-mix(in srgb, var(--primary) 12%, transparent);
+          background: var(--background);
         }
-        .dr-msg { color: #64748b; }
-        .dr-grid { display: grid; gap: 14px; }
+        .dr-msg { color: var(--muted-foreground); text-align: center; padding: 40px; font-style: italic; }
+        .dr-grid { display: grid; gap: 16px; }
         .dr-card {
-          border: 1px solid #dbe6ff;
-          border-radius: 16px;
-          padding: 16px;
-          background: rgba(255,255,255,.95);
-          box-shadow: 0 10px 30px rgba(15,23,42,.06);
+          border: 1px solid var(--border);
+          border-radius: 20px;
+          padding: 24px;
+          background: var(--card);
+          box-shadow: 0 10px 30px rgba(0,0,0,0.04);
+          transition: all 0.2s;
         }
+        .dr-card:hover { border-color: var(--primary); transform: translateY(-2px); }
         .dr-head {
           display: flex;
           justify-content: space-between;
-          gap: 12px;
+          gap: 16px;
           flex-wrap: wrap;
+          margin-bottom: 20px;
         }
-        .dr-name { font-weight: 700; color: #0f172a; }
-        .dr-email { color: #0284c7; font-size: 13px; }
-        .dr-id { color: #64748b; font-size: 12px; }
+        .dr-name { font-size: 1.2rem; font-weight: 800; color: var(--foreground); }
+        .dr-email { color: var(--primary); font-size: 13px; font-weight: 600; }
+        .dr-id { color: var(--muted-foreground); font-size: 12px; margin-top: 2px; }
+        
         .dr-form-grid {
           display: grid;
           grid-template-columns: 1fr 1fr;
-          gap: 10px;
-          margin-top: 14px;
+          gap: 16px;
+          margin-top: 20px;
         }
-        .dr-label { display: grid; gap: 6px; }
+        .dr-label { display: grid; gap: 8px; }
         .dr-label span {
-          font-size: 12px;
-          color: #475569;
-          font-weight: 600;
+          font-size: 11px;
+          color: var(--muted-foreground);
+          font-weight: 800;
+          text-transform: uppercase;
+          letter-spacing: 0.1em;
         }
         .dr-input {
-          padding: 10px 12px;
-          border-radius: 10px;
-          border: 1px solid #cbd5e1;
-          background: #fff;
-          color: #0f172a;
+          padding: 12px 14px;
+          border-radius: 12px;
+          border: 1.5px solid var(--border);
+          background: var(--background);
+          color: var(--foreground);
+          font-family: inherit;
+          font-size: 14px;
           outline: none;
+          transition: all 0.2s;
         }
-        .dr-input:focus {
-          border-color: #60a5fa;
-          box-shadow: 0 0 0 3px rgba(37,99,235,.12);
-        }
+        .dr-input:focus { border-color: var(--primary); box-shadow: 0 0 0 4px color-mix(in srgb, var(--primary) 12%, transparent); }
+
         .dr-actions {
           display: flex;
-          gap: 8px;
-          margin-top: 12px;
+          gap: 12px;
+          margin-top: 24px;
           flex-wrap: wrap;
         }
         .dr-btn {
-          padding: 10px 14px;
-          border-radius: 10px;
+          padding: 12px 20px;
+          border-radius: 12px;
           font-size: 13px;
-          font-weight: 700;
-          border: 1px solid transparent;
+          font-weight: 800;
+          border: none;
           cursor: pointer;
-          transition: transform 0.1s ease, box-shadow 0.1s ease;
+          transition: all .2s;
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
         }
-        .dr-btn:hover:not(:disabled) {
-          transform: translateY(-1px);
-        }
-        .dr-btn:active:not(:disabled) {
-          transform: scale(0.96);
-        }
+        .dr-btn:hover:not(:disabled) { transform: translateY(-2px); }
+        .dr-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        
         .dr-btn-primary {
-          background: #2563eb;
-          color: #fff;
+          background: var(--primary);
+          color: var(--primary-foreground);
+          box-shadow: 0 4px 12px color-mix(in srgb, var(--primary) 30%, transparent);
         }
-        .dr-btn-primary:hover { background: #1d4ed8; }
-        .dr-btn-success {
-          background: #14b8a6;
-          color: #fff;
-        }
-        .dr-btn-success:hover { background: #0f9f91; }
         .dr-btn-outline {
-          border-color: #bfdbfe;
-          color: #1d4ed8;
-          background: #eff6ff;
+          background: var(--secondary);
+          color: var(--primary);
+          border: 1px solid color-mix(in srgb, var(--primary) 20%, transparent);
         }
-        .dr-btn-outline:hover { background: #dbeafe; }
+        
         .dr-pagination {
           display: flex;
           align-items: center;
           justify-content: center;
-          gap: 14px;
-          margin-top: 30px;
-          padding: 10px;
+          gap: 16px;
+          margin-top: 40px;
         }
-        .dr-page-num {
-          font-weight: 700;
-          color: #1e293b;
-          font-size: 14px;
-          min-width: 80px;
-          text-align: center;
-        }
+        .dr-page-num { font-weight: 800; color: var(--muted-foreground); font-size: 14px; min-width: 80px; text-align: center; }
+
         .dr-badge {
           display: inline-flex;
           align-items: center;
           border-radius: 999px;
-          padding: 4px 10px;
+          padding: 6px 14px;
           font-size: 11px;
-          font-weight: 700;
+          font-weight: 800;
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
         }
-        .dr-badge-pending { color: #a16207; background: #fef3c7; border: 1px solid #fde68a; }
-        .dr-badge-approved { color: #0f766e; background: #ccfbf1; border: 1px solid #99f6e4; }
-        .dr-badge-completed { color: #065f46; background: #d1fae5; border: 1px solid #a7f3d0; }
-        .dr-badge-rejected { color: #991b1b; background: #fee2e2; border: 1px solid #fecaca; }
-        .dr-badge-progress { color: #1e40af; background: #dbeafe; border: 1px solid #bfdbfe; }
+        .dr-badge-pending { color: #d97706; background: rgba(217,119,6,0.1); border: 1px solid rgba(217,119,6,0.2); }
+        .dr-badge-approved { color: #16a34a; background: rgba(22,163,74,0.1); border: 1px solid rgba(22,163,74,0.2); }
+        .dr-badge-completed { color: var(--primary); background: var(--secondary); border: 1px solid color-mix(in srgb, var(--primary) 20%, transparent); }
+        .dr-badge-rejected { color: var(--destructive); background: color-mix(in srgb, var(--destructive) 10%, transparent); border: 1px solid color-mix(in srgb, var(--destructive) 20%, transparent); }
+        .dr-badge-progress { color: var(--primary); background: var(--secondary); border: 1px solid color-mix(in srgb, var(--primary) 30%, transparent); }
+        
         @media (max-width: 760px) {
           .dr-form-grid { grid-template-columns: 1fr; }
         }
       `}</style>
       <Header />
       <div className="dr-wrap">
-        <h1 className="dr-title">Doctor Appointments</h1>
+        <h1 className="dr-title">Manage Consultations</h1>
         <p className="dr-sub">
-          Logged in as doctor #{user?.id}. Update status, time, or reason. Patients get email on every change.
+          Review and update appointment statuses for patient visits.
         </p>
 
         <input
           className="dr-search"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Search by patient name, appointment ID, reason"
+          placeholder="🔎 Search by patient name, ID, or clinical reason..."
         />
 
-        {loading && page === 0 && <PageLoader message="Loading appointments..." />}
+        {loading && page === 0 && <PageLoader message="Fetching clinic schedule..." />}
         {!loading && filtered.length === 0 && (
-          <p className="dr-msg">No appointments found.</p>
+          <p className="dr-msg">No clinical records found.</p>
         )}
 
         <div className="dr-grid">
@@ -277,30 +279,30 @@ const DoctorAppointments = () => {
               <div key={a.appointmentId} className="dr-card">
                 <div className="dr-head">
                   <div>
-                    <div className="dr-name">{a.patient?.name || "Unknown patient"}</div>
+                    <div className="dr-name">{a.patient?.name || "Patient Record"}</div>
                     <div className="dr-email">{a.patient?.email}</div>
-                    <div className="dr-id">ID: {a.appointmentId}</div>
-                    <div className="dr-id">Branch: {a.branch?.name || "N/A"}</div>
+                    <div className="dr-id">REF: {a.appointmentId}</div>
                   </div>
-                  <div style={{ fontSize: 12, color: "#475569" }}>
-                    Current status: <span className={badgeClassByStatus(a.status)}>{a.status}</span>
+                  <div style={{ textAlign: 'right' }}>
+                    <div className={badgeClassByStatus(a.status)}>{a.status}</div>
+                    <div className="dr-id" style={{ marginTop: 8, fontWeight: 700 }}>{a.branch?.name}</div>
                   </div>
                 </div>
 
                 <div className="dr-form-grid">
                   <label className="dr-label">
-                    <span>Appointment time</span>
+                    <span>Scheduled Time</span>
                     <input
                       className="dr-input"
                       type="datetime-local"
                       value={form.appointmentTime}
                       readOnly
-                      style={{ backgroundColor: "#f1f5f9", cursor: "not-allowed" }}
+                      style={{ backgroundColor: "var(--background)", cursor: "not-allowed", opacity: 0.7 }}
                     />
                   </label>
 
                   <label className="dr-label">
-                    <span>Status</span>
+                    <span>Consultation Status</span>
                     <select
                       className="dr-input"
                       value={form.status}
@@ -317,15 +319,12 @@ const DoctorAppointments = () => {
                   </label>
                 </div>
 
-                <label className="dr-label" style={{ marginTop: 10 }}>
-                  <span>Reason</span>
-                  <input
-                    className="dr-input"
-                    value={form.reason}
-                    readOnly
-                    style={{ backgroundColor: "#f1f5f9", cursor: "not-allowed" }}
-                  />
-                </label>
+                <div className="dr-label" style={{ marginTop: 16 }}>
+                  <span>Clinical Reason</span>
+                  <div style={{ background: 'var(--background)', padding: '12px 14px', borderRadius: '12px', fontSize: '14px', border: '1.5px solid var(--border)' }}>
+                    {form.reason || "N/A"}
+                  </div>
+                </div>
 
                 <div className="dr-actions">
                   <button
@@ -333,7 +332,7 @@ const DoctorAppointments = () => {
                     onClick={() => handleUpdate(a)}
                     className="dr-btn dr-btn-primary"
                   >
-                    {a.status === "CANCELLED" ? "Appointment Cancelled" : "Update Appointment"}
+                    {isSaving ? "Updating..." : a.status === "CANCELLED" ? "Booking Cancelled" : "Save Changes"}
                   </button>
                   <button
                     disabled={isSaving}
@@ -354,7 +353,7 @@ const DoctorAppointments = () => {
             onClick={() => loadAppointments(page - 1)}
             className="dr-btn dr-btn-outline"
           >
-            &laquo; Previous
+            ← Previous
           </button>
           <span className="dr-page-num">Page {page + 1}</span>
           <button
@@ -362,7 +361,7 @@ const DoctorAppointments = () => {
             onClick={() => loadAppointments(page + 1)}
             className="dr-btn dr-btn-outline"
           >
-            Next &raquo;
+            Next →
           </button>
         </div>
       </div>

@@ -1,5 +1,6 @@
 package com.hms.dto.Request;
 
+import com.hms.entity.type.PaymentMethodType;
 import java.time.LocalDateTime;
 
 import jakarta.validation.constraints.NotNull;
@@ -32,6 +33,8 @@ public class CreateAppointmentRequestDto {
 
     @Positive(message = "branchId must be positive")
     private Long branchId;
+
+    private PaymentMethodType paymentMethod;
 
     private String appointmentId;
 }

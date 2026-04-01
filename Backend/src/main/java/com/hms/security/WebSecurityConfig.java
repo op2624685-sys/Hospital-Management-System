@@ -65,6 +65,7 @@ public class WebSecurityConfig {
                         sessionConfig -> sessionConfig.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/public/**", "/auth/**").permitAll()
+                        .requestMatchers("/payments/upi/webhook").permitAll()
                         .requestMatchers(HttpMethod.GET, "/departments/**").permitAll()
                         .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**").permitAll()
                         .requestMatchers("/head-admin/**").hasRole(HEADADMIN.name())

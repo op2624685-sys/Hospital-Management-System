@@ -3,10 +3,13 @@ package com.hms.controller;
 import com.hms.dto.Request.CreateAppointmentRequestDto;
 import com.hms.dto.Response.AppointmentResponseDto;
 import com.hms.dto.Response.PaymentInitiationResponse;
+import com.hms.dto.Response.UpiPaymentInitiationResponse;
+import com.hms.dto.Response.UpiPaymentOrderStatusResponse;
 import com.hms.payment.PaymentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -28,11 +31,37 @@ public class PaymentController {
         return ResponseEntity.ok(paymentService.createPaymentForDoctor(doctorId, request));
     }
 
+    @PostMapping("/initiate-upi/{doctorId}")
+    public ResponseEntity<UpiPaymentInitiationResponse> initiateUpiPaymentForDoctor(
+            @PathVariable Long doctorId,
+            @RequestBody CreateAppointmentRequestDto request) {
+        return ResponseEntity.ok(paymentService.initiateUpiPaymentForDoctor(doctorId, request));
+    }
+
     @PostMapping("/confirm-and-book")
     public ResponseEntity<AppointmentResponseDto> confirmAndBook(
             @RequestBody CreateAppointmentRequestDto request,
             @RequestParam String paymentIntentId) throws Exception {
         return ResponseEntity.ok(paymentService.confirmAndBook(request, paymentIntentId));
+    }
+
+    @PostMapping("/confirm-upi-and-book")
+    public ResponseEntity<AppointmentResponseDto> confirmUpiAndBook(
+            @RequestBody CreateAppointmentRequestDto request,
+            @RequestParam String transactionId) {
+        return ResponseEntity.ok(paymentService.confirmUpiAndBook(request, transactionId));
+    }
+
+    @PostMapping("/upi/webhook")
+    public ResponseEntity<String> upiWebhook(
+            @RequestBody String rawBody,
+            @RequestHeader(name = "X-UPI-Signature", required = false) String signature) throws Exception {
+        return ResponseEntity.ok(paymentService.handleUpiWebhook(rawBody, signature));
+    }
+
+    @GetMapping("/upi/order/{orderId}")
+    public ResponseEntity<UpiPaymentOrderStatusResponse> getUpiOrderStatus(@PathVariable String orderId) {
+        return ResponseEntity.ok(paymentService.getUpiOrderStatus(orderId));
     }
 
     @GetMapping("/verify/{paymentIntentId}")

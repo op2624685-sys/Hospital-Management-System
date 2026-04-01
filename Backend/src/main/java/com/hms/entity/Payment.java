@@ -3,6 +3,7 @@ package com.hms.entity;
 import java.time.LocalDateTime;
 
 import jakarta.persistence.Id;
+import com.hms.entity.type.PaymentMethodType;
 import com.hms.entity.type.PaymentStatus;
 
 import jakarta.persistence.Column;
@@ -45,6 +46,9 @@ public class Payment {
 
     @Enumerated(EnumType.STRING)
     private PaymentStatus status;
+
+    @Enumerated(EnumType.STRING)
+    private PaymentMethodType method;
     
     @ManyToOne
     @JoinColumn(name = "appointment_id", nullable = false)

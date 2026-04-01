@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import Header from '../components/Header'
@@ -7,8 +7,8 @@ import API from '../api/api'
 
 gsap.registerPlugin(ScrollTrigger)
 
-const DEFAULT_ACCENT = '#2563eb'
-const DEFAULT_BG = '#eff6ff'
+const DEFAULT_ACCENT = 'var(--primary)'
+const DEFAULT_BG = 'var(--secondary)'
 
 const getApiErrorMessage = (err, fallback) =>
   err?.response?.data?.error || err?.response?.data?.message || fallback
@@ -27,7 +27,6 @@ const Department = () => {
   const [departments, setDepartments] = useState([])
   const [error, setError] = useState('')
 
-  // Fetch departments from backend
   useEffect(() => {
     const fetchDepartments = async () => {
       try {
@@ -81,7 +80,6 @@ const Department = () => {
     fetchDepartments();
   }, []);
 
-  // Animation and ScrollTrigger setup
   useEffect(() => {
     const cards = cardRefs.current.filter(Boolean)
     const total = cards.length
@@ -191,45 +189,38 @@ const Department = () => {
   return (
     <div
       ref={wrapperRef}
-      style={{
-        height: `${departments.length * 130}vh`
-      }}>
+      style={{ height: `${departments.length * 130}vh` }}>
 
       <Header />
 
-      {/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-          PINNED VIEWPORT
-      â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */}
       <div
         ref={containerRef}
         className='relative w-full overflow-hidden'
         style={{ height: '100vh', perspective: '1600px', perspectiveOrigin: 'center 20%', zIndex: 1 }}>
 
-        {/* â”€â”€ Top accent bar â”€â”€ */}
+        {/* Top accent bar */}
         <div
           ref={accentBarRef}
           className='absolute top-0 left-0 w-full h-0.5 z-50'
-          style={{ background: departments[0]?.accent || '#2563eb' }}
+          style={{ background: departments[0]?.accent || 'var(--primary)' }}
         />
 
-        {/* â”€â”€ Progress line â”€â”€ */}
+        {/* Progress line */}
         <div className='absolute top-0.5 left-0 w-full h-0.5 z-50'
-          style={{ background: 'rgba(255,255,255,0.05)' }}>
+          style={{ background: 'var(--border)' }}>
           <div
             ref={progressRef}
             className='h-full rounded-full'
-            style={{ width: '0%', background: departments[0]?.accent || '#2563eb', transition: 'background 0.4s' }}
+            style={{ width: '0%', background: departments[0]?.accent || 'var(--primary)', transition: 'background 0.4s' }}
           />
         </div>
 
-        {/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-            LEFT SIDEBAR
-        â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */}
+        {/* Left sidebar */}
         <div className='hidden md:flex absolute left-6 top-1/2 -translate-y-1/2 z-50 flex-col items-start gap-3'>
           <p
             ref={counterRef}
             className='text-[10px] font-black tracking-widest mb-1 font-mono'
-            style={{ color: '#64748b' }}>
+            style={{ color: 'var(--muted-foreground)' }}>
             01 / {String(departments.length).padStart(2,'0')}
           </p>
 
@@ -249,24 +240,20 @@ const Department = () => {
           <p
             ref={labelRef}
             className='text-[10px] font-black tracking-widest uppercase mt-1'
-            style={{ color: departments[0]?.accent || '#2563eb' }}>
+            style={{ color: departments[0]?.accent || 'var(--primary)' }}>
             {departments[0]?.label || 'Department'}
           </p>
         </div>
 
-        {/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-            SCROLL HINT
-        â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */}
+        {/* Scroll hint */}
         <div className='absolute bottom-5 right-8 z-50 flex items-center gap-2 opacity-30'>
-          <p className='text-[10px] uppercase tracking-widest font-semibold' style={{ color: '#64748b' }}>Scroll</p>
-          <div className='w-4 h-7 border rounded-full flex items-start justify-center pt-1' style={{ borderColor: '#94a3b8' }}>
-            <div className='w-0.5 h-1.5 rounded-full animate-bounce' style={{ background: '#2563eb' }} />
+          <p className='text-[10px] uppercase tracking-widest font-semibold' style={{ color: 'var(--muted-foreground)' }}>Scroll</p>
+          <div className='w-4 h-7 border rounded-full flex items-start justify-center pt-1' style={{ borderColor: 'var(--border)' }}>
+            <div className='w-0.5 h-1.5 rounded-full animate-bounce' style={{ background: 'var(--primary)' }} />
           </div>
         </div>
 
-        {/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-            CARDS
-        â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */}
+        {/* Cards */}
         {departments.map((dept, i) => {
           const DeptComponent = dept.component
           return (
@@ -276,18 +263,18 @@ const Department = () => {
               className='absolute overflow-hidden'
               style={{
                 top:             84,
-                left:            20,  /* adjusted for mobile, original was 52 */
+                left:            20,
                 right:           20,
                 bottom:          16,
                 borderRadius:    20,
-                background:      '#ffffff',
-                border:          '1px solid #dbe6ff',
+                background:      'var(--card)',
+                border:          '1px solid var(--border)',
                 willChange:      'transform, opacity',
                 transformOrigin: 'center top',
-                boxShadow:       `0 8px 60px rgba(0,0,0,0.60), 0 2px 8px rgba(0,0,0,0.40), 0 0 0 1px rgba(255,255,255,0.04)`,
+                boxShadow:       `0 8px 60px rgba(0,0,0,0.10), 0 2px 8px rgba(0,0,0,0.06)`,
               }}>
 
-              {/* â”€â”€ Card top strip â”€â”€ */}
+              {/* Card top strip */}
               <div
                 className='flex flex-col sm:flex-row sm:items-center justify-between px-4 sm:px-8 py-3 border-b gap-3 sm:gap-0'
                 style={{
@@ -296,37 +283,33 @@ const Department = () => {
                 }}>
 
                 <div className='flex items-center gap-3 sm:gap-4'>
-                  {/* Number */}
                   <span
                     className='text-4xl font-black leading-none select-none'
                     style={{ color: `${dept.accent}25` }}>
                     {dept.number}
                   </span>
 
-                  {/* Icon + name */}
                   <div
                     className='w-10 h-10 rounded-xl flex items-center justify-center text-xl'
                     style={{ background: `${dept.accent}15`, boxShadow: `0 0 12px ${dept.accent}20` }}>
                     {dept.icon}
                   </div>
                   <div>
-                    <p className='font-black text-lg leading-none' style={{ color: '#0f172a' }}>{dept.label}</p>
-                    <p className='text-xs mt-0.5 font-medium' style={{ color: '#64748b' }}>Department</p>
+                    <p className='font-black text-lg leading-none' style={{ color: 'var(--foreground)' }}>{dept.label}</p>
+                    <p className='text-xs mt-0.5 font-medium' style={{ color: 'var(--muted-foreground)' }}>Department</p>
                   </div>
                 </div>
 
-                {/* Right meta */}
                 <div className='flex items-center gap-6'>
                   <div className='text-right hidden md:block'>
-                    <p className='text-xs' style={{ color: '#64748b' }}>Head</p>
-                    <p className='text-sm font-bold' style={{ color: '#334155' }}>{dept.head}</p>
+                    <p className='text-xs' style={{ color: 'var(--muted-foreground)' }}>Head</p>
+                    <p className='text-sm font-bold' style={{ color: 'var(--foreground)' }}>{dept.head}</p>
                   </div>
                   <div className='text-right hidden md:block'>
-                    <p className='text-xs' style={{ color: '#64748b' }}>Members</p>
+                    <p className='text-xs' style={{ color: 'var(--muted-foreground)' }}>Members</p>
                     <p className='text-sm font-black' style={{ color: dept.accent }}>{dept.members}</p>
                   </div>
 
-                  {/* Active pill */}
                   <div
                     className='flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold'
                     style={{ background: `${dept.accent}12`, color: dept.accent, border: `1px solid ${dept.accent}25` }}>
@@ -339,20 +322,20 @@ const Department = () => {
                 </div>
               </div>
 
-              {/* â”€â”€ Dept content â”€â”€ */}
+              {/* Dept content */}
               <div
                 className='overflow-y-auto'
-                style={{ height: 'calc(100% - 62px)', background: '#f8fafc' }}>
+                style={{ height: 'calc(100% - 62px)', background: 'var(--background)' }}>
                 <DeptComponent />
               </div>
 
-              {/* â”€â”€ Bottom left accent line â”€â”€ */}
+              {/* Bottom left accent line */}
               <div
                 className='absolute bottom-0 left-0 h-0.5 rounded-br-xl'
                 style={{ width: '30%', background: `linear-gradient(to right, ${dept.accent}, transparent)` }}
               />
 
-              {/* â”€â”€ Subtle top-right glow â”€â”€ */}
+              {/* Subtle top-right glow */}
               <div
                 className='absolute -top-10 -right-10 w-40 h-40 rounded-full pointer-events-none'
                 style={{ background: `radial-gradient(circle, ${dept.accent}10, transparent 70%)` }}
@@ -365,14 +348,14 @@ const Department = () => {
             <div
               className='px-6 py-4 rounded-2xl text-center'
               style={{
-                background: 'rgba(15, 23, 42, 0.06)',
-                border: '1px dashed rgba(15, 23, 42, 0.18)',
-                color: '#0f172a',
+                background: 'var(--card)',
+                border: '1px dashed var(--border)',
+                color: 'var(--foreground)',
               }}>
               <p className='text-sm font-semibold'>
                 {error ? 'Unable to load departments' : 'No departments available'}
               </p>
-              <p className='text-xs mt-1' style={{ color: '#475569' }}>
+              <p className='text-xs mt-1' style={{ color: 'var(--muted-foreground)' }}>
                 {error || 'Ask admin to add departments to branches to see them here.'}
               </p>
             </div>
@@ -384,8 +367,3 @@ const Department = () => {
 }
 
 export default Department
-
-
-
-
-

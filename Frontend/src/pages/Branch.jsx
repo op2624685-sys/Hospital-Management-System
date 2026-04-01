@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { Heart, Search } from 'lucide-react'
 import Header from '../components/Header'
 import BranchCard from '../components/BranchCard'
@@ -51,44 +51,47 @@ const Branch = () => {
   }, [branches])
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white">
+    <div className="min-h-screen" style={{ background: 'var(--background)', color: 'var(--foreground)' }}>
       <Header />
 
       <div className="max-w-7xl mx-auto px-6 pt-28 pb-10">
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-violet-400/30 bg-violet-400/10 text-violet-300 text-xs font-semibold tracking-wide uppercase">
+        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold tracking-wide uppercase"
+          style={{ border: '1px solid color-mix(in srgb, var(--primary) 30%, transparent)', background: 'color-mix(in srgb, var(--primary) 10%, transparent)', color: 'var(--primary)' }}>
           <Heart size={12} fill="currentColor" />
           Our Network
         </div>
 
-        <h1 className="mt-5 text-4xl md:text-6xl font-semibold tracking-tight">Hospital Branches</h1>
-        <p className="mt-3 text-slate-400 max-w-2xl">
+        <h1 className="mt-5 text-4xl md:text-6xl font-semibold tracking-tight" style={{ color: 'var(--foreground)' }}>Hospital Branches</h1>
+        <p className="mt-3 max-w-2xl" style={{ color: 'var(--muted-foreground)' }}>
           Live branch data from backend. Search by branch name, address, email, or contact number.
         </p>
 
-        <div className="mt-8 flex items-center gap-3 rounded-xl border border-slate-700 bg-slate-900 px-4 py-3 max-w-2xl">
-          <Search size={18} className="text-violet-300" />
+        <div className="mt-8 flex items-center gap-3 rounded-xl px-4 py-3 max-w-2xl"
+          style={{ border: '1px solid var(--border)', background: 'var(--card)' }}>
+          <Search size={18} style={{ color: 'var(--primary)' }} />
           <input
-            className="w-full bg-transparent outline-none text-slate-100 placeholder:text-slate-500"
+            className="w-full bg-transparent outline-none"
+            style={{ color: 'var(--foreground)' }}
             placeholder="Search branch..."
             value={query}
             onChange={(e) => setQuery(e.target.value)}
           />
         </div>
-        <div className="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm text-slate-200">
-          <div className="rounded-2xl border border-slate-800 bg-slate-900/70 px-4 py-3">
-            <div className="text-xs uppercase tracking-widest text-slate-400">Total Branches</div>
-            <div className="mt-1 text-2xl font-semibold">{stats.total}</div>
+        <div className="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
+          <div className="rounded-2xl px-4 py-3" style={{ border: '1px solid var(--border)', background: 'var(--card)' }}>
+            <div className="text-xs uppercase tracking-widest" style={{ color: 'var(--muted-foreground)' }}>Total Branches</div>
+            <div className="mt-1 text-2xl font-semibold" style={{ color: 'var(--foreground)' }}>{stats.total}</div>
           </div>
-          <div className="rounded-2xl border border-slate-800 bg-slate-900/70 px-4 py-3">
-            <div className="text-xs uppercase tracking-widest text-slate-400">24×7 Ready</div>
-            <div className="mt-1 text-2xl font-semibold">{stats.openAllDay}</div>
+          <div className="rounded-2xl px-4 py-3" style={{ border: '1px solid var(--border)', background: 'var(--card)' }}>
+            <div className="text-xs uppercase tracking-widest" style={{ color: 'var(--muted-foreground)' }}>24×7 Ready</div>
+            <div className="mt-1 text-2xl font-semibold" style={{ color: 'var(--foreground)' }}>{stats.openAllDay}</div>
           </div>
-          <div className="rounded-2xl border border-slate-800 bg-slate-900/70 px-4 py-3">
-            <div className="text-xs uppercase tracking-widest text-slate-400">ICU Support</div>
-            <div className="mt-1 text-2xl font-semibold">{stats.icuReady}</div>
+          <div className="rounded-2xl px-4 py-3" style={{ border: '1px solid var(--border)', background: 'var(--card)' }}>
+            <div className="text-xs uppercase tracking-widest" style={{ color: 'var(--muted-foreground)' }}>ICU Support</div>
+            <div className="mt-1 text-2xl font-semibold" style={{ color: 'var(--foreground)' }}>{stats.icuReady}</div>
           </div>
         </div>
-        <div className="mt-6 text-sm text-slate-400">
+        <div className="mt-6 text-sm" style={{ color: 'var(--muted-foreground)' }}>
           {loading ? 'Loading branches...' : `${filtered.length} branch${filtered.length !== 1 ? 'es' : ''} found`}
         </div>
 
@@ -99,7 +102,7 @@ const Branch = () => {
         </div>
 
         {!loading && filtered.length === 0 && (
-          <div className="mt-12 text-center text-slate-500">No branches match your search.</div>
+          <div className="mt-12 text-center" style={{ color: 'var(--muted-foreground)' }}>No branches match your search.</div>
         )}
       </div>
     </div>
