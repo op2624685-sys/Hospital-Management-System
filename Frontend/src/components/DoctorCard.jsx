@@ -2,21 +2,21 @@ import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 const specialityConfig = {
-  'Cardiology':    { color: '#2563eb', bg: '#eff6ff', border: '#bfdbfe' },
-  'Neurology':     { color: '#1d4ed8', bg: '#eff6ff', border: '#bfdbfe' },
-  'Pediatrics':    { color: '#14b8a6', bg: '#f0fdfa', border: '#99f6e4' },
-  'Orthopedics':   { color: '#0284c7', bg: '#ecfeff', border: '#bae6fd' },
-  'Dermatology':   { color: '#10b981', bg: '#ecfdf5', border: '#a7f3d0' },
-  'default':       { color: '#0f766e', bg: '#f0fdfa', border: '#99f6e4' },
+  'Cardiology':    { color: '#644a40', bg: '#fff4ec', border: '#ffdfb5' },
+  'Neurology':     { color: '#5c3d2e', bg: '#fff8f2', border: '#ffe6c4' },
+  'Pediatrics':    { color: '#7a5548', bg: '#fef5ef', border: '#ffd4a8' },
+  'Orthopedics':   { color: '#6d4c41', bg: '#fff3e0', border: '#ffcc80' },
+  'Dermatology':   { color: '#8d6e63', bg: '#fbe9e7', border: '#ffccbc' },
+  'default':       { color: '#644a40', bg: '#fff4ec', border: '#ffdfb5' },
 }
 
 const avatarPairs = [
-  ['#2563eb', '#1d4ed8'],
-  ['#14b8a6', '#0f766e'],
-  ['#10b981', '#059669'],
-  ['#0ea5e9', '#0284c7'],
-  ['#22c55e', '#16a34a'],
-  ['#3b82f6', '#0f766e'],
+  ['#644a40', '#3d2b24'],
+  ['#8b5e52', '#5c3d2e'],
+  ['#a07060', '#6d4c41'],
+  ['#7a5548', '#4e342e'],
+  ['#795548', '#5d4037'],
+  ['#6d4c41', '#4e342e'],
 ]
 
 const DoctorCard = ({ doctor, index = 0 }) => {

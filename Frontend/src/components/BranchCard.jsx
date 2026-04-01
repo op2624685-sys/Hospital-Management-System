@@ -1,4 +1,4 @@
-﻿import React from 'react'
+import React from 'react'
 import { MapPin, Phone, Navigation, Calendar, Eye } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 
@@ -53,8 +53,8 @@ const BranchCard = ({ branch, index }) => {
         }
         .card-inner:hover {
           transform: translateY(-6px);
-          box-shadow: 0 22px 60px rgba(0,0,0,.12);
-          border-color: #0f172a;
+          box-shadow: 0 22px 60px rgba(100,74,64,.15);
+          border-color: #644a40;
         }
         .card-hero {
           position: relative;
@@ -173,7 +173,7 @@ const BranchCard = ({ branch, index }) => {
           align-items: center;
           justify-content: center;
           gap: 7px;
-          background: #e42320;
+          background: #644a40;
           color: #fff;
           border: none;
           border-radius: 12px;
@@ -184,7 +184,7 @@ const BranchCard = ({ branch, index }) => {
           cursor: pointer;
           transition: background .2s, transform .15s;
         }
-        .btn-primary:hover { background: #c81c1a; transform: scale(1.02); }
+        .btn-primary:hover { background: #4a3728; transform: scale(1.02); }
         .btn-primary:active { transform: scale(.97); }
         .btn-secondary {
           display: flex;
