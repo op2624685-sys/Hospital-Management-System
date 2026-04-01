@@ -40,8 +40,8 @@ const GenericDepartment = ({ name, icon, description, members, headDoctor, accen
     ]
   }, [sectionsJson, description, headDoctor, members])
 
-  const ACCENT = accent || '#2563eb'
-  const BG = bg || '#eff6ff'
+  const ACCENT = accent || 'var(--primary)'
+  const BG = bg || 'var(--secondary)'
 
   return (
     <div className='flex flex-col md:flex-row h-full overflow-y-auto md:overflow-visible' style={{ fontFamily: 'system-ui, sans-serif' }}>
