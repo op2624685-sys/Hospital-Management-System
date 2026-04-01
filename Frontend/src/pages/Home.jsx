@@ -35,7 +35,7 @@ const Home = () => {
 
       {/* Footer note */}
       <div className='text-center pb-10' style={{ zIndex: 1, position: 'relative' }}>
-        <p className='text-xs' style={{ color: '#4b5563' }}>
+        <p className='text-xs' style={{ color: '#646464' }}>
           © 2026 DELTACARE Hospital · All rights reserved
         </p>
       </div>
