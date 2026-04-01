@@ -6,69 +6,15 @@ import Header from '../components/Header';
 gsap.registerPlugin(ScrollTrigger);
 
 const services = [
-  {
-    title: 'Emergency Care',
-    icon: '🚨',
-    desc: 'Round-the-clock emergency services for critical conditions',
-    details: ['24/7 Availability', 'Rapid response team', 'ICU support', 'Trauma care'],
-    color: 'from-rose-400 to-rose-600'
-  },
-  {
-    title: 'General Surgery',
-    icon: '🔬',
-    desc: 'Advanced surgical procedures with expert surgeons',
-    details: ['Laparoscopic surgery', 'Open surgery', 'Laser surgery', 'Post-op care'],
-    color: 'from-violet-400 to-violet-600'
-  },
-  {
-    title: 'Diagnostic Imaging',
-    icon: '🖼️',
-    desc: 'State-of-the-art imaging technology for accurate diagnosis',
-    details: ['MRI & CT Scans', 'X-Ray & Ultrasound', 'Digital Mammography', '3D Imaging'],
-    color: 'from-blue-400 to-blue-600'
-  },
-  {
-    title: 'Laboratory Services',
-    icon: '🧪',
-    desc: 'Comprehensive lab testing with quick results',
-    details: ['Blood tests', 'Pathology', 'Microbiology', 'Biochemistry'],
-    color: 'from-green-400 to-green-600'
-  },
-  {
-    title: 'Pharmacy',
-    icon: '💊',
-    desc: 'Full-service pharmacy with medications and consultation',
-    details: ['Prescription filling', 'Generic alternatives', 'Drug counseling', 'Home delivery'],
-    color: 'from-yellow-400 to-yellow-600'
-  },
-  {
-    title: 'Rehabilitation',
-    icon: '🏃',
-    desc: 'Physical therapy and rehabilitation programs',
-    details: ['Physiotherapy', 'Occupational therapy', 'Speech therapy', 'Home programs'],
-    color: 'from-orange-400 to-orange-600'
-  },
-  {
-    title: 'Cardiac Services',
-    icon: '💓',
-    desc: 'Specialized cardiac care and interventions',
-    details: ['Angiography', 'Angioplasty', 'Heart valve surgery', 'Monitoring'],
-    color: 'from-pink-400 to-pink-600'
-  },
-  {
-    title: 'Mental Health',
-    icon: '🧠',
-    desc: 'Psychiatric and psychological counseling services',
-    details: ['Therapy sessions', 'Counseling', 'Support groups', 'Crisis intervention'],
-    color: 'from-purple-400 to-purple-600'
-  },
-  {
-    title: 'Maternity Care',
-    icon: '👨‍👩‍👧',
-    desc: 'Full prenatal, natal, and postnatal care',
-    details: ['Antenatal care', 'Delivery services', 'Postpartum support', 'Neonatal care'],
-    color: 'from-fuchsia-400 to-fuchsia-600'
-  },
+  { title: 'Emergency Care', icon: '🚨', desc: 'Round-the-clock emergency services for critical conditions', details: ['24/7 Availability', 'Rapid response team', 'ICU support', 'Trauma care'], color: 'from-rose-400 to-rose-600' },
+  { title: 'General Surgery', icon: '🔬', desc: 'Advanced surgical procedures with expert surgeons', details: ['Laparoscopic surgery', 'Open surgery', 'Laser surgery', 'Post-op care'], color: 'from-amber-500 to-orange-600' },
+  { title: 'Diagnostic Imaging', icon: '🖼️', desc: 'State-of-the-art imaging technology for accurate diagnosis', details: ['MRI & CT Scans', 'X-Ray & Ultrasound', 'Digital Mammography', '3D Imaging'], color: 'from-amber-400 to-yellow-500' },
+  { title: 'Laboratory Services', icon: '🧪', desc: 'Comprehensive lab testing with quick results', details: ['Blood tests', 'Pathology', 'Microbiology', 'Biochemistry'], color: 'from-green-400 to-green-600' },
+  { title: 'Pharmacy', icon: '💊', desc: 'Full-service pharmacy with medications and consultation', details: ['Prescription filling', 'Generic alternatives', 'Drug counseling', 'Home delivery'], color: 'from-yellow-400 to-yellow-600' },
+  { title: 'Rehabilitation', icon: '🏃', desc: 'Physical therapy and rehabilitation programs', details: ['Physiotherapy', 'Occupational therapy', 'Speech therapy', 'Home programs'], color: 'from-orange-400 to-orange-600' },
+  { title: 'Cardiac Services', icon: '💓', desc: 'Specialized cardiac care and interventions', details: ['Angiography', 'Angioplasty', 'Heart valve surgery', 'Monitoring'], color: 'from-pink-400 to-rose-500' },
+  { title: 'Mental Health', icon: '🧠', desc: 'Psychiatric and psychological counseling services', details: ['Therapy sessions', 'Counseling', 'Support groups', 'Crisis intervention'], color: 'from-orange-400 to-amber-600' },
+  { title: 'Maternity Care', icon: '👨‍👩‍👧', desc: 'Full prenatal, natal, and postnatal care', details: ['Antenatal care', 'Delivery services', 'Postpartum support', 'Neonatal care'], color: 'from-stone-400 to-stone-600' },
 ];
 
 const Services = () => {
@@ -105,19 +51,19 @@ const Services = () => {
       <section className='relative min-h-fit py-20 px-5 lg:px-20' style={{ zIndex: 1 }}>
         <div className='text-center pt-16 lg:pt-24'>
           <span className='inline-flex items-center gap-2 text-xs font-bold px-4 py-2 rounded-full uppercase tracking-widest mb-6'
-            style={{ background: 'rgba(232,121,249,0.10)', border: '1px solid rgba(232,121,249,0.22)', color: '#e879f9' }}>
+            style={{ background: 'color-mix(in srgb, var(--primary) 10%, transparent)', border: '1px solid color-mix(in srgb, var(--primary) 22%, transparent)', color: 'var(--primary)' }}>
             Comprehensive Care
           </span>
 
-          <h1 ref={headingRef} className='text-3xl md:text-5xl lg:text-6xl font-black leading-tight mb-6' style={{ color: '#f0f0ff' }}>
+          <h1 ref={headingRef} className='text-3xl md:text-5xl lg:text-6xl font-black leading-tight mb-6' style={{ color: 'var(--foreground)' }}>
             Our Medical{' '}
             <span className='text-transparent bg-clip-text'
-              style={{ backgroundImage: 'linear-gradient(135deg, #a78bfa, #e879f9)' }}>
+              style={{ backgroundImage: 'linear-gradient(135deg, var(--primary), var(--chart-5))' }}>
               Services
             </span>
           </h1>
 
-          <p className='text-base md:text-lg max-w-2xl mx-auto' style={{ color: '#9ca3af' }}>
+          <p className='text-base md:text-lg max-w-2xl mx-auto' style={{ color: 'var(--muted-foreground)' }}>
             We provide a wide range of medical services to ensure complete healthcare for all ages
           </p>
         </div>
@@ -129,23 +75,23 @@ const Services = () => {
           {services.map((service, i) => (
             <div key={i}
               className='service-card group rounded-2xl p-6 md:p-8 transition-all duration-300 hover:-translate-y-2 cursor-pointer'
-              style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}
-              onMouseEnter={e => { e.currentTarget.style.boxShadow = '0 20px 48px rgba(0,0,0,0.35)'; e.currentTarget.style.borderColor = 'rgba(167,139,250,0.20)'; }}
-              onMouseLeave={e => { e.currentTarget.style.boxShadow = 'none'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)'; }}>
+              style={{ background: 'var(--card)', border: '1px solid var(--border)' }}
+              onMouseEnter={e => { e.currentTarget.style.boxShadow = '0 20px 48px color-mix(in srgb, var(--primary) 15%, transparent)'; e.currentTarget.style.borderColor = 'var(--ring)'; }}
+              onMouseLeave={e => { e.currentTarget.style.boxShadow = 'none'; e.currentTarget.style.borderColor = 'var(--border)'; }}>
 
               <div className={`w-14 lg:w-16 h-14 lg:h-16 bg-linear-to-br ${service.color} rounded-2xl flex items-center justify-center text-2xl lg:text-3xl mb-4 group-hover:scale-110 transition-transform duration-300`}>
                 {service.icon}
               </div>
 
-              <h3 className='font-black text-lg lg:text-xl mb-2' style={{ color: '#f0f0ff' }}>{service.title}</h3>
-              <p className='text-sm leading-relaxed mb-4' style={{ color: '#9ca3af' }}>{service.desc}</p>
+              <h3 className='font-black text-lg lg:text-xl mb-2' style={{ color: 'var(--foreground)' }}>{service.title}</h3>
+              <p className='text-sm leading-relaxed mb-4' style={{ color: 'var(--muted-foreground)' }}>{service.desc}</p>
 
-              <div className='mb-4 pb-4' style={{ borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
-                <p className='text-xs font-semibold uppercase tracking-wider mb-2' style={{ color: '#a78bfa' }}>What's included:</p>
+              <div className='mb-4 pb-4' style={{ borderBottom: '1px solid var(--border)' }}>
+                <p className='text-xs font-semibold uppercase tracking-wider mb-2' style={{ color: 'var(--primary)' }}>What's included:</p>
                 <ul className='space-y-1'>
                   {service.details.map((detail, j) => (
-                    <li key={j} className='text-xs flex items-center gap-2' style={{ color: '#9ca3af' }}>
-                      <span style={{ color: '#a78bfa' }}>✓</span>
+                    <li key={j} className='text-xs flex items-center gap-2' style={{ color: 'var(--muted-foreground)' }}>
+                      <span style={{ color: 'var(--primary)' }}>✓</span>
                       {detail}
                     </li>
                   ))}
@@ -154,7 +100,7 @@ const Services = () => {
 
               <button
                 className='w-full py-2 px-4 rounded-lg font-semibold text-sm transition-all duration-300 opacity-0 group-hover:opacity-100'
-                style={{ background: 'rgba(167,139,250,0.10)', color: '#a78bfa' }}>
+                style={{ background: 'color-mix(in srgb, var(--primary) 10%, transparent)', color: 'var(--primary)' }}>
                 Learn More
               </button>
             </div>
@@ -163,7 +109,7 @@ const Services = () => {
       </section>
 
       <div className='text-center py-10 px-5' style={{ zIndex: 1, position: 'relative' }}>
-        <p className='text-xs' style={{ color: '#4b5563' }}>
+        <p className='text-xs' style={{ color: 'var(--muted-foreground)' }}>
           © 2026 DELTACARE Hospital · All rights reserved
         </p>
       </div>
