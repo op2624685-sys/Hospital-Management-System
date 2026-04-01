@@ -91,7 +91,6 @@ const AppointmentBooking = () => {
     fetchBookedSlots();
   }, [doctorId, appointmentDate]);
 
-  // Close dropdown on outside click
   useEffect(() => {
     const handler = (e) => {
       if (doctorDropdownRef.current && !doctorDropdownRef.current.contains(e.target)) {
@@ -198,10 +197,6 @@ const AppointmentBooking = () => {
     }
   };
 
-  const initials = user?.username
-    ? user.username.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
-    : 'P';
-
   const timeSlots = (() => {
     const slots = [];
     for (let h = START_HOUR; h < END_HOUR; h++) {
@@ -237,414 +232,142 @@ const AppointmentBooking = () => {
   return (
     <>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;0,700;1,600&family=Outfit:wght@300;400;500;600&display=swap');
-
         .ab-wrap {
           width: 100%;
-          max-width: 460px;
+          max-width: 480px;
           font-family: 'Outfit', sans-serif;
         }
 
-        /* card */
         .ab-card {
-          background: #fff;
-          border: 1.5px solid #ebe8e2;
-          border-radius: 28px;
+          background: var(--card);
+          border: 1px solid var(--border);
+          border-radius: 32px;
           overflow: hidden;
-          box-shadow: 0 20px 60px rgba(0,0,0,.08);
-          animation: abCardIn .6s ease both;
+          box-shadow: 0 30px 60px -12px rgba(0,0,0,0.1);
+          animation: abSlideUp .6s cubic-bezier(0.2, 0.8, 0.2, 1) both;
         }
-        @keyframes abCardIn {
-          from { opacity: 0; transform: translateY(24px); }
+        @keyframes abSlideUp {
+          from { opacity: 0; transform: translateY(30px); }
           to   { opacity: 1; transform: translateY(0); }
         }
 
-        /* header banner */
         .ab-banner {
           position: relative;
-          background: linear-gradient(135deg, #1e3a8a 0%, #0f766e 100%);
-          padding: 28px 32px;
+          background: linear-gradient(135deg, var(--primary) 0%, var(--chart-5) 100%);
+          padding: 32px;
           overflow: hidden;
         }
         .ab-banner-ring {
-          position: absolute;
-          border-radius: 50%;
-          border: 1.5px solid rgba(255,255,255,.08);
+          position: absolute; border-radius: 50%; border: 1.5px solid rgba(255,255,255,.06);
         }
-        .ab-banner-ring-1 { width: 180px; height: 180px; top: -80px; right: -50px; }
-        .ab-banner-ring-2 { width: 100px; height: 100px; bottom: -40px; left: 20px; }
-        .ab-banner-accent {
-          position: absolute;
-          width: 120px; height: 120px;
-          top: -30px; right: 30px;
-          background: radial-gradient(circle, rgba(37,99,235,.4), transparent);
-          filter: blur(30px);
-        }
-        .ab-banner-inner {
-          position: relative;
-          z-index: 1;
-          display: flex;
-          align-items: center;
-          gap: 16px;
-        }
+        .ab-banner-ring-1 { width: 220px; height: 220px; top: -110px; right: -60px; }
+        .ab-banner-ring-2 { width: 140px; height: 140px; bottom: -60px; left: 10px; }
+        
+        .ab-banner-inner { position: relative; z-index: 1; display: flex; align-items: center; gap: 20px; }
         .ab-banner-icon {
-          width: 52px; height: 52px;
-          border-radius: 16px;
-          background: rgba(255,255,255,.18);
-          border: 1px solid rgba(255,255,255,.35);
-          display: flex; align-items: center; justify-content: center;
-          flex-shrink: 0;
+          width: 56px; height: 56px; border-radius: 18px;
+          background: rgba(255,255,255,.15); border: 1px solid rgba(255,255,255,.3);
+          display: flex; align-items: center; justify-content: center; flex-shrink: 0;
         }
-        .ab-banner-icon svg { color: #ffffff; }
-        .ab-banner-text h2 {
-          font-family: 'Cormorant Garamond', serif;
-          font-size: 1.6rem;
-          font-weight: 700;
-          color: #fff;
-          line-height: 1.1;
-          margin: 0 0 4px;
-        }
-        .ab-banner-text p {
-          font-size: 13px;
-          color: rgba(255,255,255,.45);
-          margin: 0;
-        }
+        .ab-banner-text h2 { font-size: 1.8rem; font-weight: 800; color: #fff; line-height: 1.1; margin: 0 0 4px; }
+        .ab-banner-text p { font-size: 13px; color: rgba(255,255,255,.7); margin: 0; }
 
-        /* pre-fill pill */
-        .ab-prefill {
-          margin: 20px 32px 0;
-          display: flex;
-          align-items: center;
-          gap: 12px;
-          background: #eff6ff;
-          border: 1px solid rgba(37,99,235,.16);
-          border-radius: 14px;
-          padding: 12px 16px;
-          animation: abCardIn .5s .1s ease both;
-          opacity: 0;
-          animation-fill-mode: forwards;
-        }
-        .ab-prefill-avatar {
-          width: 36px; height: 36px;
-          border-radius: 50%;
-          background: linear-gradient(135deg, #2563eb, #14b8a6);
-          display: flex; align-items: center; justify-content: center;
-          font-family: 'Cormorant Garamond', serif;
-          font-size: .9rem; font-weight: 700; color: #fff;
-          flex-shrink: 0;
-        }
-        .ab-prefill-info { flex: 1; }
-        .ab-prefill-name {
-          font-size: 13px; font-weight: 600; color: #1a1a1a;
-        }
-        .ab-prefill-meta { font-size: 11px; color: #aaa; }
-        .ab-prefill-badge {
-          font-size: 10px; font-weight: 600; letter-spacing: .08em;
-          text-transform: uppercase; color: #1d4ed8;
-          background: rgba(37,99,235,.1);
-          border: 1px solid rgba(37,99,235,.2);
-          padding: 3px 8px; border-radius: 999px;
-        }
-
-        /* form body */
-        .ab-form { padding: 24px 32px 32px; display: flex; flex-direction: column; gap: 20px; }
-
-        /* field */
-        .ab-field { display: flex; flex-direction: column; gap: 7px; position: relative; }
-        .ab-label {
-          font-size: 11px; font-weight: 600;
-          letter-spacing: .12em; text-transform: uppercase;
-          color: #bbb;
-          display: flex; align-items: center; gap: 6px;
-        }
-        .ab-label svg { color: #2563eb; }
-
+        .ab-form { padding: 32px; display: flex; flex-direction: column; gap: 24px; }
+        .ab-field { display: flex; flex-direction: column; gap: 10px; position: relative; }
+        .ab-label { font-size: 11px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; color: var(--muted-foreground); display: flex; align-items: center; gap: 8px; }
+        
         .ab-input-wrap { position: relative; }
         .ab-input {
           width: 100%;
-          padding: 13px 16px 13px 42px;
-          background: #faf8f5;
-          border: 1.5px solid #ebe8e2;
-          border-radius: 14px;
-          font-family: 'Outfit', sans-serif;
-          font-size: 14px;
-          color: #1a1a1a;
-          outline: none;
-          transition: border-color .2s, box-shadow .2s, background .2s;
-        }
-        .ab-input:focus {
-          border-color: #2563eb;
-          background: #fff;
-          box-shadow: 0 0 0 4px rgba(37,99,235,.12);
-        }
-        .ab-input::placeholder { color: #ccc; }
-        .ab-input-icon {
-          position: absolute;
-          left: 14px; top: 50%;
-          transform: translateY(-50%);
-          color: #ccc;
-          pointer-events: none;
-          transition: color .2s;
-        }
-        .ab-field:focus-within .ab-input-icon { color: #2563eb; }
-
-        /* selected doctor checkmark */
-        .ab-check {
-          position: absolute;
-          right: 14px; top: 50%;
-          transform: translateY(-50%);
-          width: 20px; height: 20px;
-          border-radius: 50%;
-          background: #22c55e;
-          display: flex; align-items: center; justify-content: center;
-        }
-        .ab-change-btn {
-          position: absolute;
-          right: 42px;
-          top: 50%;
-          transform: translateY(-50%);
-          border: 1px solid #bfdbfe;
-          background: #eff6ff;
-          color: #1d4ed8;
-          border-radius: 999px;
-          padding: 2px 8px;
-          font-size: 10px;
-          font-weight: 700;
-          letter-spacing: .06em;
-          text-transform: uppercase;
-          cursor: pointer;
-        }
-        .ab-change-btn:hover { background: #dbeafe; }
-
-        /* dropdown */
-        .ab-dropdown {
-          position: absolute;
-          top: calc(100% + 6px);
-          left: 0; right: 0;
-          background: #fff;
-          border: 1.5px solid #ebe8e2;
+          padding: 14px 16px 14px 44px;
+          background: var(--background);
+          border: 1.5px solid var(--border);
           border-radius: 16px;
-          box-shadow: 0 16px 40px rgba(0,0,0,.1);
-          z-index: 50;
-          overflow: hidden;
-          animation: dropIn .18s ease both;
+          font-family: inherit;
+          font-size: 14px;
+          color: var(--foreground);
+          outline: none;
+          transition: all 0.2s;
         }
-        @keyframes dropIn {
-          from { opacity: 0; transform: translateY(-6px); }
-          to   { opacity: 1; transform: translateY(0); }
-        }
-        .ab-drop-item {
-          display: flex; align-items: center; gap: 12px;
-          padding: 12px 16px;
-          cursor: pointer;
-          transition: background .15s;
-          border-bottom: 1px solid #f5f0ea;
-        }
-        .ab-drop-item:last-child { border-bottom: none; }
-        .ab-drop-item:hover { background: #eff6ff; }
-        .ab-drop-avatar {
-          width: 34px; height: 34px;
-          border-radius: 50%;
-          background: linear-gradient(135deg, #2563eb, #14b8a6);
-          display: flex; align-items: center; justify-content: center;
-          font-family: 'Cormorant Garamond', serif;
-          font-size: .85rem; font-weight: 700; color: #fff;
-          flex-shrink: 0;
-        }
-        .ab-drop-name { font-size: 13px; font-weight: 600; color: #1a1a1a; }
-        .ab-drop-spec { font-size: 11px; color: #aaa; }
+        .ab-input:focus { border-color: var(--primary); background: var(--card); box-shadow: 0 0 0 4px color-mix(in srgb, var(--primary) 12%, transparent); }
+        .ab-input-icon { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: var(--muted-foreground); transition: color .2s; }
+        .ab-field:focus-within .ab-input-icon { color: var(--primary); }
 
-        /* divider */
-        .ab-divider { height: 1px; background: #f0ece6; }
+        .ab-check { position: absolute; right: 16px; top: 50%; transform: translateY(-50%); width: 22px; height: 22px; border-radius: 50%; background: #22c55e; display: flex; align-items: center; justify-content: center; color: #fff; }
+        .ab-change-btn { position: absolute; right: 48px; top: 50%; transform: translateY(-50%); border: 1px solid var(--border); background: var(--secondary); color: var(--primary); border-radius: 999px; padding: 4px 10px; font-size: 10px; font-weight: 800; text-transform: uppercase; cursor: pointer; }
 
-        /* patient pill */
-        .ab-patient-pill {
-          display: flex; align-items: center; gap: 12px;
-          background: #f5fdf7;
-          border: 1px solid #bbf7d0;
-          border-radius: 14px;
-          padding: 12px 16px;
-        }
-        .ab-patient-avatar {
-          width: 34px; height: 34px;
-          border-radius: 50%;
-          background: linear-gradient(135deg, #22c55e, #16a34a);
-          display: flex; align-items: center; justify-content: center;
-          font-family: 'Cormorant Garamond', serif;
-          font-size: .85rem; font-weight: 700; color: #fff;
-          flex-shrink: 0;
-        }
-        .ab-patient-label { font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: #86efac; }
-        .ab-patient-name { font-size: 13px; font-weight: 600; color: #1a1a1a; }
+        .ab-dropdown { position: absolute; top: calc(100% + 8px); left: 0; right: 0; background: var(--card); border: 1px solid var(--border); border-radius: 20px; box-shadow: 0 20px 50px rgba(0,0,0,0.15); z-index: 50; overflow: hidden; }
+        .ab-drop-item { display: flex; align-items: center; gap: 12px; padding: 14px 18px; cursor: pointer; transition: background .15s; border-bottom: 1px solid var(--border); }
+        .ab-drop-item:hover { background: var(--secondary); }
+        .ab-drop-avatar { width: 36px; height: 36px; border-radius: 12px; background: var(--primary); display: flex; align-items: center; justify-content: center; font-weight: 800; color: #fff; flex-shrink: 0; font-size: 13px; }
+        .ab-drop-name { font-size: 14px; font-weight: 700; color: var(--foreground); }
+        .ab-drop-spec { font-size: 11px; color: var(--muted-foreground); }
 
-        /* submit btn */
+        .ab-slots { display: grid; grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); gap: 10px; }
+        .ab-slot { padding: 12px 10px; border-radius: 12px; border: 1.5px solid var(--border); background: var(--card); font-size: 13px; font-weight: 700; color: var(--foreground); cursor: pointer; transition: all .15s; text-align: center; }
+        .ab-slot:hover:not(:disabled) { border-color: var(--primary); background: var(--secondary); color: var(--primary); }
+        .ab-slot-selected { border-color: var(--primary) !important; background: var(--primary) !important; color: #fff !important; }
+        .ab-slot-booked { opacity: 0.35; cursor: not-allowed; text-decoration: line-through; }
+        .ab-slot-disabled { opacity: 0.3; cursor: not-allowed; }
+
         .ab-submit {
           width: 100%;
-          display: flex; align-items: center; justify-content: center; gap: 10px;
-          background: linear-gradient(120deg, #2563EB 0%, #14B8A6 100%);
-          color: #fff;
-          border: none;
-          border-radius: 16px;
-          padding: 15px;
-          font-family: 'Outfit', sans-serif;
-          font-size: 14px; font-weight: 600;
-          cursor: pointer;
-          transition: background .2s, transform .15s, box-shadow .2s;
-          box-shadow: 0 8px 28px rgba(37,99,235,.28);
-          letter-spacing: .02em;
+          display: flex; align-items: center; justify-content: center; gap: 12px;
+          background: var(--primary); color: #fff; border: none; border-radius: 18px;
+          padding: 18px; font-size: 15px; font-weight: 800; cursor: pointer;
+          transition: all .2s; box-shadow: 0 10px 30px -10px color-mix(in srgb, var(--primary) 40%, transparent);
         }
-        .ab-submit:hover { filter: brightness(1.04); transform: translateY(-2px); box-shadow: 0 12px 36px rgba(20,184,166,.35); }
-        .ab-submit:active { transform: scale(.97); }
-        .ab-submit:disabled { opacity: .6; cursor: not-allowed; transform: none; box-shadow: none; }
-        .ab-spinner {
-          width: 16px; height: 16px;
-          border: 2px solid rgba(255,255,255,.35);
-          border-top-color: #fff;
-          border-radius: 50%;
-          animation: spin .7s linear infinite;
-        }
-        @keyframes spin { to { transform: rotate(360deg); } }
-
-        .ab-slot-wrap { display: flex; flex-direction: column; gap: 10px; }
-        .ab-slots {
-          display: grid;
-          grid-template-columns: repeat(auto-fill, minmax(86px, 1fr));
-          gap: 8px;
-        }
-        .ab-slot {
-          padding: 8px 10px;
-          border-radius: 10px;
-          border: 1.5px solid #e2e8f0;
-          background: #fff;
-          font-size: 12px;
-          font-weight: 600;
-          color: #0f172a;
-          cursor: pointer;
-          transition: all .15s ease;
-          text-align: center;
-        }
-        .ab-slot:hover { border-color: #93c5fd; background: #eff6ff; }
-        .ab-slot-selected {
-          border-color: #2563eb;
-          background: #dbeafe;
-          color: #1d4ed8;
-        }
-        .ab-slot-booked {
-          border-color: #fecaca;
-          background: #fef2f2;
-          color: #b91c1c;
-          cursor: not-allowed;
-          text-decoration: line-through;
-        }
-        .ab-slot-disabled {
-          opacity: .6;
-          cursor: not-allowed;
-        }
-        .ab-booked-list {
-          display: flex;
-          flex-wrap: wrap;
-          gap: 6px;
-        }
-        .ab-booked-pill {
-          font-size: 11px;
-          padding: 4px 8px;
-          border-radius: 999px;
-          background: #fef2f2;
-          color: #b91c1c;
-          border: 1px solid #fecaca;
-        }
-        .ab-msg {
-          font-size: 12px;
-          color: #64748b;
-        }
-        .ab-submeta {
-          font-size: 12px;
-          color: #64748b;
-        }
+        .ab-submit:hover:not(:disabled) { transform: translateY(-2px); filter: brightness(1.1); box-shadow: 0 15px 35px -10px color-mix(in srgb, var(--primary) 50%, transparent); }
+        .ab-submit:disabled { opacity: 0.5; cursor: not-allowed; }
+        .ab-msg { font-size: 13px; color: var(--muted-foreground); font-style: italic; }
       `}</style>
 
       <div className="ab-wrap">
         <div className="ab-card">
-
-          {/* Banner */}
           <div className="ab-banner">
             <div className="ab-banner-ring ab-banner-ring-1" />
             <div className="ab-banner-ring ab-banner-ring-2" />
-            <div className="ab-banner-accent" />
             <div className="ab-banner-inner">
               <div className="ab-banner-icon">
-                <svg width="22" height="22" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                    d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                <svg width="24" height="24" fill="none" stroke="#fff" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                 </svg>
               </div>
               <div className="ab-banner-text">
-                <h2>Book Appointment</h2>
-                <p>Schedule your visit with our specialists</p>
+                <h2>Quick Booking</h2>
+                <p>Reserve your clinical evaluation</p>
               </div>
             </div>
           </div>
 
-          {/* Pre-fill pill — shown when navigated from DoctorCard */}
-          {state?.doctorName && (
-            <div className="ab-prefill">
-              <div className="ab-prefill-avatar">
-                {state.doctorName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)}
-              </div>
-              <div className="ab-prefill-info">
-                <div className="ab-prefill-name">Dr. {state.doctorName}</div>
-                <div className="ab-prefill-meta">
-                  {[state.speciality || state.specialization, state.department].filter(Boolean).join(' · ')}
-                </div>
-              </div>
-              <span className="ab-prefill-badge">Pre-filled</span>
-            </div>
-          )}
-
-          {/* Form */}
           <form className="ab-form" onSubmit={handleSubmit}>
-
-            {/* Doctor search */}
             <div className="ab-field" ref={branchDropdownRef}>
-              <label className="ab-label">
-                <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                    d="M3 21h18M5 21V7l8-4 6 4v14M9 9h.01M9 13h.01M9 17h.01M13 9h.01M13 13h.01M13 17h.01" />
-                </svg>
-                Branch
-              </label>
+              <label className="ab-label">Branch</label>
               <div className="ab-input-wrap">
-                <svg className="ab-input-icon" width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                    d="M3 21h18M5 21V7l8-4 6 4v14" />
+                <svg className="ab-input-icon" width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                 </svg>
                 <input
                   className="ab-input"
                   type="text"
                   value={branchName}
                   onChange={handleBranchSearch}
-                  placeholder={branchId ? "Branch selected" : "Search branch by name..."}
+                  placeholder={branchId ? "Branch confirmed" : "Search medical facility..."}
                   readOnly={Boolean(branchId)}
                 />
                 {branchId && (
-                  <button type="button" className="ab-change-btn" onClick={handleChangeBranch}>
-                    Change
-                  </button>
+                  <button type="button" className="ab-change-btn" onClick={handleChangeBranch}>Change</button>
                 )}
                 {branchId && (
                   <div className="ab-check">
-                    <svg width="10" height="10" fill="none" stroke="#fff" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                    </svg>
+                    <svg width="12" height="12" fill="none" stroke="#fff" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={4} d="M5 13l4 4L19 7" /></svg>
                   </div>
                 )}
                 {branchSuggestions.length > 0 && (
                   <div className="ab-dropdown">
                     {branchSuggestions.map(branch => (
                       <div key={branch.id} className="ab-drop-item" onClick={() => handleSelectBranch(branch)}>
-                        <div className="ab-drop-avatar">
-                          {branch.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)}
-                        </div>
+                        <div className="ab-drop-avatar">{branch.name[0]}</div>
                         <div>
                           <div className="ab-drop-name">{branch.name}</div>
                           <div className="ab-drop-spec">{branch.address}</div>
@@ -656,45 +379,32 @@ const AppointmentBooking = () => {
               </div>
             </div>
 
-            {/* Doctor search */}
             <div className="ab-field" ref={doctorDropdownRef}>
-              <label className="ab-label">
-                <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                </svg>
-                Doctor
-              </label>
+              <label className="ab-label">Specialist</label>
               <div className="ab-input-wrap">
-                <svg className="ab-input-icon" width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                <svg className="ab-input-icon" width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                 </svg>
                 <input
                   className="ab-input"
                   type="text"
                   value={doctorName}
                   onChange={handleDoctorSearch}
-                  placeholder="Search doctor by name..."
+                  placeholder="Find specialist by name..."
                 />
                 {doctorId && (
                   <div className="ab-check">
-                    <svg width="10" height="10" fill="none" stroke="#fff" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                    </svg>
+                    <svg width="12" height="12" fill="none" stroke="#fff" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={4} d="M5 13l4 4L19 7" /></svg>
                   </div>
                 )}
-
                 {doctorSuggestions.length > 0 && (
                   <div className="ab-dropdown">
                     {doctorSuggestions.map(doctor => (
                       <div key={doctor.id} className="ab-drop-item" onClick={() => handleSelectDoctor(doctor)}>
-                        <div className="ab-drop-avatar">
-                          {doctor.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)}
-                        </div>
+                        <div className="ab-drop-avatar">{doctor.name[0]}</div>
                         <div>
                           <div className="ab-drop-name">Dr. {doctor.name}</div>
-                          <div className="ab-drop-spec">{doctor.specialization || doctor.speciality || 'General'}</div>
+                          <div className="ab-drop-spec">{doctor.specialization || 'Clinical Specialist'}</div>
                         </div>
                       </div>
                     ))}
@@ -703,45 +413,26 @@ const AppointmentBooking = () => {
               </div>
             </div>
 
-            {/* Reason */}
             <div className="ab-field">
-              <label className="ab-label">
-                <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
-                Reason for Visit
-              </label>
+              <label className="ab-label">Symptom/Reason</label>
               <div className="ab-input-wrap">
-                <svg className="ab-input-icon" width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                <svg className="ab-input-icon" width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                 </svg>
                 <input
                   className="ab-input"
                   type="text"
                   value={reason}
                   onChange={e => setReason(e.target.value)}
-                  placeholder="Describe your symptoms..."
+                  placeholder="Primary reason for visit..."
                   required
                 />
               </div>
             </div>
 
-            {/* Date */}
             <div className="ab-field">
-              <label className="ab-label">
-                <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                    d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                </svg>
-                Appointment Date
-              </label>
-              <div className="ab-input-wrap">
-                <svg className="ab-input-icon" width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                    d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                </svg>
+              <label className="ab-label">Slot & Date</label>
+              <div className="ab-input-wrap mb-3">
                 <input
                   className="ab-input"
                   type="date"
@@ -752,93 +443,43 @@ const AppointmentBooking = () => {
                   required
                 />
               </div>
-            </div>
-
-            {/* Time slots */}
-            <div className="ab-field">
-              <label className="ab-label">
-                <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                Appointment Time
-              </label>
-              <div className="ab-slot-wrap">
-                {!doctorId && (
-                  <div className="ab-msg">
-                    Select a doctor to view available slots.
-                  </div>
-                )}
-                {doctorId && !appointmentDate && (
-                  <div className="ab-msg">
-                    Select a date to view available slots.
-                  </div>
-                )}
-                {doctorId && appointmentDate && (
-                  <>
-                    {loadingSlots ? (
-                      <div className="ab-msg">Loading booked slots...</div>
-                    ) : (
-                      <div className="ab-slots">
-                        {timeSlots.map((slot) => {
-                          const isBooked = bookedSlots.includes(slot);
-                          const isSelected = appointmentSlot === slot;
-                          const isPast = isSlotInPast(appointmentDate, slot);
-                          return (
-                            <button
-                              type="button"
-                              key={slot}
-                              className={`ab-slot ${isBooked ? 'ab-slot-booked' : ''} ${isSelected ? 'ab-slot-selected' : ''} ${isPast ? 'ab-slot-disabled' : ''}`}
-                              onClick={() => (!isBooked && !isPast) && setAppointmentSlot(slot)}
-                              disabled={isBooked || isPast}
-                            >
-                              {slot}
-                            </button>
-                          );
-                        })}
-                      </div>
-                    )}
-
-                    {!loadingSlots && bookedSlots.length > 0 && (
-                      <div>
-                        <div className="ab-submeta" style={{ marginBottom: 6 }}>Already booked:</div>
-                        <div className="ab-booked-list">
-                          {bookedSlots.map((t) => (
-                            <span key={t} className="ab-booked-pill">{t}</span>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                  </>
-                )}
-              </div>
-            </div>
-
-            <div className="ab-divider" />
-
-            {/* Patient pill */}
-            {user && (
-              <div className="ab-patient-pill">
-                <div className="ab-patient-avatar">{initials}</div>
-                <div>
-                  <div className="ab-patient-label">Booking as</div>
-                  <div className="ab-patient-name">{patientName || user.username || 'Patient'}</div>
+              
+              {doctorId && appointmentDate ? (
+                <div className="ab-slot-wrap">
+                  {loadingSlots ? (
+                    <div className="ab-msg">Evaluating availability...</div>
+                  ) : (
+                    <div className="ab-slots">
+                      {timeSlots.map((slot) => {
+                        const isBooked = bookedSlots.includes(slot);
+                        const isSelected = appointmentSlot === slot;
+                        const isPast = isSlotInPast(appointmentDate, slot);
+                        return (
+                          <button
+                            type="button"
+                            key={slot}
+                            className={`ab-slot ${isBooked ? 'ab-slot-booked' : ''} ${isSelected ? 'ab-slot-selected' : ''} ${isPast ? 'ab-slot-disabled' : ''}`}
+                            onClick={() => (!isBooked && !isPast) && setAppointmentSlot(slot)}
+                            disabled={isBooked || isPast}
+                          >
+                            {slot}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
                 </div>
-              </div>
-            )}
-
-            {/* Submit */}
-            <button className="ab-submit" type="submit" disabled={loading}>
-              {loading ? (
-                <><div className="ab-spinner" /> Redirecting to payment...</>
               ) : (
-                <>
-                  <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                  Pay & Confirm Appointment
-                </>
+                <div className="ab-msg">Select specialist and date to see slots.</div>
               )}
+            </div>
+
+            <button
+              className="ab-submit"
+              type="submit"
+              disabled={loading || !branchId || !doctorId || !appointmentDate || !appointmentSlot}
+            >
+              {loading ? "Initializing..." : "Secure Appointment →"}
             </button>
           </form>
         </div>
