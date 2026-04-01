@@ -47,6 +47,13 @@ const MyAppointments = () => {
       });
   }, [appointments, search]);
 
+  const badgeClassByStatus = (status) => {
+    const value = (status || "").toUpperCase();
+    if (value === "CONFIRMED") return "ux-badge ux-badge-approved";
+    if (value === "CANCELLED") return "ux-badge ux-badge-pending";
+    return "ux-badge ux-badge-completed";
+  };
+
   const handleCancel = async (appointment) => {
     setBusyId(appointment.appointmentId);
     try {
@@ -65,23 +72,13 @@ const MyAppointments = () => {
     }
   };
 
-  const badgeClassByStatus = (status) => {
-    const value = (status || "").toUpperCase();
-    if (value === "CONFIRMED") return "ux-badge ux-badge-approved";
-    if (value === "CANCELLED") return "ux-badge ux-badge-pending";
-    return "ux-badge ux-badge-completed";
-  };
-
   return (
     <div className="ux-page">
       <style>{`
         .ux-page {
           min-height: 100vh;
-          background:
-            radial-gradient(circle at 10% 10%, rgba(37,99,235,.12), transparent 40%),
-            radial-gradient(circle at 90% 0%, rgba(20,184,166,.12), transparent 42%),
-            linear-gradient(160deg, #f8fbff 0%, #f8fafc 100%);
-          color: #0f172a;
+          background: var(--background);
+          color: var(--foreground);
         }
         .ux-wrap {
           max-width: 1120px;
@@ -90,144 +87,149 @@ const MyAppointments = () => {
         }
         .ux-hero h1 {
           margin: 0;
-          font-size: clamp(1.75rem, 2.6vw, 2.35rem);
-          letter-spacing: -.02em;
-          color: #0f172a;
+          font-family: 'Outfit', sans-serif;
+          font-size: clamp(2.2rem, 3.5vw, 3rem);
+          font-weight: 800;
+          letter-spacing: -.03em;
+          color: var(--foreground);
         }
         .ux-hero p {
-          margin: 8px 0 18px;
-          color: #64748b;
+          margin: 8px 0 24px;
+          color: var(--muted-foreground);
+          font-size: 1.1rem;
         }
         .ux-input {
           width: 100%;
-          border-radius: 14px;
-          border: 1px solid #dbe6ff;
-          background: #fff;
-          color: #0f172a;
-          padding: 12px 14px;
-          margin-bottom: 16px;
-          box-shadow: 0 8px 28px rgba(37,99,235,0.06);
+          border-radius: 16px;
+          border: 1.5px solid var(--border);
+          background: var(--card);
+          color: var(--foreground);
+          padding: 14px 18px;
+          margin-bottom: 24px;
+          box-shadow: 0 4px 20px rgba(0,0,0,0.03);
           outline: none;
+          transition: all 0.2s;
         }
         .ux-input:focus {
-          border-color: #93c5fd;
-          box-shadow: 0 0 0 4px rgba(37,99,235,.12);
+          border-color: var(--primary);
+          box-shadow: 0 0 0 4px color-mix(in srgb, var(--primary) 12%, transparent);
+          background: var(--background);
         }
-        .ux-grid { display: grid; gap: 12px; }
+        .ux-grid { display: grid; gap: 16px; }
         .ux-card {
-          border: 1px solid #dbe6ff;
-          border-radius: 16px;
-          background: rgba(255,255,255,.95);
-          padding: 16px;
-          box-shadow: 0 10px 26px rgba(15,23,42,.06);
-          transition: transform .2s ease, box-shadow .2s ease;
+          border: 1px solid var(--border);
+          border-radius: 20px;
+          background: var(--card);
+          padding: 20px;
+          box-shadow: 0 10px 30px rgba(0,0,0,0.04);
+          transition: transform .2s ease, border-color .2s ease;
+          position: relative;
+          overflow: hidden;
+        }
+        .ux-card::before {
+          content: ''; position: absolute; top:0; left:0; right:0; height:4px;
+          background: var(--primary); opacity: 0; transition: opacity .2s;
         }
         .ux-card:hover {
-          transform: translateY(-2px);
-          box-shadow: 0 16px 36px rgba(15,23,42,.1);
+          transform: translateY(-4px);
+          border-color: var(--primary);
         }
+        .ux-card:hover::before { opacity: 1; }
         .ux-row {
           display: flex;
           justify-content: space-between;
-          gap: 10px;
+          gap: 12px;
           flex-wrap: wrap;
         }
-        .ux-name { font-weight: 700; color: #0f172a; }
-        .ux-meta { color: #2563eb; font-size: 13px; }
-        .ux-submeta { color: #64748b; font-size: 12px; }
+        .ux-name { font-size: 1.15rem; font-weight: 800; color: var(--foreground); }
+        .ux-meta { color: var(--primary); font-size: 13px; font-weight: 600; margin-top: 2px; }
+        .ux-submeta { color: var(--muted-foreground); font-size: 12px; margin-top: 4px; }
         .ux-actions {
-          margin-top: 12px;
+          margin-top: 20px;
           display: flex;
-          gap: 8px;
+          gap: 10px;
           flex-wrap: wrap;
         }
         .ux-btn {
           text-decoration: none;
-          padding: 9px 13px;
-          border-radius: 10px;
+          padding: 10px 18px;
+          border-radius: 12px;
           font-size: 13px;
-          font-weight: 600;
+          font-weight: 700;
           border: 1px solid transparent;
           cursor: pointer;
-          transition: all .2s ease;
+          transition: all .2s;
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
         }
         .ux-btn-view {
-          border-color: #bfdbfe;
-          color: #1d4ed8;
-          background: #eff6ff;
+          background: var(--secondary);
+          color: var(--secondary-foreground);
+          border: 1px solid color-mix(in srgb, var(--primary) 20%, transparent);
         }
-        .ux-btn-view:hover { background: #dbeafe; }
+        .ux-btn-view:hover { filter: brightness(0.96); transform: scale(1.02); }
         .ux-btn-cancel {
-          border: none;
-          color: #fff;
-          background: linear-gradient(120deg, #2563EB 0%, #14B8A6 100%);
+          background: var(--primary);
+          color: var(--primary-foreground);
+          box-shadow: 0 4px 12px color-mix(in srgb, var(--primary) 30%, transparent);
         }
-        .ux-btn-cancel:hover { filter: brightness(1.04); }
+        .ux-btn-cancel:hover { opacity: 0.9; transform: scale(1.02); }
         .ux-msg {
-          color: #64748b;
-          padding: 8px 2px;
+          color: var(--muted-foreground);
+          padding: 24px 4px;
+          text-align: center;
+          font-style: italic;
         }
         .ux-badge {
           display: inline-flex;
           align-items: center;
-          padding: 5px 10px;
+          padding: 6px 14px;
           border-radius: 999px;
           font-size: 11px;
-          font-weight: 700;
-          letter-spacing: .02em;
+          font-weight: 800;
+          letter-spacing: .03em;
+          text-transform: uppercase;
         }
-        .ux-badge-pending { color: #a16207; background: #fef3c7; border: 1px solid #fde68a; }
-        .ux-badge-approved { color: #0f766e; background: #ccfbf1; border: 1px solid #99f6e4; }
-        .ux-badge-completed { color: #065f46; background: #d1fae5; border: 1px solid #a7f3d0; }
+        .ux-badge-pending { color: var(--destructive); background: color-mix(in srgb, var(--destructive) 10%, transparent); border: 1px solid color-mix(in srgb, var(--destructive) 20%, transparent); }
+        .ux-badge-approved { color: #16a34a; background: rgba(22,163,74,0.1); border: 1px solid rgba(22,163,74,0.2); }
+        .ux-badge-completed { color: var(--primary); background: var(--secondary); border: 1px solid color-mix(in srgb, var(--primary) 20%, transparent); }
 
-        /* Pagination */
         .ux-pagination {
           display: flex;
           align-items: center;
           justify-content: center;
-          gap: 12px;
-          margin-top: 24px;
-          padding-bottom: 50px;
+          gap: 16px;
+          margin-top: 40px;
+          padding-bottom: 60px;
         }
         .ux-page-btn {
           display: inline-flex;
           align-items: center;
-          gap: 6px;
-          padding: 8px 16px;
-          background: #fff;
-          border: 1px solid #dbe6ff;
-          border-radius: 12px;
-          font-size: 13px;
-          font-weight: 600;
-          color: #2563eb;
+          padding: 10px 20px;
+          background: var(--card);
+          border: 1px solid var(--border);
+          border-radius: 14px;
+          font-size: 14px;
+          font-weight: 700;
+          color: var(--foreground);
           cursor: pointer;
           transition: all .2s;
-          box-shadow: 0 4px 12px rgba(15,23,42,.04);
         }
         .ux-page-btn:hover:not(:disabled) {
-          border-color: #93c5fd;
-          background: #eff6ff;
-          transform: translateY(-1px);
+          border-color: var(--primary);
+          background: var(--background);
+          color: var(--primary);
         }
-        .ux-page-btn:disabled {
-          opacity: 0.5;
-          cursor: not-allowed;
-          color: #94a3b8;
-        }
-        .ux-page-num {
-          font-size: 13px;
-          font-weight: 600;
-          color: #475569;
-          min-width: 70px;
-          text-align: center;
-        }
+        .ux-page-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+        .ux-page-num { font-size: 14px; font-weight: 800; color: var(--muted-foreground); min-width: 80px; text-align: center; }
       `}</style>
       <Header />
       <div className="ux-wrap">
         <div className="ux-hero">
           <h1>My Appointments</h1>
           <p>
-          View all your bookings, open details, or cancel upcoming appointments.
+          View your healthcare journey and active clinical bookings.
           </p>
         </div>
 
@@ -235,12 +237,14 @@ const MyAppointments = () => {
           className="ux-input"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder="Search by doctor, reason, or appointment ID"
+          placeholder=" Search by doctor, reason, or appointment ID..."
         />
 
-        {loading && page === 0 && <PageLoader message="Loading appointments..."/>}
+        {loading && page === 0 && <PageLoader message="Loading your schedule..."/>}
         {!loading && filtered.length === 0 && (
-          <p className="ux-msg">No appointments found.</p>
+          <div className="ux-msg">
+            No clinical records found matching your search.
+          </div>
         )}
 
         <div className="ux-grid">
@@ -248,13 +252,13 @@ const MyAppointments = () => {
             <div key={a.appointmentId} className="ux-card">
               <div className="ux-row">
                 <div>
-                  <div className="ux-name">Dr. {a.doctor?.name || "Unknown"}</div>
-                  <div className="ux-meta">{a.doctor?.specialization || "General"}</div>
-                  <div className="ux-submeta">ID: {a.appointmentId}</div>
+                  <div className="ux-name">Dr. {a.doctor?.name || "Healthcare Specialist"}</div>
+                  <div className="ux-meta">{a.doctor?.specialization || "Clinical Division"}</div>
+                  <div className="ux-submeta">REF: {a.appointmentId}</div>
                 </div>
                 <div style={{ textAlign: "right" }}>
                   <div className={badgeClassByStatus(a.status)}>{a.status}</div>
-                  <div className="ux-submeta" style={{ marginTop: 6 }}>
+                  <div className="ux-submeta" style={{ marginTop: 8, fontWeight: 700 }}>
                     {new Date(a.appointmentTime).toLocaleString("en-IN", {
                       dateStyle: "medium",
                       timeStyle: "short",
@@ -263,8 +267,8 @@ const MyAppointments = () => {
                 </div>
               </div>
 
-              <div className="ux-submeta" style={{ marginTop: 8, color: "#334155", fontSize: 13 }}>
-                {a.reason || "No reason provided"}
+              <div className="ux-submeta" style={{ marginTop: 12, color: "var(--foreground)", fontSize: 13, background: "var(--background)", padding: '8px 12px', borderRadius: '10px', borderLeft: '3px solid var(--primary)' }}>
+                {a.reason || "General Consultation"}
               </div>
 
               <div className="ux-actions">
@@ -272,7 +276,7 @@ const MyAppointments = () => {
                   to={`/appointment/${a.appointmentId}`}
                   className="ux-btn ux-btn-view"
                 >
-                  View Details
+                  Details
                 </Link>
                 {a.status !== "CANCELLED" && (
                   <button
@@ -280,7 +284,7 @@ const MyAppointments = () => {
                     onClick={() => handleCancel(a)}
                     className="ux-btn ux-btn-cancel"
                   >
-                    {busyId === a.appointmentId ? "Cancelling..." : "Cancel"}
+                    {busyId === a.appointmentId ? "Processing..." : "Cancel Visit"}
                   </button>
                 )}
               </div>
@@ -299,7 +303,7 @@ const MyAppointments = () => {
               }}
               disabled={page === 0 || loading}
             >
-              Previous
+              ← Previous
             </button>
             <div className="ux-page-num">Page {page + 1}</div>
             <button
@@ -310,7 +314,7 @@ const MyAppointments = () => {
               }}
               disabled={!hasMore || loading}
             >
-              Next
+              Next →
             </button>
           </div>
         )}
