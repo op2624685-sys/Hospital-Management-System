@@ -33,7 +33,7 @@ const PageLoader = ({
     message  = 'Loading…',
     fullPage = true,
     size     = 'md',
-    bg       = 'linear-gradient(145deg,#eef2ff 0%,#f0f9ff 40%,#f0fdf4 80%,#faf5ff 100%)',
+    bg       = 'linear-gradient(145deg, #fdf8f5 0%, #fff4ea 40%, #fff8f2 80%, #fdf5ec 100%)',
 }) => {
     const dim = { sm: 48, md: 72, lg: 96 }[size] ?? 72;
     const iconSize = { sm: 14, md: 20, lg: 28 }[size] ?? 20;
@@ -64,7 +64,7 @@ const PageLoader = ({
                         <div style={{
                             position: 'absolute', inset: 0,
                             borderRadius: '50%',
-                            border: `${borderW}px solid #dbeafe`,
+                            border: `${borderW}px solid #ffe6c4`,
                         }} />
 
                         {/* Outer spinning ring — blue */}
@@ -72,7 +72,7 @@ const PageLoader = ({
                             position: 'absolute', inset: 0,
                             borderRadius: '50%',
                             border: `${borderW}px solid transparent`,
-                            borderTopColor: '#2563eb',
+                            borderTopColor: '#644a40',
                             animation: 'pl-spin-cw .9s linear infinite',
                         }} />
 
@@ -82,7 +82,7 @@ const PageLoader = ({
                             inset: innerPad,
                             borderRadius: '50%',
                             border: `${borderW - 1}px solid transparent`,
-                            borderTopColor: '#818cf8',
+                            borderTopColor: '#a07060',
                             animation: 'pl-spin-ccw 1.3s linear infinite',
                         }} />
 
@@ -91,7 +91,7 @@ const PageLoader = ({
                             position: 'absolute', inset: 0,
                             display: 'flex', alignItems: 'center', justifyContent: 'center',
                         }}>
-                            <Activity size={iconSize} style={{ color: '#2563eb' }} />
+                            <Activity size={iconSize} style={{ color: '#644a40' }} />
                         </div>
                     </div>
 
