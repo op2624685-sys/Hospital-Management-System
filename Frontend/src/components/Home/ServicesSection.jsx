@@ -29,20 +29,20 @@ const ServicesSection = () => {
   }, []);
 
   return (
-    <section className='px-5 lg:px-20 py-16 lg:py-24 relative' style={{ zIndex: 1, background: 'rgba(100,74,64,0.04)', borderTop: '1px solid rgba(100,74,64,0.10)', borderBottom: '1px solid rgba(100,74,64,0.10)' }}>
+    <section className='px-5 lg:px-20 py-16 lg:py-24 relative' style={{ zIndex: 1, background: 'color-mix(in srgb, var(--primary) 4%, transparent)', borderTop: '1px solid var(--border)', borderBottom: '1px solid var(--border)' }}>
       <div className='text-center mb-16'>
         <span className='inline-flex items-center gap-2 text-xs font-bold px-4 py-2 rounded-full uppercase tracking-widest mb-4'
-          style={{ background: 'rgba(100,74,64,0.10)', border: '1px solid rgba(100,74,64,0.20)', color: '#644a40' }}>
+          style={{ background: 'color-mix(in srgb, var(--primary) 10%, transparent)', border: '1px solid color-mix(in srgb, var(--primary) 22%, transparent)', color: 'var(--primary)' }}>
           What We Offer
         </span>
-        <h2 className='text-5xl font-black' style={{ color: '#202020' }}>
+        <h2 className='text-5xl font-black' style={{ color: 'var(--foreground)' }}>
           Our{' '}
           <span className='text-transparent bg-clip-text'
-            style={{ backgroundImage: 'linear-gradient(135deg, #644a40, #8b5e52)' }}>
+            style={{ backgroundImage: 'linear-gradient(135deg, var(--primary), var(--chart-5))' }}>
             Services
           </span>
         </h2>
-        <p className='mt-4 max-w-xl mx-auto' style={{ color: '#646464' }}>
+        <p className='mt-4 max-w-xl mx-auto' style={{ color: 'var(--muted-foreground)' }}>
           Comprehensive healthcare services designed to meet all your medical needs
         </p>
       </div>
@@ -51,18 +51,18 @@ const ServicesSection = () => {
         {services.map((service, i) => (
           <div key={i}
             className='group rounded-2xl p-6 hover:-translate-y-2 transition-all duration-300 cursor-pointer overflow-hidden relative'
-            style={{ background: 'rgba(255,255,255,0.75)', border: '1px solid rgba(100,74,64,0.12)' }}
-            onMouseEnter={e => { e.currentTarget.style.boxShadow = '0 20px 48px rgba(100,74,64,0.15)'; e.currentTarget.style.borderColor = 'rgba(100,74,64,0.25)'; }}
-            onMouseLeave={e => { e.currentTarget.style.boxShadow = 'none'; e.currentTarget.style.borderColor = 'rgba(100,74,64,0.12)'; }}>
+            style={{ background: 'var(--card)', border: '1px solid var(--border)' }}
+            onMouseEnter={e => { e.currentTarget.style.boxShadow = '0 20px 48px color-mix(in srgb, var(--primary) 15%, transparent)'; e.currentTarget.style.borderColor = 'var(--primary)'; }}
+            onMouseLeave={e => { e.currentTarget.style.boxShadow = 'none'; e.currentTarget.style.borderColor = 'var(--border)'; }}>
 
             <div className={`w-14 h-14 bg-linear-to-br ${service.color} rounded-2xl flex items-center justify-center text-2xl mb-4 shadow-lg group-hover:scale-110 transition-transform duration-300`}>
               {service.icon}
             </div>
-            <h3 className='font-black text-lg mb-2' style={{ color: '#202020' }}>{service.title}</h3>
-            <p className='text-sm leading-relaxed' style={{ color: '#646464' }}>{service.desc}</p>
+            <h3 className='font-black text-lg mb-2' style={{ color: 'var(--foreground)' }}>{service.title}</h3>
+            <p className='text-sm leading-relaxed' style={{ color: 'var(--muted-foreground)' }}>{service.desc}</p>
 
             <div className='flex items-center gap-1 mt-4 text-sm font-semibold opacity-0 group-hover:opacity-100 transition-opacity duration-300'
-              style={{ color: '#644a40' }}>
+              style={{ color: 'var(--primary)' }}>
               Learn more <span className='group-hover:translate-x-1 transition-transform duration-300'>→</span>
             </div>
           </div>
