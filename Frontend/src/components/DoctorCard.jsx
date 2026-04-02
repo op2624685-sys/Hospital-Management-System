@@ -2,21 +2,21 @@ import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 const specialityConfig = {
-  'Cardiology':    { color: '#644a40', bg: '#fff4ec', border: '#ffdfb5' },
-  'Neurology':     { color: '#5c3d2e', bg: '#fff8f2', border: '#ffe6c4' },
-  'Pediatrics':    { color: '#7a5548', bg: '#fef5ef', border: '#ffd4a8' },
-  'Orthopedics':   { color: '#6d4c41', bg: '#fff3e0', border: '#ffcc80' },
-  'Dermatology':   { color: '#8d6e63', bg: '#fbe9e7', border: '#ffccbc' },
-  'default':       { color: '#644a40', bg: '#fff4ec', border: '#ffdfb5' },
+  'Cardiology':    { color: 'var(--primary)', bg: 'var(--secondary)', border: 'var(--border)' },
+  'Neurology':     { color: 'var(--chart-5)', bg: 'var(--background)', border: 'var(--border)' },
+  'Pediatrics':    { color: 'var(--primary)', bg: 'var(--secondary)', border: 'var(--border)' },
+  'Orthopedics':   { color: 'var(--primary)', bg: 'var(--background)', border: 'var(--border)' },
+  'Dermatology':   { color: 'var(--chart-5)', bg: 'var(--secondary)', border: 'var(--border)' },
+  'default':       { color: 'var(--primary)', bg: 'var(--secondary)', border: 'var(--border)' },
 }
 
 const avatarPairs = [
-  ['#644a40', '#3d2b24'],
-  ['#8b5e52', '#5c3d2e'],
-  ['#a07060', '#6d4c41'],
-  ['#7a5548', '#4e342e'],
-  ['#795548', '#5d4037'],
-  ['#6d4c41', '#4e342e'],
+  ['var(--primary)', 'var(--chart-5)'],
+  ['var(--chart-5)', 'var(--primary)'],
+  ['var(--primary)', 'var(--chart-1)'],
+  ['var(--chart-5)', 'var(--chart-1)'],
+  ['var(--primary)', 'var(--chart-4)'],
+  ['var(--chart-5)', 'var(--chart-4)'],
 ]
 
 const DoctorCard = ({ doctor, index = 0 }) => {
@@ -58,6 +58,7 @@ const DoctorCard = ({ doctor, index = 0 }) => {
         .dc-card {
           opacity: 0;
           animation: dcIn .5s ease forwards;
+
           font-family: 'Outfit', sans-serif;
         }
         @keyframes dcIn {
@@ -65,8 +66,8 @@ const DoctorCard = ({ doctor, index = 0 }) => {
           to   { opacity: 1; transform: translateY(0); }
         }
         .dc-inner {
-          background: #fff;
-          border: 1.5px solid #eeebe6;
+          background: var(--card);
+          border: 1.5px solid var(--border);
           border-radius: 24px;
           overflow: hidden;
           cursor: pointer;
@@ -100,13 +101,13 @@ const DoctorCard = ({ doctor, index = 0 }) => {
           display: flex;
           align-items: center;
           gap: 5px;
-          background: rgba(255,255,255,.92);
+          background: var(--card);
           backdrop-filter: blur(8px);
           border-radius: 999px;
           padding: 4px 10px;
           font-size: 11px;
           font-weight: 600;
-          color: #333;
+          color: var(--foreground);
         }
         .dc-avail-dot {
           width: 7px; height: 7px;
@@ -137,7 +138,7 @@ const DoctorCard = ({ doctor, index = 0 }) => {
           width: 72px; height: 72px;
           border-radius: 50%;
           background: linear-gradient(135deg, var(--dc-c1), var(--dc-c2));
-          border: 3px solid #fff;
+          border: 3px solid var(--card);
           box-shadow: 0 4px 16px rgba(0,0,0,.12);
           display: flex;
           align-items: center;
@@ -161,13 +162,13 @@ const DoctorCard = ({ doctor, index = 0 }) => {
           font-family: 'Cormorant Garamond', serif;
           font-size: 1.3rem;
           font-weight: 600;
-          color: #1a1a1a;
+          color: var(--foreground);
           text-align: center;
           line-height: 1.2;
         }
         .dc-email {
           font-size: 12px;
-          color: #aaa;
+          color: var(--muted-foreground);
           text-align: center;
           margin-top: -4px;
         }
@@ -189,7 +190,7 @@ const DoctorCard = ({ doctor, index = 0 }) => {
           align-items: center;
           gap: 7px;
           font-size: 12.5px;
-          color: #888;
+          color: var(--muted-foreground);
           justify-content: center;
         }
         .dc-dept-row svg { color: var(--dc-accent); flex-shrink: 0; }
@@ -203,14 +204,14 @@ const DoctorCard = ({ doctor, index = 0 }) => {
           margin-top: -2px;
         }
         .dc-branch {
-          color: #64748b;
+          color: var(--muted-foreground);
           font-weight: 500;
           overflow: hidden;
           text-overflow: ellipsis;
           white-space: nowrap;
           max-width: 65%;
         }
-        .dc-divider { height: 1px; background: #f0ece6; }
+        .dc-divider { height: 1px; background: var(--border); }
         .dc-btn {
           width: 100%;
           padding: 11px;
@@ -223,7 +224,7 @@ const DoctorCard = ({ doctor, index = 0 }) => {
           transition: background .25s, color .25s, transform .15s, box-shadow .25s;
           letter-spacing: .02em;
         }
-        .dc-btn-default { background: #f5f0ea; color: #555; }
+        .dc-btn-default { background: var(--background); color: var(--muted-foreground); }
         .dc-btn-hovered {
           background: var(--dc-c1);
           color: #fff;
