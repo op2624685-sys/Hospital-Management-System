@@ -21,6 +21,8 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.servlet.HandlerExceptionResolver;
+import com.hms.security.oauth2.CustomOAuth2UserService;
+import com.hms.security.oauth2.OAuth2AuthenticationSuccessHandler;
 
 @Configuration
 @EnableMethodSecurity
@@ -31,16 +33,22 @@ public class WebSecurityConfig {
     private final CorrelationIdFilter correlationIdFilter;
     private final CorsProperties corsProperties;
     private final HandlerExceptionResolver handlerExceptionResolver;
+    private final CustomOAuth2UserService customOAuth2UserService;
+    private final OAuth2AuthenticationSuccessHandler oauth2AuthenticationSuccessHandler;
 
     public WebSecurityConfig(
             JwtAuthFilter jwtAuthFilter,
             CorrelationIdFilter correlationIdFilter,
             CorsProperties corsProperties,
-            @Qualifier("handlerExceptionResolver") HandlerExceptionResolver handlerExceptionResolver) {
+            @Qualifier("handlerExceptionResolver") HandlerExceptionResolver handlerExceptionResolver,
+            CustomOAuth2UserService customOAuth2UserService,
+            OAuth2AuthenticationSuccessHandler oauth2AuthenticationSuccessHandler) {
         this.jwtAuthFilter = jwtAuthFilter;
         this.correlationIdFilter = correlationIdFilter;
         this.corsProperties = corsProperties;
         this.handlerExceptionResolver = handlerExceptionResolver;
+        this.customOAuth2UserService = customOAuth2UserService;
+        this.oauth2AuthenticationSuccessHandler = oauth2AuthenticationSuccessHandler;
     }
 
     @Bean
@@ -73,6 +81,9 @@ public class WebSecurityConfig {
                         .requestMatchers("/doctor/**").hasAnyRole(DOCTOR.name(), ADMIN.name(), HEADADMIN.name())
                         .requestMatchers("/patients/**", "/payments/**").hasRole(PATIENT.name())
                         .anyRequest().authenticated())
+                .oauth2Login(oauth2 -> oauth2
+                        .userInfoEndpoint(userInfo -> userInfo.userService(customOAuth2UserService))
+                        .successHandler(oauth2AuthenticationSuccessHandler))
                 .addFilterBefore(correlationIdFilter, UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
                 .exceptionHandling(exceptionHandlingConfigurer ->

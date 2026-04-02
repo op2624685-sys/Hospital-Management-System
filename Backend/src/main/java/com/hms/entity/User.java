@@ -8,6 +8,9 @@ import java.util.stream.Collectors;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.oauth2.core.user.OAuth2User;
+import java.util.Map;
+import jakarta.persistence.Transient;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.hms.entity.type.RoleType;
@@ -36,7 +39,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @Builder
 @Table(name = "app_user")
-public class User implements UserDetails{
+public class User implements UserDetails, OAuth2User{
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -62,6 +65,19 @@ public class User implements UserDetails{
         return roles.stream()
                 .map(role -> new SimpleGrantedAuthority("ROLE_"+role.name()))
                 .collect(Collectors.toSet());
+    }
+
+    @Transient
+    private Map<String, Object> attributes;
+
+    @Override
+    public Map<String, Object> getAttributes() {
+        return attributes;
+    }
+
+    @Override
+    public String getName() {
+        return username;
     }
 
 }

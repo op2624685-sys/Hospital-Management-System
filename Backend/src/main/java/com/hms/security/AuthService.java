@@ -200,4 +200,13 @@ public class AuthService {
                 .build();
     }
 
+    public LoginResponseDto getCurrentUser() {
+        Authentication auth = org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !auth.isAuthenticated() || auth.getPrincipal() instanceof String) {
+            throw new org.springframework.security.authentication.BadCredentialsException("Not authenticated");
+        }
+        User user = (User) auth.getPrincipal();
+        return new LoginResponseDto(null, user.getId(), user.getRoles());
+    }
+
 }

@@ -107,4 +107,10 @@ public class AuthController {
         return ResponseEntity.status(200).body(authService.resendOtp(forgotPasswordRequestDto));
     }
 
+    @org.springframework.web.bind.annotation.GetMapping("/me")
+    @Operation(summary = "Get current user profile", description = "Returns the profile of the currently authenticated user")
+    public ResponseEntity<LoginResponseDto> getCurrentUser() {
+        return ResponseEntity.ok(authService.getCurrentUser());
+    }
+
 }
