@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useParams } from "react-router-dom";
 import { Building2, Users, UserRound, LayoutDashboard, Plus, Trash2, Save, X, Activity, ArrowRight, Settings, TrendingUp, Clock, Shield } from 'lucide-react';
 import { doctorAPI } from "../api/api";
 import { useAuth } from "../context/AuthContext";
@@ -14,11 +15,17 @@ const STATUS_STYLES = {
   "on-leave": { bg: "#FEF9C3", text: "#854D0E", label: "On Leave" },
 };
 
-function Avatar({ name, size = 36, color = "#4F46E5" }) {
+function Avatar({ name, size = 36, color = "var(--primary)" }) {
   const initials = name ? name.split(" ").filter(Boolean).slice(0, 2).map(w => w[0]).join("").toUpperCase() : "??";
-  const light = color + "22";
   return (
-    <div style={{ width: size, height: size, borderRadius: "50%", background: light, border: `2px solid ${color}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: size * 0.35, fontWeight: 700, color, flexShrink: 0, fontFamily: "'Poppins', sans-serif" }}>
+    <div style={{ 
+      width: size, height: size, borderRadius: "50%", 
+      background: `color-mix(in srgb, ${color} 15%, transparent)`, 
+      border: `2px solid ${color}`, 
+      display: "flex", alignItems: "center", justifyContent: "center", 
+      fontSize: size * 0.35, fontWeight: 900, color, 
+      flexShrink: 0 
+    }}>
       {initials}
     </div>
   );
@@ -27,11 +34,17 @@ function Avatar({ name, size = 36, color = "#4F46E5" }) {
 function Badge({ status }) {
   const s = STATUS_STYLES[status] || STATUS_STYLES.pending;
   return (
-    <span style={{ background: s.bg, color: s.text, padding: "5px 12px", borderRadius: 8, fontSize: 11, fontWeight: 700, fontFamily: "'Poppins', sans-serif", letterSpacing: 0.5, textTransform: 'uppercase' }}>{s.label}</span>
+    <span className="dark:bg-opacity-20" style={{ 
+      background: s.bg, color: s.text, 
+      padding: "5px 12px", borderRadius: 8, 
+      fontSize: 10, fontWeight: 800, 
+      letterSpacing: 0.5, textTransform: 'uppercase' 
+    }}>{s.label}</span>
   );
 }
 
 export default function DepartmentControl() {
+  const { departmentId } = useParams();
   const { user } = useAuth();
   const [departments, setDepartments] = useState([]);
   const [selectedDept, setSelectedDept] = useState(null);
@@ -47,9 +60,13 @@ export default function DepartmentControl() {
         const { data } = await doctorAPI.getMyDepartments();
         const headDepts = data.filter(d => String(d.headDoctorId) === String(user?.id));
         setDepartments(headDepts);
+        setDepartments(headDepts);
         if (headDepts.length > 0) {
-          setSelectedDept(headDepts[0]);
-          setEditData({ description: headDepts[0].description || "", services: "" });
+          const initial = departmentId 
+            ? (headDepts.find(d => String(d.id) === String(departmentId)) || headDepts[0])
+            : headDepts[0];
+          setSelectedDept(initial);
+          setEditData({ description: initial.description || "", services: "" });
         }
       } catch (error) {
         console.error("Error fetching head departments:", error);
@@ -92,72 +109,53 @@ export default function DepartmentControl() {
   );
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-slate-50 via-white to-blue-50 pt-20 pb-16">
+    <div className="dc-root min-h-screen bg-[var(--background)] pt-20 pb-16">
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
         
-        @keyframes slideInDown {
-          from {
-            opacity: 0;
-            transform: translateY(-20px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
+        .dc-root, .dc-root * { font-family: 'Poppins', sans-serif; box-sizing: border-box; }
+
+        @keyframes slideInDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes slideInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeInScale { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+        @keyframes shimmer { 0% { background-position: -1000px 0; } 100% { background-position: 1000px 0; } }
+        @keyframes blob { 0%, 100% { transform: translate(0, 0) scale(1); } 33% { transform: translate(30px, -50px) scale(1.1); } 66% { transform: translate(-20px, 20px) scale(0.9); } }
         
-        @keyframes slideInUp {
-          from {
-            opacity: 0;
-            transform: translateY(20px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
+        .animate-slide-in-down { animation: slideInDown 0.6s ease-out forwards; }
+        .animate-slide-in-up { animation: slideInUp 0.6s ease-out forwards; }
+        .animate-fade-scale { animation: fadeInScale 0.6s ease-out forwards; }
+        .animate-blob { animation: blob 7s infinite; }
+        .animation-delay-2000 { animation-delay: 2s; }
         
-        @keyframes fadeInScale {
-          from {
-            opacity: 0;
-            transform: scale(0.95);
-          }
-          to {
-            opacity: 1;
-            transform: scale(1);
-          }
-        }
+        .glow-gradient { background: linear-gradient(135deg, var(--primary) 0%, var(--chart-5) 50%, var(--primary) 100%); }
+        .card-hover { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); border: 1.5px solid var(--border); }
+        .card-hover:hover { transform: translateY(-8px); border-color: var(--primary); box-shadow: 0 20px 40px color-mix(in srgb, var(--primary) 15%, transparent); }
         
-        @keyframes shimmer {
-          0% { background-position: -1000px 0; }
-          100% { background-position: 1000px 0; }
+        .dc-input { 
+          width: 100%; 
+          background: var(--background); 
+          border: 1.5px solid var(--border); 
+          border-radius: 12px; 
+          padding: 12px 16px; 
+          font-size: 14px; 
+          color: var(--foreground); 
+          outline: none; 
+          transition: all 0.2s; 
         }
+        .dc-input:focus { border-color: var(--primary); box-shadow: 0 0 0 4px color-mix(in srgb, var(--primary) 12%, transparent); }
         
-        .animate-slide-in-down {
-          animation: slideInDown 0.6s ease-out forwards;
+        .dc-btn-primary { 
+          background: var(--primary); 
+          color: #fff; 
+          border: none; 
+          padding: 12px 24px; 
+          border-radius: 14px; 
+          font-weight: 700; 
+          cursor: pointer; 
+          transition: all 0.2s; 
+          box-shadow: 0 10px 25px -5px color-mix(in srgb, var(--primary) 40%, transparent); 
         }
-        
-        .animate-slide-in-up {
-          animation: slideInUp 0.6s ease-out forwards;
-        }
-        
-        .animate-fade-scale {
-          animation: fadeInScale 0.6s ease-out forwards;
-        }
-        
-        .glow-gradient {
-          background: linear-gradient(135deg, #0891B2 0%, #0284C7 50%, #2563EB 100%);
-        }
-        
-        .card-hover {
-          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        
-        .card-hover:hover {
-          transform: translateY(-8px);
-          box-shadow: 0 20px 40px rgba(59, 130, 246, 0.15);
-        }
+        .dc-btn-primary:hover { transform: translateY(-2px); filter: brightness(1.1); }
       `}</style>
 
       <div className="max-w-7xl mx-auto px-4 lg:px-8">
@@ -165,50 +163,50 @@ export default function DepartmentControl() {
         
         {/* Main Hero Section */}
         <div className="mb-12">
-          <div className="relative rounded-3xl overflow-hidden border border-slate-200 bg-white shadow-lg">
+          <div className="relative rounded-[2.5rem] overflow-hidden border border-[var(--border)] bg-[var(--card)] shadow-xl">
             <div className="absolute inset-0">
-              <div className="absolute top-0 right-0 w-96 h-96 bg-blue-400 rounded-full mix-blend-multiply filter blur-3xl opacity-10 animate-blob"></div>
-              <div className="absolute -bottom-8 left-20 w-96 h-96 bg-cyan-400 rounded-full mix-blend-multiply filter blur-3xl opacity-10 animate-blob animation-delay-2000"></div>
+              <div className="absolute top-0 right-0 w-96 h-96 bg-[var(--primary)] rounded-full mix-blend-multiply filter blur-3xl opacity-[0.03] animate-blob"></div>
+              <div className="absolute -bottom-8 left-20 w-96 h-96 bg-[var(--chart-5)] rounded-full mix-blend-multiply filter blur-3xl opacity-[0.03] animate-blob animation-delay-2000"></div>
             </div>
             
             <div className="relative p-8 md:p-12">
               <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-8">
                 <div className="flex-1 animate-slide-in-down">
                   <div className="inline-block mb-4">
-                    <span className="glow-gradient bg-clip-text text-transparent text-xs font-semibold uppercase tracking-widest" style={{ fontFamily: "'Poppins', sans-serif" }}>
+                    <span className="glow-gradient bg-clip-text text-transparent text-[10px] font-black uppercase tracking-[0.2em]">
                       Department Head Dashboard
                     </span>
                   </div>
-                  <h1 className="text-4xl md:text-5xl font-bold text-slate-900 mb-3" style={{ fontFamily: "'Poppins', sans-serif" }}>
+                  <h1 className="text-4xl md:text-5xl font-black text-[var(--foreground)] mb-3">
                     {selectedDept?.name}
                   </h1>
-                  <p className="text-slate-600 text-lg leading-relaxed">
+                  <p className="text-[var(--muted-foreground)] text-sm md:text-base leading-relaxed max-w-xl">
                     Oversee your department's operations, manage staff, and monitor patient care metrics.
                   </p>
                 </div>
 
                 {/* Stats Grid */}
                 <div className="grid grid-cols-2 gap-4 w-full md:w-auto animate-slide-in-up">
-                  <div className="card-hover group bg-linear-to-br from-blue-50 to-cyan-50 rounded-2xl p-6 border border-blue-200 text-center">
-                    <div className="text-slate-600 text-xs font-semibold uppercase tracking-wider mb-2" style={{ fontFamily: "'Poppins', sans-serif" }}>
+                  <div className="card-hover group bg-[var(--sidebar)] rounded-3xl p-6 border border-[var(--border)] text-center">
+                    <div className="text-[var(--muted-foreground)] text-[10px] font-bold uppercase tracking-widest mb-2">
                       Total Patients
                     </div>
-                    <div className="text-4xl font-bold bg-linear-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent mb-2">
+                    <div className="text-4xl font-black text-[var(--primary)] mb-2">
                       {selectedDept?.patientCount || 0}
                     </div>
-                    <div className="flex items-center justify-center gap-1 text-green-600 text-xs font-semibold">
+                    <div className="flex items-center justify-center gap-1 text-[var(--primary)] text-[10px] font-bold">
                       <TrendingUp size={14} /> +12% this month
                     </div>
                   </div>
 
-                  <div className="card-hover group bg-linear-to-br from-purple-50 to-pink-50 rounded-2xl p-6 border border-purple-200 text-center">
-                    <div className="text-slate-600 text-xs font-semibold uppercase tracking-wider mb-2" style={{ fontFamily: "'Poppins', sans-serif" }}>
+                  <div className="card-hover group bg-[var(--sidebar)] rounded-3xl p-6 border border-[var(--border)] text-center">
+                    <div className="text-[var(--muted-foreground)] text-[10px] font-bold uppercase tracking-widest mb-2">
                       Staff Members
                     </div>
-                    <div className="text-4xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent mb-2">
+                    <div className="text-4xl font-black text-[var(--chart-5)] mb-2">
                       {selectedDept?.memberCount || 0}
                     </div>
-                    <div className="flex items-center justify-center gap-1 text-slate-600 text-xs font-semibold">
+                    <div className="flex items-center justify-center gap-1 text-[var(--muted-foreground)] text-[10px] font-bold">
                       <Users size={14} /> Active
                     </div>
                   </div>
@@ -222,62 +220,57 @@ export default function DepartmentControl() {
         <div className="flex gap-3 mb-8 animate-fade-scale" style={{ animationDelay: '0.2s' }}>
           <button 
             onClick={() => setActiveTab('overview')}
-            className={`px-8 py-4 rounded-2xl font-semibold transition-all duration-300 flex items-center gap-2 border ${
+            className={`px-8 py-4 rounded-2xl font-bold text-xs uppercase tracking-widest transition-all duration-300 flex items-center gap-2 border ${
               activeTab === 'overview' 
-                ? 'glow-gradient text-white shadow-lg shadow-blue-500/30 border-transparent bg-gradient-to-r from-blue-600 to-cyan-600' 
-                : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50 hover:text-slate-700'
+                ? 'glow-gradient text-white shadow-lg border-transparent' 
+                : 'bg-[var(--card)] text-[var(--muted-foreground)] border-[var(--border)] hover:bg-[var(--sidebar)]'
             }`}
-            style={{ fontFamily: "'Poppins', sans-serif" }}
           >
-            <LayoutDashboard size={20} />
+            <LayoutDashboard size={18} />
             Overview
           </button>
           <button 
             onClick={() => setActiveTab('doctors')}
-            className={`px-8 py-4 rounded-2xl font-semibold transition-all duration-300 flex items-center gap-2 border ${
+            className={`px-8 py-4 rounded-2xl font-bold text-xs uppercase tracking-widest transition-all duration-300 flex items-center gap-2 border ${
               activeTab === 'doctors' 
-                ? 'glow-gradient text-white shadow-lg shadow-blue-500/30 border-transparent bg-gradient-to-r from-blue-600 to-cyan-600' 
-                : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50 hover:text-slate-700'
+                ? 'glow-gradient text-white shadow-lg border-transparent' 
+                : 'bg-[var(--card)] text-[var(--muted-foreground)] border-[var(--border)] hover:bg-[var(--sidebar)]'
             }`}
-            style={{ fontFamily: "'Poppins', sans-serif" }}
           >
-            <Users size={20} />
+            <Users size={18} />
             Staff Management
           </button>
         </div>
 
         {/* Content Area */}
-        <div className="rounded-3xl border border-slate-200 bg-white shadow-lg overflow-hidden">
+        <div className="rounded-[2.5rem] border border-[var(--border)] bg-[var(--card)] shadow-xl overflow-hidden">
           {activeTab === 'overview' && (
             <div className="p-8 md:p-12 animate-fade-scale">
               {/* Description Section */}
               <div className="mb-12">
                 <div className="flex justify-between items-center mb-8">
                   <div>
-                    <h2 className="text-2xl font-bold text-slate-900 mb-2" style={{ fontFamily: "'Poppins', sans-serif" }}>Department Description</h2>
-                    <p className="text-slate-600 text-sm">Keep your team and patients informed about your department</p>
+                    <h2 className="text-2xl font-black text-[var(--foreground)] mb-2">Department Protocol</h2>
+                    <p className="text-[var(--muted-foreground)] text-[10px] font-bold uppercase tracking-widest">Keep your team and patients informed</p>
                   </div>
                   {!isEditing ? (
                     <button 
                       onClick={() => setIsEditing(true)}
-                      className="flex items-center gap-2 text-blue-600 font-semibold hover:text-blue-700 px-6 py-3 rounded-xl transition-all bg-blue-50 hover:bg-blue-100 border border-blue-200"
-                      style={{ fontFamily: "'Poppins', sans-serif" }}
+                      className="dc-btn-primary flex items-center gap-2"
                     >
-                      <Settings size={18} /> Edit
+                      <Settings size={18} /> Edit Protocol
                     </button>
                   ) : (
                     <div className="flex gap-3">
                       <button 
                         onClick={handleUpdate}
-                        className="flex items-center gap-2 bg-gradient-to-r from-green-600 to-emerald-600 text-white px-6 py-3 rounded-xl font-semibold text-sm shadow-lg shadow-green-500/30 hover:shadow-green-500/50 transition-all border border-green-600"
-                        style={{ fontFamily: "'Poppins', sans-serif" }}
+                        className="dc-btn-primary !bg-emerald-600 flex items-center gap-2"
                       >
-                        <Save size={16} /> Save
+                        <Save size={16} /> Save Status
                       </button>
                       <button 
                         onClick={() => setIsEditing(false)}
-                        className="flex items-center gap-2 bg-slate-100 text-slate-700 px-6 py-3 rounded-xl font-semibold text-sm border border-slate-300 hover:bg-slate-200 transition-all"
-                        style={{ fontFamily: "'Poppins', sans-serif" }}
+                        className="px-6 py-3 rounded-xl font-bold text-xs uppercase tracking-widest text-[var(--muted-foreground)] bg-[var(--sidebar)] border border-[var(--border)] hover:bg-[var(--background)] transition-all"
                       >
                         <X size={16} /> Cancel
                       </button>
@@ -286,15 +279,14 @@ export default function DepartmentControl() {
                 </div>
 
                 {!isEditing ? (
-                  <div className="bg-slate-50 rounded-2xl p-8 border border-slate-200 text-slate-700 leading-relaxed">
+                  <div className="bg-[var(--background)] rounded-2xl p-8 border border-[var(--border)] text-[var(--foreground)] leading-relaxed shadow-inner">
                     {selectedDept.description || (
-                      <span className="text-slate-500 italic">No description set for this department. Click edit to add details about services, specialties, and capabilities.</span>
+                      <span className="text-[var(--muted-foreground)] italic">No specific protocol set. Define services and clinical guidelines here.</span>
                     )}
                   </div>
                 ) : (
                   <textarea 
-                    className="w-full bg-slate-50 rounded-2xl p-8 border-2 border-blue-300 text-slate-900 leading-relaxed min-h-[250px] outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-200 transition-all font-medium placeholder-slate-400"
-                    style={{ fontFamily: "'Poppins', sans-serif" }}
+                    className="dc-input min-h-[250px] !p-8 font-medium"
                     value={editData.description}
                     onChange={(e) => setEditData({...editData, description: e.target.value})}
                     placeholder="Describe your department, services offered, specialties..."
@@ -304,50 +296,38 @@ export default function DepartmentControl() {
 
               {/* Quick Stats */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="card-hover bg-gradient-to-br from-blue-50 to-cyan-50 rounded-2xl p-6 border border-blue-200">
+                <div className="card-hover bg-[var(--sidebar)] rounded-2xl p-6">
                   <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-xl bg-blue-100 flex items-center justify-center border border-blue-300">
-                      <Building2 size={24} className="text-blue-600" />
+                    <div className="w-12 h-12 rounded-xl bg-[var(--secondary)] flex items-center justify-center border border-[var(--border)]">
+                      <Building2 size={24} className="text-[var(--primary)]" />
                     </div>
                     <div>
-                      <div className="text-slate-600 text-xs font-semibold uppercase tracking-wider" style={{ fontFamily: "'Poppins', sans-serif" }}>
-                        Branch
-                      </div>
-                      <div className="text-xl font-bold text-slate-900" style={{ fontFamily: "'Poppins', sans-serif" }}>
-                        #{selectedDept?.branchId}
-                      </div>
+                      <div className="text-[var(--muted-foreground)] text-[10px] font-black uppercase tracking-widest">Branch ID</div>
+                      <div className="text-xl font-black text-[var(--foreground)]">#{selectedDept?.branchId}</div>
                     </div>
                   </div>
                 </div>
 
-                <div className="card-hover bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl p-6 border border-purple-200">
+                <div className="card-hover bg-[var(--sidebar)] rounded-2xl p-6">
                   <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-xl bg-purple-100 flex items-center justify-center border border-purple-300">
-                      <Clock size={24} className="text-purple-600" />
+                    <div className="w-12 h-12 rounded-xl bg-[var(--secondary)] flex items-center justify-center border border-[var(--border)]">
+                      <Clock size={24} className="text-[var(--chart-5)]" />
                     </div>
                     <div>
-                      <div className="text-slate-600 text-xs font-semibold uppercase tracking-wider" style={{ fontFamily: "'Poppins', sans-serif" }}>
-                        Status
-                      </div>
-                      <div className="text-xl font-bold text-slate-900" style={{ fontFamily: "'Poppins', sans-serif" }}>
-                        Active
-                      </div>
+                      <div className="text-[var(--muted-foreground)] text-[10px] font-black uppercase tracking-widest">Duty Status</div>
+                      <div className="text-xl font-black text-[var(--foreground)]">Active</div>
                     </div>
                   </div>
                 </div>
 
-                <div className="card-hover bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl p-6 border border-green-200">
+                <div className="card-hover bg-[var(--sidebar)] rounded-2xl p-6">
                   <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-xl bg-green-100 flex items-center justify-center border border-green-300">
-                      <Shield size={24} className="text-green-600" />
+                    <div className="w-12 h-12 rounded-xl bg-[var(--secondary)] flex items-center justify-center border border-[var(--border)]">
+                      <Shield size={24} className="text-[var(--primary)]" />
                     </div>
                     <div>
-                      <div className="text-slate-600 text-xs font-semibold uppercase tracking-wider" style={{ fontFamily: "'Poppins', sans-serif" }}>
-                        Verification
-                      </div>
-                      <div className="text-xl font-bold text-slate-900" style={{ fontFamily: "'Poppins', sans-serif" }}>
-                        Verified
-                      </div>
+                      <div className="text-[var(--muted-foreground)] text-[10px] font-black uppercase tracking-widest">Security</div>
+                      <div className="text-xl font-black text-[var(--foreground)]">Verified</div>
                     </div>
                   </div>
                 </div>
@@ -358,82 +338,39 @@ export default function DepartmentControl() {
           {activeTab === 'doctors' && (
             <div className="p-8 md:p-12 animate-fade-scale">
               <div className="mb-10">
-                <h2 className="text-2xl font-bold text-slate-900 mb-2" style={{ fontFamily: "'Poppins', sans-serif" }}>
-                  Manage Your Team
-                </h2>
-                <p className="text-slate-600">Add or remove doctors to build and maintain your department's staff roster</p>
+                <h2 className="text-2xl font-black text-[var(--foreground)] mb-2">Manage Your Team</h2>
+                <p className="text-[var(--muted-foreground)] text-sm font-medium">Add or remove clinical staff to build your department's roster.</p>
               </div>
 
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 {/* Current Staff */}
                 <div>
-                  <h3 className="text-xs font-semibold text-slate-600 uppercase tracking-widest mb-6" style={{ fontFamily: "'Poppins', sans-serif" }}>
-                    👥 Current Staff
-                  </h3>
-                  <div className="bg-slate-50 rounded-2xl p-12 border-2 border-dashed border-slate-300 text-center">
-                    <div className="w-16 h-16 bg-slate-100 rounded-2xl flex items-center justify-center mx-auto mb-6 border border-slate-300">
-                      <Users size={32} className="text-slate-400" />
+                  <h3 className="text-[10px] font-black text-[var(--muted-foreground)] uppercase tracking-widest mb-6">👥 Current Personnel</h3>
+                  <div className="bg-[var(--background)] rounded-3xl p-12 border-2 border-dashed border-[var(--border)] text-center">
+                    <div className="w-16 h-16 bg-[var(--secondary)] rounded-2xl flex items-center justify-center mx-auto mb-6 border border-[var(--border)]">
+                      <Users size={32} className="text-[var(--primary)] opacity-40" />
                     </div>
-                    <p className="text-slate-600 text-sm font-medium mb-6">Staff list implementation pending backend integration</p>
-                    <button className="text-blue-600 text-sm font-semibold hover:text-blue-700 transition-colors flex items-center gap-2 mx-auto">
+                    <p className="text-[var(--muted-foreground)] text-xs font-bold mb-6">Staff synchronization pending clinical review.</p>
+                    <button className="text-[var(--primary)] text-xs font-black uppercase tracking-widest hover:opacity-80 transition-opacity flex items-center gap-2 mx-auto">
                       View All Doctors <ArrowRight size={16} />
                     </button>
                   </div>
                 </div>
 
                 {/* Add Doctor Card */}
-                <div className="card-hover bg-gradient-to-br from-blue-50 to-cyan-50 rounded-2xl p-8 border border-blue-200">
+                <div className="card-hover bg-[var(--sidebar)] rounded-3xl p-8">
                   <div className="flex flex-col h-full">
                     <div>
-                      <div className="w-14 h-14 bg-gradient-to-br from-blue-600 to-cyan-600 text-white rounded-xl flex items-center justify-center mb-6 shadow-lg">
+                      <div className="w-14 h-14 bg-gradient-to-br from-[var(--primary)] to-[var(--chart-5)] text-white rounded-xl flex items-center justify-center mb-6 shadow-lg">
                         <Plus size={28} />
                       </div>
-                      <h3 className="text-xl font-bold text-slate-900 mb-3" style={{ fontFamily: "'Poppins', sans-serif" }}>
-                        Assign New Doctor
-                      </h3>
-                      <p className="text-slate-700 text-sm mb-8 leading-relaxed">
-                        Search and assign available doctors to strengthen your department's team.
-                      </p>
+                      <h3 className="text-xl font-black text-[var(--foreground)] mb-3">Assign New Personnel</h3>
+                      <p className="text-[var(--muted-foreground)] text-sm mb-8 leading-relaxed font-medium">Assign available specialists to your department's unit.</p>
                     </div>
                     
                     <div className="flex gap-2 mt-auto">
-                      <input 
-                        className="flex-1 bg-white border border-slate-300 rounded-xl px-4 py-3 text-sm text-slate-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all placeholder-slate-500"
-                        placeholder="Doctor name or ID"
-                      />
-                      <button className="bg-gradient-to-r from-blue-600 to-cyan-600 text-white px-6 py-3 rounded-xl font-semibold text-sm hover:shadow-lg hover:shadow-blue-500/30 transition-all border border-blue-600">
-                        Assign
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Department Guidelines */}
-              <div className="mt-12 bg-slate-50 rounded-2xl p-8 border border-slate-200">
-                <h4 className="text-sm font-semibold text-slate-900 mb-6 flex items-center gap-2" style={{ fontFamily: "'Poppins', sans-serif" }}>
-                  <Shield size={18} /> Team Management Guidelines
-                </h4>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  <div className="flex gap-4">
-                    <div className="text-blue-600 font-bold text-lg">1</div>
-                    <div>
-                      <div className="text-slate-900 font-semibold text-sm mb-1">Verify Credentials</div>
-                      <div className="text-slate-600 text-xs">Ensure all doctors have valid credentials before assignment</div>
-                    </div>
-                  </div>
-                  <div className="flex gap-4">
-                    <div className="text-blue-600 font-bold text-lg">2</div>
-                    <div>
-                      <div className="text-slate-900 font-semibold text-sm mb-1">Manage Workload</div>
-                      <div className="text-slate-600 text-xs">Balance patient load across your team fairly</div>
-                    </div>
-                  </div>
-                  <div className="flex gap-4">
-                    <div className="text-blue-600 font-bold text-lg">3</div>
-                    <div>
-                      <div className="text-slate-900 font-semibold text-sm mb-1">Regular Review</div>
-                      <div className="text-slate-600 text-xs">Review staff performance and satisfaction monthly</div>
+                      <input className="dc-input" placeholder="Staff Name or ID" />
+                      <button className="dc-btn-primary whitespace-nowrap">Assign Unit</button>
                     </div>
                   </div>
                 </div>
