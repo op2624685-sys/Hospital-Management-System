@@ -2,6 +2,7 @@ package com.hms.service.impl;
 
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import com.hms.service.EmailService;
@@ -16,6 +17,7 @@ public class EmailServiceImpl implements EmailService {
 
     private final JavaMailSender mailSender;
 
+    @Async("emailTaskExecutor")
     @Override
     public void sendOtpEmail(String toEmail, String otp) {
         try {
@@ -37,6 +39,7 @@ public class EmailServiceImpl implements EmailService {
         }
     }
 
+    @Async("emailTaskExecutor")
     @Override
     public void sendMail(String to, String subject, String body) {
         try {
@@ -52,6 +55,7 @@ public class EmailServiceImpl implements EmailService {
         }
     }
 
+    @Async("emailTaskExecutor")
     @Override
     public void sendPaymentSuccessEmail(String to, String subject, String body) {
         // later implement this 
