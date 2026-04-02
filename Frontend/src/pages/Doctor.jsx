@@ -53,26 +53,12 @@ const Doctor = () => {
 
         .doc-page {
           min-height: 100vh;
-          background: var(--background);
+          background: transparent;
           font-family: 'Outfit', sans-serif;
           overflow-x: hidden;
         }
 
-        .doc-ambient { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
-        .doc-orb { position: absolute; border-radius: 50%; filter: blur(90px); }
-        .doc-orb-1 { width: 640px; height: 640px; top: -220px; left: -180px; opacity: 0.35; background: radial-gradient(circle, var(--secondary), transparent); animation: orbFloat1 13s ease-in-out infinite; }
-        .doc-orb-2 { width: 520px; height: 520px; bottom: -160px; right: -140px; opacity: 0.30; background: radial-gradient(circle, var(--chart-4), transparent); animation: orbFloat2 17s ease-in-out infinite; }
-        .doc-orb-3 { width: 420px; height: 420px; top: 30%; right: 8%; opacity: 0.22; background: radial-gradient(circle, var(--secondary), transparent); animation: orbFloat1 21s ease-in-out infinite reverse; }
-        .doc-orb-4 { width: 340px; height: 340px; bottom: 25%; left: 5%; opacity: 0.20; background: radial-gradient(circle, var(--chart-4), transparent); animation: orbFloat2 19s ease-in-out infinite; }
-        .doc-orb-5 { width: 260px; height: 260px; top: 60%; left: 38%; opacity: 0.18; background: radial-gradient(circle, var(--secondary), transparent); animation: orbFloat1 15s ease-in-out infinite; }
-        @keyframes orbFloat1 { 0%,100% { transform: translate(0,0); } 50% { transform: translate(35px,-45px); } }
-        @keyframes orbFloat2 { 0%,100% { transform: translate(0,0); } 50% { transform: translate(-28px,38px); } }
 
-        .doc-grid-texture {
-          position: fixed; inset: 0; z-index: 0; pointer-events: none;
-          background-image: linear-gradient(color-mix(in srgb, var(--primary) 5%, transparent) 1px, transparent 1px), linear-gradient(90deg, color-mix(in srgb, var(--primary) 5%, transparent) 1px, transparent 1px);
-          background-size: 56px 56px;
-        }
 
         .doc-hero { position: relative; z-index: 1; padding: 110px 80px 60px; animation: heroIn .8s ease both; }
         @keyframes heroIn { from { opacity: 0; transform: translateY(-24px); } to { opacity: 1; transform: translateY(0); } }
@@ -174,15 +160,6 @@ const Doctor = () => {
       `}</style>
 
       <div className="doc-page">
-        <div className="doc-ambient">
-          <div className="doc-orb doc-orb-1" />
-          <div className="doc-orb doc-orb-2" />
-          <div className="doc-orb doc-orb-3" />
-          <div className="doc-orb doc-orb-4" />
-          <div className="doc-orb doc-orb-5" />
-        </div>
-        <div className="doc-grid-texture" />
-
         <Header />
 
         <section className="doc-hero">
