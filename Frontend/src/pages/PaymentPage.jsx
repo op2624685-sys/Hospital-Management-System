@@ -23,7 +23,7 @@ import {
   ArrowLeft,
 } from "lucide-react";
 
-const stripePromise = loadStripe("pk_test_51QuHNoF7xZ6nC99F1lZp0r4qW5VjYm6n7jYm6n7jYm6n7jYm6n7jYm6n7jYm6n7jYm6n7jYm6n7j");
+const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY);
 const PAYMENT_CONTEXT_KEY = "hms_pending_payment_context";
 
 const PAYMENT_METHODS = [
