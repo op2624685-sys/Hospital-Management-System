@@ -16,6 +16,7 @@ import {
 import { Link as RouterLink, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { doctorAPI } from '../api/api';
+import SwitchToggleThemeDemo from '@/components/ui/toggle-theme';
 
 const baseNavLinks = [
   { to: '/', label: 'Home', icon: Activity },
@@ -26,8 +27,6 @@ const baseNavLinks = [
   { to: '/about', label: 'About Us', icon: Users },
   { to: '/contact', label: 'Contact Us', icon: Phone },
 ];
-
-import SwitchToggleThemeDemo from '@/components/ui/toggle-theme';
 
 const Header = () => {
   const { isLoggedIn, logout, hasRole } = useAuth();
@@ -91,34 +90,40 @@ const Header = () => {
 
   return (
     <>
-      <header className={`fixed top-0 left-0 w-full z-50 transition-all duration-500 rounded-2xl mt-1 p-2
+      <header className={`fixed top-0 left-0 w-full z-50 transition-all duration-700
         ${scrolled
-          ? 'bg-white/80 dark:bg-black/60 backdrop-blur-xl border-b shadow-md py-3'
-          : 'bg-white/40 dark:bg-black/30 backdrop-blur-md py-4'
+          ? 'bg-[var(--card)]/95 dark:bg-[var(--background)]/90 backdrop-blur-2xl border-b border-[var(--border)] shadow-xl py-4 pt-4'
+          : 'bg-transparent py-6'
         }`}>
+        {/* Subtle separator for unscrolled state */}
+        {!scrolled && (
+          <div className="absolute bottom-0 left-10 right-10 h-px bg-gradient-to-r from-transparent via-[var(--border)]/20 to-transparent opacity-50" />
+        )}
 
         <div className='flex justify-between items-center px-4 lg:px-10'>
           <RouterLink to="/" className='group flex items-center gap-2'>
-            <div className='w-10 h-10 rounded-xl flex items-center justify-center shadow-md group-hover:scale-110 transition-transform duration-300' style={{ background: 'linear-gradient(135deg, #644a40, #8b5e52)' }}>
+            <div className='w-10 h-10 rounded-xl flex items-center justify-center shadow-md group-hover:scale-110 transition-transform duration-300' style={{ background: 'linear-gradient(135deg, var(--primary), var(--chart-5))' }}>
               <Activity size={18} className='text-white' />
             </div>
             <h1 className='text-2xl font-black tracking-tight'>
-              <span style={{ color: '#644a40' }}>Medi</span>
-              <span className="text-[#8b5e52] dark:text-[#ffe0c2]">Core</span>
+              <span style={{ color: 'var(--primary)' }}>Medi</span>
+              <span style={{ color: 'var(--chart-5)' }}>Core</span>
             </h1>
           </RouterLink>
 
-          <nav className='hidden lg:flex items-center gap-1 bg-white dark:bg-zinc-900 rounded-2xl p-1 shadow-sm' style={{ border: '1px solid rgba(100,74,64,0.15)' }}>
+          <nav className={`hidden lg:flex items-center gap-1 rounded-2xl p-1 transition-all duration-500
+            ${scrolled ? 'bg-[var(--background)]/30' : 'bg-[var(--card)]/10 backdrop-blur-sm'}
+          `} style={{ border: '1px solid color-mix(in srgb, var(--primary) 15%, transparent)' }}>
             {navLinks.map((link) => (
               <RouterLink key={link.to} to={link.to}
                 className={`relative px-3 py-2 text-sm font-medium rounded-xl transition-all duration-300 flex items-center gap-1.5`}
                 style={isActive(link.to)
-                  ? { color: '#644a40', background: 'rgba(100,74,64,0.10)' }
+                  ? { color: 'var(--primary)', background: 'color-mix(in srgb, var(--primary) 10%, transparent)' }
                   : { color: 'var(--foreground)' }}
-                onMouseEnter={e => { if (!isActive(link.to)) { e.currentTarget.style.color = '#644a40'; e.currentTarget.style.background = 'rgba(100,74,64,0.07)'; } }}
-                onMouseLeave={e => { if (!isActive(link.to)) { e.currentTarget.style.color = 'var(--foreground)'; e.currentTarget.style.background = 'transparent'; } }}
+                onMouseEnter={e => { if (!isActive(link.to)) { e.currentTarget.style.color = 'var(--primary)'; e.currentTarget.style.background = 'color-mix(in srgb, var(--primary) 12%, transparent)'; e.currentTarget.style.transform = 'translateY(-1px)'; } }}
+                onMouseLeave={e => { if (!isActive(link.to)) { e.currentTarget.style.color = 'var(--foreground)'; e.currentTarget.style.background = 'transparent'; e.currentTarget.style.transform = 'translateY(0)'; } }}
               >
-                <link.icon size={14} />
+                <link.icon size={15} />
                 <span>{link.label}</span>
                 {link.label === 'Dept Head' && (
                   <span className="absolute -top-1 -right-1 flex h-3 w-3">
@@ -131,7 +136,7 @@ const Header = () => {
           </nav>
 
           <div className='flex items-center gap-3'>
-            <div className="flex items-center bg-white/50 dark:bg-zinc-800/50 p-1.5 rounded-xl border border-border">
+            <div className="flex items-center bg-[var(--muted)]/50 dark:bg-[var(--card)]/50 p-1.5 rounded-xl border border-[var(--border)]">
               <SwitchToggleThemeDemo />
             </div>
             
@@ -140,7 +145,7 @@ const Header = () => {
               <button
                 onClick={logout}
                 className='group flex items-center gap-2 text-white text-sm font-semibold py-2.5 px-5 rounded-xl transition-all duration-300 hover:scale-105 active:scale-95 shadow-md hover:shadow-lg'
-                style={{ background: '#3d2b24' }}>
+                style={{ background: 'var(--chart-5)' }}>
                 <LogOut size={15} className='group-hover:rotate-12 transition-transform duration-300' />
                 <span>Logout</span>
               </button>
@@ -148,7 +153,7 @@ const Header = () => {
               <RouterLink
                 to="/login"
                 className='group flex items-center gap-2 text-white text-sm font-semibold py-2.5 px-5 rounded-xl transition-all duration-300 hover:scale-105 active:scale-95 shadow-md hover:shadow-lg'
-                style={{ background: 'linear-gradient(135deg, #644a40, #8b5e52)', boxShadow: '0 4px 16px rgba(100,74,64,0.30)' }}>
+                style={{ background: 'linear-gradient(135deg, var(--primary), var(--chart-5))', boxShadow: '0 4px 16px color-mix(in srgb, var(--primary) 30%, transparent)' }}>
                 <LogIn size={15} className='group-hover:-rotate-12 transition-transform duration-300' />
                 <span>Login</span>
               </RouterLink>
@@ -157,8 +162,8 @@ const Header = () => {
 
             <button
               onClick={() => setMenuOpen(!menuOpen)}
-              className='lg:hidden p-2 rounded-xl bg-white dark:bg-zinc-800 transition-all duration-300 active:scale-90 shadow-sm'
-              style={{ border: '1px solid rgba(100,74,64,0.18)', color: '#644a40' }}>
+              className='lg:hidden p-2 rounded-xl bg-[var(--card)] dark:bg-[var(--background)]/50 transition-all duration-300 active:scale-90 shadow-sm'
+              style={{ border: '1px solid color-mix(in srgb, var(--primary) 18%, transparent)', color: 'var(--primary)' }}>
               {menuOpen ? <X size={20} /> : <Menu size={20} />}
             </button>
           </div>
@@ -180,12 +185,12 @@ const Header = () => {
           <div className='p-6'>
             <div className='flex justify-between items-center mb-8'>
               <h2 className='font-black text-xl'>
-                <span style={{ color: '#644a40' }}>Medi</span><span style={{ color: '#8b5e52' }}>Core</span>
+                <span style={{ color: 'var(--primary)' }}>Medi</span><span style={{ color: 'var(--chart-5)' }}>Core</span>
               </h2>
               <button
                 onClick={() => setMenuOpen(false)}
                 className='p-2 rounded-xl transition-all'
-                style={{ background: 'rgba(100,74,64,0.08)', color: '#644a40' }}>
+                style={{ background: 'color-mix(in srgb, var(--primary) 8%, transparent)', color: 'var(--primary)' }}>
                 <X size={18} />
               </button>
             </div>
@@ -199,8 +204,8 @@ const Header = () => {
                   style={{
                     transitionDelay: menuOpen ? `${i * 50}ms` : '0ms',
                     ...(isActive(link.to)
-                      ? { background: 'rgba(100,74,64,0.10)', color: '#644a40', fontWeight: 600 }
-                      : { color: '#4a3728' })
+                      ? { background: 'color-mix(in srgb, var(--primary) 10%, transparent)', color: 'var(--primary)', fontWeight: 600 }
+                      : { color: 'var(--foreground)' })
                   }}
                   className='flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-300'>
                   <link.icon size={15} />
@@ -214,7 +219,7 @@ const Header = () => {
                 <button
                   onClick={() => { logout(); setMenuOpen(false); }}
                   className='w-full flex items-center justify-center gap-2 text-white py-3 rounded-xl font-semibold text-sm transition-all duration-300'
-                  style={{ background: '#3d2b24' }}>
+                  style={{ background: 'var(--chart-5)' }}>
                   <LogOut size={15} />
                   Logout
                 </button>
@@ -223,7 +228,7 @@ const Header = () => {
                   to="/login"
                   onClick={() => setMenuOpen(false)}
                   className='w-full flex items-center justify-center gap-2 text-white py-3 rounded-xl font-semibold text-sm transition-all duration-300'
-                  style={{ background: 'linear-gradient(135deg, #644a40, #8b5e52)' }}>
+                  style={{ background: 'linear-gradient(135deg, var(--primary), var(--chart-5))' }}>
                   <LogIn size={15} />
                   Login
                 </RouterLink>
