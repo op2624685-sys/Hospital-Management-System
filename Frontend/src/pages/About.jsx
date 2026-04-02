@@ -9,7 +9,7 @@ import StorySection from "../components/About/StorySection";
 
 const About = () => {
   return (
-    <div className='min-h-screen overflow-x-hidden relative'>
+    <div className='min-h-screen overflow-x-hidden relative bg-[var(--background)] text-[var(--foreground)]'>
 
       <Header />
 
@@ -23,7 +23,7 @@ const About = () => {
 
       {/* Footer */}
       <div className='text-center pb-10'>
-        <p className='text-xs text-gray-600'>© 2026 DELTACARE Hospital · All rights reserved</p>
+        <p className='text-xs text-[var(--muted-foreground)]'>© 2026 DELTACARE Hospital · All rights reserved</p>
       </div>
     </div>
   );

@@ -43,9 +43,9 @@ const HeroSection = () => {
 
       {/* Extra hero-local blobs */}
       <div className='absolute top-20 right-20 w-96 h-96 rounded-full blur-3xl opacity-20 pointer-events-none'
-        style={{ background: 'radial-gradient(circle, #ffdfb5, transparent)' }}></div>
+        style={{ background: 'radial-gradient(circle, var(--secondary), transparent)' }}></div>
       <div className='absolute bottom-20 left-10 w-72 h-72 rounded-full blur-3xl opacity-15 pointer-events-none'
-        style={{ background: 'radial-gradient(circle, #ffe6c4, transparent)' }}></div>
+        style={{ background: 'radial-gradient(circle, var(--chart-4), transparent)' }}></div>
 
       {/* ── Left Content ── */}
       <div className='relative z-10 w-full lg:w-1/2 lg:pr-10 mb-12 lg:mb-0'>
@@ -53,46 +53,46 @@ const HeroSection = () => {
         {/* Tagline */}
         <div ref={taglineRef} className='opacity-0 mb-6'>
           <span className='inline-flex items-center gap-2 text-xs font-bold px-4 py-2 rounded-full uppercase tracking-widest'
-            style={{ background: 'rgba(100,74,64,0.10)', border: '1px solid rgba(100,74,64,0.22)', color: '#644a40' }}>
-            <span className='w-2 h-2 rounded-full animate-pulse' style={{ background: '#8b5e52' }}></span>
+            style={{ background: 'color-mix(in srgb, var(--primary) 10%, transparent)', border: '1px solid color-mix(in srgb, var(--primary) 22%, transparent)', color: 'var(--primary)' }}>
+            <span className='w-2 h-2 rounded-full animate-pulse' style={{ background: 'var(--chart-5)' }}></span>
             World Class Healthcare
           </span>
         </div>
 
         {/* Heading */}
-        <h1 ref={headingRef} className='opacity-0 text-5xl lg:text-7xl font-black leading-none mb-3' style={{ color: '#202020' }}>
+        <h1 ref={headingRef} className='opacity-0 text-5xl lg:text-7xl font-black leading-none mb-3' style={{ color: 'var(--foreground)' }}>
           Your Health,
         </h1>
         <h1 ref={subheadingRef} className='opacity-0 text-5xl lg:text-7xl font-black leading-none mb-6'>
           <span className='text-transparent bg-clip-text'
-            style={{ backgroundImage: 'linear-gradient(135deg, #644a40, #8b5e52)' }}>
+            style={{ backgroundImage: 'linear-gradient(135deg, var(--primary), var(--chart-5))' }}>
             Our Priority
           </span>
         </h1>
 
         {/* Para */}
-        <p ref={paraRef} className='opacity-0 text-lg leading-relaxed max-w-lg mb-10' style={{ color: '#646464' }}>
+        <p ref={paraRef} className='opacity-0 text-lg leading-relaxed max-w-lg mb-10' style={{ color: 'var(--muted-foreground)' }}>
           Experience world-class medical care with our team of expert doctors.
           We combine cutting-edge technology with compassionate care to deliver
-          <span style={{ color: '#202020', fontWeight: 500 }}> the best outcomes for you.</span>
+          <span style={{ color: 'var(--foreground)', fontWeight: 500 }}> the best outcomes for you.</span>
         </p>
 
         {/* Buttons */}
         <div ref={btnsRef} className='flex gap-4 mb-16'>
           <Link to="/appointment"
             className='group relative overflow-hidden flex items-center gap-2 text-white font-bold py-4 px-8 rounded-2xl hover:scale-105 active:scale-95 transition-transform duration-300'
-            style={{ background: 'linear-gradient(135deg, #644a40, #8b5e52)', boxShadow: '0 8px 28px rgba(100,74,64,0.38)' }}>
+            style={{ background: 'linear-gradient(135deg, var(--primary), var(--chart-5))', boxShadow: '0 8px 28px color-mix(in srgb, var(--primary) 30%, transparent)' }}>
             <span className='absolute inset-0 translate-y-full group-hover:translate-y-0 transition-transform duration-300'
-              style={{ background: 'linear-gradient(135deg, #8b5e52, #a07060)' }}></span>
+              style={{ background: 'linear-gradient(135deg, var(--chart-5), var(--primary))' }}></span>
             <span className='relative z-10'>Book Appointment</span>
             <span className='relative z-10 group-hover:translate-x-1 transition-transform duration-300'>→</span>
           </Link>
 
           <Link to="/doctors"
             className='group flex items-center gap-2 font-bold py-4 px-8 rounded-2xl active:scale-95 transition-all duration-300'
-            style={{ background: 'rgba(100,74,64,0.07)', border: '1.5px solid rgba(100,74,64,0.20)', color: '#3d2b24', backdropFilter: 'blur(8px)' }}
-            onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(100,74,64,0.40)'; e.currentTarget.style.color = '#644a40'; }}
-            onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(100,74,64,0.20)'; e.currentTarget.style.color = '#3d2b24'; }}>
+            style={{ background: 'color-mix(in srgb, var(--primary) 7%, transparent)', border: '1.5px solid color-mix(in srgb, var(--primary) 20%, transparent)', color: 'var(--chart-5)', backdropFilter: 'blur(8px)' }}
+            onMouseEnter={e => { e.currentTarget.style.borderColor = 'color-mix(in srgb, var(--primary) 40%, transparent)'; e.currentTarget.style.color = 'var(--primary)'; }}
+            onMouseLeave={e => { e.currentTarget.style.borderColor = 'color-mix(in srgb, var(--primary) 20%, transparent)'; e.currentTarget.style.color = 'var(--chart-5)'; }}>
             Meet Our Doctors
             <span className='group-hover:rotate-45 transition-transform duration-300'>↗</span>
           </Link>
@@ -103,8 +103,8 @@ const HeroSection = () => {
           {stats.map((stat, i) => (
             <div key={i} className='text-center'>
               <p className='text-2xl mb-0.5'>{stat.icon}</p>
-              <p className='text-2xl font-black' style={{ color: '#202020' }}>{stat.value}</p>
-              <p className='text-xs mt-0.5' style={{ color: '#646464' }}>{stat.label}</p>
+              <p className='text-2xl font-black' style={{ color: 'var(--foreground)' }}>{stat.value}</p>
+              <p className='text-xs mt-0.5' style={{ color: 'var(--muted-foreground)' }}>{stat.label}</p>
             </div>
           ))}
         </div>
@@ -112,7 +112,7 @@ const HeroSection = () => {
 
       {/* ── Right — 3D Model Canvas ── */}
       <div ref={floatingRef} className='opacity-0 relative w-full lg:w-1/2 h-[50vh] lg:h-[80vh] rounded-3xl overflow-hidden'
-        style={{ background: 'rgba(100,74,64,0.04)', border: '1px solid rgba(100,74,64,0.12)', backdropFilter: 'blur(10px)', boxShadow: 'inset 0 0 40px rgba(100,74,64,0.08)' }}>
+        style={{ background: 'color-mix(in srgb, var(--primary) 4%, transparent)', border: '1px solid color-mix(in srgb, var(--primary) 12%, transparent)', backdropFilter: 'blur(10px)', boxShadow: 'inset 0 0 40px color-mix(in srgb, var(--primary) 8%, transparent)' }}>
         <div className="absolute inset-0">
           <Doctor3D />
         </div>

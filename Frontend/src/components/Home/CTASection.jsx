@@ -25,7 +25,7 @@ const CTASection = () => {
 
       {/* CTA background */}
       <div className='absolute inset-0 rounded-3xl'
-        style={{ background: 'linear-gradient(135deg, #644a40 0%, #8b5e52 50%, #a07060 100%)' }}></div>
+        style={{ background: 'linear-gradient(135deg, var(--primary) 0%, var(--chart-5) 50%, color-mix(in srgb, var(--primary) 80%, black) 100%)' }}></div>
 
       {/* Decorative circles */}
       <div className='absolute -top-10 -right-10 w-64 h-64 bg-white opacity-5 rounded-full pointer-events-none'></div>
@@ -42,7 +42,7 @@ const CTASection = () => {
           <h2 className='text-5xl font-black text-white leading-tight mb-4'>
             Ready to take control <br />
             <span className='text-transparent bg-clip-text'
-              style={{ backgroundImage: 'linear-gradient(135deg, #ffdfb5, #ffe6c4)' }}>
+              style={{ backgroundImage: 'linear-gradient(135deg, var(--secondary), var(--chart-4))' }}>
               of your health?
             </span>
           </h2>
@@ -54,7 +54,7 @@ const CTASection = () => {
         <div className='flex flex-col gap-4 shrink-0'>
           <Link to="/appointment"
             className='group flex items-center gap-3 bg-white font-black py-4 px-8 rounded-2xl hover:scale-105 active:scale-95 transition-all duration-300'
-            style={{ color: '#644a40', boxShadow: '0 8px 28px rgba(0,0,0,0.20)' }}>
+            style={{ color: 'var(--primary)', boxShadow: '0 8px 28px rgba(0,0,0,0.20)' }}>
             Book Appointment
             <span className='group-hover:translate-x-1 transition-transform duration-300'>→</span>
           </Link>
