@@ -104,7 +104,7 @@ const DoctorAppointments = () => {
       <style>{`
         .dr-page {
           min-height: 100vh;
-          background: var(--background);
+          background: transparent;
           font-family: 'Outfit', sans-serif;
         }
         .dr-wrap {

@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import {
     Building2, Users, UserRound, ArrowRight,
-    Search, Sparkles, Settings, Star
+    Search, Sparkles, Settings, Star, ArrowLeft
 } from 'lucide-react';
+import { useParams } from 'react-router-dom';
+import GenericDepartment from '../components/GenericDepartment';
 import PageLoader from '../components/PageLoader';
 import { doctorAPI } from '../api/api';
 import { useNavigate } from 'react-router-dom';
@@ -105,6 +107,7 @@ const CardShimmer = () => (
 );
 
 const DoctorDepartment = () => {
+    const { departmentId } = useParams();
     const { user } = useAuth();
     const navigate = useNavigate();
     const [departments, setDepartments] = useState([]);
@@ -207,8 +210,39 @@ const DoctorDepartment = () => {
                     </div>
                 </div>
 
-                {/* ── Grid ── */}
-                {filtered.length === 0 ? (
+                {/* ── Grid or Detail ── */}
+                {departmentId ? (() => {
+                    const selected = departments.find(d => String(d.id) === String(departmentId));
+                    if (!selected) return (
+                        <div className="dd-fadeup text-center py-32 rounded-[2.5rem] bg-[var(--card)] border border-dashed border-[var(--border)]">
+                            <h3 className="text-2xl font-black text-[var(--foreground)] mb-2">Department not found</h3>
+                            <button onClick={() => navigate('/doctor/my-department')} className="mt-4 text-[var(--primary)] font-bold">Back to List</button>
+                        </div>
+                    );
+                    return (
+                        <div className="dd-fadeup bg-[var(--card)] rounded-[2.5rem] border border-[var(--border)] overflow-hidden shadow-2xl relative">
+                            <button 
+                                onClick={() => navigate('/doctor/my-department')}
+                                className="absolute top-8 left-8 z-50 flex items-center gap-3 px-6 py-3 rounded-2xl bg-[var(--background)]/60 backdrop-blur-xl border border-[var(--border)] text-[var(--foreground)] text-xs font-black uppercase tracking-widest hover:bg-[var(--primary)] hover:text-white transition-all shadow-xl active:scale-95 group">
+                                <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" /> 
+                                Return to Overview
+                            </button>
+                            <div className="min-h-[85vh] h-[85vh]">
+                                <GenericDepartment 
+                                    name={selected.name}
+                                    icon={<Building2 size={32} />}
+                                    description={selected.description}
+                                    members={selected.doctorCount}
+                                    headDoctor={selected.headDoctorName}
+                                    accent={selected.accentColor || 'var(--primary)'}
+                                    bg={selected.bgColor || 'var(--secondary)'}
+                                    imageUrl={selected.imageUrl}
+                                    sectionsJson={selected.sectionsJson}
+                                />
+                            </div>
+                        </div>
+                    );
+                })() : filtered.length === 0 ? (
                     <div className="dd-fadeup text-center py-32 rounded-[2.5rem] bg-[var(--card)] border border-dashed border-[var(--border)]">
                         <div className="w-20 h-20 bg-[var(--secondary)] rounded-3xl flex items-center justify-center mx-auto mb-6 text-[var(--primary)]">
                             <Building2 size={40} />
