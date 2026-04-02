@@ -615,22 +615,13 @@ const AdminPanel = () => {
         
         .admin-page {
           min-height: 100vh;
-          background: var(--background);
+          background: transparent;
           color: var(--foreground);
           overflow-x: hidden;
           position: relative;
         }
 
-        .admin-ambient { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
-        .admin-orb { position: absolute; border-radius: 50%; filter: blur(120px); opacity: 0.1; }
-        .admin-orb-1 { width: 700px; height: 700px; top: -200px; left: -100px; background: radial-gradient(circle, var(--primary), transparent); }
-        .admin-orb-2 { width: 500px; height: 500px; bottom: -100px; right: -50px; background: radial-gradient(circle, var(--secondary), transparent); }
 
-        .admin-grid-bg {
-          position: absolute; inset: 0; opacity: 0.03; z-index: 0;
-          background-image: radial-gradient(var(--foreground) 1px, transparent 1px);
-          background-size: 32px 32px;
-        }
 
         .admin-container {
           position: relative; z-index: 10;
@@ -764,6 +755,35 @@ const AdminPanel = () => {
         .btn-primary { background: var(--primary); color: #fff; border: none; padding: 12px 24px; border-radius: 12px; font-weight: 800; cursor: pointer; transition: all .2s; }
         .btn-cancel { background: var(--card); border: 1.5px solid var(--border); color: var(--foreground); padding: 12px 24px; border-radius: 12px; font-weight: 800; cursor: pointer; }
 
+        .admin-pagination {
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          gap: 16px;
+          margin-top: 32px;
+          padding-top: 24px;
+          border-top: 1.5px solid var(--border);
+        }
+        .admin-pagination button {
+          padding: 8px 18px;
+          border-radius: 12px;
+          background: var(--secondary);
+          color: var(--primary);
+          border: 1px solid color-mix(in srgb, var(--primary) 20%, transparent);
+          font-size: 12px;
+          font-weight: 800;
+          cursor: pointer;
+          transition: all .2s;
+        }
+        .admin-pagination button:hover:not(:disabled) {
+          background: var(--primary);
+          color: #fff;
+        }
+        .admin-pagination button:disabled {
+          opacity: 0.5;
+          cursor: not-allowed;
+        }
+
         @media (max-width: 1200px) {
           .admin-stats-grid { grid-template-columns: repeat(2, 1fr); }
           .admin-sections-grid { grid-template-columns: 1fr; }
@@ -777,11 +797,7 @@ const AdminPanel = () => {
       `}</style>
 
       <div className="admin-page">
-        <div className="admin-ambient">
-          <div className="admin-orb admin-orb-1" />
-          <div className="admin-orb admin-orb-2" />
-        </div>
-        <div className="admin-grid-bg" />
+
 
         <Header />
 
@@ -1075,7 +1091,7 @@ const AdminPanel = () => {
                           disabled={appointmentsPage === 0}>
                           Previous
                         </button>
-                        <span style={{ padding: "6px 12px", fontSize: 12, color: "#aaa" }}>
+                        <span style={{ padding: "6px 12px", fontSize: 12, color: "var(--muted-foreground)" }}>
                           Page {appointmentsPage + 1}
                         </span>
                         <button
@@ -1189,7 +1205,7 @@ const AdminPanel = () => {
                           disabled={doctorPage === 0}>
                           Previous
                         </button>
-                        <span style={{ padding: "6px 12px", fontSize: 12, color: "#aaa" }}>
+                        <span style={{ padding: "6px 12px", fontSize: 12, color: "var(--muted-foreground)" }}>
                           Page {doctorPage + 1}
                         </span>
                         <button
@@ -1225,7 +1241,7 @@ const AdminPanel = () => {
                             <div className="admin-patient-sub">{patient.email || "N/A"}</div>
                           </div>
                           <div className="admin-patient-col">{patient.bloodGroup || "N/A"}</div>
-                          <div className="admin-patient-col" style={{ textAlign: "center", fontSize: 12, color: "#aaa" }}>
+                          <div className="admin-patient-col" style={{ textAlign: "center", fontSize: 12, color: "var(--muted-foreground)" }}>
                             {patient.birthDate || "N/A"}
                           </div>
                         </div>
@@ -1239,7 +1255,7 @@ const AdminPanel = () => {
                         disabled={currentPage === 0}>
                         Previous
                       </button>
-                      <span style={{ padding: "6px 12px", fontSize: 12, color: "#aaa" }}>
+                      <span style={{ padding: "6px 12px", fontSize: 12, color: "var(--muted-foreground)" }}>
                         Page {currentPage + 1}
                       </span>
                       <button 
@@ -1518,7 +1534,7 @@ const AdminPanel = () => {
                           <div key={dep.id} className="admin-patient-row">
                             <div className="admin-patient-col name">{dep.name}</div>
                             <div className="admin-patient-col">{dep.headDoctorName || "N/A"}</div>
-                            <div className="admin-patient-col" style={{ textAlign: "center", fontSize: 12, color: "#aaa" }}>
+                            <div className="admin-patient-col" style={{ textAlign: "center", fontSize: 12, color: "var(--muted-foreground)" }}>
                               {dep.memberCount ?? 0}
                             </div>
                           </div>
