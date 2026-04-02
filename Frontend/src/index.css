@@ -100,14 +100,14 @@ body {
    AUTH SHELL
    ═══════════════════════════════════════════════ */
 .auth-shell {
-    --auth-bg-1: #fdf8f5;
-    --auth-bg-2: #fff7ee;
-    --auth-bg-3: #fff3e0;
-    --auth-accent: #644a40;
-    --auth-accent-2: #8b5e52;
-    --auth-text: #202020;
-    --auth-muted: #646464;
-    --auth-stroke: rgba(100, 74, 64, 0.13);
+    --auth-bg-1: var(--background);
+    --auth-bg-2: var(--card);
+    --auth-bg-3: var(--secondary);
+    --auth-accent: var(--primary);
+    --auth-accent-2: var(--chart-5);
+    --auth-text: var(--foreground);
+    --auth-muted: var(--muted-foreground);
+    --auth-stroke: color-mix(in srgb, var(--primary) 13%, transparent);
     position: relative;
     min-height: 100vh;
     padding: 2rem;
@@ -115,9 +115,9 @@ body {
     align-items: center;
     justify-content: center;
     overflow: hidden;
-    background: radial-gradient(circle at 8% 12%, #ffecd8 0%, transparent 43%),
-                radial-gradient(circle at 86% 18%, #fff4e0 0%, transparent 46%),
-                radial-gradient(circle at 84% 90%, #ffe8c8 0%, transparent 40%),
+    background: radial-gradient(circle at 8% 12%, var(--secondary) 0%, transparent 43%),
+                radial-gradient(circle at 86% 18%, var(--chart-4) 0%, transparent 46%),
+                radial-gradient(circle at 84% 90%, var(--chart-2) 0%, transparent 40%),
                 linear-gradient(140deg, var(--auth-bg-1) 0%, var(--auth-bg-2) 46%, var(--auth-bg-3) 100%);
 }
 
@@ -135,7 +135,7 @@ body {
     height: 24rem;
     top: -5rem;
     left: -4rem;
-    background: #ffdfb5;
+    background: var(--secondary);
 }
 
 .auth-bg-orb-2 {
@@ -143,7 +143,7 @@ body {
     height: 21rem;
     right: -4rem;
     top: 5rem;
-    background: #ffe6c4;
+    background: var(--chart-4);
     animation-delay: -6s;
 }
 
@@ -152,7 +152,7 @@ body {
     height: 22rem;
     bottom: -6rem;
     right: 12rem;
-    background: #ffdab0;
+    background: var(--chart-2);
     animation-delay: -10s;
 }
 
@@ -161,7 +161,7 @@ body {
     height: 18rem;
     bottom: -5rem;
     left: 20%;
-    background: #ffe0c2;
+    background: var(--secondary);
     animation-delay: -4s;
 }
 
@@ -206,7 +206,7 @@ body {
 .auth-art ul {
     margin: 0;
     padding-left: 1.2rem;
-    color: #3d2b24;
+    color: var(--chart-5);
     display: grid;
     gap: 0.65rem;
     font-weight: 500;
@@ -335,7 +335,7 @@ body {
     border: 0;
     border-radius: 14px;
     padding: 0.82rem 0.95rem;
-    background: linear-gradient(120deg, #644a40 0%, #8b5e52 100%);
+    background: linear-gradient(120deg, var(--primary) 0%, var(--chart-5) 100%);
     color: #fff;
     font-weight: 800;
     letter-spacing: 0.03em;
@@ -361,7 +361,7 @@ body {
     display: flex;
     align-items: center;
     gap: 0.6rem;
-    color: #3d2b24;
+    color: var(--chart-5);
     font-size: 0.9rem;
     font-weight: 500;
 }
@@ -413,6 +413,62 @@ body {
 .auth-links a:hover {
     color: #8b5e52;
     text-decoration: underline;
+}
+
+.auth-divider {
+    position: relative;
+    text-align: center;
+    margin: 1.5rem 0;
+}
+
+.auth-divider::before {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: rgba(100, 74, 64, 0.15);
+}
+
+.auth-divider span {
+    position: relative;
+    background: #fff;
+    padding: 0 0.8rem;
+    color: var(--auth-muted);
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+}
+
+.auth-social-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.8rem;
+    margin-bottom: 1.2rem;
+}
+
+.auth-social-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.6rem;
+    padding: 0.7rem;
+    border: 1px solid rgba(100, 74, 64, 0.18);
+    border-radius: 12px;
+    background: #fff;
+    color: var(--auth-text);
+    font-size: 0.88rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.auth-social-btn:hover {
+    background: rgba(100, 74, 64, 0.04);
+    border-color: var(--primary);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(100, 74, 64, 0.08);
 }
 
 @keyframes authOrbFloat {
