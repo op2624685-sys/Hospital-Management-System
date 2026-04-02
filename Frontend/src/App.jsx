@@ -4,6 +4,7 @@ import Login from "./pages/AuthPages/Login";
 import Signup from "./pages/AuthPages/Signup";
 import ForgotPassword from "./pages/AuthPages/ForgotPassword";
 import { Route, Routes } from "react-router-dom";
+import OAuth2Callback from "./pages/OAuth2Callback";
 import Home from "./pages/Home";
 import AppointmentDetails from "./pages/AppointmentDetails";
 import Appointment from "./pages/Appointment";
@@ -82,6 +83,7 @@ const App = () => {
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
         <Route path="/login/forgotpassword" element={<ForgotPassword />} />
+        <Route path="/oauth2/callback" element={<OAuth2Callback />} />
 
         <Route
           path="/admin"
@@ -125,6 +127,22 @@ const App = () => {
         />
         <Route
           path="/doctor/department-head"
+          element={
+            <ProtectedRoute role="DOCTOR">
+              <DepartmentControl />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/department/:departmentId"
+          element={
+            <ProtectedRoute role="DOCTOR">
+              <DoctorDepartment />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/department/:departmentId/control"
           element={
             <ProtectedRoute role="DOCTOR">
               <DepartmentControl />
