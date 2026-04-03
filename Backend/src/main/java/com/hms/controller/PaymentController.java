@@ -72,4 +72,17 @@ public class PaymentController {
         }
         return ResponseEntity.ok(message);
     }
+
+    @PostMapping("/create-stripe-checkout-session/{doctorId}")
+    public ResponseEntity<?> createStripeCheckoutSession(
+            @PathVariable Long doctorId,
+            @RequestBody CreateAppointmentRequestDto request) throws Exception {
+        return ResponseEntity.ok(paymentService.createStripeCheckoutSession(doctorId, request));
+    }
+
+    @PostMapping("/confirm-stripe-payment")
+    public ResponseEntity<AppointmentResponseDto> confirmStripePayment(
+            @RequestBody CreateAppointmentRequestDto request) throws Exception {
+        return ResponseEntity.ok(paymentService.confirmStripePayment(request));
+    }
 }
