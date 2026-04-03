@@ -52,6 +52,8 @@ public class UpiPaymentOrder {
     private String reason;
 
     private Long branchId;
+    
+    private Long departmentId;
 
     @Column(nullable = false)
     private Long amount;

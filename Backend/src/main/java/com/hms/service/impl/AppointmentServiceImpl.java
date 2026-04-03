@@ -40,6 +40,7 @@ import com.hms.repository.AdminRepository;
 import com.hms.repository.DoctorRepository;
 import com.hms.repository.PatientRepository;
 import com.hms.repository.BranchRepository;
+import com.hms.repository.DepartmentRepository;
 import com.hms.service.AppointmentService;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
@@ -58,6 +59,7 @@ public class AppointmentServiceImpl implements AppointmentService {
     private final DoctorRepository doctorRepository;
     private final AdminRepository adminRepository;
     private final BranchRepository branchRepository;
+    private final DepartmentRepository departmentRepository;
     private final ApplicationEventPublisher eventPublisher;
 
     @Override
@@ -94,6 +96,14 @@ public class AppointmentServiceImpl implements AppointmentService {
             branchToUse = doctor.getBranch();
         }
 
+        final com.hms.entity.Department departmentToUse;
+        if (createAppointmentRequestDto.getDepartmentId() != null) {
+            departmentToUse = departmentRepository.findById(createAppointmentRequestDto.getDepartmentId())
+                    .orElseThrow(() -> new EntityNotFoundException("Department not found with ID: " + createAppointmentRequestDto.getDepartmentId()));
+        } else {
+            departmentToUse = null;
+        }
+
         Appointment appointment = Appointment.builder()
                 .reason(createAppointmentRequestDto.getReason())
                 .appointmentTime(createAppointmentRequestDto.getAppointmentTime())
@@ -101,6 +111,7 @@ public class AppointmentServiceImpl implements AppointmentService {
                 .patient(patient)
                 .doctor(doctor)
                 .branch(branchToUse)
+                .department(departmentToUse)
                 .amount(doctor.getConsultationFee())
                 .appointmentId(createAppointmentRequestDto.getAppointmentId()) // Use provided ID if present
                 .build();
@@ -412,7 +423,8 @@ public class AppointmentServiceImpl implements AppointmentService {
                 mapDoctorResponse(appointment.getDoctor()),
                 appointment.getStatus(),
                 mapPatientResponse(appointment.getPatient()),
-                mapBranchResponse(appointment.getBranch())
+                mapBranchResponse(appointment.getBranch()),
+                appointment.getDepartment() != null ? appointment.getDepartment().getName() : null
         );
     }
 
@@ -424,7 +436,8 @@ public class AppointmentServiceImpl implements AppointmentService {
                 doctor.getSpecialization(),
                 doctor.getEmail(),
                 mapDepartments(doctor),
-                mapBranchResponse(doctor.getBranch())
+                mapBranchResponse(doctor.getBranch()),
+                doctor.getConsultationFee()
         );
     }
 

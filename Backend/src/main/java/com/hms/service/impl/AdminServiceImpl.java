@@ -160,8 +160,27 @@ public class AdminServiceImpl implements AdminService {
                 doctor.getName(),
                 doctor.getSpecialization(),
                 doctor.getEmail(),
-                new HashSet<>(), // Empty departments set
-                null           // No branch mapping here
+                mapDoctorDepartments(doctor), 
+                null,          // No branch mapping here
+                doctor.getConsultationFee()
         );
+    }
+
+    private Set<com.hms.dto.DepartmentDto> mapDoctorDepartments(Doctor doctor) {
+        Set<com.hms.entity.Department> allDepts = new HashSet<>();
+        if (doctor.getDepartments() != null) {
+            allDepts.addAll(doctor.getDepartments());
+        }
+        java.util.List<com.hms.entity.Department> headedDepts = departmentRepository.findHeadedDepartments(doctor.getId());
+        if (headedDepts != null) {
+            allDepts.addAll(headedDepts);
+        }
+        
+        return allDepts.stream().map(dep -> {
+            com.hms.dto.DepartmentDto dto = new com.hms.dto.DepartmentDto();
+            dto.setId(dep.getId());
+            dto.setName(dep.getName());
+            return dto;
+        }).collect(java.util.stream.Collectors.toSet());
     }
 }

@@ -21,4 +21,5 @@ public class AppointmentResponseDto {
     private AppointmentStatusType status;
     private PatientResponseDto patient;
     private BranchResponseDto branch;
+    private String departmentName;
 }
