@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react'
-import { useParams, useNavigate, Link } from 'react-router-dom'
+import { useParams, useNavigate } from 'react-router-dom'
 import appointmentApi from '../api/appointments'
 import { useAuth } from '../context/AuthContext'
+import Header from '../components/Header'
 
 const statusConfig = {
   PENDING: {
@@ -26,7 +27,7 @@ const statusConfig = {
 
 const initials = (n = '') => n.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2) || '??'
 
-/* ── Loading screen ── */
+/* â”€â”€ Loading screen â”€â”€ */
 const LoadingScreen = () => (
   <>
     <style>{`
@@ -35,11 +36,11 @@ const LoadingScreen = () => (
       @keyframes adSpin { to{transform:rotate(360deg)} }
       .ad-load-text { font-size:14px; color:var(--muted-foreground); letter-spacing:.05em; font-weight:600; }
     `}</style>
-    <div className="ad-load"><div className="ad-load-ring"/><p className="ad-load-text">Fetching clinical details…</p></div>
+    <div className="ad-load"><div className="ad-load-ring"/><p className="ad-load-text">Fetching clinical details...</p></div>
   </>
 )
 
-/* ── Error screen ── */
+/* â”€â”€ Error screen â”€â”€ */
 const ErrorScreen = ({ onBack }) => (
   <>
     <style>{`
@@ -50,7 +51,7 @@ const ErrorScreen = ({ onBack }) => (
       .ad-err-btn { margin-top:8px; background:var(--primary); color:var(--primary-foreground); border:none; border-radius:12px; padding:12px 28px; font-size:14px; font-weight:600; cursor:pointer; }
     `}</style>
     <div className="ad-err">
-      <div className="ad-err-icon">𖦹</div>
+      <div className="ad-err-icon">!</div>
       <h2>Not Found</h2>
       <p>We couldn't locate this appointment record in our system.</p>
       <button className="ad-err-btn" onClick={onBack}>Return Back</button>
@@ -154,21 +155,10 @@ const AppointmentDetails = () => {
         .ad-container {
           position: relative; z-index: 1;
           max-width: 680px; margin: 0 auto;
-          padding: 48px 24px 80px;
+          padding: 112px 24px 80px;
           animation: adIn .65s ease both;
         }
         @keyframes adIn { from{opacity:0;transform:translateY(22px)} to{opacity:1;transform:translateY(0)} }
-
-        /* back btn */
-        .ad-back {
-          display: inline-flex; align-items: center; gap: 8px;
-          background: var(--card); border: 1.5px solid var(--border);
-          color: var(--muted-foreground); font-size: 13px; font-weight: 700;
-          padding: 10px 20px; border-radius: 14px; cursor: pointer;
-          transition: all .2s; margin-bottom: 36px;
-        }
-        .ad-back:hover { border-color: var(--primary); color: var(--primary); background: var(--secondary); }
-
         /* success header */
         .ad-success-header {
           text-align: center; margin-bottom: 36px;
@@ -195,7 +185,7 @@ const AppointmentDetails = () => {
         .ad-heading em { font-style: italic; color: var(--primary); font-family: serif; }
         .ad-subhead { font-size: 15px; color: var(--muted-foreground); font-weight: 500; }
 
-        /* ── TICKET CARD ── */
+        /* â”€â”€ TICKET CARD â”€â”€ */
         .ad-ticket {
           border-radius: 28px; overflow: hidden;
           border: 1px solid var(--border);
@@ -287,7 +277,10 @@ const AppointmentDetails = () => {
           font-size: 1rem; font-weight: 900; color: #fff;
         }
         .ad-cell-name { font-size: 14px; font-weight: 800; color: var(--foreground); margin-bottom: 4px; }
-        .ad-cell-meta { font-size: 12px; color: var(--muted-foreground); line-height: 1.5; font-weight: 500; }
+        .ad-cell-meta {
+          font-size: 12px; color: var(--muted-foreground); line-height: 1.5; font-weight: 500;
+          overflow-wrap: anywhere; word-break: break-word;
+        }
 
         /* date band */
         .ad-date-band {
@@ -305,6 +298,31 @@ const AppointmentDetails = () => {
           margin-bottom: 6px; letter-spacing: -0.02em;
         }
         .ad-date-small { font-size: 11px; color: var(--muted-foreground); font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+
+        /* reason block */
+        .ad-reason-box {
+          background: var(--sidebar);
+          border: 1px solid var(--border);
+          border-radius: 16px;
+          padding: 16px 18px;
+          margin-bottom: 28px;
+        }
+        .ad-reason-label {
+          font-size: 10px;
+          font-weight: 800;
+          letter-spacing: .12em;
+          text-transform: uppercase;
+          color: var(--muted-foreground);
+          margin-bottom: 8px;
+        }
+        .ad-reason-text {
+          font-size: 13px;
+          line-height: 1.6;
+          color: var(--foreground);
+          font-weight: 600;
+          overflow-wrap: anywhere;
+          word-break: break-word;
+        }
 
         /* buttons */
         .ad-actions { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; }
@@ -334,6 +352,74 @@ const AppointmentDetails = () => {
           .ad-date-band { flex-direction: column; }
           .ad-date-block { border-right: none; border-bottom: 1.5px solid var(--border); width: 100%; }
         }
+
+        @page { size: A4 portrait; margin: 8mm; }
+        @media print {
+          * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+          html, body { background: #fff !important; }
+
+          .ad-page { min-height: auto; background: #fff; }
+          .ad-page > header,
+          .ad-ambient,
+          .ad-success-header,
+          .ad-actions,
+          .ad-footer {
+            display: none !important;
+          }
+
+          .ad-container {
+            max-width: 100%;
+            padding: 0;
+            margin: 0;
+            animation: none;
+          }
+
+          .ad-ticket {
+            border-radius: 14px;
+            box-shadow: none;
+            overflow: visible;
+            break-inside: avoid;
+            page-break-inside: avoid;
+          }
+
+          .ad-ticket-banner { padding: 16px 18px; }
+          .ad-tbn-title { font-size: 1.25rem; }
+          .ad-tbn-subtitle { font-size: 11px; margin-top: 4px; }
+          .ad-tbn-status {
+            font-size: 10px; padding: 6px 10px;
+            backdrop-filter: none !important;
+            box-shadow: none !important;
+          }
+          .ad-tbn-ring, .ad-glow, .ad-tbn-bg {
+            filter: none !important;
+            backdrop-filter: none !important;
+            box-shadow: none !important;
+          }
+          .ad-perf { display: none !important; }
+          .ad-perf::before, .ad-perf::after { width: 18px; height: 18px; top: -9px; }
+          .ad-perf::before { left: -9px; }
+          .ad-perf::after  { right: -9px; }
+
+          .ad-ticket-body { padding: 14px 16px 12px; }
+          .ad-id-box { margin-bottom: 12px; padding: 12px; }
+          .ad-id-label { margin-bottom: 4px; font-size: 10px; }
+          .ad-id-val { font-size: 12px; overflow-wrap: anywhere; word-break: break-all; }
+          .ad-copy-btn { display: none !important; }
+          .ad-date-band { margin-bottom: 12px; }
+          .ad-date-block { padding: 12px; }
+          .ad-date-big { font-size: 1.05rem; margin-bottom: 4px; }
+          .ad-date-small { font-size: 10px; letter-spacing: .04em; }
+
+          .ad-info-grid { gap: 10px; margin-bottom: 0; }
+          .ad-info-cell { border-radius: 12px; padding: 12px; }
+          .ad-cell-avatar { width: 30px; height: 30px; margin-bottom: 8px; font-size: .8rem; }
+          .ad-cell-lbl { font-size: 9px; margin-bottom: 8px !important; }
+          .ad-cell-name { font-size: 12px; margin-bottom: 2px; }
+          .ad-cell-meta { font-size: 10px; line-height: 1.35; }
+          .ad-reason-box { margin-top: 10px; margin-bottom: 10px; border-radius: 12px; padding: 10px 12px; }
+          .ad-reason-label { font-size: 9px; margin-bottom: 4px; }
+          .ad-reason-text { font-size: 10px; line-height: 1.4; }
+        }
       `}</style>
 
       <div className="ad-page">
@@ -345,10 +431,6 @@ const AppointmentDetails = () => {
         <Header />
 
         <div className="ad-container">
-          <button className="ad-back" onClick={() => navigate(-1)}>
-            ← Previous Page
-          </button>
-
           <div className="ad-success-header">
             <div className="ad-success-badge">
               <div className="ad-success-check">
@@ -369,7 +451,7 @@ const AppointmentDetails = () => {
               <div className="ad-tbn-ring ad-tbn-ring-2" />
               <div className="ad-tbn-content">
                 <div>
-                  <div className="ad-tbn-hospital">SARS · Healthcare Solutions</div>
+                  <div className="ad-tbn-hospital">SARS - Healthcare Solutions</div>
                   <div className="ad-tbn-title">Clinical Receipt</div>
                   <div className="ad-tbn-subtitle">Verified Appointment Document</div>
                 </div>
@@ -390,7 +472,7 @@ const AppointmentDetails = () => {
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
                   <span className="ad-id-val">{appointment.appointmentId}</span>
                   <button className={`ad-copy-btn ${copied ? 'copied' : ''}`} onClick={handleCopy}>
-                    {copied ? '✔ Copied' : 'Copy'}
+                    {copied ? 'Copied' : 'Copy'}
                   </button>
                 </div>
               </div>
@@ -410,26 +492,31 @@ const AppointmentDetails = () => {
                 <div className="ad-info-cell">
                   <div className="ad-cell-lbl" style={{ marginBottom: 12 }}>Assigned Doctor</div>
                   <div className="ad-cell-avatar" style={{ background: 'var(--primary)' }}>
-                    {initials(appointment.doctor.name)}
+                    {initials(appointment?.doctor?.name || 'NA')}
                   </div>
-                  <div className="ad-cell-name">Dr. {appointment.doctor.name}</div>
+                  <div className="ad-cell-name">Dr. {appointment?.doctor?.name || 'Not Assigned'}</div>
                   <div className="ad-cell-meta">
-                    {appointment.doctor.specialization}<br/>
-                    {appointment.doctor.department?.name || 'General Medicine'}
+                    {appointment?.doctor?.specialization || 'General Physician'}<br/>
+                    {appointment.departmentName || 'General Medicine'}
                   </div>
                 </div>
 
                 <div className="ad-info-cell">
                   <div className="ad-cell-lbl" style={{ marginBottom: 12 }}>Patient Profile</div>
                   <div className="ad-cell-avatar" style={{ background: '#d97706' }}>
-                    {initials(appointment.patient.name)}
+                    {initials(appointment?.patient?.name || 'NA')}
                   </div>
-                  <div className="ad-cell-name">{appointment.patient.name}</div>
+                  <div className="ad-cell-name">{appointment?.patient?.name || 'Patient'}</div>
                   <div className="ad-cell-meta">
-                    {appointment.patient.email}<br/>
-                    {appointment.patient.gender}
+                    {appointment?.patient?.email || 'No email available'}<br/>
+                    {appointment?.patient?.gender || 'Not specified'}
                   </div>
                 </div>
+              </div>
+
+              <div className="ad-reason-box">
+                <div className="ad-reason-label">Reason For Visit</div>
+                <div className="ad-reason-text">{appointment?.reason || 'No reason provided'}</div>
               </div>
 
               <div className="ad-actions">
@@ -458,3 +545,4 @@ const AppointmentDetails = () => {
 }
 
 export default AppointmentDetails
+

@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import appointmentApi from '../api/appointments'
+import Header from '../components/Header'
 
 const statusConfig = {
   PENDING: {
@@ -64,7 +65,8 @@ const CheckAppointment = () => {
     <>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,700;0,900;1,700;1,900&family=DM+Sans:wght@300;400;500;600&display=swap');
-        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        .ck-page { box-sizing: border-box; }
+        .ck-page *, .ck-page *::before, .ck-page *::after { box-sizing: inherit; margin: 0; padding: 0; }
 
         .ck-page {
           min-height: 100vh;
@@ -77,7 +79,7 @@ const CheckAppointment = () => {
         .ck-grain {
           position: fixed; inset: 0; z-index: 0; pointer-events: none;
           background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
-          opacity: .7;
+          opacity: .25;
         }
 
         .ck-ambient { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
@@ -101,7 +103,7 @@ const CheckAppointment = () => {
           min-height: calc(100vh - 72px);
         }
 
-        /* ── LEFT ── */
+        /* LEFT */
         .ck-left {
           display: flex; flex-direction: column; justify-content: center;
           padding: 60px 56px; position: relative;
@@ -144,7 +146,7 @@ const CheckAppointment = () => {
         .ck-step-text { font-size: 13px; color: rgba(255,255,255,.35); line-height: 1.55; }
         .ck-step-text strong { color: rgba(255,255,255,.7); font-weight: 600; }
 
-        /* ── RIGHT ── */
+        /* RIGHT */
         .ck-right { display: flex; flex-direction: column; justify-content: center; padding: 60px 56px; }
 
         .ck-form-label {
@@ -210,7 +212,7 @@ const CheckAppointment = () => {
         @keyframes ckFadeUp { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
         .ck-error-msg { font-size:13px; color:#ff9090; }
 
-        /* ── RESULT ── */
+        /* RESULT */
         .ck-result {
           margin-top:28px; border-radius:18px; overflow:hidden;
           border:1px solid rgba(255,255,255,.09);
@@ -294,157 +296,48 @@ const CheckAppointment = () => {
           .ck-info-grid { grid-template-columns:1fr; }
           .ck-heading { font-size:2.6rem; }
         }
-        /* ── navbar ── */
-        .ck-nav {
-          position: sticky; top: 0; z-index: 100;
-          height: 64px;
-          display: flex; align-items: center; justify-content: space-between;
-          padding: 0 40px;
-          background: rgba(10,10,10,.88);
-          backdrop-filter: saturate(180%) blur(24px);
-          -webkit-backdrop-filter: saturate(180%) blur(24px);
-          border-bottom: 1px solid rgba(255,255,255,.06);
-          box-shadow: 0 1px 0 rgba(255,255,255,.04);
+        /* Theme alignment with shared app styles */
+        .ck-page { background: var(--background); color: var(--foreground); }
+        .ck-wrap { min-height: calc(100vh - 84px); padding-top: 88px; }
+        .ck-left { border-right: 1px solid var(--border); }
+        .ck-tag { background: var(--secondary); border: 1px solid color-mix(in srgb, var(--primary) 30%, transparent); color: var(--primary); }
+        .ck-heading { color: var(--foreground); }
+        .ck-heading .red { color: var(--primary); }
+        .ck-desc, .ck-step-text, .ck-note, .ck-hint, .ck-cell-meta { color: var(--muted-foreground); }
+        .ck-step-num, .ck-input-group, .ck-info-cell, .ck-id-strip { background: var(--secondary); border-color: var(--border); }
+        .ck-step-text strong, .ck-cell-name { color: var(--foreground); }
+        .ck-form-label, .ck-cell-lbl, .ck-id-label { color: var(--muted-foreground); }
+        .ck-input { color: var(--foreground); }
+        .ck-input::placeholder { color: var(--muted-foreground); }
+        .ck-paste-btn { background: var(--card); border-color: var(--border); color: var(--muted-foreground); }
+        .ck-paste-btn:hover { border-color: var(--primary); color: var(--primary); }
+        .ck-submit { background: var(--primary); color: var(--primary-foreground); box-shadow: 0 8px 24px color-mix(in srgb, var(--primary) 25%, transparent); }
+        .ck-submit:hover:not(:disabled) { box-shadow: 0 14px 30px color-mix(in srgb, var(--primary) 35%, transparent); }
+        .ck-result { border-color: var(--border); }
+        .ck-result-body { background: var(--card); border-top: 1px solid var(--border); }
+        .ck-id-val { color: var(--primary); }
+        .ck-reset { border-color: var(--border); color: var(--muted-foreground); }
+        .ck-reset:hover { border-color: var(--primary); color: var(--primary); background: var(--secondary); }
+        @media (max-width:860px) {
+          .ck-wrap { padding-top: 84px; }
+          .ck-left { border-bottom: 1px solid var(--border); }
         }
-        /* logo */
-        .ck-nav-logo {
-          display: flex; align-items: center; gap: 11px;
-          text-decoration: none; flex-shrink: 0;
-        }
-        .ck-nav-mark {
-          width: 36px; height: 36px; border-radius: 11px; flex-shrink: 0;
-          background: linear-gradient(145deg, #e42320 0%, #9b1c1c 100%);
-          display: flex; align-items: center; justify-content: center;
-          box-shadow: 0 0 0 1px rgba(228,35,32,.4), 0 4px 16px rgba(228,35,32,.3);
-        }
-        .ck-nav-wordmark {
-          display: flex; flex-direction: column; line-height: 1;
-        }
-        .ck-nav-name {
-          font-family: 'Fraunces', serif;
-          font-size: 15px; font-weight: 900; color: #fff; letter-spacing: -.01em;
-        }
-        .ck-nav-name em { font-style: italic; color: #e42320; }
-        .ck-nav-tagline {
-          font-size: 10px; color: rgba(255,255,255,.28);
-          letter-spacing: .08em; text-transform: uppercase; margin-top: 2px;
-        }
-        /* center links */
-        .ck-nav-center {
-          display: flex; align-items: center;
-          background: rgba(255,255,255,.05);
-          border: 1px solid rgba(255,255,255,.08);
-          border-radius: 14px; padding: 4px;
-          gap: 2px;
-        }
-        .ck-nav-link {
-          padding: 7px 16px; border-radius: 10px;
-          font-family: 'DM Sans', sans-serif;
-          font-size: 13px; font-weight: 500; color: rgba(255,255,255,.4);
-          text-decoration: none; transition: color .18s, background .18s;
-          white-space: nowrap;
-        }
-        .ck-nav-link:hover { color: rgba(255,255,255,.85); background: rgba(255,255,255,.08); }
-        .ck-nav-link.ck-active {
-          color: #fff; background: rgba(255,255,255,.12);
-          font-weight: 600;
-        }
-        /* right side */
-        .ck-nav-right { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
-        .ck-nav-live {
-          display: flex; align-items: center; gap: 7px;
-          background: rgba(34,197,94,.07); border: 1px solid rgba(34,197,94,.15);
-          padding: 6px 13px; border-radius: 999px;
-          font-size: 11px; font-weight: 700; color: #4ade80;
-          letter-spacing: .06em; text-transform: uppercase;
-        }
-        .ck-nav-live-dot {
-          width: 6px; height: 6px; border-radius: 50%;
-          background: #22c55e; position: relative; flex-shrink: 0;
-        }
-        .ck-nav-live-dot::after {
-          content: ''; position: absolute; inset: -3px; border-radius: 50%;
-          background: rgba(34,197,94,.3); animation: ckPulse 2s ease-in-out infinite;
-        }
-        .ck-nav-book {
-          display: flex; align-items: center; gap: 7px;
-          background: #e42320; color: #fff;
-          border: none; border-radius: 11px; padding: 9px 18px;
-          font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 600;
-          text-decoration: none; cursor: pointer; letter-spacing: .01em;
-          transition: background .18s, transform .15s, box-shadow .18s;
-          box-shadow: 0 4px 18px rgba(228,35,32,.32);
-        }
-        .ck-nav-book:hover {
-          background: #c41c1a; transform: translateY(-1px);
-          box-shadow: 0 8px 28px rgba(228,35,32,.45);
-        }
-        /* mobile */
-        @media (max-width: 900px) { .ck-nav-center { display: none; } }
-        @media (max-width: 640px) {
-          .ck-nav { padding: 0 20px; }
-          .ck-nav-live { display: none; }
-          .ck-nav-book { padding: 9px 14px; font-size: 12px; }
-          .ck-nav-tagline { display: none; }
-        }
-
         ::-webkit-scrollbar { width:4px; }
-        ::-webkit-scrollbar-thumb { background:#e42320; border-radius:2px; }
+        ::-webkit-scrollbar-thumb { background:var(--primary); border-radius:2px; }
       `}</style>
 
+      <Header />
+
       <div className="ck-page">
-        <div className="ck-grain" />
-        <div className="ck-ambient">
-          <div className="ck-glow ck-glow-1" />
-          <div className="ck-glow ck-glow-2" />
-        </div>
-
-        {/* ── Navbar ── */}
-        <nav className="ck-nav">
-
-          {/* Logo */}
-          <Link to="/" className="ck-nav-logo">
-            <div className="ck-nav-mark">
-              <svg width="17" height="17" fill="none" stroke="#fff" strokeWidth={2.2} viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round"
-                  d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
-              </svg>
-            </div>
-            <div className="ck-nav-wordmark">
-              <span className="ck-nav-name">Sarda <em>HMS</em></span>
-              <span className="ck-nav-tagline">Hospital Management</span>
-            </div>
-          </Link>
-
-          {/* Center pill nav */}
-          <div className="ck-nav-center">
-            <Link to="/"                   className="ck-nav-link">Home</Link>
-            <Link to="/doctors"            className="ck-nav-link">Doctors</Link>
-            <Link to="/appointment"        className="ck-nav-link">Book</Link>
-            <Link to="/appointment/check"  className="ck-nav-link ck-active">Track</Link>
-            <Link to="/branch"             className="ck-nav-link">Branches</Link>
+          <div className="ck-grain" />
+          <div className="ck-ambient">
+            <div className="ck-glow ck-glow-1" />
+            <div className="ck-glow ck-glow-2" />
           </div>
-
-          {/* Right */}
-          <div className="ck-nav-right">
-            <div className="ck-nav-live">
-              <div className="ck-nav-live-dot" />
-              Live
-            </div>
-            <Link to="/appointment" className="ck-nav-book">
-              <svg width="13" height="13" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round"
-                  d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-              </svg>
-              Book Now
-            </Link>
-          </div>
-
-        </nav>
 
         <div className="ck-wrap">
 
-          {/* ══ LEFT ══ */}
+
           <div className="ck-left">
             <div className="ck-tag">
               <div className="ck-tag-dot" />
@@ -458,14 +351,14 @@ const CheckAppointment = () => {
             </h1>
 
             <p className="ck-desc">
-              Instantly look up any appointment using your unique booking ID. No login required — available 24/7.
+              Instantly look up any appointment using your unique booking ID. No login required - available 24/7.
             </p>
 
             <div className="ck-steps">
               {[
                 { n: '01', t: <><strong>Copy your ID</strong> from the confirmation message you received after booking</> },
                 { n: '02', t: <><strong>Paste or type it</strong> into the search field on the right panel</> },
-                { n: '03', t: <><strong>View full details</strong> — doctor info, timing &amp; live status</> },
+                { n: '03', t: <><strong>View full details</strong> - doctor info, timing &amp; live status</> },
               ].map(s => (
                 <div className="ck-step" key={s.n}>
                   <div className="ck-step-num">{s.n}</div>
@@ -475,7 +368,7 @@ const CheckAppointment = () => {
             </div>
           </div>
 
-          {/* ══ RIGHT ══ */}
+
           <div className="ck-right">
 
             <div className="ck-form-label">Appointment ID</div>
@@ -499,11 +392,11 @@ const CheckAppointment = () => {
                 </button>
               </div>
 
-              <p className="ck-hint">↑ Your ID was provided in your booking confirmation</p>
+              <p className="ck-hint">Your ID was provided in your booking confirmation</p>
 
               <button className="ck-submit" type="submit" disabled={loading || !appointmentId.trim()}>
                 {loading
-                  ? <><div className="ck-spinner"/> Searching…</>
+                  ? <><div className="ck-spinner"/> Searching...</>
                   : <><svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg> Find Appointment</>
                 }
               </button>
@@ -534,7 +427,7 @@ const CheckAppointment = () => {
                            : appointment.status === 'CANCELLED' ? 'Appointment Cancelled'
                            : 'Appointment Pending'}
                         </div>
-                        <div className="ck-banner-sub">Sarda Heart Hospital · HMS</div>
+                        <div className="ck-banner-sub">Sarda Heart Hospital - HMS</div>
                       </div>
                     </div>
                     <div className="ck-banner-badge">{status.label}</div>
@@ -580,7 +473,7 @@ const CheckAppointment = () => {
                       <div className="ck-cell-name">{appointment.patient.name}</div>
                       <div className="ck-cell-meta">
                         {appointment.patient.email}<br/>
-                        {appointment.patient.gender} · Blood: {appointment.patient.bloodGroup}
+                        {appointment.patient.gender} - Blood: {appointment.patient.bloodGroup}
                       </div>
                     </div>
 
@@ -590,7 +483,7 @@ const CheckAppointment = () => {
                         <div className="ck-cell-dot" style={{background:'#a78bfa'}} />
                         <span className="ck-cell-lbl">Date & Time</span>
                       </div>
-                      <div style={{fontSize:26,marginBottom:8}}>🗓️</div>
+                      <div style={{fontSize:26,marginBottom:8}}>Date</div>
                       <div className="ck-cell-name" style={{fontSize:13,lineHeight:1.45}}>{formattedDate}</div>
                     </div>
 
@@ -600,7 +493,7 @@ const CheckAppointment = () => {
                         <div className="ck-cell-dot" style={{background:'#fb923c'}} />
                         <span className="ck-cell-lbl">Reason</span>
                       </div>
-                      <div style={{fontSize:26,marginBottom:8}}>📋</div>
+                      <div style={{fontSize:26,marginBottom:8}}>Note</div>
                       <div className="ck-cell-name" style={{fontSize:13,lineHeight:1.5}}>{appointment.reason}</div>
                     </div>
                   </div>
