@@ -41,9 +41,11 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         // Extract providerId based on provider
         String providerId = null;
         if ("google".equalsIgnoreCase(provider)) {
-            providerId = oAuth2User.getAttribute("sub");
+            Object sub = oAuth2User.getAttribute("sub");
+            providerId = sub != null ? sub.toString() : null;
         } else if ("github".equalsIgnoreCase(provider)) {
-            providerId = oAuth2User.getAttribute("id") != null ? oAuth2User.getAttribute("id").toString() : null;
+            Object id = oAuth2User.getAttribute("id");
+            providerId = id != null ? id.toString() : null;
         }
 
         if (providerId == null) {
