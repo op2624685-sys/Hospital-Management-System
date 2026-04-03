@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React from 'react'
 import { useNavigate } from 'react-router-dom'
 
 const specialityConfig = {
@@ -20,7 +20,6 @@ const avatarPairs = [
 ]
 
 const DoctorCard = ({ doctor, index = 0 }) => {
-  const [hovered, setHovered] = useState(false)
   const navigate = useNavigate()
 
   const specialization = doctor.specialization || doctor.speciality
@@ -48,6 +47,11 @@ const DoctorCard = ({ doctor, index = 0 }) => {
         branchName: doctor?.branch?.name || '',
       }
     })
+  }
+
+  const handleViewProfile = (e) => {
+    e.stopPropagation()
+    navigate(`/doctors/${doctor.id}`)
   }
 
   return (
@@ -212,6 +216,11 @@ const DoctorCard = ({ doctor, index = 0 }) => {
           max-width: 65%;
         }
         .dc-divider { height: 1px; background: var(--border); }
+        .dc-actions {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 10px;
+        }
         .dc-btn {
           width: 100%;
           padding: 11px;
@@ -219,17 +228,13 @@ const DoctorCard = ({ doctor, index = 0 }) => {
           font-family: 'Outfit', sans-serif;
           font-size: 13px;
           font-weight: 600;
-          border: none;
+          border: 1px solid var(--border);
           cursor: pointer;
           transition: background .25s, color .25s, transform .15s, box-shadow .25s;
           letter-spacing: .02em;
         }
-        .dc-btn-default { background: var(--background); color: var(--muted-foreground); }
-        .dc-btn-hovered {
-          background: var(--dc-c1);
-          color: #fff;
-          box-shadow: 0 8px 24px rgba(0,0,0,.15);
-        }
+        .dc-btn-default { background: var(--background); color: var(--foreground); }
+        .dc-btn-primary { background: var(--dc-c1); color: #fff; border-color: transparent; box-shadow: 0 8px 24px rgba(0,0,0,.15); }
         .dc-btn:active { transform: scale(.97); }
       `}</style>
 
@@ -243,8 +248,6 @@ const DoctorCard = ({ doctor, index = 0 }) => {
           '--dc-bg': config.bg,
           '--dc-border': config.border,
         }}
-        onMouseEnter={() => setHovered(true)}
-        onMouseLeave={() => setHovered(false)}
       >
         <div className="dc-inner">
           <div className="dc-banner">
@@ -286,12 +289,14 @@ const DoctorCard = ({ doctor, index = 0 }) => {
 
             <div className="dc-divider" />
 
-            <button
-              className={`dc-btn ${hovered ? 'dc-btn-hovered' : 'dc-btn-default'}`}
-              onClick={hovered ? handleBookAppointment : undefined}
-            >
-              {hovered ? '📅 Book Appointment' : 'View Profile'}
-            </button>
+            <div className="dc-actions">
+              <button className="dc-btn dc-btn-default" onClick={handleViewProfile}>
+                View Profile
+              </button>
+              <button className="dc-btn dc-btn-primary" onClick={handleBookAppointment}>
+                Book Appointment
+              </button>
+            </div>
           </div>
         </div>
       </div>

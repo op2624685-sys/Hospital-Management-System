@@ -9,6 +9,7 @@ import Home from "./pages/Home";
 import AppointmentDetails from "./pages/AppointmentDetails";
 import Appointment from "./pages/Appointment";
 import Doctor from "./pages/Doctor";
+import DoctorDetails from "./pages/DoctorDetails";
 import Branch from "./pages/Branch";
 import BranchDetails from "./pages/BranchDetails";
 import Department from "./pages/Department";
@@ -58,6 +59,7 @@ const App = () => {
           </RoleBlockedRoute>
         } />
         <Route path="/doctors" element={<Doctor />} />
+        <Route path="/doctors/:doctorId" element={<DoctorDetails />} />
         <Route path="/branches" element={<Branch />} />
         <Route path="/branches/:branchId" element={<BranchDetails />} />
         <Route path="/services" element={
