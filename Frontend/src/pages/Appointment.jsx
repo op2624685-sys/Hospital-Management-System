@@ -41,6 +41,7 @@ const Appointment = () => {
           background: var(--background);
           font-family: 'Outfit', sans-serif;
           overflow-x: hidden;
+          padding-top: 96px;
         }
 
         .ap-ambient { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
@@ -60,7 +61,7 @@ const Appointment = () => {
           background-size: 56px 56px;
         }
 
-        .ap-body { position: relative; z-index: 1; display: flex; align-items: center; justify-content: center; min-height: calc(100vh - 72px); padding: 60px 80px; gap: 80px; }
+        .ap-body { position: relative; z-index: 1; display: flex; align-items: center; justify-content: center; min-height: calc(100vh - 96px); padding: 60px 80px; gap: 80px; }
         .ap-deco-line { position: absolute; top: 0; bottom: 0; left: 50%; width: 1px; background: linear-gradient(to bottom, transparent, var(--border), transparent); pointer-events: none; }
         .ap-left { flex: 1; max-width: 540px; display: flex; flex-direction: column; }
 
@@ -131,6 +132,7 @@ const Appointment = () => {
         ::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 3px; }
 
         @media (max-width: 1024px) {
+          .ap-page { padding-top: 88px; }
           .ap-body { flex-direction: column; padding: 40px 24px 60px; gap: 48px; }
           .ap-right { width: 100%; max-width: 460px; }
           .ap-deco-line { display: none; }
