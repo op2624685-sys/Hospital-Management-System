@@ -253,7 +253,7 @@ const MyAppointments = () => {
               <div className="ux-row">
                 <div>
                   <div className="ux-name">Dr. {a.doctor?.name || "Healthcare Specialist"}</div>
-                  <div className="ux-meta">{a.doctor?.specialization || "Clinical Division"}</div>
+                  <div className="ux-meta">{a.departmentName || a.doctor?.specialization || "Clinical Division"}</div>
                   <div className="ux-submeta">REF: {a.appointmentId}</div>
                 </div>
                 <div style={{ textAlign: "right" }}>

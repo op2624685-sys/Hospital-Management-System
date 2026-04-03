@@ -54,6 +54,14 @@ export const appointmentApi = {
   verifyPayment(paymentIntentId) {
     return API.get(`/payments/verify/${paymentIntentId}`);
   },
+
+  // Stripe Checkout methods
+  createStripeCheckoutSession(doctorId, payload) {
+    return API.post(`/payments/create-stripe-checkout-session/${doctorId}`, payload);
+  },
+  confirmStripePayment(payload) {
+    return API.post(`/payments/confirm-stripe-payment`, payload);
+  },
 };
 
 export default appointmentApi;
