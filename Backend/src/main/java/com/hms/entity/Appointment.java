@@ -39,7 +39,6 @@ import lombok.ToString;
 @Table(
     indexes = {
         @Index(name = "idx_appointment_branch_time", columnList = "branch_id, appointment_time"),
-        @Index(name = "idx_appointment_patient_time", columnList = "patient_id, appointment_time"),
         @Index(name = "idx_appointment_status_time", columnList = "status, appointment_time")
     },
     uniqueConstraints = {
@@ -88,6 +87,10 @@ public class Appointment {
     @ToString.Exclude
     @JoinColumn(nullable = false)
     private Branch branch;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "department_id")
+    private Department department;
 
     @OneToMany(mappedBy = "appointment", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Payment> payments;

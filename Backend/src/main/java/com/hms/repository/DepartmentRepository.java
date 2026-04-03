@@ -19,5 +19,7 @@ public interface DepartmentRepository extends JpaRepository<Department, Long> {
     java.util.List<Department> findByBranchIsNotNull();
     
     boolean existsByHeadDoctor_Id(Long doctorId);
-
+    
+    @org.springframework.data.jpa.repository.Query("SELECT d FROM Department d WHERE d.headDoctor.id = :doctorId AND d.branch IS NOT NULL")
+    java.util.List<Department> findHeadedDepartments(@org.springframework.data.repository.query.Param("doctorId") Long doctorId);
 }

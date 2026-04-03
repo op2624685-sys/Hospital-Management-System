@@ -27,9 +27,15 @@ public class HospitalController {
 
     @GetMapping("/doctors")
     public ResponseEntity<List<DoctorDto>> getAllDoctors(
+            @RequestParam(name = "search", required = false) String search,
             @RequestParam(name = "page", defaultValue = "0") int page,
             @RequestParam(name = "size", defaultValue = "10") int size) {
-        return ResponseEntity.ok(doctorService.getAllDoctors(page, size));
+        return ResponseEntity.ok(doctorService.getAllDoctorsSearch(search, page, size));
+    }
+
+    @GetMapping("/doctors/{doctorId}")
+    public ResponseEntity<DoctorDto> getDoctorById(@PathVariable(name = "doctorId") Long doctorId) {
+        return ResponseEntity.ok(doctorService.getDoctorById(doctorId));
     }
 
     @GetMapping("/doctors/{doctorId}/booked-slots")

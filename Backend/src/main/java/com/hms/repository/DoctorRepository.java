@@ -37,6 +37,12 @@ public interface DoctorRepository extends JpaRepository<Doctor, Long> {
             @Param("specialization") String specialization,
             Pageable pageable);
 
+    @Query("""
+            SELECT d FROM Doctor d
+            WHERE (:search IS NULL OR :search = '' OR LOWER(d.name) LIKE LOWER(CONCAT('%', :search, '%')))
+            """)
+    Page<Doctor> findAllSearch(@Param("search") String search, Pageable pageable);
+
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("select d from Doctor d where d.id = :id")
     Optional<Doctor> findByIdForUpdate(@Param("id") Long id);

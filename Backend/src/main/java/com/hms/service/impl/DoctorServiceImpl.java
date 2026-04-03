@@ -34,7 +34,7 @@ import com.hms.repository.DoctorRepository;
 import com.hms.repository.UserRepository;
 import com.hms.repository.DepartmentRepository;
 import com.hms.service.DoctorService;
-import com.hms.service.AuditLogService;
+import com.hms.service.HMSAuditLogService;
 import lombok.RequiredArgsConstructor;
 import java.util.stream.Collectors;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -48,13 +48,19 @@ public class DoctorServiceImpl implements DoctorService {
     private final BranchRepository branchRepository;
     private final AdminRepository adminRepository;
     private final DepartmentRepository departmentRepository;
-    private final AuditLogService auditLogService;
+
+    private final HMSAuditLogService auditLogService;
 
     @Override
     @Transactional(readOnly = true)
-    @Cacheable(value = "doctorListPaged", key = "'all:' + #page + ':' + #size")
     public List<DoctorDto> getAllDoctors(int page, int size) {
-        return doctorRepository.findAll(PageRequest.of(page, size))
+        return getAllDoctorsSearch(null, page, size);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<DoctorDto> getAllDoctorsSearch(String search, int page, int size) {
+        return doctorRepository.findAllSearch(search, PageRequest.of(page, size))
                 .stream()
                 .map(this::mapToDoctorDto)
                 .toList();
@@ -62,7 +68,6 @@ public class DoctorServiceImpl implements DoctorService {
 
     @Override
     @Transactional(readOnly = true)
-    @Cacheable(value = "doctorById", key = "'id:' + #id")
     public DoctorDto getDoctorById(Long id) {
         Doctor doctor = doctorRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Doctor not found with id: " + id));
@@ -71,7 +76,6 @@ public class DoctorServiceImpl implements DoctorService {
 
     @Override
     @Transactional(readOnly = true)
-    @Cacheable(value = "doctorListByName", key = "'name:' + #name")
     public List<DoctorDto> getDoctorByName(String name) {
         List<Doctor> doctors = doctorRepository.findByName(name);
         return doctors
@@ -120,6 +124,7 @@ public class DoctorServiceImpl implements DoctorService {
                 .name(onBoardDoctorRequestDto.getName())
                 .specialization(onBoardDoctorRequestDto.getSpecialization())
                 .email(onBoardDoctorRequestDto.getEmail())
+                .consultationFee(onBoardDoctorRequestDto.getConsultationFee() != null ? onBoardDoctorRequestDto.getConsultationFee() : 0L)
                 .branch(branch)
                 .user(user)
                 .build();
@@ -207,7 +212,8 @@ public class DoctorServiceImpl implements DoctorService {
                 doctor.getEmail(),
                 mapDepartments(doctor),
                 mapBranch(doctor.getBranch()),
-                isDoctorHeadOfAnyDepartment(doctor)
+                isDoctorHeadOfAnyDepartment(doctor),
+                doctor.getConsultationFee()
         );
     }
 
@@ -218,7 +224,8 @@ public class DoctorServiceImpl implements DoctorService {
                 doctor.getSpecialization(),
                 doctor.getEmail(),
                 mapDepartments(doctor),
-                mapBranchResponse(doctor.getBranch())
+                mapBranchResponse(doctor.getBranch()),
+                doctor.getConsultationFee()
         );
     }
 
@@ -317,13 +324,36 @@ public class DoctorServiceImpl implements DoctorService {
     }
 
     private Set<DepartmentDto> mapDepartments(Doctor doctor) {
-        if (doctor.getDepartments() == null) return Set.of();
-        return doctor.getDepartments().stream()
+        // Use a Map with Department ID as key to ensure truly unique departments by ID
+        java.util.Map<Long, Department> uniqueDepts = new java.util.HashMap<>();
+        
+        if (doctor.getDepartments() != null) {
+            doctor.getDepartments().forEach(d -> {
+                // Ensure the department belongs to a branch (not just a template)
+                if (d != null && d.getId() != null && d.getBranch() != null) {
+                    uniqueDepts.put(d.getId(), d);
+                }
+            });
+        }
+        
+        // Include departments where this doctor is HEAD but maybe not listed in member doctors
+        List<Department> headedDepts = departmentRepository.findHeadedDepartments(doctor.getId());
+        if (headedDepts != null) {
+            headedDepts.forEach(d -> {
+                if (d != null && d.getId() != null && d.getBranch() != null) {
+                    uniqueDepts.put(d.getId(), d);
+                }
+            });
+        }
+
+        if (uniqueDepts.isEmpty()) return Set.of();
+        
+        return uniqueDepts.values().stream()
                 .map(department -> {
                     DepartmentDto dto = new DepartmentDto();
                     dto.setId(department.getId());
                     dto.setName(department.getName());
-                    dto.setBranchId(department.getBranch() != null ? department.getBranch().getId() : null);
+                    dto.setBranchId(department.getBranch().getId());
                     dto.setHeadDoctorId(department.getHeadDoctor() != null ? department.getHeadDoctor().getId() : null);
                     dto.setDoctorIds(department.getDoctors() == null ? Set.of()
                             : department.getDoctors().stream().map(Doctor::getId).collect(Collectors.toSet()));

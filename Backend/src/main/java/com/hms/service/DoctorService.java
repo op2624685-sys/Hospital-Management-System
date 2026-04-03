@@ -10,7 +10,7 @@ import com.hms.dto.Response.DoctorResponseDto;
 public interface DoctorService {
 
     List<DoctorDto> getAllDoctors(int page, int size);
-
+    List<DoctorDto> getAllDoctorsSearch(String search, int page, int size);
     DoctorDto getDoctorById(Long id);
 
     List<DoctorDto> getDoctorByName(String name);
