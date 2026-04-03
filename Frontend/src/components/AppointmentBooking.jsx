@@ -17,16 +17,15 @@ const AppointmentBooking = () => {
   const [branchSuggestions, setBranchSuggestions] = useState([]);
   const [doctorName, setDoctorName] = useState(state?.doctorName || '');
   const [doctorId, setDoctorId] = useState(state?.doctorId || null);
-  const [selectedDoctor, setSelectedDoctor] = useState(null);
-  const [allDoctors, setAllDoctors] = useState([]);
   const [doctorSuggestions, setDoctorSuggestions] = useState([]);
   const [reason, setReason] = useState('');
   const [appointmentDate, setAppointmentDate] = useState('');
   const [appointmentSlot, setAppointmentSlot] = useState('');
   const [bookedSlots, setBookedSlots] = useState([]);
   const [loadingSlots, setLoadingSlots] = useState(false);
+  const [availableDepartments, setAvailableDepartments] = useState([]);
+  const [selectedDepartmentId, setSelectedDepartmentId] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [patientName, setPatientName] = useState('');
   const doctorDropdownRef = useRef(null);
   const branchDropdownRef = useRef(null);
   const SLOT_MINUTES = 20;
@@ -42,11 +41,15 @@ const AppointmentBooking = () => {
           API.get('/public/branches'),
         ]);
         const doctors = doctorResponse.data || [];
-        setAllDoctors(doctors);
         setAllBranches(branchResponse.data || []);
         if (state?.doctorId) {
           const preselectedDoctor = doctors.find(d => d.id === state.doctorId) || null;
-          setSelectedDoctor(preselectedDoctor);
+          if (preselectedDoctor?.departments) {
+            setAvailableDepartments(preselectedDoctor.departments);
+            if (preselectedDoctor.departments.length === 1) {
+              setSelectedDepartmentId(preselectedDoctor.departments[0].id);
+            }
+          }
         }
       } catch (error) {
         console.error('Failed to fetch doctors/branches:', error);
@@ -55,19 +58,7 @@ const AppointmentBooking = () => {
     fetchMeta();
   }, [state]);
 
-  useEffect(() => {
-    const fetchPatientProfile = async () => {
-      try {
-        if (user?.roles?.includes('PATIENT')) {
-          const response = await API.get('/patients/profile');
-          setPatientName(response.data?.name || '');
-        }
-      } catch (error) {
-        console.error('Failed to fetch patient profile:', error);
-      }
-    };
-    fetchPatientProfile();
-  }, [user]);
+  // Patient profile fetch removed as patientName is not displayed
 
   useEffect(() => {
     const fetchBookedSlots = async () => {
@@ -101,7 +92,11 @@ const AppointmentBooking = () => {
       }
     };
     document.addEventListener('mousedown', handler);
-    return () => document.removeEventListener('mousedown', handler);
+    document.addEventListener('touchstart', handler);
+    return () => {
+      document.removeEventListener('mousedown', handler);
+      document.removeEventListener('touchstart', handler);
+    };
   }, []);
 
   const handleBranchSearch = (e) => {
@@ -110,7 +105,6 @@ const AppointmentBooking = () => {
     setBranchId(null);
     setDoctorName('');
     setDoctorId(null);
-    setSelectedDoctor(null);
     if (val.length < 2) { setBranchSuggestions([]); return; }
     setBranchSuggestions(
       allBranches.filter(b => b.name.toLowerCase().includes(val.toLowerCase()))
@@ -129,30 +123,52 @@ const AppointmentBooking = () => {
     setBranchSuggestions([]);
     setDoctorName('');
     setDoctorId(null);
-    setSelectedDoctor(null);
+    setAvailableDepartments([]);
+    setSelectedDepartmentId(null);
     setAppointmentSlot('');
     setBookedSlots([]);
   };
 
-  const handleDoctorSearch = (e) => {
+  const handleDoctorSearch = async (e) => {
     const val = e.target.value;
     setDoctorName(val);
     setDoctorId(null);
-    setSelectedDoctor(null);
+    setAvailableDepartments([]);
+    setSelectedDepartmentId(null);
+
     if (val.length < 2) { setDoctorSuggestions([]); return; }
-    const filteredDoctors = allDoctors.filter(d => {
-      const matchesName = d.name.toLowerCase().includes(val.toLowerCase());
-      if (!matchesName) return false;
-      if (!branchId) return true;
-      return d?.branch?.id === branchId;
-    });
-    setDoctorSuggestions(filteredDoctors);
+    
+    try {
+      // Search from backend instead of just clientside filtering to respect pagination
+      const response = await API.get('/public/doctors', { 
+        params: { search: val, size: 15 } 
+      });
+      const filtered = response.data || [];
+      
+      // Still apply clientside branch filter if needed
+      const result = filtered.filter(d => {
+        if (!branchId) return true;
+        return d?.branch?.id === branchId;
+      });
+      
+      setDoctorSuggestions(result);
+    } catch (err) {
+      console.error("Doctor search failed:", err);
+    }
   };
 
   const handleSelectDoctor = (doctor) => {
     setDoctorName(doctor.name);
     setDoctorId(doctor.id);
-    setSelectedDoctor(doctor);
+    
+    const depts = doctor.departments || [];
+    setAvailableDepartments(depts);
+    if (depts.length === 1) {
+      setSelectedDepartmentId(depts[0].id);
+    } else {
+      setSelectedDepartmentId(null);
+    }
+
     setAppointmentSlot('');
     setBookedSlots([]);
     if (!branchId && doctor?.branch?.id && doctor?.branch?.name) {
@@ -171,6 +187,7 @@ const AppointmentBooking = () => {
     }
     if (!branchId) { toast.warn('Please select a branch from the suggestions!'); return; }
     if (!doctorId) { toast.warn('Please select a doctor from the suggestions!'); return; }
+    if (!selectedDepartmentId) { toast.warn('Please select a department!'); return; }
     if (!appointmentDate) { toast.warn('Please select a date!'); return; }
     if (!appointmentSlot) { toast.warn('Please select a time slot!'); return; }
     setLoading(true);
@@ -182,6 +199,7 @@ const AppointmentBooking = () => {
         reason,
         appointmentTime,
         branchId,
+        departmentId: selectedDepartmentId,
       };
       
       toast.info('Redirecting to secure payment page...');
@@ -242,7 +260,7 @@ const AppointmentBooking = () => {
           background: var(--card);
           border: 1px solid var(--border);
           border-radius: 32px;
-          overflow: hidden;
+          overflow: visible;
           box-shadow: 0 30px 60px -12px rgba(0,0,0,0.1);
           animation: abSlideUp .6s cubic-bezier(0.2, 0.8, 0.2, 1) both;
         }
@@ -296,7 +314,15 @@ const AppointmentBooking = () => {
         .ab-check { position: absolute; right: 16px; top: 50%; transform: translateY(-50%); width: 22px; height: 22px; border-radius: 50%; background: #22c55e; display: flex; align-items: center; justify-content: center; color: #fff; }
         .ab-change-btn { position: absolute; right: 48px; top: 50%; transform: translateY(-50%); border: 1px solid var(--border); background: var(--secondary); color: var(--primary); border-radius: 999px; padding: 4px 10px; font-size: 10px; font-weight: 800; text-transform: uppercase; cursor: pointer; }
 
-        .ab-dropdown { position: absolute; top: calc(100% + 8px); left: 0; right: 0; background: var(--card); border: 1px solid var(--border); border-radius: 20px; box-shadow: 0 20px 50px rgba(0,0,0,0.15); z-index: 50; overflow: hidden; }
+        .ab-dropdown {
+          position: absolute; top: calc(100% + 8px); left: 0; right: 0;
+          background: var(--card); border: 1px solid var(--border); border-radius: 20px;
+          box-shadow: 0 20px 50px rgba(0,0,0,0.15); z-index: 80;
+          max-height: min(40vh, 280px);
+          overflow-y: auto;
+          overflow-x: hidden;
+          -webkit-overflow-scrolling: touch;
+        }
         .ab-drop-item { display: flex; align-items: center; gap: 12px; padding: 14px 18px; cursor: pointer; transition: background .15s; border-bottom: 1px solid var(--border); }
         .ab-drop-item:hover { background: var(--secondary); }
         .ab-drop-avatar { width: 36px; height: 36px; border-radius: 12px; background: var(--primary); display: flex; align-items: center; justify-content: center; font-weight: 800; color: #fff; flex-shrink: 0; font-size: 13px; }
@@ -366,7 +392,12 @@ const AppointmentBooking = () => {
                 {branchSuggestions.length > 0 && (
                   <div className="ab-dropdown">
                     {branchSuggestions.map(branch => (
-                      <div key={branch.id} className="ab-drop-item" onClick={() => handleSelectBranch(branch)}>
+                      <div
+                        key={branch.id}
+                        className="ab-drop-item"
+                        onMouseDown={(e) => { e.preventDefault(); handleSelectBranch(branch); }}
+                        onTouchStart={(e) => { e.preventDefault(); handleSelectBranch(branch); }}
+                      >
                         <div className="ab-drop-avatar">{branch.name[0]}</div>
                         <div>
                           <div className="ab-drop-name">{branch.name}</div>
@@ -400,7 +431,12 @@ const AppointmentBooking = () => {
                 {doctorSuggestions.length > 0 && (
                   <div className="ab-dropdown">
                     {doctorSuggestions.map(doctor => (
-                      <div key={doctor.id} className="ab-drop-item" onClick={() => handleSelectDoctor(doctor)}>
+                      <div
+                        key={doctor.id}
+                        className="ab-drop-item"
+                        onMouseDown={(e) => { e.preventDefault(); handleSelectDoctor(doctor); }}
+                        onTouchStart={(e) => { e.preventDefault(); handleSelectDoctor(doctor); }}
+                      >
                         <div className="ab-drop-avatar">{doctor.name[0]}</div>
                         <div>
                           <div className="ab-drop-name">Dr. {doctor.name}</div>
@@ -412,6 +448,28 @@ const AppointmentBooking = () => {
                 )}
               </div>
             </div>
+
+            {doctorId && (
+              <div className="ab-field">
+                <label className="ab-label">Department</label>
+                <div className="ab-input-wrap">
+                  <svg className="ab-input-icon" width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                  </svg>
+                  <select
+                    className="ab-input"
+                    value={selectedDepartmentId || ''}
+                    onChange={(e) => setSelectedDepartmentId(Number(e.target.value))}
+                    required
+                  >
+                    <option value="" disabled>Choose Department...</option>
+                    {availableDepartments.map(dept => (
+                      <option key={dept.id} value={dept.id}>{dept.name}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+            )}
 
             <div className="ab-field">
               <label className="ab-label">Symptom/Reason</label>
@@ -477,7 +535,7 @@ const AppointmentBooking = () => {
             <button
               className="ab-submit"
               type="submit"
-              disabled={loading || !branchId || !doctorId || !appointmentDate || !appointmentSlot}
+              disabled={loading || !branchId || !doctorId || !selectedDepartmentId || !appointmentDate || !appointmentSlot}
             >
               {loading ? "Initializing..." : "Secure Appointment →"}
             </button>
