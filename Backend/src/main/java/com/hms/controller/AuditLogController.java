@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.hms.dto.AuditLogDto;
-import com.hms.service.AuditLogService;
+import com.hms.service.HMSAuditLogService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -18,7 +18,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class AuditLogController {
 
-    private final AuditLogService auditLogService;
+    private final HMSAuditLogService auditLogService;
 
     @GetMapping
     @PreAuthorize("hasRole('HEADADMIN')")

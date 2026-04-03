@@ -3,6 +3,7 @@ package com.hms.config;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.Cache;
 import org.springframework.cache.interceptor.CacheErrorHandler;
+import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
 
 @Slf4j
@@ -15,7 +16,7 @@ public class NoFailCacheErrorHandler implements CacheErrorHandler {
     }
 
     @Override
-    public void handleCachePutError(RuntimeException exception, Cache cache, Object key, Object value) {
+    public void handleCachePutError(RuntimeException exception, Cache cache, Object key, @Nullable Object value) {
         log.debug("Ignoring cache PUT error. cache={}, key={}, cause={}", cacheName(cache), key, exception.toString());
     }
 
@@ -29,7 +30,7 @@ public class NoFailCacheErrorHandler implements CacheErrorHandler {
         log.warn("Cache CLEAR failed. cache={}, cause={}", cacheName(cache), exception.toString());
     }
 
-    private String cacheName(Cache cache) {
+    private String cacheName(@Nullable Cache cache) {
         return cache == null ? "unknown" : cache.getName();
     }
 }
