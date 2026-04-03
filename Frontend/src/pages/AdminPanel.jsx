@@ -205,6 +205,7 @@ const AdminPanel = () => {
     name: "",
     specialization: "",
     email: "",
+    consultationFee: "",
   });
   const [doctorSubmitting, setDoctorSubmitting] = useState(false);
   const [doctorMessage, setDoctorMessage] = useState("");
@@ -535,8 +536,9 @@ const AdminPanel = () => {
       name: doctorForm.name.trim(),
       specialization: doctorForm.specialization.trim(),
       email: doctorForm.email.trim(),
+      consultationFee: Number(doctorForm.consultationFee),
     };
-    if (!payload.username || !payload.name || !payload.specialization || !payload.email) {
+    if (!payload.username || !payload.name || !payload.specialization || !payload.email || !payload.consultationFee) {
       setDoctorMessage("Please fill all fields");
       return;
     }
@@ -545,7 +547,7 @@ const AdminPanel = () => {
       setDoctorSubmitting(true);
       await adminApi.onboardDoctor(payload);
       setDoctorMessage("Doctor onboarded successfully");
-      setDoctorForm({ username: "", name: "", specialization: "", email: "" });
+      setDoctorForm({ username: "", name: "", specialization: "", email: "", consultationFee: "" });
     } catch (error) {
       setDoctorMessage(getApiErrorMessage(error, "Failed to onboard doctor"));
     } finally {
@@ -1151,6 +1153,19 @@ const AdminPanel = () => {
                           value={doctorForm.email}
                           onChange={(e) => setDoctorForm({ ...doctorForm, email: e.target.value })}
                           required
+                        />
+                      </div>
+                    </div>
+                    <div className="admin-form-group">
+                      <div>
+                        <label className="admin-form-label">Consultation Fee (₹)</label>
+                        <input
+                          type="number"
+                          placeholder="e.g. 500"
+                          value={doctorForm.consultationFee}
+                          onChange={(e) => setDoctorForm({ ...doctorForm, consultationFee: e.target.value })}
+                          required
+                          min="0"
                         />
                       </div>
                     </div>

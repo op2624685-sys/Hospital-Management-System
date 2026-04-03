@@ -225,7 +225,7 @@ const Field = ({ label, className = "", hint, ...props }) => (
 
 const emptyBranchForm = { branchName: "", branchAddress: "", branchContactNumber: "", branchEmail: "" };
 const emptyAdminForm  = { username: "", name: "", email: "", branchName: "" };
-const emptyDoctorForm = { username: "", name: "", specialization: "", email: "", branchName: "" };
+const emptyDoctorForm = { username: "", name: "", specialization: "", email: "", consultationFee: "", branchName: "" };
 
 const DEPT_LIMITS = {
   name: 100,
@@ -382,7 +382,11 @@ const HeadAdminPanel = () => {
     e.preventDefault();
     setSubmitting(true);
     try {
-      await API.post("/admin/onBoardNewDoctor", doctorForm);
+      const payload = {
+        ...doctorForm,
+        consultationFee: Number(doctorForm.consultationFee)
+      };
+      await API.post("/admin/onBoardNewDoctor", payload);
       setDoctorForm(emptyDoctorForm);
       alert("Clinical personnel successfully onboarded.");
       refreshAll();
@@ -571,6 +575,7 @@ const HeadAdminPanel = () => {
                   <Field label="Full Name" value={doctorForm.name} onChange={e => setDoctorForm({...doctorForm, name: e.target.value})} required />
                   <Field label="Specialization" value={doctorForm.specialization} onChange={e => setDoctorForm({...doctorForm, specialization: e.target.value})} required />
                   <Field label="Email" type="email" value={doctorForm.email} onChange={e => setDoctorForm({...doctorForm, email: e.target.value})} required />
+                  <Field label="Consultation Fee (₹)" type="number" min="0" value={doctorForm.consultationFee} onChange={e => setDoctorForm({...doctorForm, consultationFee: e.target.value})} required />
                   <div className="had-field">
                     <label style={{ fontSize: '11px', fontWeight: 800, textTransform: 'uppercase', color: 'var(--muted-foreground)', marginBottom: '8px', display: 'block' }}>Assigned Branch</label>
                     <select className="had-field-input" value={doctorForm.branchName} onChange={e => setDoctorForm({...doctorForm, branchName: e.target.value})} required>
