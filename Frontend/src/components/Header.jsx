@@ -170,7 +170,7 @@ const Header = () => {
         </div>
       </header>
 
-      <div className={`fixed top-0 left-0 w-full h-full z-40 transition-all duration-500
+      <div className={`fixed top-0 left-0 w-full h-full z-[70] transition-all duration-500
         ${menuOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}>
 
         <div
@@ -178,9 +178,9 @@ const Header = () => {
           onClick={() => setMenuOpen(false)}
         ></div>
 
-        <div className={`absolute top-0 right-0 h-full w-72 shadow-2xl transition-transform duration-500
+        <div className={`absolute top-0 right-0 h-full w-72 shadow-2xl transition-transform duration-500 bg-[var(--card)]
           ${menuOpen ? 'translate-x-0' : 'translate-x-full'}`}
-          style={{ background: 'var(--background)' }}>
+          style={{ backgroundColor: 'var(--card)', borderLeft: '1px solid var(--border)' }}>
 
           <div className='p-6'>
             <div className='flex justify-between items-center mb-8'>
