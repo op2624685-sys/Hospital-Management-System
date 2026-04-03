@@ -37,4 +37,9 @@ public class CreateAppointmentRequestDto {
     private PaymentMethodType paymentMethod;
 
     private String appointmentId;
+
+    @NotNull(message = "departmentId is required")
+    private Long departmentId;
+
+    private String sessionId;
 }

@@ -44,6 +44,7 @@ public class Doctor {
     @Column(nullable = false, unique = true, length = 100)
     private String email;
 
+    @Column(nullable = false)
     private Long consultationFee;
 
     @OneToMany(mappedBy = "doctor")

@@ -17,4 +17,5 @@ public class DoctorDto implements Serializable{
     private Set<DepartmentDto> departments;
     private BranchDto branch;
     private boolean isHead;
+    private Long consultationFee;
 }

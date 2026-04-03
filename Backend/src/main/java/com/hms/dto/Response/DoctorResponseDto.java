@@ -19,4 +19,5 @@ public class DoctorResponseDto implements Serializable{
     private String email;
     private Set<DepartmentDto> departments;
     private BranchResponseDto branch;
+    private Long consultationFee;
 }
