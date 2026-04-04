@@ -4,11 +4,10 @@ import { appointmentApi } from "../api/appointments";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Header from "../components/Header";
-import { 
-  CreditCard, 
-  Lock, 
-  Smartphone, 
-  ArrowLeft, 
+import {
+  CreditCard,
+  Lock,
+  ArrowLeft,
   Loader,
   CheckCircle2
 } from "lucide-react";
@@ -20,10 +19,8 @@ const PaymentPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
-  const [paymentMethod, setPaymentMethod] = useState("card");
   const processedSessionRef = useRef(null);
 
-  // Get booking data from location state or session storage
   const cachedContext = (() => {
     try {
       const raw = sessionStorage.getItem(PAYMENT_CONTEXT_KEY);
@@ -36,14 +33,12 @@ const PaymentPage = () => {
   const bookingPayload = location.state?.bookingPayload ?? cachedContext?.bookingPayload;
   const doctorId = location.state?.doctorId ?? cachedContext?.doctorId;
 
-  // Handle redirect from Stripe Checkout
   useEffect(() => {
     const sessionId = new URLSearchParams(location.search).get("session_id");
-    
-    // Prevent duplicate processing of the same session
+
     if (sessionId && processedSessionRef.current !== sessionId) {
       processedSessionRef.current = sessionId;
-      
+
       const confirmPayment = async () => {
         try {
           setLoading(true);
@@ -51,15 +46,15 @@ const PaymentPage = () => {
             ...bookingPayload,
             sessionId
           });
-          
+
           sessionStorage.removeItem(PAYMENT_CONTEXT_KEY);
           sessionStorage.removeItem(PROCESSED_SESSION_KEY);
           toast.success("Payment successful! Your appointment is now confirmed.");
           navigate("/my-appointments", { replace: true });
         } catch (err) {
           console.error("Payment confirmation error:", err);
-          processedSessionRef.current = null; // Reset so user can retry
-          
+          processedSessionRef.current = null;
+
           const errorMessage = err.response?.data?.message || err.message || "Unknown error";
           toast.error("Payment confirmation failed: " + errorMessage);
           setLoading(false);
@@ -70,7 +65,6 @@ const PaymentPage = () => {
     }
   }, [location.search, bookingPayload, navigate]);
 
-  // Check if booking data exists
   useEffect(() => {
     if (!bookingPayload || !doctorId) {
       if (!location.search.includes("session_id")) {
@@ -88,7 +82,6 @@ const PaymentPage = () => {
 
     setLoading(true);
     try {
-      // Store booking context for after redirect
       sessionStorage.setItem(
         PAYMENT_CONTEXT_KEY,
         JSON.stringify({
@@ -97,13 +90,11 @@ const PaymentPage = () => {
         })
       );
 
-      // Create Stripe Checkout Session
       const response = await appointmentApi.createStripeCheckoutSession(doctorId, {
         ...bookingPayload,
-        paymentMethod: paymentMethod === "card" ? "CREDIT_CARD" : "UPI",
+        paymentMethod: "CREDIT_CARD",
       });
 
-      // Redirect to Stripe Checkout
       if (response.data?.url) {
         window.location.href = response.data.url;
       } else {
@@ -112,7 +103,7 @@ const PaymentPage = () => {
     } catch (err) {
       console.error(err);
       toast.error(
-        "Failed to create checkout session: " + 
+        "Failed to create checkout session: " +
         (err.response?.data?.message || err.message || "Unknown error")
       );
       setLoading(false);
@@ -150,7 +141,6 @@ const PaymentPage = () => {
         </button>
 
         <div className="grid md:grid-cols-3 gap-8">
-          {/* Booking Details */}
           <div className="md:col-span-2 space-y-6">
             <div className="bg-[var(--card)] rounded-2xl p-8 shadow-lg border border-[var(--border)]">
               <h1 className="text-3xl font-bold text-[var(--foreground)] mb-6 flex items-center gap-3">
@@ -158,7 +148,6 @@ const PaymentPage = () => {
                 Appointment Payment
               </h1>
 
-              {/* Appointment Details */}
               <div className="bg-[var(--secondary)] border border-[var(--primary)]/20 rounded-xl p-6 mb-8">
                 <h2 className="text-lg font-semibold text-[var(--foreground)] mb-4">Appointment Details</h2>
                 <div className="space-y-3">
@@ -184,55 +173,17 @@ const PaymentPage = () => {
                 </div>
               </div>
 
-              {/* Payment Method Selection */}
               <div className="mb-8">
-                <h2 className="text-lg font-semibold text-[var(--foreground)] mb-4">Select Payment Method</h2>
-                <div className="grid grid-cols-2 gap-4">
-                  {/* Card Payment */}
-                  <button
-                    type="button"
-                    onClick={() => setPaymentMethod("card")}
-                    disabled={loading}
-                    className={`p-4 rounded-lg border-2 transition-all text-left disabled:opacity-50 disabled:cursor-not-allowed ${
-                      paymentMethod === "card"
-                        ? "border-[var(--primary)] bg-[var(--secondary)]"
-                        : "border-[var(--border)] hover:border-[var(--primary)]"
-                    }`}
-                  >
-                    <div className="flex items-center gap-3 mb-2">
-                      <CreditCard 
-                        size={20} 
-                        className={paymentMethod === "card" ? "text-[var(--primary)]" : "text-[var(--muted-foreground)]"}
-                      />
-                      <span className="font-semibold text-[var(--foreground)]">Card Payment</span>
-                    </div>
-                    <p className="text-xs text-[var(--muted-foreground)]">Credit/Debit Card</p>
-                  </button>
-
-                  {/* UPI Payment */}
-                  <button
-                    type="button"
-                    onClick={() => setPaymentMethod("upi")}
-                    disabled={loading}
-                    className={`p-4 rounded-lg border-2 transition-all text-left disabled:opacity-50 disabled:cursor-not-allowed ${
-                      paymentMethod === "upi"
-                        ? "border-[var(--primary)] bg-[var(--secondary)]"
-                        : "border-[var(--border)] hover:border-[var(--primary)]"
-                    }`}
-                  >
-                    <div className="flex items-center gap-3 mb-2">
-                      <Smartphone 
-                        size={20} 
-                        className={paymentMethod === "upi" ? "text-[var(--primary)]" : "text-[var(--muted-foreground)]"}
-                      />
-                      <span className="font-semibold text-[var(--foreground)]">UPI</span>
-                    </div>
-                    <p className="text-xs text-[var(--muted-foreground)]">Google Pay, PhonePe, etc.</p>
-                  </button>
+                <h2 className="text-lg font-semibold text-[var(--foreground)] mb-4">Payment Method</h2>
+                <div className="p-4 rounded-lg border-2 border-[var(--primary)] bg-[var(--secondary)]">
+                  <div className="flex items-center gap-3 mb-2">
+                    <CreditCard size={20} className="text-[var(--primary)]" />
+                    <span className="font-semibold text-[var(--foreground)]">Card Payment</span>
+                  </div>
+                  <p className="text-xs text-[var(--muted-foreground)]">Credit/Debit Card</p>
                 </div>
               </div>
 
-              {/* Security Badge */}
               <div className="flex items-center gap-2 p-4 bg-emerald-50/50 border border-emerald-200/50 rounded-lg">
                 <Lock size={16} className="text-emerald-600" />
                 <p className="text-sm text-emerald-700">
@@ -242,7 +193,6 @@ const PaymentPage = () => {
             </div>
           </div>
 
-          {/* Payment Summary Panel */}
           <div>
             <div className="bg-[var(--card)] rounded-2xl p-6 shadow-lg border border-[var(--border)] sticky top-24">
               <h3 className="text-xl font-bold text-[var(--foreground)] mb-6">Payment Summary</h3>
@@ -250,17 +200,17 @@ const PaymentPage = () => {
               <div className="space-y-4 mb-6 pb-6 border-b border-[var(--border)]">
                 <div className="flex justify-between">
                   <span className="text-[var(--muted-foreground)]">Consultation Fee</span>
-                  <span className="font-semibold text-[var(--foreground)]">₹500</span>
+                  <span className="font-semibold text-[var(--foreground)]">Rs 500</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-[var(--muted-foreground)]">Platform Fee</span>
-                  <span className="font-semibold text-[var(--foreground)]">₹0</span>
+                  <span className="font-semibold text-[var(--foreground)]">Rs 0</span>
                 </div>
               </div>
 
               <div className="flex justify-between mb-8">
                 <span className="text-lg font-bold text-[var(--foreground)]">Total Amount</span>
-                <span className="text-2xl font-bold text-[var(--primary)]">₹500</span>
+                <span className="text-2xl font-bold text-[var(--primary)]">Rs 500</span>
               </div>
 
               <button
