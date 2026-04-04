@@ -34,10 +34,10 @@ const MOCK = {
     { id: 5, name: "Dr. Kiran Reddy",    speciality: "Dermatology",  patients: 6,  status: "Active",   avatar: "KR" },
   ],
   payments: [
-    { id: "PAY-001", patient: "Rahul Sharma",  amount: 1200, method: "UPI",       status: "Success", date: "Today, 09:05 AM" },
+    { id: "PAY-001", patient: "Rahul Sharma",  amount: 1200, method: "Card",       status: "Success", date: "Today, 09:05 AM" },
     { id: "PAY-002", patient: "Priya Singh",   amount: 1500, method: "Card",      status: "Success", date: "Today, 09:35 AM" },
     { id: "PAY-003", patient: "Sunita Patel",  amount: 800,  method: "Cash",      status: "Success", date: "Today, 10:35 AM" },
-    { id: "PAY-004", patient: "Vikram Joshi",  amount: 700,  method: "UPI",       status: "Refunded",date: "Today, 11:05 AM" },
+    { id: "PAY-004", patient: "Vikram Joshi",  amount: 700,  method: "Card",       status: "Refunded",date: "Today, 11:05 AM" },
     { id: "PAY-005", patient: "Neha Agarwal",  amount: 1200, method: "Net Banking",status: "Pending", date: "Today, 11:35 AM" },
   ],
 };
@@ -965,7 +965,7 @@ const AdminPanel = () => {
                     return (
                       <div key={pay.id} className="admin-payment-row">
                         <div className="admin-pay-icon">
-                          {pay.method === "UPI" ? "📱" : pay.method === "Card" ? "💳" : pay.method === "Cash" ? "💵" : "🏦"}
+                          { pay.method === "Card" ? "💳" : pay.method === "Cash" ? "💵" : "🏦"}
                         </div>
                         <div className="admin-pay-info">
                           <div className="admin-pay-patient">{pay.patient}</div>
