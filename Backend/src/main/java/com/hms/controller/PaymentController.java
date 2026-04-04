@@ -3,8 +3,6 @@ package com.hms.controller;
 import com.hms.dto.Request.CreateAppointmentRequestDto;
 import com.hms.dto.Response.AppointmentResponseDto;
 import com.hms.dto.Response.PaymentInitiationResponse;
-import com.hms.dto.Response.UpiPaymentInitiationResponse;
-import com.hms.dto.Response.UpiPaymentOrderStatusResponse;
 import com.hms.payment.PaymentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -31,13 +29,6 @@ public class PaymentController {
         return ResponseEntity.ok(paymentService.createPaymentForDoctor(doctorId, request));
     }
 
-    @PostMapping("/initiate-upi/{doctorId}")
-    public ResponseEntity<UpiPaymentInitiationResponse> initiateUpiPaymentForDoctor(
-            @PathVariable Long doctorId,
-            @RequestBody CreateAppointmentRequestDto request) {
-        return ResponseEntity.ok(paymentService.initiateUpiPaymentForDoctor(doctorId, request));
-    }
-
     @PostMapping("/confirm-and-book")
     public ResponseEntity<AppointmentResponseDto> confirmAndBook(
             @RequestBody CreateAppointmentRequestDto request,
@@ -45,23 +36,11 @@ public class PaymentController {
         return ResponseEntity.ok(paymentService.confirmAndBook(request, paymentIntentId));
     }
 
-    @PostMapping("/confirm-upi-and-book")
-    public ResponseEntity<AppointmentResponseDto> confirmUpiAndBook(
-            @RequestBody CreateAppointmentRequestDto request,
-            @RequestParam String transactionId) {
-        return ResponseEntity.ok(paymentService.confirmUpiAndBook(request, transactionId));
-    }
-
-    @PostMapping("/upi/webhook")
-    public ResponseEntity<String> upiWebhook(
+    @PostMapping("/stripe/webhook")
+    public ResponseEntity<String> stripeWebhook(
             @RequestBody String rawBody,
-            @RequestHeader(name = "X-UPI-Signature", required = false) String signature) throws Exception {
-        return ResponseEntity.ok(paymentService.handleUpiWebhook(rawBody, signature));
-    }
-
-    @GetMapping("/upi/order/{orderId}")
-    public ResponseEntity<UpiPaymentOrderStatusResponse> getUpiOrderStatus(@PathVariable String orderId) {
-        return ResponseEntity.ok(paymentService.getUpiOrderStatus(orderId));
+            @RequestHeader(name = "Stripe-Signature", required = false) String signatureHeader) throws Exception {
+        return ResponseEntity.ok(paymentService.handleStripeWebhook(rawBody, signatureHeader));
     }
 
     @GetMapping("/verify/{paymentIntentId}")
