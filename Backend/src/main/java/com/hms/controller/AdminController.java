@@ -4,6 +4,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import com.hms.dto.AdminDto;
 import com.hms.dto.DepartmentDto;
 import com.hms.dto.Request.AddDepartmentToBranchRequestDto;
 import com.hms.dto.Request.OnBoardDoctorRequestDto;
@@ -40,6 +41,11 @@ public class AdminController {
             @RequestParam(name = "page", defaultValue = "0") Integer pageNumber,
             @RequestParam(name = "size", defaultValue = "10") Integer pageSize) {
         return ResponseEntity.ok(patientService.getAllPatients(pageNumber, pageSize));
+    }
+
+    @GetMapping("/profile")
+    public ResponseEntity<AdminDto> getAdminProfile() {
+        return ResponseEntity.ok(adminService.getAdminProfile());
     }
 
     @GetMapping("/overview")
