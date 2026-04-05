@@ -8,7 +8,9 @@ import com.hms.dto.InsuranceDto;
 import com.hms.dto.PatientDto;
 import com.hms.dto.Request.CreateAppointmentRequestDto;
 import com.hms.dto.Request.CreateInsuranceRequestDto;
+import com.hms.dto.Request.PatientUpdateRequest;
 import com.hms.dto.Response.AppointmentResponseDto;
+import com.hms.dto.Response.ProfileCompletionStatusDto;
 import com.hms.entity.User;
 import com.hms.service.AppointmentService;
 import com.hms.service.InsuranceService;
@@ -68,6 +70,20 @@ public class PatientController {
     public ResponseEntity<PatientDto> getPatientProfile() {
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         return ResponseEntity.ok().body(patientService.getPatientById(user.getId()));
+    }
+    
+    @PutMapping("/profile")
+    public ResponseEntity<PatientDto> updatePatientProfile(@Valid @RequestBody PatientUpdateRequest patientUpdateRequest) {
+        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        PatientDto updatedPatient = patientService.updatePatientProfileWithEditLimit(user.getId(), patientUpdateRequest);
+        return ResponseEntity.ok(updatedPatient);
+    }
+    
+    @GetMapping("/profile/completion-status")
+    public ResponseEntity<ProfileCompletionStatusDto> getProfileCompletionStatus() {
+        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        ProfileCompletionStatusDto completionStatus = patientService.getProfileCompletionStatus(user.getId());
+        return ResponseEntity.ok(completionStatus);
     }
     
 }
