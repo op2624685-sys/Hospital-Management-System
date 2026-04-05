@@ -16,5 +16,4 @@ public class BranchDto implements Serializable {
     private String address;
     private String contactNumber;
     private String email;
-    private AdminDto admin;
 }
