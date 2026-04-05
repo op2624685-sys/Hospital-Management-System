@@ -6,17 +6,20 @@ import {
   LayoutDashboard,
   LogIn,
   LogOut,
+  Mail,
   Menu,
   Phone,
   Stethoscope,
+  User,
   UserPlus,
   Users,
   X
 } from 'lucide-react';
-import { Link as RouterLink, useLocation } from 'react-router-dom';
+import { Link as RouterLink, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { doctorAPI } from '../api/api';
 import SwitchToggleThemeDemo from '@/components/ui/toggle-theme';
+import ProfileDropdown from './ProfileDropdown';
 
 const baseNavLinks = [
   { to: '/', label: 'Home', icon: Activity },
@@ -28,9 +31,29 @@ const baseNavLinks = [
   { to: '/contact', label: 'Contact Us', icon: Phone },
 ];
 
+// Helper functions for avatar
+const getInitials = (username) => {
+  if (!username) return 'U';
+  const parts = username.split(' ');
+  return parts.length > 1
+    ? (parts[0][0] + parts[1][0]).toUpperCase()
+    : username.substring(0, 2).toUpperCase();
+};
+
+const getAvatarColor = (username) => {
+  if (!username) return 'var(--primary)';
+  const colors = [
+    '#FF6B6B', '#4ECDC4', '#45B7D1', '#FFA07A', '#98D8C8',
+    '#F7DC6F', '#BB8FCE', '#85C1E2', '#F8B88B', '#A9DFBF'
+  ];
+  const index = username.charCodeAt(0) % colors.length;
+  return colors[index];
+};
+
 const Header = () => {
-  const { isLoggedIn, logout, hasRole } = useAuth();
+  const { isLoggedIn, logout, hasRole, user } = useAuth();
   const location = useLocation();
+  const navigate = useNavigate();
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const isHeadAdmin = hasRole('HEADADMIN');
@@ -142,13 +165,7 @@ const Header = () => {
             
             <div className='hidden lg:flex items-center gap-3'>
             {isLoggedIn ? (
-              <button
-                onClick={logout}
-                className='group flex items-center gap-2 text-white text-sm font-semibold py-2.5 px-5 rounded-xl transition-all duration-300 hover:scale-105 active:scale-95 shadow-md hover:shadow-lg'
-                style={{ background: 'var(--chart-5)' }}>
-                <LogOut size={15} className='group-hover:rotate-12 transition-transform duration-300' />
-                <span>Logout</span>
-              </button>
+              <ProfileDropdown />
             ) : (
               <RouterLink
                 to="/login"
@@ -195,6 +212,49 @@ const Header = () => {
               </button>
             </div>
 
+            {/* Mobile Profile Section */}
+            {isLoggedIn && (
+              <div
+                className='mb-6 pb-6 border-b'
+                style={{ borderColor: 'var(--border)' }}>
+                <div className='flex items-center gap-3 mb-4'>
+                  <div
+                    className='w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-base shrink-0'
+                    style={{
+                      background: user?.profilePhoto
+                        ? `url(${user.profilePhoto}) center/cover`
+                        : getAvatarColor(user?.username),
+                    }}>
+                    {!user?.profilePhoto && getInitials(user?.username)}
+                  </div>
+                  <div className='flex-1 min-w-0'>
+                    <p className='font-semibold text-sm truncate' style={{ color: 'var(--foreground)' }}>
+                      {user?.username || 'User'}
+                    </p>
+                    {user?.email && (
+                      <p className='text-xs truncate' style={{ color: 'var(--muted-foreground)' }}>
+                        {user.email}
+                      </p>
+                    )}
+                  </div>
+                </div>
+
+                <button
+                  onClick={() => {
+                    navigate('/profile');
+                    setMenuOpen(false);
+                  }}
+                  className='w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-sm font-semibold transition-all duration-300'
+                  style={{
+                    color: 'white',
+                    background: 'var(--primary)',
+                  }}>
+                  <User size={14} />
+                  View Profile
+                </button>
+              </div>
+            )}
+
             <nav className='flex flex-col gap-1'>
               {navLinks.map((link, i) => (
                 <RouterLink
@@ -214,12 +274,12 @@ const Header = () => {
               ))}
             </nav>
 
-            <div className='mt-8'>
+            <div className='mt-8 pt-6 border-t' style={{ borderColor: 'var(--border)' }}>
               {isLoggedIn ? (
                 <button
                   onClick={() => { logout(); setMenuOpen(false); }}
                   className='w-full flex items-center justify-center gap-2 text-white py-3 rounded-xl font-semibold text-sm transition-all duration-300'
-                  style={{ background: 'var(--chart-5)' }}>
+                  style={{ background: '#ef4444' }}>
                   <LogOut size={15} />
                   Logout
                 </button>

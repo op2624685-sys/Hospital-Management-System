@@ -11,6 +11,7 @@ import com.hms.dto.Response.HeadAdminBranchSummaryDto;
 import com.hms.dto.Response.HeadAdminDepartmentDetailsDto;
 import com.hms.dto.Response.HeadAdminDoctorInfoDto;
 import com.hms.dto.Response.PatientResponseDto;
+import com.hms.dto.Response.BranchResponseDto;
 import com.hms.entity.Branch;
 import com.hms.repository.AdminRepository;
 import com.hms.repository.AppointmentRepository;
@@ -50,7 +51,16 @@ public class HeadAdminServiceImpl implements HeadAdminService {
                 .orElseThrow(() -> new RuntimeException("Branch not found with id: " + branchId));
 
         List<AdminDto> admins = adminRepository.findByBranchId(branchId).stream()
-                .map(admin -> new AdminDto(admin.getId(), admin.getName(), admin.getEmail(), branchId))
+                .map(admin -> {
+                    BranchResponseDto branchDto = new BranchResponseDto(
+                            branch.getId(),
+                            branch.getName(),
+                            branch.getAddress(),
+                            branch.getEmail(),
+                            branch.getContactNumber()
+                    );
+                    return new AdminDto(admin.getId(), admin.getName(), admin.getEmail(), branchDto);
+                })
                 .toList();
 
         List<HeadAdminDoctorInfoDto> doctors = doctorRepository.findByBranch_Id(branchId).stream()
@@ -113,7 +123,16 @@ public class HeadAdminServiceImpl implements HeadAdminService {
         Long branchId = branch.getId();
         long appointmentCount = appointmentRepository.countByBranch_Id(branchId);
         List<AdminDto> admins = adminRepository.findByBranchId(branchId).stream()
-                .map(admin -> new AdminDto(admin.getId(), admin.getName(), admin.getEmail(), branchId))
+                .map(admin -> {
+                    BranchResponseDto branchDto = new BranchResponseDto(
+                            branch.getId(),
+                            branch.getName(),
+                            branch.getAddress(),
+                            branch.getEmail(),
+                            branch.getContactNumber()
+                    );
+                    return new AdminDto(admin.getId(), admin.getName(), admin.getEmail(), branchDto);
+                })
                 .toList();
 
         if (admins.size() > 1) {

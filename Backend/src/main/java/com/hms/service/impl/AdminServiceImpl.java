@@ -22,6 +22,7 @@ import com.hms.dto.Response.AdminOverviewDto;
 import com.hms.dto.Response.AdminStatsDto;
 import com.hms.dto.Response.AdminDepartmentLoadDto;
 import com.hms.dto.Response.AdminWeeklyCountDto;
+import com.hms.dto.Response.BranchResponseDto;
 import com.hms.dto.Response.DoctorResponseDto;
 import com.hms.entity.Admin;
 import com.hms.entity.Branch;
@@ -138,11 +139,23 @@ public class AdminServiceImpl implements AdminService {
     }
 
     private AdminDto mapToAdminDto(Admin admin) {
+        BranchResponseDto branchDto = null;
+        if (admin.getBranch() != null) {
+            Branch branch = admin.getBranch();
+            branchDto = new BranchResponseDto(
+                    branch.getId(),
+                    branch.getName(),
+                    branch.getAddress(),
+                    branch.getEmail(),
+                    branch.getContactNumber()
+            );
+        }
         return new AdminDto(
                 admin.getId(),
                 admin.getName(),
                 admin.getEmail(),
-                admin.getBranch() != null ? admin.getBranch().getId() : null);
+                branchDto
+        );
     }
 
     private AdminResponseDto mapToAdminResponseDto(Admin admin) {
@@ -151,6 +164,16 @@ public class AdminServiceImpl implements AdminService {
                 admin.getName(),
                 admin.getEmail(),
                 admin.getBranch() != null ? admin.getBranch().getId() : null);
+    }
+
+    @Override
+    @PreAuthorize("hasRole('ADMIN')")
+    @Transactional(readOnly = true)
+    public AdminDto getAdminProfile() {
+        Long adminUserId = getAuthenticatedUserId();
+        Admin admin = adminRepository.findById(adminUserId)
+                .orElseThrow(() -> new RuntimeException("Admin profile not found"));
+        return mapToAdminDto(admin);
     }
 
     private DoctorResponseDto mapToDoctorResponseDto(Doctor doctor) {

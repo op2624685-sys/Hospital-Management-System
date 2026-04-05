@@ -31,6 +31,7 @@ import MyAppointments from "./pages/MyAppointments";
 import RoleBlockedRoute from "./components/RoleBlockedRoute";
 import GlobalBackground from "./components/GlobalBackground";
 import PaymentPage from "./pages/PaymentPage";
+import Profile from "./pages/Profile";
 
 const App = () => {
   return (
@@ -156,6 +157,14 @@ const App = () => {
           element={
             <ProtectedRoute role="PATIENT" redirectTo="/">
               <MyAppointments />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/profile"
+          element={
+            <ProtectedRoute redirectTo="/login">
+              <Profile />
             </ProtectedRoute>
           }
         />

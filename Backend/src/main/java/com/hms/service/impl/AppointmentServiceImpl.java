@@ -80,6 +80,12 @@ public class AppointmentServiceImpl implements AppointmentService {
 
         Patient patient = patientRepository.findById(patientId)
                 .orElseThrow(() -> new EntityNotFoundException("Patient not found with ID: " + patientId));
+        
+        // Validate that patient profile is complete
+        if (!patient.isProfileComplete()) {
+            throw new ValidationException("Please complete your patient profile (birthDate, gender, bloodGroup) to book an appointment.");
+        }
+        
         Doctor doctor = doctorRepository.findByIdForUpdate(doctorId)
                 .orElseThrow(() -> new EntityNotFoundException("Doctor not found with ID: " + doctorId));
 

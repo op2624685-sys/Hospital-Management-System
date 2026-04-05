@@ -7,7 +7,7 @@ import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 const AppointmentBooking = () => {
-  const { user, isLoggedIn } = useAuth();
+  const { user, isLoggedIn, profileComplete } = useAuth();
   const navigate = useNavigate();
   const { state } = useLocation(); // doctor pre-fill from DoctorCard
 
@@ -183,6 +183,11 @@ const AppointmentBooking = () => {
     if (!isLoggedIn || !user?.id) {
       toast.info('Please login first to book an appointment.');
       setTimeout(() => navigate('/login'), 900);
+      return;
+    }
+    if (!profileComplete) {
+      toast.error('Please complete your patient profile before booking an appointment.');
+      setTimeout(() => navigate('/profile'), 900);
       return;
     }
     if (!branchId) { toast.warn('Please select a branch from the suggestions!'); return; }

@@ -28,4 +28,24 @@ export const doctorAPI = {
   getMyDepartments: () => API.get('/doctor/my-departments'),
 };
 
+// Patient API Endpoints
+export const patientAPI = {
+  getProfile: () => API.get('/patients/profile'),
+  updateProfile: (patientUpdateRequest) => API.put('/patients/profile', patientUpdateRequest),
+  getProfileCompletionStatus: () => API.get('/patients/profile/completion-status'),
+};
+
+// Admin API Endpoints
+export const adminAPI = {
+  getProfile: () => API.get('/admin/profile'),
+};
+
+// User API Endpoints
+export const userAPI = {
+  getProfile: () => API.get('/user/profile'),
+  updateProfilePhoto: (formData) => API.post('/user/profile/photo', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' }
+  }),
+};
+
 export default API;

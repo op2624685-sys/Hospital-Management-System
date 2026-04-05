@@ -378,8 +378,7 @@ public class DoctorServiceImpl implements DoctorService {
                 branch.getName(),
                 branch.getAddress(),
                 branch.getContactNumber(),
-                branch.getEmail(),
-                mapAdmin(branch)
+                branch.getEmail()
         );
     }
 
@@ -396,11 +395,18 @@ public class DoctorServiceImpl implements DoctorService {
 
     private AdminDto mapAdmin(Branch branch) {
         if (branch.getAdmin() == null) return null;
+        BranchResponseDto branchDto = new BranchResponseDto(
+                branch.getId(),
+                branch.getName(),
+                branch.getAddress(),
+                branch.getEmail(),
+                branch.getContactNumber()
+        );
         return new AdminDto(
                 branch.getAdmin().getId(),
                 branch.getAdmin().getName(),
                 branch.getAdmin().getEmail(),
-                branch.getId()
+                branchDto
         );
     }
 

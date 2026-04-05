@@ -5,7 +5,9 @@ import java.util.List;
 
 import com.hms.dto.PatientDto;
 import com.hms.dto.Request.PatientRequest;
+import com.hms.dto.Request.PatientUpdateRequest;
 import com.hms.dto.Response.PatientResponseDto;
+import com.hms.dto.Response.ProfileCompletionStatusDto;
 
 public interface PatientService {
 
@@ -24,4 +26,8 @@ public interface PatientService {
     String deletePatientById(Long id);
 
     List<PatientResponseDto> getAllPatients(Integer pageNumber, Integer pageSize);
+    
+    PatientDto updatePatientProfileWithEditLimit(Long patientId, PatientUpdateRequest patientUpdateRequest);
+    
+    ProfileCompletionStatusDto getProfileCompletionStatus(Long patientId);
 }

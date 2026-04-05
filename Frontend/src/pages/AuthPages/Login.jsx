@@ -38,7 +38,17 @@ const Login = () => {
         localStorage.setItem('token', response.data.token);
         localStorage.setItem('userId', response.data.userId);
         localStorage.setItem('roles', JSON.stringify(response.data.roles));
-        login(response.data);
+        
+        // Store additional user data if provided by backend, with fallback
+        const loginData = {
+          userId: response.data.userId,
+          username: response.data.username || username,
+          email: response.data.email || '',
+          profilePhoto: response.data.profilePhoto || null,
+          roles: response.data.roles || [],
+        };
+        
+        login(loginData);
 
         toast.success('Login successful');
         const userRoles = response.data.roles || [];

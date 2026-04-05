@@ -5,6 +5,7 @@ import java.util.List;
 import com.hms.dto.AdminDto;
 import com.hms.dto.Request.OnBoardAdminRequestDto;
 import com.hms.dto.Response.AdminResponseDto;
+import com.hms.dto.Response.AdminOverviewDto;
 
 public interface AdminService {
 
@@ -18,5 +19,7 @@ public interface AdminService {
 
     AdminResponseDto onBoardNewAdmin(OnBoardAdminRequestDto onBoardAdminRequestDto);
 
-    com.hms.dto.Response.AdminOverviewDto getAdminOverview();
+    AdminOverviewDto getAdminOverview();
+
+    AdminDto getAdminProfile();
 }
