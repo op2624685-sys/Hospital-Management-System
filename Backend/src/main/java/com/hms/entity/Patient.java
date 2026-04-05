@@ -85,6 +85,13 @@ public class Patient {
     @Column(nullable = false)
     private LocalDate updatedAt;
 
+    @Column
+    private LocalDateTime lastProfileUpdateTime;
+
+    @Column
+    @Builder.Default
+    private Integer profileUpdateCount = 0;
+
     @OneToOne(cascade = {CascadeType.ALL}, orphanRemoval = true)
     @JoinColumn(name = "patient_insurance_id")
     private Insurance insurance;
@@ -95,5 +102,24 @@ public class Patient {
     @OneToMany(mappedBy = "patient", cascade = {CascadeType.REMOVE}, orphanRemoval = true, fetch = FetchType.EAGER)
     @Builder.Default
     private List<Appointment> Appointments = new ArrayList<>();
+
+    /**
+     * Checks if the patient profile is complete
+     * A profile is complete when all required medical information is provided:
+     * - birthDate is not null
+     * - gender is not null
+     * - bloodGroup is not null
+     * - name is not blank
+     * - email is not blank
+     *
+     * @return true if profile is complete, false otherwise
+     */
+    public boolean isProfileComplete() {
+        return this.birthDate != null &&
+               this.gender != null &&
+               this.bloodGroup != null &&
+               this.name != null && !this.name.isBlank() &&
+               this.email != null && !this.email.isBlank();
+    }
 
 }
