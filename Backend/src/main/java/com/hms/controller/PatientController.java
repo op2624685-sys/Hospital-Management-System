@@ -49,7 +49,7 @@ public class PatientController {
     @GetMapping("/appointments")
     public ResponseEntity<List<AppointmentResponseDto>> getAllAppointmentsOfLoggedInPatient(
             @RequestParam(name = "page", defaultValue = "0") int page,
-            @RequestParam(name = "size", defaultValue = "15") int size) {
+            @RequestParam(name = "size", defaultValue = "10") int size) {
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         return ResponseEntity.ok(appointmentService.getAllAppointmentsOfPatient(user.getId(), page, size));
     }
