@@ -47,6 +47,7 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.dao.DataIntegrityViolationException;
 
 @Service
 @RequiredArgsConstructor
@@ -144,6 +145,19 @@ public class AppointmentServiceImpl implements AppointmentService {
             }
             // Explicitly save the branch to ensure many-to-many relationship is updated
             branchRepository.save(branchToUse);
+        }
+
+        // Update department_patient join table with race-safe dedupe
+        if (departmentToUse != null) {
+            boolean alreadyAssociatedWithDepartment = departmentRepository
+                    .existsDepartmentPatientLink(departmentToUse.getId(), patient.getId());
+            if (!alreadyAssociatedWithDepartment) {
+                try {
+                    departmentRepository.insertDepartmentPatientLink(departmentToUse.getId(), patient.getId());
+                } catch (DataIntegrityViolationException ex) {
+                    // Concurrent inserts can hit unique constraint; treat as already linked.
+                }
+            }
         }
 
         appointment = appointmentRepository.save(appointment);
