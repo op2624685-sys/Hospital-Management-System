@@ -158,7 +158,8 @@ public class PatientServiceImpl implements PatientService {
         patient.setGender(patientUpdateRequest.getGender());
         patient.setBloodGroup(patientUpdateRequest.getBloodGroup());
         patient.setLastProfileUpdateTime(LocalDateTime.now());
-        patient.setProfileUpdateCount(patient.getProfileUpdateCount() + 1);
+        int currentCount = (patient.getProfileUpdateCount() == null) ? 0 : patient.getProfileUpdateCount();
+        patient.setProfileUpdateCount(currentCount + 1);
 
         Patient updatedPatient = patientRepository.save(patient);
         return modelMapper.map(updatedPatient, PatientDto.class);
@@ -200,6 +201,10 @@ public class PatientServiceImpl implements PatientService {
      * @throws ValidationException if edit limit is exceeded
      */
     private void validateProfileEditLimit(Patient patient) {
+        if (patient.getProfileUpdateCount() == null) {
+            patient.setProfileUpdateCount(0);
+        }
+
         // If last update was more than 7 days ago, reset the count
         if (patient.getLastProfileUpdateTime() != null) {
             LocalDateTime sevenDaysAgo = LocalDateTime.now().minusDays(7);
