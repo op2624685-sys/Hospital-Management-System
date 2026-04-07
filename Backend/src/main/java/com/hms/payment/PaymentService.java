@@ -27,7 +27,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicLong;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -35,10 +38,12 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @RequiredArgsConstructor
 public class PaymentService {
+    private static final Logger log = LoggerFactory.getLogger(PaymentService.class);
 
     private static final String EVENT_CHECKOUT_COMPLETED = "checkout.session.completed";
     private static final String EVENT_CHECKOUT_ASYNC_SUCCEEDED = "checkout.session.async_payment_succeeded";
     private static final String EVENT_CHECKOUT_ASYNC_FAILED = "checkout.session.async_payment_failed";
+    private static final String DEPARTMENT_FALLBACK_MARKER = "PAYMENT_DEPARTMENT_FALLBACK_USED";
 
     private static final Map<PaymentMethodType, List<String>> STRIPE_PAYMENT_METHODS = Map.of(
             PaymentMethodType.CREDIT_CARD, List.of("card"),
@@ -54,6 +59,7 @@ public class PaymentService {
 
     @Value("${STRIPE_WEBHOOK_SECRET}")
     private String stripeWebhookSecret;
+    private final AtomicLong departmentFallbackCounter = new AtomicLong();
 
     public PaymentInitiationResponse createPaymentForDoctor(Long doctorId, CreateAppointmentRequestDto request) throws Exception {
         Doctor doctor = doctorRepository.findById(doctorId)
@@ -213,7 +219,7 @@ public class PaymentService {
             if (!"paid".equals(session.getPaymentStatus())) {
                 throw new ValidationException("Payment not completed. Status: " + session.getPaymentStatus());
             }
-            return finalizeSuccessfulCheckoutSession(session, request.getAppointmentTime());
+            return finalizeSuccessfulCheckoutSession(session, request.getAppointmentTime(), request.getDepartmentId(), true);
         } catch (com.stripe.exception.StripeException e) {
             throw new ValidationException("Failed to confirm Stripe payment: " + e.getMessage());
         }
@@ -242,7 +248,7 @@ public class PaymentService {
 
         return switch (event.getType()) {
             case EVENT_CHECKOUT_COMPLETED, EVENT_CHECKOUT_ASYNC_SUCCEEDED -> {
-                finalizeSuccessfulCheckoutSession(session, null);
+                finalizeSuccessfulCheckoutSession(session, null, null, false);
                 yield "Webhook processed: checkout payment succeeded";
             }
             case EVENT_CHECKOUT_ASYNC_FAILED -> {
@@ -253,7 +259,11 @@ public class PaymentService {
         };
     }
 
-    private AppointmentResponseDto finalizeSuccessfulCheckoutSession(Session session, LocalDateTime fallbackAppointmentTime) {
+    private AppointmentResponseDto finalizeSuccessfulCheckoutSession(
+            Session session,
+            LocalDateTime fallbackAppointmentTime,
+            Long requestDepartmentId,
+            boolean allowRequestFallback) {
         if (session.getId() == null || session.getId().isBlank()) {
             throw new ValidationException("Invalid Stripe session ID in webhook event");
         }
@@ -279,7 +289,12 @@ public class PaymentService {
         appointmentRequest.setReason(requiredMetadata(metadata, "reason"));
         appointmentRequest.setAppointmentTime(parseAppointmentTime(metadata.get("appointment_time"), fallbackAppointmentTime));
         appointmentRequest.setBranchId(parseOptionalLong(metadata.get("branch_id")));
-        appointmentRequest.setDepartmentId(parseOptionalLong(metadata.get("department_id")));
+        appointmentRequest.setDepartmentId(resolveDepartmentIdForTransition(
+                metadata,
+                requestDepartmentId,
+                "stripe_checkout_session",
+                session.getId(),
+                allowRequestFallback));
         appointmentRequest.setPaymentMethod(paymentMethodType);
 
         Appointment appointment = appointmentRepository.findByAppointmentId(appointmentId).orElse(null);
@@ -325,7 +340,12 @@ public class PaymentService {
         request.setPatientId(parseRequiredLong(metadata, "patient_id"));
         request.setReason(requiredMetadata(metadata, "reason"));
         request.setBranchId(parseOptionalLong(metadata.get("branch_id")));
-        request.setDepartmentId(parseOptionalLong(metadata.get("department_id")));
+        request.setDepartmentId(resolveDepartmentIdForTransition(
+                metadata,
+                request.getDepartmentId(),
+                "stripe_payment_intent",
+                intent.getId(),
+                true));
         request.setAppointmentTime(parseAppointmentTime(metadata.get("appointment_time"), request.getAppointmentTime()));
 
         Appointment appointment = appointmentRepository.findByAppointmentId(metadataAppointmentId).orElse(null);
@@ -399,6 +419,43 @@ public class PaymentService {
         } catch (NumberFormatException ex) {
             throw new ValidationException("Invalid optional numeric payment metadata");
         }
+    }
+
+    private Long resolveDepartmentIdForTransition(
+            Map<String, String> metadata,
+            Long requestDepartmentId,
+            String context,
+            String paymentRef,
+            boolean allowRequestFallback) {
+        String metadataValue = metadata.get("department_id");
+        if (metadataValue != null && !metadataValue.isBlank()) {
+            try {
+                return Long.parseLong(metadataValue);
+            } catch (NumberFormatException ex) {
+                if (!allowRequestFallback || requestDepartmentId == null) {
+                    throw new ValidationException("Invalid numeric payment metadata: department_id");
+                }
+            }
+        }
+
+        if (allowRequestFallback && requestDepartmentId != null) {
+            long fallbackCount = departmentFallbackCounter.incrementAndGet();
+            log.info(
+                    "{} count={} context={} paymentRef={} requestDepartmentId={}",
+                    DEPARTMENT_FALLBACK_MARKER,
+                    fallbackCount,
+                    context,
+                    paymentRef,
+                    requestDepartmentId);
+            return requestDepartmentId;
+        }
+
+        log.warn(
+                "PAYMENT_DEPARTMENT_METADATA_MISSING context={} paymentRef={} allowRequestFallback={}",
+                context,
+                paymentRef,
+                allowRequestFallback);
+        throw new ValidationException("Missing required payment metadata: department_id");
     }
 
     private LocalDateTime parseAppointmentTime(String metadataValue, LocalDateTime fallbackAppointmentTime) {
