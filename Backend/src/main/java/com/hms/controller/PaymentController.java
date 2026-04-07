@@ -4,6 +4,7 @@ import com.hms.dto.Request.CreateAppointmentRequestDto;
 import com.hms.dto.Response.AppointmentResponseDto;
 import com.hms.dto.Response.PaymentInitiationResponse;
 import com.hms.payment.PaymentService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -25,13 +26,13 @@ public class PaymentController {
     @PostMapping("/create-for-doctor/{doctorId}")
     public ResponseEntity<PaymentInitiationResponse> createPaymentForDoctor(
             @PathVariable Long doctorId,
-            @RequestBody CreateAppointmentRequestDto request) throws Exception {
+            @Valid @RequestBody CreateAppointmentRequestDto request) throws Exception {
         return ResponseEntity.ok(paymentService.createPaymentForDoctor(doctorId, request));
     }
 
     @PostMapping("/confirm-and-book")
     public ResponseEntity<AppointmentResponseDto> confirmAndBook(
-            @RequestBody CreateAppointmentRequestDto request,
+            @Valid @RequestBody CreateAppointmentRequestDto request,
             @RequestParam String paymentIntentId) throws Exception {
         return ResponseEntity.ok(paymentService.confirmAndBook(request, paymentIntentId));
     }
@@ -55,13 +56,13 @@ public class PaymentController {
     @PostMapping("/create-stripe-checkout-session/{doctorId}")
     public ResponseEntity<?> createStripeCheckoutSession(
             @PathVariable Long doctorId,
-            @RequestBody CreateAppointmentRequestDto request) throws Exception {
+            @Valid @RequestBody CreateAppointmentRequestDto request) throws Exception {
         return ResponseEntity.ok(paymentService.createStripeCheckoutSession(doctorId, request));
     }
 
     @PostMapping("/confirm-stripe-payment")
     public ResponseEntity<AppointmentResponseDto> confirmStripePayment(
-            @RequestBody CreateAppointmentRequestDto request) throws Exception {
+            @Valid @RequestBody CreateAppointmentRequestDto request) throws Exception {
         return ResponseEntity.ok(paymentService.confirmStripePayment(request));
     }
 }
