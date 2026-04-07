@@ -2,6 +2,7 @@ package com.hms.error;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -77,6 +78,14 @@ public class GlobalExceptionHandler {
             message = "Validation failed";
         }
         return build(HttpStatus.BAD_REQUEST, ErrorCode.VALIDATION_FAILED, message, request);
+    }
+
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<ApiError> handleDataIntegrityViolation(DataIntegrityViolationException ex, HttpServletRequest request) {
+        String message = ex.getMostSpecificCause() != null
+                ? ex.getMostSpecificCause().getMessage()
+                : "Data integrity violation";
+        return build(HttpStatus.CONFLICT, ErrorCode.CONFLICT, message, request);
     }
 
     @ExceptionHandler(Exception.class)
