@@ -42,6 +42,7 @@ import com.hms.repository.PatientRepository;
 import com.hms.repository.BranchRepository;
 import com.hms.repository.DepartmentRepository;
 import com.hms.service.AppointmentService;
+import com.hms.service.helper.PatientProfileRules;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -83,7 +84,7 @@ public class AppointmentServiceImpl implements AppointmentService {
                 .orElseThrow(() -> new EntityNotFoundException("Patient not found with ID: " + patientId));
         
         // Validate that patient profile is complete
-        if (!patient.isProfileComplete()) {
+        if (!PatientProfileRules.isProfileComplete(patient)) {
             throw new ValidationException("Please complete your patient profile (birthDate, gender, bloodGroup) to book an appointment.");
         }
         
