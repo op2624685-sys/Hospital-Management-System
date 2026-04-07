@@ -88,6 +88,7 @@ public class AuthService {
             .birthDate(signupRequestDto.getBirthDate())
             .bloodGroup(signupRequestDto.getBloodGroup())
             .gender(signupRequestDto.getGender())
+            .profileUpdateCount(0)
             .user(user)
             .build();
         patientRepository.save(patient);
