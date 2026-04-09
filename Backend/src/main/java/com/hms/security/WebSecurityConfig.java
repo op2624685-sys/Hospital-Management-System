@@ -74,8 +74,11 @@ public class WebSecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/public/**", "/auth/**").permitAll()
                         .requestMatchers("/payments/stripe/webhook").permitAll()
+                        .requestMatchers("/actuator/health/**").permitAll()
+                        .requestMatchers("/actuator/info/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/departments/**").permitAll()
                         .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**").permitAll()
+                        .requestMatchers("/actuator/**").hasRole(HEADADMIN.name())
                         .requestMatchers("/head-admin/**").hasRole(HEADADMIN.name())
                         .requestMatchers("/admin/**").hasAnyRole(ADMIN.name(), HEADADMIN.name())
                         .requestMatchers("/doctor/**").hasAnyRole(DOCTOR.name(), ADMIN.name(), HEADADMIN.name())
