@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import Header from '../components/Header'
 import DoctorCard from '../components/DoctorCard'
 import API from '../api/api'
+import PageLoader from '../components/PageLoader'
 
 const Doctor = () => {
   const [doctors, setDoctors] = useState([])
@@ -224,18 +225,11 @@ const Doctor = () => {
         </div>
 
         <section className="doc-grid-section">
-          {loading && (
-            <div className="doc-loading">
-              <div className="doc-spinner" />
-              <p>Loading our specialists...</p>
-            </div>
-          )}
+          {loading && <PageLoader fullPage={false} size="md" bg='Transparent' message='Loading our specialists...'/>}
 
           {!loading && filtered.length === 0 && (
             <div className="doc-empty">
-              <div className="doc-empty-icon">👨‍⚕️</div>
               <h3>No doctors found</h3>
-              <p>Try searching with different keywords</p>
               {search && (
                 <button className="doc-empty-clear" onClick={() => setSearch('')}>Clear search</button>
               )}

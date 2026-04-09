@@ -240,7 +240,7 @@ const MyAppointments = () => {
           placeholder=" Search by doctor, reason, or appointment ID..."
         />
 
-        {loading && page === 0 && <PageLoader message="Loading your schedule..."/>}
+        {loading && page === 0 && <PageLoader message="Loading your schedule..." fullPage={false} bg="Transparent"/>}
         {!loading && filtered.length === 0 && (
           <div className="ux-msg">
             No clinical records found matching your search.

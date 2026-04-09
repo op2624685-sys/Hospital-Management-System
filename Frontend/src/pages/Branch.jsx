@@ -4,6 +4,7 @@ import Header from '../components/Header'
 import BranchCard from '../components/BranchCard'
 import API from '../api/api'
 import { getBranchImage } from '../utils/branchImages'
+import PageLoader from '../components/PageLoader'
 
 const Branch = () => {
   const [query, setQuery] = useState('')
@@ -92,7 +93,7 @@ const Branch = () => {
           </div>
         </div>
         <div className="mt-6 text-sm" style={{ color: 'var(--muted-foreground)' }}>
-          {loading ? 'Loading branches...' : `${filtered.length} branch${filtered.length !== 1 ? 'es' : ''} found`}
+          {loading ? <PageLoader fullPage={false} size='md' bg='Transparent' message='Branch loading...'/> : `${filtered.length} branch${filtered.length !== 1 ? 'es' : ''} found`}
         </div>
 
         <div className="mt-6 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
@@ -102,7 +103,7 @@ const Branch = () => {
         </div>
 
         {!loading && filtered.length === 0 && (
-          <div className="mt-12 text-center" style={{ color: 'var(--muted-foreground)' }}>No branches match your search.</div>
+          <div className="mt-12 text-center" style={{ color: 'var(--muted-foreground)' }}>No branches found</div>
         )}
       </div>
     </div>

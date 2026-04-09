@@ -267,7 +267,7 @@ const DoctorCard = ({ doctor, index = 0 }) => {
 
           <div className="dc-body">
             <div>
-              <h3 className="dc-name">Dr. {doctor.name}</h3>
+              <h3 className="dc-name">{doctor.name}</h3>
               <p className="dc-email">{doctor.email}</p>
             </div>
 

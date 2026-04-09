@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom'
 import appointmentApi from '../api/appointments'
 import { useAuth } from '../context/AuthContext'
 import Header from '../components/Header'
+import PageLoader from '../components/PageLoader'
 
 const statusConfig = {
   PENDING: {
@@ -116,7 +117,7 @@ const AppointmentDetails = () => {
     }
   }
 
-  if (loading) return <LoadingScreen />
+  if (loading) return <PageLoader />
   if (error)   return <ErrorScreen onBack={() => navigate('/appointment')} />
 
   const status = statusConfig[appointment.status] || statusConfig.PENDING
