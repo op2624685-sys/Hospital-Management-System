@@ -108,3 +108,21 @@ app:
     oauth2:
         redirect-uri: ${FRONTEND_URL:http://localhost:5173}/oauth2/callback
 
+management:
+    endpoints:
+        web:
+            exposure:
+                include: health,info
+
+    endpoint:
+        health:
+            show-details: when_authorized
+            probes:
+                enabled: true   # enables liveness + readiness
+
+            group:
+                readiness:
+                    include: db, stripe, appointment
+                liveness:
+                    include: ping, system
+        
