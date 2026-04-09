@@ -122,7 +122,7 @@ management:
 
             group:
                 readiness:
-                    include: db, stripe, appointment
+                    include: db, stripe, appointment, redis
                 liveness:
                     include: ping, system
         
