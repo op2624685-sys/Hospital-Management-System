@@ -83,11 +83,11 @@ resilience4j:
                 timeoutDuration: 1s
             readOnlyRateLimiter:
                 limitRefreshPeriod: 1m
-                limitForPeriod: 30
+                limitForPeriod: 40
                 timeoutDuration: 1s
             adminRateLimiter:
                 limitRefreshPeriod: 1m
-                limitForPeriod: 30
+                limitForPeriod: 80
                 timeoutDuration: 1s
 
 app:
