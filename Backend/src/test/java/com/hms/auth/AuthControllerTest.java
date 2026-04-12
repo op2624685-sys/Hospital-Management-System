@@ -137,5 +137,28 @@ public class AuthControllerTest {
                 .andExpect(jsonPath("$.success").value(true));
     }
 
+    @Test
+    void resetPassword_ShouldReturnOk() throws Exception {
+        ResetPasswordRequestDto request = new ResetPasswordRequestDto();
+        request.setEmail("test@example.com");
+        request.setNewPassword("newPassword123");
+        request.setConfirmPassword("newPassword123");
+
+        PasswordResetResponseDto response = PasswordResetResponseDto.builder()
+                .message("Password reset successfully")
+                .success(true)
+                .email("test@example.com")
+                .build();
+
+        when(authService.resetPassword(any(ResetPasswordRequestDto.class))).thenReturn(response);
+
+        mockMvc.perform(post("/auth/reset-password")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value("Password reset successfully"))
+                .andExpect(jsonPath("$.success").value(true));
+    }
+
     
 }
