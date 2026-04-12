@@ -1,0 +1,75 @@
+package com.hms.auth;
+
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import java.time.LocalDate;
+import java.util.Set;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.hms.controller.AuthController;
+import com.hms.dto.Request.ForgotPasswordRequestDto;
+import com.hms.dto.Request.LoginRequestDto;
+import com.hms.dto.Request.ResetPasswordRequestDto;
+import com.hms.dto.Request.SignupRequestDto;
+import com.hms.dto.Request.VerifyOtpRequestDto;
+import com.hms.dto.Response.LoginResponseDto;
+import com.hms.dto.Response.PasswordResetResponseDto;
+import com.hms.dto.Response.SignupResponseDto;
+import com.hms.entity.type.BloodGroupType;
+import com.hms.entity.type.GenderType;
+import com.hms.entity.type.RoleType;
+import com.hms.security.AuthService;
+
+@ExtendWith(MockitoExtension.class)
+public class AuthControllerTest {
+
+    private MockMvc mockMvc;
+
+    @Mock
+    private AuthService authService;
+
+    @InjectMocks
+    private AuthController authController;
+
+    private ObjectMapper objectMapper;
+
+    @BeforeEach
+    void setUp() {
+        mockMvc = MockMvcBuilders.standaloneSetup(authController).build();
+        objectMapper = new ObjectMapper();
+        objectMapper.registerModule(new JavaTimeModule());
+    }
+
+    @Test
+    void login_ShouldReturnOk() throws Exception {
+        LoginRequestDto request = new LoginRequestDto("testuser", "password");
+        LoginResponseDto response = new LoginResponseDto("token", 1L, Set.of(RoleType.PATIENT));
+
+        when(authService.login(any(LoginRequestDto.class))).thenReturn(response);
+
+        mockMvc.perform(post("/auth/login")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.token").value("token"))
+                .andExpect(jsonPath("$.userId").value(1));
+    }
+
+    
+}
