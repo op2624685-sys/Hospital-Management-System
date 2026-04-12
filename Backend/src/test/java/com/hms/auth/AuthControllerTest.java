@@ -71,5 +71,28 @@ public class AuthControllerTest {
                 .andExpect(jsonPath("$.userId").value(1));
     }
 
+    @Test
+    void signup_ShouldReturnCreated() throws Exception {
+        SignupRequestDto request = new SignupRequestDto();
+        request.setUsername("testuser");
+        request.setPassword("password123");
+        request.setName("Test User");
+        request.setEmail("test@example.com");
+        request.setBirthDate(LocalDate.of(1990, 1, 1));
+        request.setGender(GenderType.MALE);
+        request.setBloodGroup(BloodGroupType.A_POSITIVE);
+
+        SignupResponseDto response = new SignupResponseDto(1L, "testuser", Set.of(RoleType.PATIENT));
+
+        when(authService.signup(any(SignupRequestDto.class))).thenReturn(response);
+
+        mockMvc.perform(post("/auth/signup")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.username").value("testuser"))
+                .andExpect(jsonPath("$.id").value(1));
+    }
+
     
 }
