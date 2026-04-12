@@ -94,5 +94,26 @@ public class AuthControllerTest {
                 .andExpect(jsonPath("$.id").value(1));
     }
 
+    @Test
+    void forgotPassword_ShouldReturnOk() throws Exception {
+        ForgotPasswordRequestDto request = new ForgotPasswordRequestDto();
+        request.setUsername("testuser");
+        
+        PasswordResetResponseDto response = PasswordResetResponseDto.builder()
+                .message("OTP sent successfully")
+                .success(true)
+                .email("test@example.com")
+                .build();
+
+        when(authService.forgotPassword(any(ForgotPasswordRequestDto.class))).thenReturn(response);
+
+        mockMvc.perform(post("/auth/forgot-password")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value("OTP sent successfully"))
+                .andExpect(jsonPath("$.success").value(true));
+    }
+
     
 }
