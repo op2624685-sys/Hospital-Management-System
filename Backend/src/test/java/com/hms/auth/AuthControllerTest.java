@@ -115,5 +115,27 @@ public class AuthControllerTest {
                 .andExpect(jsonPath("$.success").value(true));
     }
 
+    @Test
+    void verifyOtp_ShouldReturnOk() throws Exception {
+        VerifyOtpRequestDto request = new VerifyOtpRequestDto();
+        request.setEmail("test@example.com");
+        request.setOtp("123456");
+
+        PasswordResetResponseDto response = PasswordResetResponseDto.builder()
+                .message("OTP verified successfully")
+                .success(true)
+                .email("test@example.com")
+                .build();
+
+        when(authService.verifyOtp(any(VerifyOtpRequestDto.class))).thenReturn(response);
+
+        mockMvc.perform(post("/auth/verify-otp")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value("OTP verified successfully"))
+                .andExpect(jsonPath("$.success").value(true));
+    }
+
     
 }
