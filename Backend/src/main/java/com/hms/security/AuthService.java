@@ -45,6 +45,7 @@ public class AuthService {
     private final PatientRepository patientRepository;
     private final OtpService otpService;
 
+    @Transactional
     public LoginResponseDto login(LoginRequestDto loginRequestDto) {
         
         Authentication authentication = authenticationManager.authenticate(
