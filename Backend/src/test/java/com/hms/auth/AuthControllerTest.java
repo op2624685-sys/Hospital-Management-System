@@ -181,5 +181,14 @@ public class AuthControllerTest {
                 .andExpect(jsonPath("$.success").value(true));
     }
 
+    @Test
+    void getCurrentUser_ShouldReturnOk() throws Exception {
+        LoginResponseDto response = new LoginResponseDto("token", 1L, Set.of(RoleType.PATIENT));
 
+        when(authService.getCurrentUser()).thenReturn(response);
+
+        mockMvc.perform(get("/auth/me"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.userId").value(1));
+    }
 }
