@@ -160,5 +160,26 @@ public class AuthControllerTest {
                 .andExpect(jsonPath("$.success").value(true));
     }
 
-    
+    @Test
+    void resendOtp_ShouldReturnOk() throws Exception {
+        ForgotPasswordRequestDto request = new ForgotPasswordRequestDto();
+        request.setUsername("testuser");
+
+        PasswordResetResponseDto response = PasswordResetResponseDto.builder()
+                .message("OTP resent successfully")
+                .success(true)
+                .email("test@example.com")
+                .build();
+
+        when(authService.resendOtp(any(ForgotPasswordRequestDto.class))).thenReturn(response);
+
+        mockMvc.perform(post("/auth/resend-otp")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value("OTP resent successfully"))
+                .andExpect(jsonPath("$.success").value(true));
+    }
+
+
 }
