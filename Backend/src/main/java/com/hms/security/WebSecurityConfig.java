@@ -83,6 +83,8 @@ public class WebSecurityConfig {
                         .requestMatchers("/admin/**").hasAnyRole(ADMIN.name(), HEADADMIN.name())
                         .requestMatchers("/doctor/**").hasAnyRole(DOCTOR.name(), ADMIN.name(), HEADADMIN.name())
                         .requestMatchers("/patients/**", "/payments/**").hasRole(PATIENT.name())
+                        .requestMatchers(HttpMethod.GET,  "/reviews/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/reviews/**").hasRole(PATIENT.name())
                         .anyRequest().authenticated())
                 .oauth2Login(oauth2 -> oauth2
                         .userInfoEndpoint(userInfo -> userInfo.userService(customOAuth2UserService))
