@@ -5,6 +5,7 @@ import appointmentApi from "../api/appointments";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import PageLoader from "../components/PageLoader";
+import DoctorRatingModal from "../components/DoctorRatingModal";
 
 const MyAppointments = () => {
   const [appointments, setAppointments] = useState([]);
@@ -14,6 +15,7 @@ const MyAppointments = () => {
   const [page, setPage] = useState(0);
   const [size] = useState(15);
   const [hasMore, setHasMore] = useState(true);
+  const [ratingTarget, setRatingTarget] = useState(null); // { doctorId, doctorName }
 
   const loadAppointments = async () => {
     setLoading(true);
@@ -193,7 +195,12 @@ const MyAppointments = () => {
         }
         .ux-badge-pending { color: var(--destructive); background: color-mix(in srgb, var(--destructive) 10%, transparent); border: 1px solid color-mix(in srgb, var(--destructive) 20%, transparent); }
         .ux-badge-approved { color: #16a34a; background: rgba(22,163,74,0.1); border: 1px solid rgba(22,163,74,0.2); }
-        .ux-badge-completed { color: var(--primary); background: var(--secondary); border: 1px solid color-mix(in srgb, var(--primary) 20%, transparent); }
+        .ux-btn-rate {
+          background: linear-gradient(135deg, #f59e0b, #d97706);
+          color: #fff;
+          box-shadow: 0 4px 12px rgba(245,158,11,0.30);
+        }
+        .ux-btn-rate:hover { opacity: 0.9; transform: scale(1.02); }
 
         .ux-pagination {
           display: flex;
@@ -278,7 +285,15 @@ const MyAppointments = () => {
                 >
                   Details
                 </Link>
-                {a.status !== "CANCELLED" && (
+                {a.status === "COMPLETED" && (
+                  <button
+                    onClick={() => setRatingTarget({ doctorId: a.doctor?.id, doctorName: a.doctor?.name || "Doctor" })}
+                    className="ux-btn ux-btn-rate"
+                  >
+                    ★ Rate Doctor
+                  </button>
+                )}
+                {a.status !== "CANCELLED" && a.status !== "COMPLETED" && (
                   <button
                     disabled={busyId === a.appointmentId}
                     onClick={() => handleCancel(a)}
@@ -320,6 +335,14 @@ const MyAppointments = () => {
         )}
       </div>
       <ToastContainer position="top-right" autoClose={2500} />
+      {ratingTarget && (
+        <DoctorRatingModal
+          doctorId={ratingTarget.doctorId}
+          doctorName={ratingTarget.doctorName}
+          onClose={() => setRatingTarget(null)}
+          onSuccess={() => setRatingTarget(null)}
+        />
+      )}
     </div>
   );
 };
