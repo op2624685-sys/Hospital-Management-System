@@ -1,5 +1,6 @@
 import React from 'react'
 import { useNavigate } from 'react-router-dom'
+import DoctorRatingDisplay from './DoctorRatingDisplay'
 
 const specialityConfig = {
   'Cardiology':    { color: 'var(--primary)', bg: 'var(--secondary)', border: 'var(--border)' },
@@ -285,6 +286,7 @@ const DoctorCard = ({ doctor, index = 0 }) => {
 
             <div className="dc-meta-row">
               <span className="dc-branch">{doctor?.branch?.name || 'Branch N/A'}</span>
+              <DoctorRatingDisplay doctorId={doctor.id} size="sm" />
             </div>
 
             <div className="dc-divider" />
