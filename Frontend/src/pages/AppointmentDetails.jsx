@@ -4,6 +4,7 @@ import appointmentApi from '../api/appointments'
 import { useAuth } from '../context/AuthContext'
 import Header from '../components/Header'
 import PageLoader from '../components/PageLoader'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 
 const statusConfig = {
   PENDING: {
@@ -61,30 +62,27 @@ const ErrorScreen = ({ onBack }) => (
 )
 
 const AppointmentDetails = () => {
+  const queryClient = useQueryClient()
   const { appointmentId } = useParams()
   const navigate = useNavigate()
   const { user, hasRole } = useAuth()
 
-  const [appointment, setAppointment] = useState(null)
-  const [loading, setLoading]         = useState(true)
-  const [error, setError]             = useState(null)
   const [copied, setCopied]           = useState(false)
   const [copiedLink, setCopiedLink]   = useState(false)
   const [cancelling, setCancelling]   = useState(false)
 
-  useEffect(() => {
-    const fetch = async () => {
-      try {
-        const res = await appointmentApi.getByAppointmentId(appointmentId)
-        setAppointment(res.data)
-      } catch {
-        setError(true)
-      } finally {
-        setLoading(false)
-      }
-    }
-    fetch()
-  }, [appointmentId])
+  const {
+    data: appointment = null,
+    isLoading: loading,
+    isError: error,
+  } = useQuery({
+    queryKey: ['appointment-details', appointmentId],
+    queryFn: async () => {
+      const res = await appointmentApi.getByAppointmentId(appointmentId)
+      return res.data
+    },
+    enabled: Boolean(appointmentId),
+  })
 
   const handleCopy = () => {
     navigator.clipboard.writeText(appointment.appointmentId)
@@ -109,7 +107,7 @@ const AppointmentDetails = () => {
     setCancelling(true)
     try {
       const res = await appointmentApi.cancelByPatient(appointment.appointmentId)
-      setAppointment(res.data)
+      queryClient.setQueryData(['appointment-details', appointmentId], res.data)
     } catch (e) {
       console.error(e)
     } finally {
