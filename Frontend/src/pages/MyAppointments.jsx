@@ -6,35 +6,31 @@ import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import PageLoader from "../components/PageLoader";
 import DoctorRatingModal from "../components/DoctorRatingModal";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 const MyAppointments = () => {
-  const [appointments, setAppointments] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
   const [search, setSearch] = useState("");
   const [busyId, setBusyId] = useState(null);
   const [page, setPage] = useState(0);
   const [size] = useState(15);
-  const [hasMore, setHasMore] = useState(true);
   const [ratingTarget, setRatingTarget] = useState(null); // { doctorId, doctorName }
 
-  const loadAppointments = async () => {
-    setLoading(true);
-    try {
+  const { data: appointments = [], isFetching: loading, error } = useQuery({
+    queryKey: ["my-appointments", page, size],
+    queryFn: async () => {
       const response = await appointmentApi.getMyAppointments(page, size);
-      const data = response.data || [];
-      setAppointments(data);
-      setHasMore(data.length === size);
-    } catch (error) {
-      console.error(error);
-      toast.error("Failed to load appointments");
-    } finally {
-      setLoading(false);
-    }
-  };
+      return response.data || [];
+    },
+  });
 
   useEffect(() => {
-    loadAppointments();
-  }, [page]);
+    if (!error) return;
+    console.error(error);
+    toast.error("Failed to load appointments");
+  }, [error]);
+
+  const hasMore = appointments.length === size;
 
   const filtered = useMemo(() => {
     const q = search.toLowerCase().trim();
@@ -60,7 +56,7 @@ const MyAppointments = () => {
     setBusyId(appointment.appointmentId);
     try {
       const response = await appointmentApi.cancelByPatient(appointment.appointmentId);
-      setAppointments((prev) =>
+      queryClient.setQueryData(["my-appointments", page, size], (prev = []) =>
         prev.map((item) =>
           item.appointmentId === appointment.appointmentId ? response.data : item
         )
