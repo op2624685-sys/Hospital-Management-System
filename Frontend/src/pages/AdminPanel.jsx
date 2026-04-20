@@ -1,10 +1,11 @@
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Header from "../components/Header";
 import API from "../api/api";
 import adminApi from "../api/admin";
 import { gsap } from "gsap";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 // ── Mock fallback data (replace with real API calls) ──────────────────────────
 const MOCK = {
@@ -157,6 +158,7 @@ const Section = ({ title, subtitle, children, action }) => (
 
 // ── Main ──────────────────────────────────────────────────────────────────────
 const AdminPanel = () => {
+  const queryClient = useQueryClient();
   const [stats, setStats] = useState(MOCK.stats);
   const [appointments, setAppointments] = useState([]);
   const [appointmentsLoading, setAppointmentsLoading] = useState(false);
@@ -241,39 +243,74 @@ const AdminPanel = () => {
     return { errors, sectionsJson };
   };
 
-  const fetchPatients = useCallback(async () => {
-    try {
-      setLoading(true);
+  const patientsQuery = useQuery({
+    queryKey: ["admin-patients", currentPage],
+    queryFn: async () => {
       const response = await adminApi.getPatients(currentPage, 10);
-      setPatients(response.data.content || response.data);
-      _setTotalPatients(response.data.totalElements || response.data.length);
-    } catch (error) {
-      console.error("Error fetching patients:", error);
-      alert(getApiErrorMessage(error, "Failed to load patients"));
-    } finally {
-      setLoading(false);
-    }
-  }, [currentPage]);
+      return response.data;
+    },
+    enabled: activeTab === "patients",
+  });
 
-  const fetchDoctors = useCallback(async (page = 0, size = 10, search = "", specialization = "", sort = "name") => {
-    try {
-      setDoctorsError("");
-      setDoctorsLoading(true);
+  const doctorsQuery = useQuery({
+    queryKey: ["admin-doctors", doctorPage, doctorSearch.trim(), doctorSpec.trim(), doctorSort],
+    queryFn: async () => {
       const response = await adminApi.getDoctors({
-        page,
-        size,
-        search: search || undefined,
-        specialization: specialization || undefined,
-        sort,
+        page: doctorPage,
+        size: 10,
+        search: doctorSearch.trim() || undefined,
+        specialization: doctorSpec.trim() || undefined,
+        sort: doctorSort,
       });
-      setDoctors(response.data || []);
-    } catch (error) {
-      setDoctorsError(getApiErrorMessage(error, "Failed to load doctors"));
-      setDoctors([]);
-    } finally {
-      setDoctorsLoading(false);
-    }
-  }, []);
+      return response.data || [];
+    },
+    enabled: activeTab === "doctors",
+  });
+
+  const departmentsQuery = useQuery({
+    queryKey: ["admin-departments"],
+    queryFn: async () => {
+      const response = await adminApi.getDepartments();
+      return response.data || [];
+    },
+    enabled: activeTab === "departments",
+  });
+
+  const templatesQuery = useQuery({
+    queryKey: ["admin-department-templates"],
+    queryFn: async () => {
+      const response = await adminApi.getDepartmentTemplates();
+      return response.data || [];
+    },
+    enabled: activeTab === "departments",
+  });
+
+  const overviewQuery = useQuery({
+    queryKey: ["admin-overview"],
+    queryFn: async () => {
+      const response = await adminApi.getOverview();
+      return response.data || {};
+    },
+    enabled: activeTab === "overview",
+  });
+
+  const overviewAppointmentsQuery = useQuery({
+    queryKey: ["admin-appointments-overview"],
+    queryFn: async () => {
+      const response = await adminApi.getAppointments(0, 5);
+      return response.data || [];
+    },
+    enabled: activeTab === "overview",
+  });
+
+  const appointmentsQuery = useQuery({
+    queryKey: ["admin-appointments", appointmentsPage],
+    queryFn: async () => {
+      const response = await adminApi.getAppointments(appointmentsPage, 10);
+      return response.data || [];
+    },
+    enabled: activeTab === "appointments",
+  });
 
   useEffect(() => {
     gsap.fromTo(headerRef.current,
@@ -282,53 +319,58 @@ const AdminPanel = () => {
     );
   }, []);
 
-  // Fetch patients when tab changes to patients
   useEffect(() => {
-    if (activeTab === "patients") {
-      fetchPatients();
+    if (activeTab !== "patients") return;
+    setLoading(patientsQuery.isFetching);
+    if (patientsQuery.error) {
+      alert(getApiErrorMessage(patientsQuery.error, "Failed to load patients"));
+      return;
     }
-  }, [activeTab, fetchPatients]);
+    if (!patientsQuery.data) return;
+    setPatients(patientsQuery.data.content || patientsQuery.data);
+    _setTotalPatients(patientsQuery.data.totalElements || (patientsQuery.data || []).length || 0);
+  }, [activeTab, patientsQuery.isFetching, patientsQuery.data, patientsQuery.error]);
 
   useEffect(() => {
-    if (activeTab === "doctors") {
-      fetchDoctors(doctorPage, 10, doctorSearch.trim(), doctorSpec.trim(), doctorSort);
+    if (activeTab !== "doctors") return;
+    setDoctorsLoading(doctorsQuery.isFetching);
+    if (doctorsQuery.error) {
+      setDoctorsError(getApiErrorMessage(doctorsQuery.error, "Failed to load doctors"));
+      setDoctors([]);
+      return;
     }
-  }, [activeTab, doctorPage, doctorSearch, doctorSpec, doctorSort, fetchDoctors]);
+    setDoctorsError("");
+    setDoctors(doctorsQuery.data || []);
+  }, [activeTab, doctorsQuery.isFetching, doctorsQuery.data, doctorsQuery.error]);
 
-  const fetchDepartments = useCallback(async () => {
-    try {
-      setDepartmentsError("");
-      setDepartmentsLoading(true);
-      const response = await adminApi.getDepartments();
-      setDepartments(response.data || []);
-    } catch (error) {
-      setDepartmentsError(getApiErrorMessage(error, "Failed to load departments"));
+  useEffect(() => {
+    if (activeTab !== "departments") return;
+    setDepartmentsLoading(departmentsQuery.isFetching);
+    if (departmentsQuery.error) {
+      setDepartmentsError(getApiErrorMessage(departmentsQuery.error, "Failed to load departments"));
       setDepartments([]);
-    } finally {
-      setDepartmentsLoading(false);
+    } else {
+      setDepartmentsError("");
+      setDepartments(departmentsQuery.data || []);
     }
-  }, []);
 
-  const fetchDepartmentTemplates = useCallback(async () => {
-    try {
-      setTemplatesError("");
-      setTemplatesLoading(true);
-      const response = await adminApi.getDepartmentTemplates();
-      setDepartmentTemplates(response.data || []);
-    } catch (error) {
-      setTemplatesError(getApiErrorMessage(error, "Failed to load department templates"));
+    setTemplatesLoading(templatesQuery.isFetching);
+    if (templatesQuery.error) {
+      setTemplatesError(getApiErrorMessage(templatesQuery.error, "Failed to load department templates"));
       setDepartmentTemplates([]);
-    } finally {
-      setTemplatesLoading(false);
+    } else {
+      setTemplatesError("");
+      setDepartmentTemplates(templatesQuery.data || []);
     }
-  }, []);
-
-  useEffect(() => {
-    if (activeTab === "departments") {
-      fetchDepartments();
-      fetchDepartmentTemplates();
-    }
-  }, [activeTab, fetchDepartments, fetchDepartmentTemplates]);
+  }, [
+    activeTab,
+    departmentsQuery.isFetching,
+    departmentsQuery.data,
+    departmentsQuery.error,
+    templatesQuery.isFetching,
+    templatesQuery.data,
+    templatesQuery.error,
+  ]);
 
   useEffect(() => {
     const selected = departmentTemplates.find(t => String(t.id) === String(selectedTemplateId));
@@ -424,7 +466,7 @@ const AdminPanel = () => {
       setDepartmentDoctorSuggestions([]);
       setSelectedDepartmentDoctors([]);
       setShowDepartmentForm(false);
-      await fetchDepartments();
+      await queryClient.invalidateQueries({ queryKey: ["admin-departments"] });
     } catch (error) {
       console.error("Error adding department to branch:", error);
       toast.error("Failed to add department. " + getApiErrorMessage(error, ""));
@@ -557,58 +599,68 @@ const AdminPanel = () => {
 
   const tabs = ["overview", "appointments", "doctors", "payments", "patients", "departments"];
 
-  const fetchAppointments = useCallback(async (page = 0, size = 10) => {
-    try {
-      setAppointmentsError("");
-      setAppointmentsLoading(true);
-      const response = await adminApi.getAppointments(page, size);
-      setAppointments(response.data || []);
-    } catch (error) {
-      setAppointmentsError(getApiErrorMessage(error, "Failed to load appointments"));
-      setAppointments([]);
-    } finally {
-      setAppointmentsLoading(false);
-    }
-  }, []);
-
-  const fetchOverview = useCallback(async () => {
-    try {
-      setOverviewError("");
-      const response = await adminApi.getOverview();
-      const data = response.data || {};
-      if (data.stats) {
-        setStats((prev) => ({
-          ...prev,
-          totalDoctors: data.stats.totalDoctors ?? prev.totalDoctors,
-          totalPatients: data.stats.totalPatients ?? prev.totalPatients,
-          todayAppointments: data.stats.todayAppointments ?? prev.todayAppointments,
-          pendingAppointments: data.stats.pendingAppointments ?? prev.pendingAppointments,
-          completedAppointments: data.stats.confirmedAppointments ?? prev.completedAppointments,
-          totalRevenue: prev.totalRevenue,
-          todayRevenue: prev.todayRevenue,
-        }));
-      }
-      setOverviewDoctors(data.recentDoctors || []);
-      setDepartmentLoad(data.departmentLoad || []);
-      setWeeklyAppointments(data.weeklyAppointments || []);
-    } catch (error) {
-      setOverviewError(getApiErrorMessage(error, "Failed to load overview"));
-    }
-  }, []);
-
   useEffect(() => {
     if (activeTab === "overview") {
       setAppointmentsPage(0);
-      fetchAppointments(0, 5);
-      fetchOverview();
     }
-  }, [activeTab, fetchAppointments, fetchOverview]);
+  }, [activeTab]);
 
   useEffect(() => {
-    if (activeTab === "appointments") {
-      fetchAppointments(appointmentsPage, 10);
+    if (activeTab === "overview") {
+      setAppointmentsLoading(overviewAppointmentsQuery.isFetching);
+      if (overviewAppointmentsQuery.error) {
+        setAppointmentsError(getApiErrorMessage(overviewAppointmentsQuery.error, "Failed to load appointments"));
+        setAppointments([]);
+      } else {
+        setAppointmentsError("");
+        setAppointments(overviewAppointmentsQuery.data || []);
+      }
+
+      if (overviewQuery.error) {
+        setOverviewError(getApiErrorMessage(overviewQuery.error, "Failed to load overview"));
+      } else {
+        setOverviewError("");
+        const data = overviewQuery.data || {};
+        if (data.stats) {
+          setStats((prev) => ({
+            ...prev,
+            totalDoctors: data.stats.totalDoctors ?? prev.totalDoctors,
+            totalPatients: data.stats.totalPatients ?? prev.totalPatients,
+            todayAppointments: data.stats.todayAppointments ?? prev.todayAppointments,
+            pendingAppointments: data.stats.pendingAppointments ?? prev.pendingAppointments,
+            completedAppointments: data.stats.confirmedAppointments ?? prev.completedAppointments,
+            totalRevenue: prev.totalRevenue,
+            todayRevenue: prev.todayRevenue,
+          }));
+        }
+        setOverviewDoctors(data.recentDoctors || []);
+        setDepartmentLoad(data.departmentLoad || []);
+        setWeeklyAppointments(data.weeklyAppointments || []);
+      }
+      return;
     }
-  }, [activeTab, appointmentsPage, fetchAppointments]);
+
+    if (activeTab === "appointments") {
+      setAppointmentsLoading(appointmentsQuery.isFetching);
+      if (appointmentsQuery.error) {
+        setAppointmentsError(getApiErrorMessage(appointmentsQuery.error, "Failed to load appointments"));
+        setAppointments([]);
+      } else {
+        setAppointmentsError("");
+        setAppointments(appointmentsQuery.data || []);
+      }
+    }
+  }, [
+    activeTab,
+    overviewQuery.data,
+    overviewQuery.error,
+    overviewAppointmentsQuery.data,
+    overviewAppointmentsQuery.error,
+    overviewAppointmentsQuery.isFetching,
+    appointmentsQuery.data,
+    appointmentsQuery.error,
+    appointmentsQuery.isFetching,
+  ]);
 
   return (
     <>
