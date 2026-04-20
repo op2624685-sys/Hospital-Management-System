@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { useQuery } from '@tanstack/react-query';
 
 const AppointmentBooking = () => {
   const { user, isLoggedIn, profileComplete } = useAuth();
@@ -13,7 +14,6 @@ const AppointmentBooking = () => {
 
   const [branchName, setBranchName] = useState(state?.branchName || '');
   const [branchId, setBranchId] = useState(state?.branchId || null);
-  const [allBranches, setAllBranches] = useState([]);
   const [branchSuggestions, setBranchSuggestions] = useState([]);
   const [doctorName, setDoctorName] = useState(state?.doctorName || '');
   const [doctorId, setDoctorId] = useState(state?.doctorId || null);
@@ -21,8 +21,6 @@ const AppointmentBooking = () => {
   const [reason, setReason] = useState('');
   const [appointmentDate, setAppointmentDate] = useState('');
   const [appointmentSlot, setAppointmentSlot] = useState('');
-  const [bookedSlots, setBookedSlots] = useState([]);
-  const [loadingSlots, setLoadingSlots] = useState(false);
   const [availableDepartments, setAvailableDepartments] = useState([]);
   const [selectedDepartmentId, setSelectedDepartmentId] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -33,54 +31,49 @@ const AppointmentBooking = () => {
   const END_HOUR = 19; // exclusive
   const MAX_ADVANCE_DAYS = 30;
 
+  const { data: allDoctors = [] } = useQuery({
+    queryKey: ['public-doctors-meta'],
+    queryFn: async () => {
+      const doctorResponse = await API.get('/public/doctors');
+      return doctorResponse.data || [];
+    },
+  });
+
+  const { data: allBranches = [] } = useQuery({
+    queryKey: ['public-branches'],
+    queryFn: async () => {
+      const branchResponse = await API.get('/public/branches');
+      return branchResponse.data || [];
+    },
+  });
+
+  const {
+    data: bookedSlots = [],
+    isFetching: loadingSlots,
+  } = useQuery({
+    queryKey: ['booked-slots', doctorId, appointmentDate],
+    queryFn: async () => {
+      const res = await appointmentApi.getBookedSlots(doctorId, appointmentDate);
+      const slots = Array.isArray(res.data) ? res.data : [];
+      return slots.map((s) => {
+        const t = String(s).split('T')[1] || '';
+        return t.slice(0, 5);
+      }).filter(Boolean);
+    },
+    enabled: Boolean(doctorId && appointmentDate),
+  });
+
   useEffect(() => {
-    const fetchMeta = async () => {
-      try {
-        const [doctorResponse, branchResponse] = await Promise.all([
-          API.get('/public/doctors'),
-          API.get('/public/branches'),
-        ]);
-        const doctors = doctorResponse.data || [];
-        setAllBranches(branchResponse.data || []);
-        if (state?.doctorId) {
-          const preselectedDoctor = doctors.find(d => d.id === state.doctorId) || null;
-          if (preselectedDoctor?.departments) {
-            setAvailableDepartments(preselectedDoctor.departments);
-            if (preselectedDoctor.departments.length === 1) {
-              setSelectedDepartmentId(preselectedDoctor.departments[0].id);
-            }
-          }
-        }
-      } catch (error) {
-        console.error('Failed to fetch doctors/branches:', error);
-      }
-    };
-    fetchMeta();
-  }, [state]);
+    if (!state?.doctorId || !allDoctors.length) return;
+    const preselectedDoctor = allDoctors.find((d) => d.id === state.doctorId) || null;
+    if (!preselectedDoctor?.departments) return;
+    setAvailableDepartments(preselectedDoctor.departments);
+    if (preselectedDoctor.departments.length === 1) {
+      setSelectedDepartmentId(preselectedDoctor.departments[0].id);
+    }
+  }, [allDoctors, state]);
 
   // Patient profile fetch removed as patientName is not displayed
-
-  useEffect(() => {
-    const fetchBookedSlots = async () => {
-      if (!doctorId || !appointmentDate) { setBookedSlots([]); return; }
-      setLoadingSlots(true);
-      try {
-        const res = await appointmentApi.getBookedSlots(doctorId, appointmentDate);
-        const slots = Array.isArray(res.data) ? res.data : [];
-        const times = slots.map((s) => {
-          const t = String(s).split('T')[1] || '';
-          return t.slice(0, 5);
-        }).filter(Boolean);
-        setBookedSlots(times);
-      } catch (error) {
-        console.error('Failed to fetch booked slots:', error);
-        setBookedSlots([]);
-      } finally {
-        setLoadingSlots(false);
-      }
-    };
-    fetchBookedSlots();
-  }, [doctorId, appointmentDate]);
 
   useEffect(() => {
     const handler = (e) => {
@@ -126,7 +119,6 @@ const AppointmentBooking = () => {
     setAvailableDepartments([]);
     setSelectedDepartmentId(null);
     setAppointmentSlot('');
-    setBookedSlots([]);
   };
 
   const handleDoctorSearch = async (e) => {
@@ -170,7 +162,6 @@ const AppointmentBooking = () => {
     }
 
     setAppointmentSlot('');
-    setBookedSlots([]);
     if (!branchId && doctor?.branch?.id && doctor?.branch?.name) {
       setBranchId(doctor.branch.id);
       setBranchName(doctor.branch.name);
