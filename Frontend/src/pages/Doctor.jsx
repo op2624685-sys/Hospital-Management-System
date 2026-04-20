@@ -1,35 +1,27 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
 import Header from '../components/Header'
 import DoctorCard from '../components/DoctorCard'
 import API from '../api/api'
 import PageLoader from '../components/PageLoader'
+import { useQuery } from '@tanstack/react-query'
 
 const Doctor = () => {
-  const [doctors, setDoctors] = useState([])
-  const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [page, setPage] = useState(0)
   const [size] = useState(10)
-  const [hasMore, setHasMore] = useState(true)
 
-  useEffect(() => {
-    const fetchDoctors = async () => {
-      setLoading(true)
-      try {
-        const response = await API.get(`/public/doctors?page=${page}&size=${size}`)
-        const doctorList = Array.isArray(response.data) ? response.data : []
-        setDoctors(doctorList)
-        setHasMore(doctorList.length === size)
-      } catch (error) {
-        console.error('Failed to fetch doctors:', error)
-        setDoctors([])
-        setHasMore(false)
-      } finally {
-        setLoading(false)
-      }
-    }
-    fetchDoctors()
-  }, [page, size])
+  const {
+    data: doctors = [],
+    isLoading: loading,
+  } = useQuery({
+    queryKey: ['public-doctors', page, size],
+    queryFn: async () => {
+      const response = await API.get(`/public/doctors?page=${page}&size=${size}`)
+      return Array.isArray(response.data) ? response.data : []
+    },
+  })
+
+  const hasMore = doctors.length === size
 
   const normalizedSearch = search.toLowerCase().trim()
   const filtered = doctors.filter(doctor => {
