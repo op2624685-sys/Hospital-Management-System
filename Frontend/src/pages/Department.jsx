@@ -4,6 +4,7 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import Header from '../components/Header'
 import GenericDepartment from '../components/GenericDepartment'
 import API from '../api/api'
+import { useQuery } from '@tanstack/react-query'
 
 gsap.registerPlugin(ScrollTrigger)
 
@@ -24,61 +25,61 @@ const Department = () => {
   const accentBarRef  = useRef(null)
   const currentIdx    = useRef(0)
   
-  const [departments, setDepartments] = useState([])
   const [error, setError] = useState('')
 
+  const {
+    data: departments = [],
+    error: departmentsError,
+  } = useQuery({
+    queryKey: ['departments'],
+    queryFn: async () => {
+      const res = await API.get('/departments')
+      const source = Array.isArray(res.data) ? res.data : []
+
+      return source.map((dept, idx) => {
+        const name = dept.name || 'Department'
+        const accent = dept.accentColor || DEFAULT_ACCENT
+        const bg = dept.bgColor || DEFAULT_BG
+        const icon = dept.icon || 'DEPT'
+        const description = dept.description
+        const members = dept.memberCount ?? dept.members ?? 0
+        const head = dept.headDoctorName || 'Not assigned'
+        const imageUrl = dept.imageUrl || ''
+        const number = String(idx + 1).padStart(2, '0')
+
+        return {
+          component: () => (
+            <GenericDepartment
+              name={name}
+              icon={icon}
+              description={description}
+              members={members}
+              headDoctor={head}
+              accent={accent}
+              bg={bg}
+              imageUrl={imageUrl}
+              sectionsJson={dept.sectionsJson}
+            />
+          ),
+          accent,
+          bg,
+          label: name,
+          icon,
+          number,
+          members,
+          head,
+        }
+      })
+    },
+  })
+
   useEffect(() => {
-    const fetchDepartments = async () => {
-      try {
-        setError('')
-        const res = await API.get('/departments')
-        const source = Array.isArray(res.data) ? res.data : []
-
-        const mapped = source.map((dept, idx) => {
-          const name = dept.name || 'Department'
-          const accent = dept.accentColor || DEFAULT_ACCENT
-          const bg = dept.bgColor || DEFAULT_BG
-          const icon = dept.icon || 'DEPT'
-          const description = dept.description
-          const members = dept.memberCount ?? dept.members ?? 0
-          const head = dept.headDoctorName || 'Not assigned'
-          const imageUrl = dept.imageUrl || ''
-          const number = String(idx + 1).padStart(2, '0')
-
-          return {
-            component: () => (
-              <GenericDepartment
-                name={name}
-                icon={icon}
-                description={description}
-                members={members}
-                headDoctor={head}
-                accent={accent}
-                bg={bg}
-                imageUrl={imageUrl}
-                sectionsJson={dept.sectionsJson}
-              />
-            ),
-            accent,
-            bg,
-            label: name,
-            icon,
-            number,
-            members,
-            head,
-          };
-        });
-
-        setDepartments(mapped);
-      } catch (error) {
-        console.error('Error fetching departments:', error);
-        setError(getApiErrorMessage(error, 'Failed to load departments'));
-        setDepartments([]);
-      }
-    };
-
-    fetchDepartments();
-  }, []);
+    if (!departmentsError) {
+      setError('')
+      return
+    }
+    setError(getApiErrorMessage(departmentsError, 'Failed to load departments'))
+  }, [departmentsError])
 
   useEffect(() => {
     const cards = cardRefs.current.filter(Boolean)
