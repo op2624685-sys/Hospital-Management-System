@@ -20,6 +20,7 @@ import { useAuth } from '../context/AuthContext';
 import { doctorAPI } from '../api/api';
 import SwitchToggleThemeDemo from '@/components/ui/toggle-theme';
 import ProfileDropdown from './ProfileDropdown';
+import { useQuery } from '@tanstack/react-query';
 
 const baseNavLinks = [
   { to: '/', label: 'Home', icon: Activity },
@@ -60,21 +61,17 @@ const Header = () => {
   const isAdmin = hasRole('ADMIN');
   const isDoctor = hasRole('DOCTOR');
   const isPatient = hasRole('PATIENT');
-  const [isHead, setIsHead] = useState(false);
 
-  useEffect(() => {
-    const fetchDoctorProfile = async () => {
-      if (isDoctor && isLoggedIn) {
-        try {
-          const { data } = await doctorAPI.getProfile();
-          setIsHead(data.isHead);
-        } catch (error) {
-          console.error("Error fetching doctor profile:", error);
-        }
-      }
-    };
-    fetchDoctorProfile();
-  }, [isDoctor, isLoggedIn]);
+  const { data: doctorProfile } = useQuery({
+    queryKey: ['doctor-profile-nav'],
+    queryFn: async () => {
+      const { data } = await doctorAPI.getProfile();
+      return data;
+    },
+    enabled: isDoctor && isLoggedIn,
+  });
+
+  const isHead = Boolean(doctorProfile?.isHead);
 
   let navLinks = baseNavLinks;
   if (isHeadAdmin) {
