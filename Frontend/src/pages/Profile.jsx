@@ -1,9 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Mail, User, Upload, Briefcase, Stethoscope, AlertCircle, Loader, Heart, MapPin, Phone, Droplet, Calendar, Award, Building2, X, Save, Edit2 } from 'lucide-react';
 import { userAPI, doctorAPI, patientAPI, adminAPI } from '../api/api';
 import { toast } from 'react-toastify';
+import { useQuery } from '@tanstack/react-query';
 
 const Profile = () => {
   const { user, isLoggedIn, updateUserProfile, updateProfileCompletionStatus } = useAuth();
@@ -16,6 +17,7 @@ const Profile = () => {
   const [roleData, setRoleData] = useState(null);
   const [isLoadingRoleData, setIsLoadingRoleData] = useState(false);
   const [roleDataError, setRoleDataError] = useState(null);
+  const completionToastShownRef = useRef(false);
 
   // Edit profile states for patient
   const [editMode, setEditMode] = useState(false);
@@ -33,50 +35,54 @@ const Profile = () => {
     }
   }, [isLoggedIn, navigate]);
 
-  // Fetch role-specific data
-  useEffect(() => {
-    if (!user?.roles || user.roles.length === 0) return;
-
-    const fetchRoleData = async () => {
-      setIsLoadingRoleData(true);
-      setRoleDataError(null);
-      
-      try {
-        // Prioritize roles in order: DOCTOR > PATIENT > ADMIN > HEADADMIN
-        if (user.roles.includes('DOCTOR')) {
-          const response = await doctorAPI.getProfile();
-          setRoleData({ type: 'DOCTOR', data: response.data });
-        } else if (user.roles.includes('PATIENT')) {
-          try {
-            const response = await patientAPI.getProfile();
-            setRoleData({ type: 'PATIENT', data: response.data });
-          } catch (patientError) {
-            // If patient profile doesn't exist (404), create empty patient data
-            // This typically happens for OAuth users without initialized patient records
-            if (patientError?.response?.status === 404) {
-              setRoleData({ type: 'PATIENT', data: null }); // null indicates profile needs completion
-              setEditMode(true); // Auto-enable edit mode
-              toast.info('Complete your profile to get started!');
-            } else {
-              throw patientError; // Re-throw if it's a different error
-            }
-          }
-        } else if (user.roles.includes('ADMIN')) {
-          const response = await adminAPI.getProfile();
-          setRoleData({ type: 'ADMIN', data: response.data });
-        } else if (user.roles.includes('HEADADMIN')) {
-          setRoleData({ type: 'HEADADMIN', data: null });
-        }
-      } catch (error) {
-        console.error('Failed to fetch role data:', error);
-        setRoleDataError(error?.response?.data?.message || 'Failed to load profile details');
-      } finally {
-        setIsLoadingRoleData(false);
+  const roleDataQuery = useQuery({
+    queryKey: ['profile-role-data', (user?.roles || []).join('|')],
+    enabled: Boolean(user?.roles?.length),
+    queryFn: async () => {
+      if (user.roles.includes('DOCTOR')) {
+        const response = await doctorAPI.getProfile();
+        return { type: 'DOCTOR', data: response.data };
       }
-    };
+      if (user.roles.includes('PATIENT')) {
+        try {
+          const response = await patientAPI.getProfile();
+          return { type: 'PATIENT', data: response.data };
+        } catch (patientError) {
+          if (patientError?.response?.status === 404) {
+            return { type: 'PATIENT', data: null, needsCompletion: true };
+          }
+          throw patientError;
+        }
+      }
+      if (user.roles.includes('ADMIN')) {
+        const response = await adminAPI.getProfile();
+        return { type: 'ADMIN', data: response.data };
+      }
+      if (user.roles.includes('HEADADMIN')) {
+        return { type: 'HEADADMIN', data: null };
+      }
+      return null;
+    },
+  });
 
-    fetchRoleData();
-  }, [user?.roles]);
+  useEffect(() => {
+    setIsLoadingRoleData(roleDataQuery.isFetching);
+    if (roleDataQuery.error) {
+      console.error('Failed to fetch role data:', roleDataQuery.error);
+      setRoleDataError(roleDataQuery.error?.response?.data?.message || 'Failed to load profile details');
+      return;
+    }
+    setRoleDataError(null);
+    if (!roleDataQuery.data) return;
+    setRoleData(roleDataQuery.data);
+    if (roleDataQuery.data.needsCompletion) {
+      setEditMode(true);
+      if (!completionToastShownRef.current) {
+        toast.info('Complete your profile to get started!');
+        completionToastShownRef.current = true;
+      }
+    }
+  }, [roleDataQuery.isFetching, roleDataQuery.error, roleDataQuery.data]);
 
   // Initialize edit form data when roleData is loaded
   useEffect(() => {
