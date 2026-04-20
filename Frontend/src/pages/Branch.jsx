@@ -1,5 +1,6 @@
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useMemo, useState } from 'react'
 import { Heart, Search } from 'lucide-react'
+import { useQuery } from '@tanstack/react-query'
 import Header from '../components/Header'
 import BranchCard from '../components/BranchCard'
 import API from '../api/api'
@@ -8,29 +9,22 @@ import PageLoader from '../components/PageLoader'
 
 const Branch = () => {
   const [query, setQuery] = useState('')
-  const [branches, setBranches] = useState([])
-  const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
-    const fetchBranches = async () => {
-      try {
-        const response = await API.get('/public/branches')
-        const mapped = (response.data || []).map((branch, index) => ({
-          ...branch,
-          contact: branch.contactNumber,
-          imageUrl: getBranchImage(branch, index),
-          tag: index === 0 ? 'Flagship' : index % 3 === 0 ? '24×7' : index % 2 === 0 ? 'ICU' : 'New',
-        }))
-        setBranches(mapped)
-      } catch (error) {
-        console.error('Failed to fetch branches:', error)
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    fetchBranches()
-  }, [])
+  const {
+    data: branches = [],
+    isLoading: loading,
+  } = useQuery({
+    queryKey: ['public-branches'],
+    queryFn: async () => {
+      const response = await API.get('/public/branches')
+      return (response.data || []).map((branch, index) => ({
+        ...branch,
+        contact: branch.contactNumber,
+        imageUrl: getBranchImage(branch, index),
+        tag: index === 0 ? 'Flagship' : index % 3 === 0 ? '24x7' : index % 2 === 0 ? 'ICU' : 'New',
+      }))
+    },
+  })
 
   const filtered = useMemo(() => {
     const term = query.toLowerCase().trim()
@@ -46,7 +40,7 @@ const Branch = () => {
 
   const stats = useMemo(() => {
     const total = branches.length
-    const openAllDay = branches.filter((b) => b.tag === '24×7').length
+    const openAllDay = branches.filter((b) => b.tag === '24x7').length
     const icuReady = branches.filter((b) => b.tag === 'ICU').length
     return { total, openAllDay, icuReady }
   }, [branches])
@@ -84,7 +78,7 @@ const Branch = () => {
             <div className="mt-1 text-2xl font-semibold" style={{ color: 'var(--foreground)' }}>{stats.total}</div>
           </div>
           <div className="rounded-2xl px-4 py-3" style={{ border: '1px solid var(--border)', background: 'var(--card)' }}>
-            <div className="text-xs uppercase tracking-widest" style={{ color: 'var(--muted-foreground)' }}>24×7 Ready</div>
+            <div className="text-xs uppercase tracking-widest" style={{ color: 'var(--muted-foreground)' }}>24x7 Ready</div>
             <div className="mt-1 text-2xl font-semibold" style={{ color: 'var(--foreground)' }}>{stats.openAllDay}</div>
           </div>
           <div className="rounded-2xl px-4 py-3" style={{ border: '1px solid var(--border)', background: 'var(--card)' }}>
@@ -111,7 +105,3 @@ const Branch = () => {
 }
 
 export default Branch
-
-
-
-
