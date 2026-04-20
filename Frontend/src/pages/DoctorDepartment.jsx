@@ -133,7 +133,7 @@ const DoctorDepartment = () => {
         d.description?.toLowerCase().includes(query.toLowerCase())
     );
 
-    if (loading) return <PageLoader message="Initializing clinical dashboard..." />;
+    if (loading) return <PageLoader message="Initializing clinical dashboard..." fullPage={false} bg="Transparent"/>;
 
     return (
         <div className="dd-root min-h-screen bg-[var(--background)] overflow-hidden relative selection:bg-[var(--primary)] selection:text-white">
