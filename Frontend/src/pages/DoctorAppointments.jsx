@@ -266,7 +266,7 @@ const DoctorAppointments = () => {
           placeholder="🔎 Search by patient name, ID, or clinical reason..."
         />
 
-        {loading && page === 0 && <PageLoader message="Fetching clinic schedule..." />}
+        {loading && page === 0 && <PageLoader message="Fetching clinic schedule..." fullPage={false} bg="Transparent" />}
         {!loading && filtered.length === 0 && (
           <p className="dr-msg">No clinical records found.</p>
         )}
