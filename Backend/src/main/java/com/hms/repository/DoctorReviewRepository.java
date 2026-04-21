@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface DoctorReviewRepository extends JpaRepository<DoctorReview, Long> {
@@ -33,5 +34,5 @@ public interface DoctorReviewRepository extends JpaRepository<DoctorReview, Long
         FROM DoctorReview r
         WHERE r.doctor.id = :doctorId
         """)
-    Object[] aggregateForDoctor(@Param("doctorId") Long doctorId);
+    List<Object[]> aggregateForDoctor(@Param("doctorId") Long doctorId);
 }
