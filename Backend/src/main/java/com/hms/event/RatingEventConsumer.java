@@ -5,6 +5,9 @@ import com.hms.repository.DoctorRatingSummaryRepository;
 import com.hms.repository.DoctorReviewRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
+import java.util.List;
+
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.support.Acknowledgment;
@@ -20,8 +23,8 @@ import org.springframework.transaction.annotation.Transactional;
  *  3. Evict the Redis cache so the next read gets fresh data.
  *  4. Manually ACK the offset — only after all of the above succeed.
  *
- * concurrency = "3" is declared in KafkaConfig's ContainerFactory,
- * giving one consumer thread per partition (3 partitions → max parallelism).
+ * concurrency = "2" is declared in KafkaConfig's ContainerFactory,
+ * giving one consumer thread per partition (2 partitions → max parallelism).
  */
 @Slf4j
 @Component
@@ -43,7 +46,8 @@ public class RatingEventConsumer {
 
         try {
             // 1. Re-aggregate from DB (single-row query — O(n reviews) but fast)
-            Object[] agg = reviewRepository.aggregateForDoctor(doctorId);
+            List<Object[]> results = reviewRepository.aggregateForDoctor(doctorId);
+            Object[] agg = results.isEmpty() ? new Object[]{0L, 0L} : results.get(0);
             long count = agg[0] != null ? ((Number) agg[0]).longValue() : 0L;
             long stars = agg[1] != null ? ((Number) agg[1]).longValue() : 0L;
             double avg = count > 0 ? (double) stars / count : 0.0;
