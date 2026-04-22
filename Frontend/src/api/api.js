@@ -22,6 +22,12 @@ export const forgotPasswordAPI = {
     API.post('/auth/reset-password', { email, newPassword, confirmPassword })
 };
 
+// Signup Magic Link API Endpoints
+export const signupAPI = {
+  requestMagicLink: (email) => API.post('/auth/signup-link', { email }),
+  completeMagicLinkSignup: (payload) => API.post('/auth/signup/complete', payload),
+};
+
 // Doctor API Endpoints
 export const doctorAPI = {
   getProfile: () => API.get('/doctor/profile'),
@@ -33,6 +39,7 @@ export const patientAPI = {
   getProfile: () => API.get('/patients/profile'),
   updateProfile: (patientUpdateRequest) => API.put('/patients/profile', patientUpdateRequest),
   getProfileCompletionStatus: () => API.get('/patients/profile/completion-status'),
+  register: (patientRequest) => API.post('/patients/register', patientRequest),
 };
 
 // Admin API Endpoints
