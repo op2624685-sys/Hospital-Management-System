@@ -2,7 +2,9 @@ import DoctorDepartment from "./pages/DoctorDepartment";
 import DepartmentControl from "./pages/Departmentcontrol";
 import Login from "./pages/AuthPages/Login";
 import Signup from "./pages/AuthPages/Signup";
+import SignupComplete from "./pages/AuthPages/SignupComplete";
 import ForgotPassword from "./pages/AuthPages/ForgotPassword";
+import PatientRegister from "./pages/PatientRegister";
 import { Route, Routes } from "react-router-dom";
 import OAuth2Callback from "./pages/OAuth2Callback";
 import Home from "./pages/Home";
@@ -40,24 +42,24 @@ const App = () => {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/appointment" element={
-          <RoleBlockedRoute blockedRoles={["DOCTOR", "ADMIN", "HEADADMIN"]}>
+          <ProtectedRoute role="PATIENT" redirectTo="/profile">
             <Appointment />
-          </RoleBlockedRoute>
+          </ProtectedRoute>
         } />
         <Route path="/appointment/check" element={
-          <RoleBlockedRoute blockedRoles={["DOCTOR", "ADMIN", "HEADADMIN"]}>
+          <ProtectedRoute role="PATIENT" redirectTo="/profile">
             <CheckAppointments />
-          </RoleBlockedRoute>
+          </ProtectedRoute>
         } />
         <Route path="/appointment/:appointmentId" element={
-          <RoleBlockedRoute blockedRoles={["DOCTOR", "ADMIN", "HEADADMIN"]}>
+          <ProtectedRoute role="PATIENT" redirectTo="/profile">
             <AppointmentDetails />
-          </RoleBlockedRoute>
+          </ProtectedRoute>
         } />
         <Route path="/payment" element={
-          <RoleBlockedRoute blockedRoles={["DOCTOR", "ADMIN", "HEADADMIN"]}>
+          <ProtectedRoute role="PATIENT" redirectTo="/profile">
             <PaymentPage />
-          </RoleBlockedRoute>
+          </ProtectedRoute>
         } />
         <Route path="/doctors" element={<Doctor />} />
         <Route path="/doctors/:doctorId" element={<DoctorDetails />} />
@@ -85,6 +87,12 @@ const App = () => {
 
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
+        <Route path="/signup/complete" element={<SignupComplete />} />
+        <Route path="/patient/register" element={
+          <ProtectedRoute redirectTo="/login">
+            <PatientRegister />
+          </ProtectedRoute>
+        } />
         <Route path="/login/forgotpassword" element={<ForgotPassword />} />
         <Route path="/oauth2/callback" element={<OAuth2Callback />} />
 
