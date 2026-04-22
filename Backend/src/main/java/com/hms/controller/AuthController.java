@@ -4,14 +4,16 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.hms.config.RateLimitProtected;
+import com.hms.dto.Request.MagicLinkSignupCompleteRequestDto;
+import com.hms.dto.Request.MagicLinkSignupRequestDto;
 import com.hms.dto.Request.ForgotPasswordRequestDto;
 import com.hms.dto.Request.LoginRequestDto;
 import com.hms.dto.Request.ResetPasswordRequestDto;
-import com.hms.dto.Request.SignupRequestDto;
 import com.hms.dto.Request.VerifyOtpRequestDto;
+import com.hms.dto.Response.MagicLinkResponseDto;
 import com.hms.dto.Response.LoginResponseDto;
 import com.hms.dto.Response.PasswordResetResponseDto;
-import com.hms.dto.Response.SignupResponseDto;
+import com.hms.dto.Response.SignupCompletionResponseDto;
 import com.hms.security.AuthService;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -30,7 +32,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 @RestController
 @RequestMapping("/auth")
 @RequiredArgsConstructor
-@Tag(name = "Authentication", description = "Authentication and user registration endpoints")
+@Tag(name = "Authentication", description = "Authentication and user onboarding endpoints")
 public class AuthController {
 
     private final AuthService authService;
@@ -47,16 +49,29 @@ public class AuthController {
         return ResponseEntity.status(200).body(authService.login(loginRequestDto));
     }
 
-    @PostMapping("/signup")
+    @PostMapping("/signup-link")
     @RateLimitProtected(limiterName = "authRateLimiter")
-    @Operation(summary = "User Registration", description = "Creates a new user account with email and password")
+    @Operation(summary = "Request signup magic link", description = "Sends a magic link to the email address so the user can complete signup")
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "201", description = "Account created successfully", content = @Content(schema = @Schema(implementation = SignupResponseDto.class))),
-        @ApiResponse(responseCode = "409", description = "User already exists"),
+        @ApiResponse(responseCode = "200", description = "Magic link sent successfully", content = @Content(schema = @Schema(implementation = MagicLinkResponseDto.class))),
+        @ApiResponse(responseCode = "409", description = "Account already exists"),
         @ApiResponse(responseCode = "429", description = "Rate limit exceeded", content = @Content(schema = @Schema(implementation = com.hms.error.RateLimitExceededResponse.class)))
     })
-    public ResponseEntity<SignupResponseDto> signup(@RequestBody @Valid SignupRequestDto signupRequestDto) {
-        return ResponseEntity.status(201).body(authService.signup(signupRequestDto));
+    public ResponseEntity<MagicLinkResponseDto> requestSignupMagicLink(@RequestBody @Valid MagicLinkSignupRequestDto requestDto) {
+        return ResponseEntity.ok(authService.requestSignupMagicLink(requestDto));
+    }
+
+    @PostMapping("/signup/complete")
+    @RateLimitProtected(limiterName = "authRateLimiter")
+    @Operation(summary = "Complete signup with magic link", description = "Validates the magic link token and creates the user account")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Account created successfully", content = @Content(schema = @Schema(implementation = SignupCompletionResponseDto.class))),
+        @ApiResponse(responseCode = "400", description = "Invalid or expired token"),
+        @ApiResponse(responseCode = "409", description = "Username or email already exists"),
+        @ApiResponse(responseCode = "429", description = "Rate limit exceeded", content = @Content(schema = @Schema(implementation = com.hms.error.RateLimitExceededResponse.class)))
+    })
+    public ResponseEntity<SignupCompletionResponseDto> completeSignupWithMagicLink(@RequestBody @Valid MagicLinkSignupCompleteRequestDto requestDto) {
+        return ResponseEntity.ok(authService.completeSignupWithMagicLink(requestDto));
     }
 
     @PostMapping("/forgot-password")
