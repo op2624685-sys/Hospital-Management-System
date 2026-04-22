@@ -2,7 +2,6 @@ package com.hms.security.oauth2;
 
 import java.util.HashSet;
 import java.util.Optional;
-import java.util.Set;
 
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
@@ -13,7 +12,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.hms.entity.OAuthAccount;
 import com.hms.entity.User;
-import com.hms.entity.type.RoleType;
 import com.hms.repository.OAuthAccountRepository;
 import com.hms.repository.UserRepository;
 
@@ -70,7 +68,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
             // Check if user with this email already exists
             Optional<User> userOpt = Optional.empty();
             if (email != null) {
-                userOpt = userRepository.findByEmail(email);
+                userOpt = userRepository.findByEmailIgnoreCase(email);
             }
 
             if (userOpt.isPresent()) {
@@ -83,7 +81,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
                 user = User.builder()
                         .username(username)
                         .email(email)
-                        .roles(new HashSet<>(Set.of(RoleType.PATIENT)))
+                        .roles(new HashSet<>())
                         .build();
                 user = userRepository.save(user);
             }
