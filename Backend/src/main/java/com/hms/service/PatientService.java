@@ -8,6 +8,7 @@ import com.hms.dto.Request.PatientRequest;
 import com.hms.dto.Request.PatientUpdateRequest;
 import com.hms.dto.Response.PatientResponseDto;
 import com.hms.dto.Response.ProfileCompletionStatusDto;
+import com.hms.dto.Response.SignupCompletionResponseDto;
 
 public interface PatientService {
 
@@ -20,6 +21,8 @@ public interface PatientService {
     PatientDto getPatientByNameAndBirthDate(String name, LocalDate birthDate);
 
     PatientDto createNewPatient(PatientRequest patientRequest);
+
+    SignupCompletionResponseDto registerCurrentUserAsPatient(Long userId, PatientRequest patientRequest);
 
     PatientDto updatePatientById(PatientRequest patientRequest);
 
