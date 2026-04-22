@@ -1,9 +1,8 @@
 package com.hms.security;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.time.LocalDateTime;
+import java.util.UUID;
 
-// import org.modelmapper.ModelMapper;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -11,23 +10,25 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.hms.dto.Request.MagicLinkSignupCompleteRequestDto;
+import com.hms.dto.Request.MagicLinkSignupRequestDto;
 import com.hms.dto.Request.ForgotPasswordRequestDto;
 import com.hms.dto.Request.LoginRequestDto;
 import com.hms.dto.Request.ResetPasswordRequestDto;
-import com.hms.dto.Request.SignupRequestDto;
 import com.hms.dto.Request.VerifyOtpRequestDto;
+import com.hms.dto.Response.MagicLinkResponseDto;
 import com.hms.dto.Response.LoginResponseDto;
 import com.hms.dto.Response.PasswordResetResponseDto;
-import com.hms.dto.Response.SignupResponseDto;
+import com.hms.dto.Response.SignupCompletionResponseDto;
 import com.hms.entity.PasswordResetToken;
-import com.hms.entity.Patient;
+import com.hms.entity.SignupMagicLinkToken;
 import com.hms.entity.User;
-import com.hms.entity.type.RoleType;
 import com.hms.error.ConflictException;
 import com.hms.error.NotFoundException;
 import com.hms.error.ValidationException;
-import com.hms.repository.PatientRepository;
+import com.hms.repository.SignupMagicLinkTokenRepository;
 import com.hms.repository.UserRepository;
+import com.hms.service.EmailService;
 import com.hms.service.OtpService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -40,10 +41,10 @@ public class AuthService {
     private final AuthenticationManager authenticationManager;
     private final AuthUtil authUtil;
     private final UserRepository userRepository;
-    // private final ModelMapper modelMapper;
     private final PasswordEncoder passwordEncoder;
-    private final PatientRepository patientRepository;
     private final OtpService otpService;
+    private final SignupMagicLinkTokenRepository signupMagicLinkTokenRepository;
+    private final EmailService emailService;
 
     @Transactional
     public LoginResponseDto login(LoginRequestDto loginRequestDto) {
@@ -58,47 +59,107 @@ public class AuthService {
     }
 
     @Transactional
-    public SignupResponseDto signup(SignupRequestDto signupRequestDto) {
-        User user = userRepository.findByUsername(signupRequestDto.getUsername()).orElse(null);
-        if (user != null) {
-            throw new ConflictException("User already exists");
+    public MagicLinkResponseDto requestSignupMagicLink(MagicLinkSignupRequestDto requestDto) {
+        String email = requestDto.getEmail().trim().toLowerCase();
+
+        signupMagicLinkTokenRepository.findByEmailAndIsUsedFalse(email)
+                .ifPresent(existing -> {
+                    existing.setIsUsed(true);
+                    signupMagicLinkTokenRepository.save(existing);
+                });
+
+        String token = UUID.randomUUID().toString().replace("-", "");
+        SignupMagicLinkToken signupToken = SignupMagicLinkToken.builder()
+                .token(token)
+                .email(email)
+                .createdAt(LocalDateTime.now())
+                .expiresAt(LocalDateTime.now().plusMinutes(15))
+                .isUsed(false)
+                .build();
+
+        signupMagicLinkTokenRepository.save(signupToken);
+
+        String magicLink = buildSignupMagicLink(token);
+        emailService.sendMail(
+                email,
+                "Complete your MediCore HMS signup",
+                """
+                        We received a request to create a MediCore HMS account for this email.
+
+                        Complete your signup by opening this link:
+                        %s
+
+                        This link expires in 15 minutes and can only be used once.
+                        
+                        If you did not request this, you can ignore this email.
+                        """
+                        .formatted(magicLink));
+
+        return MagicLinkResponseDto.builder()
+                .success(true)
+                .message("Magic link sent to your email address")
+                .email(email)
+                .build();
+    }
+
+    @Transactional
+    public SignupCompletionResponseDto completeSignupWithMagicLink(MagicLinkSignupCompleteRequestDto requestDto) {
+        String tokenValue = requestDto.getToken().trim();
+
+        SignupMagicLinkToken signupToken = signupMagicLinkTokenRepository.findByToken(tokenValue)
+                .orElseThrow(() -> new ValidationException("Invalid signup link"));
+
+        String email = signupToken.getEmail().trim().toLowerCase();
+        String username = requestDto.getUsername() == null ? "" : requestDto.getUsername().trim();
+        String rawPassword = requestDto.getPassword() == null ? "" : requestDto.getPassword();
+
+        // If account already exists for this email, treat this as magic-link login.
+        User existingUser = userRepository.findByEmailIgnoreCase(email).orElse(null);
+        if (existingUser != null) {
+            if (signupToken.isExpired()) {
+                throw new ValidationException("Signup link has expired");
+            }
+
+            if (!signupToken.getIsUsed()) {
+                signupToken.setIsUsed(true);
+                signupMagicLinkTokenRepository.save(signupToken);
+            }
+
+            return buildSignupCompletionResponse(existingUser);
         }
-        
 
-        //# This is made with using modelMapper !!!!
-        // user = userRepository.save(User.builder()
-        //         .username(signupRequestDto.getUsername())
-        //         .password(passwordEncoder.encode(signupRequestDto.getPassword()))
-        //         .roles(Set.of(RoleType.PATIENT))
-        //         .build()
-        // );
-        // return modelMapper.map(user, SignupResponseDto.class);
+        if (signupToken.getIsUsed() || signupToken.isExpired()) {
+            throw new ValidationException("Signup link has expired or was already used");
+        }
 
+        if (username.isBlank()) {
+            throw new ValidationException("Username is required for new signup");
+        }
 
-        user = User.builder()
-            .username(signupRequestDto.getUsername())
-            .password(passwordEncoder.encode(signupRequestDto.getPassword()))
-            .email(signupRequestDto.getEmail())
-            .roles(new HashSet<>(Set.of(RoleType.PATIENT)))
-            .build();
+        if (rawPassword.isBlank()) {
+            throw new ValidationException("Password is required for new signup");
+        }
+
+        if (rawPassword.length() < 6) {
+            throw new ValidationException("Password must be at least 6 characters");
+        }
+
+        // In future replace that to the bloom filter search
+        if (userRepository.findByUsernameIgnoreCase(username).isPresent()) {
+            throw new ConflictException("Username already exists");
+        }
+
+        User user = User.builder()
+                .username(username)
+                .password(passwordEncoder.encode(rawPassword))
+                .email(email)
+                .build();
         user = userRepository.save(user);
 
-        Patient patient = Patient.builder()
-            .name(signupRequestDto.getName())
-            .email(signupRequestDto.getEmail())
-            .birthDate(signupRequestDto.getBirthDate())
-            .bloodGroup(signupRequestDto.getBloodGroup())
-            .gender(signupRequestDto.getGender())
-            .profileUpdateCount(0)
-            .user(user)
-            .build();
-        patientRepository.save(patient);
+        signupToken.setIsUsed(true);
+        signupMagicLinkTokenRepository.save(signupToken);
 
-        return SignupResponseDto.builder()
-        .id(user.getId())
-        .username(user.getUsername())
-        .roles(user.getRoles())
-        .build();
+        return buildSignupCompletionResponse(user);
     }
 
     @Transactional
@@ -209,6 +270,22 @@ public class AuthService {
         }
         User user = (User) auth.getPrincipal();
         return new LoginResponseDto(null, user.getId(), user.getRoles());
+    }
+
+    private String buildSignupMagicLink(String token) {
+        String frontendUrl = System.getenv().getOrDefault("FRONTEND_URL", "http://localhost:5173");
+        return frontendUrl + "/signup/complete?token=" + token;
+    }
+
+    private SignupCompletionResponseDto buildSignupCompletionResponse(User user) {
+        String jwt = authUtil.generateAccessToken(user);
+        return SignupCompletionResponseDto.builder()
+                .token(jwt)
+                .userId(user.getId())
+                .username(user.getUsername())
+                .email(user.getEmail())
+                .roles(user.getRoles())
+                .build();
     }
 
 }

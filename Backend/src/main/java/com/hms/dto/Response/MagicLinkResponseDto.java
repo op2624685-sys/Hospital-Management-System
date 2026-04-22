@@ -1,9 +1,5 @@
 package com.hms.dto.Response;
 
-import java.util.Set;
-
-import com.hms.entity.type.RoleType;
-
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -13,10 +9,9 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class SignupResponseDto {
+public class MagicLinkResponseDto {
 
-    private Long id;
-    private String username;
-    private Set<RoleType> roles;
-
+    private boolean success;
+    private String message;
+    private String email;
 }
