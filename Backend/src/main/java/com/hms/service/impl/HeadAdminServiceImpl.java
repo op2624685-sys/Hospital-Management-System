@@ -103,7 +103,7 @@ public class HeadAdminServiceImpl implements HeadAdminService {
     public List<String> suggestUsernames(String query) {
         String q = query == null ? "" : query.trim();
         if (q.isEmpty()) return List.of();
-        return userRepository.findTop10ByUsernameStartingWithIgnoreCase(q)
+        return userRepository.findTop5ByUsernameStartingWithIgnoreCase(q)
                 .stream()
                 .map(user -> user.getUsername())
                 .toList();
