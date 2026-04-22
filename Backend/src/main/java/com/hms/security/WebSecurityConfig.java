@@ -72,7 +72,7 @@ public class WebSecurityConfig {
                 .sessionManagement(
                         sessionConfig -> sessionConfig.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/public/**", "/auth/**").permitAll()
+                        .requestMatchers("/public/**", "/auth/**", "/cloudinary/upload/**").permitAll()
                         .requestMatchers("/payments/stripe/webhook").permitAll()
                         .requestMatchers("/actuator/health/**").permitAll()
                         .requestMatchers("/actuator/info/**").permitAll()
@@ -82,6 +82,7 @@ public class WebSecurityConfig {
                         .requestMatchers("/head-admin/**").hasRole(HEADADMIN.name())
                         .requestMatchers("/admin/**").hasAnyRole(ADMIN.name(), HEADADMIN.name())
                         .requestMatchers("/doctor/**").hasAnyRole(DOCTOR.name(), ADMIN.name(), HEADADMIN.name())
+                        .requestMatchers(HttpMethod.POST, "/patients/register").authenticated()
                         .requestMatchers("/patients/**", "/payments/**").hasRole(PATIENT.name())
                         .requestMatchers(HttpMethod.GET,  "/reviews/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/reviews/**").hasRole(PATIENT.name())
