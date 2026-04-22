@@ -215,6 +215,7 @@ const Profile = () => {
 
   const initials = getInitials(user?.username);
   const avatarColor = getAvatarColor(user?.username);
+  const hasNoRoles = !user?.roles || user.roles.length === 0;
 
   // Helper function to format consultation fee
   const formatFee = (fee) => {
@@ -374,6 +375,32 @@ const Profile = () => {
             <div className='min-w-0'>
               <p className='font-bold text-sm sm:text-lg'>Error Loading Profile Details</p>
               <p className='text-xs sm:text-sm mt-1 opacity-90'>{roleDataError}</p>
+            </div>
+          </div>
+        )}
+
+        {hasNoRoles && (
+          <div
+            className='mb-6 sm:mb-8 rounded-lg sm:rounded-2xl p-4 sm:p-6 shadow-md'
+            style={{ background: 'var(--card)', border: '1px solid var(--border)' }}>
+            <div className='flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4'>
+              <div>
+                <h2 className='text-lg sm:text-xl md:text-2xl font-bold' style={{ color: 'var(--foreground)' }}>
+                  Verified account
+                </h2>
+                <p className='text-sm sm:text-base mt-1' style={{ color: 'var(--muted-foreground)' }}>
+                  Your login is active. Register as a patient only if you want appointment and medical-record features.
+                </p>
+              </div>
+              <button
+                onClick={() => navigate('/patient/register')}
+                className='px-4 sm:px-5 py-2.5 rounded-lg font-semibold transition-all duration-300'
+                style={{
+                  background: 'var(--primary)',
+                  color: 'white',
+                }}>
+                Register as Patient
+              </button>
             </div>
           </div>
         )}
