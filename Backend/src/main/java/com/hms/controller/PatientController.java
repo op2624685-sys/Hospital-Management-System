@@ -8,9 +8,12 @@ import com.hms.dto.InsuranceDto;
 import com.hms.dto.PatientDto;
 import com.hms.dto.Request.CreateAppointmentRequestDto;
 import com.hms.dto.Request.CreateInsuranceRequestDto;
+import com.hms.dto.Request.PatientRequest;
 import com.hms.dto.Request.PatientUpdateRequest;
 import com.hms.dto.Response.AppointmentResponseDto;
 import com.hms.dto.Response.ProfileCompletionStatusDto;
+import com.hms.dto.Response.SignupCompletionResponseDto;
+import com.hms.config.RateLimitProtected;
 import com.hms.entity.User;
 import com.hms.service.AppointmentService;
 import com.hms.service.InsuranceService;
@@ -25,6 +28,9 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.PutMapping;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import java.util.List;
 
 @RestController
@@ -64,6 +70,20 @@ public class PatientController {
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(insuranceService.createInsuranceForPatient(createInsuranceRequestDto, user.getId()));
+    }
+
+    @PostMapping("/register")
+    @RateLimitProtected(limiterName = "authRateLimiter")
+    @Operation(summary = "Register patient profile", description = "Creates the patient record for the authenticated user and assigns the PATIENT role")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "201", description = "Patient profile created successfully"),
+        @ApiResponse(responseCode = "409", description = "Patient profile or email already exists"),
+        @ApiResponse(responseCode = "429", description = "Rate limit exceeded")
+    })
+    public ResponseEntity<SignupCompletionResponseDto> registerPatient(@Valid @RequestBody PatientRequest patientRequest) {
+        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(patientService.registerCurrentUserAsPatient(user.getId(), patientRequest));
     }
     
     @GetMapping("/profile")
