@@ -3,23 +3,30 @@ package com.hms.service.impl;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import com.hms.dto.PatientDto;
 import com.hms.dto.Request.PatientRequest;
 import com.hms.dto.Request.PatientUpdateRequest;
 import com.hms.dto.Response.PatientResponseDto;
 import com.hms.dto.Response.ProfileCompletionStatusDto;
+import com.hms.dto.Response.SignupCompletionResponseDto;
 import com.hms.entity.Patient;
 import com.hms.entity.User;
+import com.hms.entity.type.RoleType;
 import com.hms.error.NotFoundException;
+import com.hms.error.ConflictException;
 import com.hms.error.ValidationException;
 import com.hms.repository.PatientRepository;
 import com.hms.repository.UserRepository;
 import com.hms.service.PatientService;
+import com.hms.security.AuthUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
@@ -32,6 +39,7 @@ public class PatientServiceImpl implements PatientService {
     private final PatientRepository patientRepository;
     private final UserRepository userRepository;
     private final ModelMapper modelMapper;
+    private final AuthUtil authUtil;
 
     @Override
     @Cacheable(value = "patientListAll", key = "'all'")
@@ -81,6 +89,50 @@ public class PatientServiceImpl implements PatientService {
         Patient patient = modelMapper.map(patientRequest, Patient.class);
         Patient savedPatient = patientRepository.save(patient);
         return modelMapper.map(savedPatient, PatientDto.class);
+    }
+
+    @Override
+    @Transactional
+    public SignupCompletionResponseDto registerCurrentUserAsPatient(Long userId, PatientRequest patientRequest) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException("User not found with id: " + userId));
+
+        if (patientRepository.existsById(userId)) {
+            throw new ConflictException("Patient profile already exists");
+        }
+
+        String email = patientRequest.getEmail().trim().toLowerCase();
+        userRepository.findByEmailIgnoreCase(email)
+                .filter(existing -> !existing.getId().equals(userId))
+                .ifPresent(existing -> {
+                    throw new ConflictException("Email already exists");
+                });
+
+        user.setEmail(email);
+        Set<RoleType> updatedRoles = new HashSet<>(user.getRoles());
+        updatedRoles.add(RoleType.PATIENT);
+        user.setRoles(updatedRoles);
+        user = userRepository.save(user);
+
+        Patient patient = Patient.builder()
+                .name(patientRequest.getName())
+                .birthDate(patientRequest.getBirthDate())
+                .gender(patientRequest.getGender())
+                .bloodGroup(patientRequest.getBloodGroup())
+                .email(email)
+                .user(user)
+                .profileUpdateCount(0)
+                .build();
+        patientRepository.save(patient);
+
+        String token = authUtil.generateAccessToken(user);
+        return SignupCompletionResponseDto.builder()
+                .token(token)
+                .userId(user.getId())
+                .username(user.getUsername())
+                .email(user.getEmail())
+                .roles(user.getRoles())
+                .build();
     }
 
     @Override
@@ -136,7 +188,6 @@ public class PatientServiceImpl implements PatientService {
                             .orElseThrow(() -> new NotFoundException("User not found with id: " + patientId));
                     
                     Patient newPatient = Patient.builder()
-                            .id(patientId)
                             .user(user)
                             .name(user.getUsername())
                             .email(user.getEmail())
