@@ -15,6 +15,7 @@ import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
 import org.modelmapper.ModelMapper;
+import com.hms.security.AuthUtil;
 
 import com.hms.dto.PatientDto;
 import com.hms.dto.Request.PatientUpdateRequest;
@@ -31,7 +32,8 @@ class PatientServiceImplTest {
     private final PatientRepository patientRepository = org.mockito.Mockito.mock(PatientRepository.class);
     private final UserRepository userRepository = org.mockito.Mockito.mock(UserRepository.class);
     private final ModelMapper modelMapper = org.mockito.Mockito.mock(ModelMapper.class);
-    private final PatientServiceImpl patientService = new PatientServiceImpl(patientRepository, userRepository, modelMapper);
+    private final AuthUtil authUtil = org.mockito.Mockito.mock(AuthUtil.class);
+    private final PatientServiceImpl patientService = new PatientServiceImpl(patientRepository, userRepository, modelMapper, authUtil);
 
     @Test
     void updatePatientProfileWithNullProfileUpdateCountSetsCountToOne() {
