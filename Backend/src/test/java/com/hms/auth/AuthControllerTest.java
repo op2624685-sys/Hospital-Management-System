@@ -7,7 +7,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import java.time.LocalDate;
 import java.util.Set;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -23,16 +22,16 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.hms.controller.AuthController;
+import com.hms.dto.Request.MagicLinkSignupCompleteRequestDto;
+import com.hms.dto.Request.MagicLinkSignupRequestDto;
 import com.hms.dto.Request.ForgotPasswordRequestDto;
 import com.hms.dto.Request.LoginRequestDto;
 import com.hms.dto.Request.ResetPasswordRequestDto;
-import com.hms.dto.Request.SignupRequestDto;
 import com.hms.dto.Request.VerifyOtpRequestDto;
+import com.hms.dto.Response.MagicLinkResponseDto;
 import com.hms.dto.Response.LoginResponseDto;
 import com.hms.dto.Response.PasswordResetResponseDto;
-import com.hms.dto.Response.SignupResponseDto;
-import com.hms.entity.type.BloodGroupType;
-import com.hms.entity.type.GenderType;
+import com.hms.dto.Response.SignupCompletionResponseDto;
 import com.hms.entity.type.RoleType;
 import com.hms.security.AuthService;
 
@@ -72,26 +71,47 @@ public class AuthControllerTest {
     }
 
     @Test
-    void signup_ShouldReturnCreated() throws Exception {
-        SignupRequestDto request = new SignupRequestDto();
-        request.setUsername("testuser");
-        request.setPassword("password123");
-        request.setName("Test User");
-        request.setEmail("test@example.com");
-        request.setBirthDate(LocalDate.of(1990, 1, 1));
-        request.setGender(GenderType.MALE);
-        request.setBloodGroup(BloodGroupType.A_POSITIVE);
+    void requestSignupMagicLink_ShouldReturnOk() throws Exception {
+        MagicLinkSignupRequestDto request = new MagicLinkSignupRequestDto("test@example.com");
 
-        SignupResponseDto response = new SignupResponseDto(1L, "testuser", Set.of(RoleType.PATIENT));
+        MagicLinkResponseDto response = MagicLinkResponseDto.builder()
+                .success(true)
+                .message("Magic link sent to your email address")
+                .email("test@example.com")
+                .build();
 
-        when(authService.signup(any(SignupRequestDto.class))).thenReturn(response);
+        when(authService.requestSignupMagicLink(any(MagicLinkSignupRequestDto.class))).thenReturn(response);
 
-        mockMvc.perform(post("/auth/signup")
+        mockMvc.perform(post("/auth/signup-link")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.username").value("testuser"))
-                .andExpect(jsonPath("$.id").value(1));
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.email").value("test@example.com"));
+    }
+
+    @Test
+    void completeSignupWithMagicLink_ShouldReturnOk() throws Exception {
+        MagicLinkSignupCompleteRequestDto request = new MagicLinkSignupCompleteRequestDto();
+        request.setToken("magic-token");
+        request.setUsername("testuser");
+        request.setPassword("password123");
+
+        SignupCompletionResponseDto response = SignupCompletionResponseDto.builder()
+                .token("token")
+                .userId(1L)
+                .username("testuser")
+                .email("test@example.com")
+                .build();
+
+        when(authService.completeSignupWithMagicLink(any(MagicLinkSignupCompleteRequestDto.class))).thenReturn(response);
+
+        mockMvc.perform(post("/auth/signup/complete")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.userId").value(1))
+                .andExpect(jsonPath("$.token").value("token"));
     }
 
     @Test
