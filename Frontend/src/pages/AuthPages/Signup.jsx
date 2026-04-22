@@ -1,30 +1,17 @@
-﻿import React, { useLayoutEffect, useRef, useState } from 'react';
-import API from '../../api/api';
-import { Link, useNavigate } from 'react-router-dom';
-import { CalendarDays, Droplets, Eye, EyeOff, Mail, UserRound } from 'lucide-react';
+import React, { useLayoutEffect, useRef, useState } from 'react';
+import { signupAPI } from '../../api/api';
+import { Link } from 'react-router-dom';
+import { Mail, Sparkles, ShieldCheck, Clock3, ArrowRight } from 'lucide-react';
 import { gsap } from 'gsap';
 import 'react-toastify/dist/ReactToastify.css';
 import { ToastContainer, toast, Zoom } from 'react-toastify';
-import { useAuth } from '../../context/AuthContext';
 
 const Signup = () => {
-  const { login } = useAuth();
-  const navigate = useNavigate();
   const shellRef = useRef(null);
-
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    birthDate: '',
-    gender: '',
-    bloodGroup: '',
-    username: '',
-    password: '',
-    agreeToTerms: false,
-  });
-  const [showPassword, setShowPassword] = useState(false);
+  const [email, setEmail] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
+  const [sentTo, setSentTo] = useState('');
 
   useLayoutEffect(() => {
     const ctx = gsap.context(() => {
@@ -36,61 +23,18 @@ const Signup = () => {
     return () => ctx.revert();
   }, []);
 
-  const handleInputChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: type === 'checkbox' ? checked : value,
-    }));
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
-
-    if (formData.password.length < 6) {
-      setError('Password must be at least 6 characters.');
-      return;
-    }
-
     setIsSubmitting(true);
+
     try {
-      await API.post('/auth/signup', formData);
-
-      // Auto-login with the same credentials
-      const loginResponse = await API.post('/auth/login', {
-        username: formData.username,
-        password: formData.password,
-      });
-
-      if (loginResponse.data.token) {
-        // Store auth data exactly like the Login page does
-        localStorage.setItem('token', loginResponse.data.token);
-        localStorage.setItem('userId', loginResponse.data.userId);
-        localStorage.setItem('roles', JSON.stringify(loginResponse.data.roles));
-
-        // Update global auth context
-        login(loginResponse.data);
-
-        toast.success('Account created successfully!');
-
-        // Redirect based on role (new users will typically be PATIENT)
-        const userRoles = loginResponse.data.roles || [];
-
-        if (userRoles.includes('HEADADMIN')) {
-          navigate('/head-admin');
-        } else if (userRoles.includes('ADMIN')) {
-          navigate('/admin');
-        } else if (userRoles.includes('DOCTOR')) {
-          navigate('/doctor/booked-details');
-        } else if (userRoles.includes('PATIENT')) {
-          navigate('/my-appointments');
-        } else {
-          navigate('/');
-        }
-      }
+      const response = await signupAPI.requestMagicLink(email);
+      setSentTo(response.data.email || email);
+      toast.success(response.data.message || 'Magic link sent');
+      setEmail('');
     } catch (err) {
-      setError(err?.response?.data?.message || 'Signup failed. Please verify the details and retry.');
+      setError(err?.response?.data?.message || 'Could not send magic link. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
@@ -104,83 +48,58 @@ const Signup = () => {
 
       <section className="auth-layout auth-layout-signup">
         <aside className="auth-art">
-          <span className="auth-chip auth-fade">New Patient Enrollment</span>
-          <h1 className="auth-fade">Create Your HMS Account</h1>
-          <p className="auth-fade">Register once to book appointments, access records, and manage your healthcare journey online.</p>
+          <span className="auth-chip auth-fade">Magic Link Signup</span>
+          <h1 className="auth-fade">Start with your email, finish with one secure link</h1>
+          <p className="auth-fade">
+            We will send a short-lived link to your inbox. Open it to complete your HMS account setup.
+          </p>
           <ul>
-            <li className="auth-fade">Book appointments faster</li>
-            <li className="auth-fade">Track prescriptions and reports</li>
-            <li className="auth-fade">Secure patient profile management</li>
+            <li className="auth-fade">Email-first onboarding</li>
+            <li className="auth-fade">Single-use signup link</li>
+            <li className="auth-fade">No password form on this screen</li>
           </ul>
         </aside>
 
         <div className="auth-card auth-card-wide">
-          <h2 className="auth-fade">Sign Up</h2>
-          <p className="auth-sub auth-fade">Fill your profile details to continue.</p>
+          <h2 className="auth-fade">Request Magic Link</h2>
+          <p className="auth-sub auth-fade">Enter the email address you want to use for your HMS account.</p>
 
-          <form onSubmit={handleSubmit} className="auth-form auth-form-grid">
-            <label className="auth-field auth-fade">
-              <UserRound size={16} />
-              <input type="text" placeholder="Full name" name="name" value={formData.name} onChange={handleInputChange} required />
-            </label>
-
-            <label className="auth-field auth-fade">
-              <Mail size={16} />
-              <input type="email" placeholder="Email" name="email" value={formData.email} onChange={handleInputChange} required />
-            </label>
-
-            <label className="auth-field auth-fade">
-              <CalendarDays size={16} />
-              <input type="date" name="birthDate" value={formData.birthDate} onChange={handleInputChange} max={new Date().toISOString().split('T')[0]} required />
-            </label>
-
-            <label className="auth-field auth-fade">
-              <span className="auth-field-prefix">G</span>
-              <select name="gender" value={formData.gender} onChange={handleInputChange} required>
-                <option value="">Gender</option>
-                <option value="MALE">Male</option>
-                <option value="FEMALE">Female</option>
-                <option value="OTHER">Other</option>
-              </select>
-            </label>
-
-            <label className="auth-field auth-fade">
-              <Droplets size={16} />
-              <select name="bloodGroup" value={formData.bloodGroup} onChange={handleInputChange} required>
-                <option value="">Blood Group</option>
-                <option value="A_POSITIVE">A+</option>
-                <option value="A_NEGATIVE">A-</option>
-                <option value="B_POSITIVE">B+</option>
-                <option value="B_NEGATIVE">B-</option>
-                <option value="O_POSITIVE">O+</option>
-                <option value="O_NEGATIVE">O-</option>
-                <option value="AB_POSITIVE">AB+</option>
-                <option value="AB_NEGATIVE">AB-</option>
-              </select>
-            </label>
-
-            <label className="auth-field auth-fade">
-              <UserRound size={16} />
-              <input type="text" placeholder="Username" name="username" value={formData.username} onChange={handleInputChange} required />
-            </label>
-
+          <form onSubmit={handleSubmit} className="auth-form">
             <label className="auth-field auth-fade auth-field-full">
-              <span className="auth-field-prefix">*</span>
-              <input type={showPassword ? 'text' : 'password'} placeholder="Password" name="password" value={formData.password} onChange={handleInputChange} required />
-              <button type="button" className="auth-icon-btn" onClick={() => setShowPassword((v) => !v)}>
-                {showPassword ? <EyeOff size={15} /> : <Eye size={15} />}
-              </button>
+              <Mail size={16} />
+              <input
+                type="email"
+                placeholder="Email address"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
             </label>
 
-            <label className="auth-check auth-field-full auth-fade">
-              <input type="checkbox" name="agreeToTerms" checked={formData.agreeToTerms} onChange={handleInputChange} required />
-              I agree to the terms and privacy policy.
-            </label>
+            <div className="auth-fade" style={{ display: 'grid', gap: '0.85rem', marginBottom: '0.25rem' }}>
+              <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'flex-start' }}>
+                <ShieldCheck size={16} style={{ marginTop: '2px', color: 'var(--primary)' }} />
+                <p className="auth-sub" style={{ margin: 0 }}>
+                  The link expires after 15 minutes and can only be used once.
+                </p>
+              </div>
+              <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'flex-start' }}>
+                <Clock3 size={16} style={{ marginTop: '2px', color: 'var(--primary)' }} />
+                <p className="auth-sub" style={{ margin: 0 }}>
+                  After verification, you will complete your profile and set your login password.
+                </p>
+              </div>
+            </div>
 
             {error && <p className="auth-error auth-field-full">{error}</p>}
+            {sentTo && (
+              <p className="auth-success auth-field-full">
+                Magic link sent to <strong>{sentTo}</strong>. Check your inbox to continue.
+              </p>
+            )}
 
-            <button type="submit" className="auth-btn auth-field-full auth-fade" disabled={!formData.agreeToTerms || isSubmitting}>
-              {isSubmitting ? 'Creating account...' : 'Create Account'}
+            <button type="submit" className="auth-btn auth-field-full auth-fade" disabled={isSubmitting}>
+              {isSubmitting ? 'Sending link...' : 'Send Magic Link'}
             </button>
           </form>
 
