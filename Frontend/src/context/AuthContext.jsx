@@ -23,7 +23,7 @@ export const AuthProvider = ({ children }) => {
   // Fetch profile completion status on login
   useEffect(() => {
     const fetchProfileCompletionStatus = async () => {
-      if (isLoggedIn && user?.id) {
+      if (isLoggedIn && user?.id && user?.roles?.includes("PATIENT")) {
         try {
           const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/patients/profile/completion-status`, {
             headers: {
@@ -41,7 +41,7 @@ export const AuthProvider = ({ children }) => {
     };
 
     fetchProfileCompletionStatus();
-  }, [isLoggedIn, user?.id]);
+  }, [isLoggedIn, user?.id, user?.roles?.join("|")]);
 
   const login = (data) => {
     setIsLoggedIn(true);
