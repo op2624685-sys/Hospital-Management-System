@@ -36,8 +36,8 @@ const Profile = () => {
   }, [isLoggedIn, navigate]);
 
   const roleDataQuery = useQuery({
-    queryKey: ['profile-role-data', (user?.roles || []).join('|')],
-    enabled: Boolean(user?.roles?.length),
+    queryKey: ['profile-role-data', user?.id, (user?.roles || []).join('|')],
+    enabled: Boolean(user?.id && user?.roles?.length),
     queryFn: async () => {
       if (user.roles.includes('DOCTOR')) {
         const response = await doctorAPI.getProfile();
@@ -64,6 +64,14 @@ const Profile = () => {
       return null;
     },
   });
+
+  useEffect(() => {
+    setRoleData(null);
+    setRoleDataError(null);
+    setEditMode(false);
+    setProfilePhoto(null);
+    setPreviewUrl(user?.profilePhoto || null);
+  }, [user?.id, user?.profilePhoto]);
 
   useEffect(() => {
     setIsLoadingRoleData(roleDataQuery.isFetching);

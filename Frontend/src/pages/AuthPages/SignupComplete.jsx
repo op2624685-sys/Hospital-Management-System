@@ -66,6 +66,7 @@ const SignupComplete = () => {
             userId: response.data.userId,
             username: response.data.username || '',
             email: response.data.email || '',
+            profilePhoto: response.data.profilePhoto || null,
             roles: response.data.roles || [],
           });
 
@@ -124,6 +125,7 @@ const SignupComplete = () => {
           userId: response.data.userId,
           username: response.data.username || formData.username,
           email: response.data.email || '',
+          profilePhoto: response.data.profilePhoto || null,
           roles: response.data.roles || [],
         });
 

@@ -57,6 +57,7 @@ const PatientRegister = () => {
           userId: response.data.userId,
           username: response.data.username || user?.username || '',
           email: response.data.email || formData.email || '',
+          profilePhoto: response.data.profilePhoto || null,
           roles: response.data.roles || [],
         });
         updateProfileCompletionStatus(true);
