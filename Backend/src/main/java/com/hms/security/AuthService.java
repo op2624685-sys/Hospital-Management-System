@@ -55,7 +55,13 @@ public class AuthService {
         User user = (User) authentication.getPrincipal();
         String token = authUtil.generateAccessToken(user);
 
-        return new LoginResponseDto(token, user.getId(), user.getRoles());
+        return new LoginResponseDto(
+                token,
+                user.getId(),
+                user.getUsername(),
+                user.getEmail(),
+                user.getProfilePhoto(),
+                user.getRoles());
     }
 
     @Transactional
@@ -269,7 +275,13 @@ public class AuthService {
             throw new org.springframework.security.authentication.BadCredentialsException("Not authenticated");
         }
         User user = (User) auth.getPrincipal();
-        return new LoginResponseDto(null, user.getId(), user.getRoles());
+        return new LoginResponseDto(
+                null,
+                user.getId(),
+                user.getUsername(),
+                user.getEmail(),
+                user.getProfilePhoto(),
+                user.getRoles());
     }
 
     private String buildSignupMagicLink(String token) {
@@ -284,6 +296,7 @@ public class AuthService {
                 .userId(user.getId())
                 .username(user.getUsername())
                 .email(user.getEmail())
+                .profilePhoto(user.getProfilePhoto())
                 .roles(user.getRoles())
                 .build();
     }
