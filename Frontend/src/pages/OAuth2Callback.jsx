@@ -25,12 +25,15 @@ const OAuth2Callback = () => {
                     const response = await API.get('/auth/me');
                     const userData = response.data;
                     
-                    localStorage.setItem('userId', userData.id);
-                    localStorage.setItem('roles', JSON.stringify(userData.roles));
+                    localStorage.setItem('userId', userData.userId);
+                    localStorage.setItem('roles', JSON.stringify(userData.roles || []));
                     
                     login({
-                        userId: userData.id,
-                        roles: userData.roles
+                        userId: userData.userId,
+                        username: userData.username || '',
+                        email: userData.email || '',
+                        profilePhoto: userData.profilePhoto || null,
+                        roles: userData.roles || [],
                     });
 
                     toast.success('Login successful via OAuth');
