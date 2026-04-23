@@ -58,7 +58,7 @@ public class AuthControllerTest {
     @Test
     void login_ShouldReturnOk() throws Exception {
         LoginRequestDto request = new LoginRequestDto("testuser", "password");
-        LoginResponseDto response = new LoginResponseDto("token", 1L, Set.of(RoleType.PATIENT));
+        LoginResponseDto response = new LoginResponseDto("token", 1L, "testuser", "test@example.com", null, Set.of(RoleType.PATIENT));
 
         when(authService.login(any(LoginRequestDto.class))).thenReturn(response);
 
@@ -203,7 +203,7 @@ public class AuthControllerTest {
 
     @Test
     void getCurrentUser_ShouldReturnOk() throws Exception {
-        LoginResponseDto response = new LoginResponseDto("token", 1L, Set.of(RoleType.PATIENT));
+        LoginResponseDto response = new LoginResponseDto(null, 1L, "testuser", "test@example.com", null, Set.of(RoleType.PATIENT));
 
         when(authService.getCurrentUser()).thenReturn(response);
 
