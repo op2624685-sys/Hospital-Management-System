@@ -16,6 +16,7 @@ import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.modelmapper.ModelMapper;
 import com.hms.security.AuthUtil;
+import jakarta.persistence.EntityManager;
 
 import com.hms.dto.PatientDto;
 import com.hms.dto.Request.PatientUpdateRequest;
@@ -33,7 +34,8 @@ class PatientServiceImplTest {
     private final UserRepository userRepository = org.mockito.Mockito.mock(UserRepository.class);
     private final ModelMapper modelMapper = org.mockito.Mockito.mock(ModelMapper.class);
     private final AuthUtil authUtil = org.mockito.Mockito.mock(AuthUtil.class);
-    private final PatientServiceImpl patientService = new PatientServiceImpl(patientRepository, userRepository, modelMapper, authUtil);
+    private final EntityManager entityManager = org.mockito.Mockito.mock(EntityManager.class);
+    private final PatientServiceImpl patientService = new PatientServiceImpl(patientRepository, userRepository, modelMapper, authUtil, entityManager);
 
     @Test
     void updatePatientProfileWithNullProfileUpdateCountSetsCountToOne() {
@@ -55,6 +57,7 @@ class PatientServiceImplTest {
                 GenderType.MALE,
                 BloodGroupType.B_POSITIVE);
 
+        when(patientRepository.existsById(patientId)).thenReturn(true);
         when(patientRepository.findById(patientId)).thenReturn(Optional.of(existingPatient));
         when(patientRepository.save(any(Patient.class))).thenAnswer(invocation -> invocation.getArgument(0));
         when(modelMapper.map(any(Patient.class), eq(PatientDto.class))).thenReturn(new PatientDto());
@@ -86,6 +89,7 @@ class PatientServiceImplTest {
                 GenderType.FEMALE,
                 BloodGroupType.A_POSITIVE);
 
+        when(patientRepository.existsById(patientId)).thenReturn(true);
         when(patientRepository.findById(patientId)).thenReturn(Optional.of(existingPatient));
 
         assertThrows(ValidationException.class, () -> patientService.updatePatientProfileWithEditLimit(patientId, request));
