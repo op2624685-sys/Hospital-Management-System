@@ -8,7 +8,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import { useQuery } from '@tanstack/react-query';
 
 const AppointmentBooking = () => {
-  const { user, isLoggedIn, profileComplete } = useAuth();
+  const { user, isLoggedIn, profileComplete, hasRole } = useAuth();
   const navigate = useNavigate();
   const { state } = useLocation(); // doctor pre-fill from DoctorCard
 
@@ -176,9 +176,14 @@ const AppointmentBooking = () => {
       setTimeout(() => navigate('/login'), 900);
       return;
     }
+    if (!hasRole('PATIENT')) {
+      toast.info('Please register as a patient before booking an appointment.');
+      setTimeout(() => navigate('/patient/register'), 900);
+      return;
+    }
     if (!profileComplete) {
       toast.error('Please complete your patient profile before booking an appointment.');
-      setTimeout(() => navigate('/profile'), 900);
+      setTimeout(() => navigate('/patient/register'), 900);
       return;
     }
     if (!branchId) { toast.warn('Please select a branch from the suggestions!'); return; }
