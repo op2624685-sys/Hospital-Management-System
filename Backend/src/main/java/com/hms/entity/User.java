@@ -57,6 +57,9 @@ public class User implements UserDetails, OAuth2User {
     @Column(unique = true)
     private String email;
 
+    @Column(length = 2000)
+    private String profilePhoto;
+
     @ElementCollection(fetch = FetchType.EAGER)
     @Enumerated(EnumType.STRING)
     @Builder.Default
