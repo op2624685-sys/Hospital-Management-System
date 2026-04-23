@@ -13,5 +13,8 @@ public class LoginResponseDto {
 
     private String token;
     private Long userId;
+    private String username;
+    private String email;
+    private String profilePhoto;
     private Set<RoleType> roles;
 }
