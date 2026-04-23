@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.cloudinary.Cloudinary;
+import com.hms.error.ValidationException;
 import com.hms.service.CloudinaryService;
 
 import lombok.RequiredArgsConstructor;
@@ -23,7 +24,7 @@ public class CloudinaryImageServiceImpl implements CloudinaryService {
             Map data = this.cloudinary.uploader().upload(file.getBytes(), Map.of());
             return data;
         } catch (IOException e) {
-            throw new RuntimeException("Image uploading failed !!");
+            throw new ValidationException("Image upload failed");
         }
     }
 
