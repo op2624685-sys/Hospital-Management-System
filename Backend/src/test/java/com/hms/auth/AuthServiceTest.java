@@ -44,6 +44,8 @@ public class AuthServiceTest {
         user.setId(1L);
         user.setUsername("Om");
         user.setPassword("password");
+        user.setEmail("om@example.com");
+        user.setProfilePhoto("https://cdn.example.com/om.jpg");
         user.setRoles(Set.of(RoleType.PATIENT));
 
         Authentication authentication = mock(Authentication.class);
@@ -63,6 +65,9 @@ public class AuthServiceTest {
         assertNotNull(responseDto);
         assertEquals("mocked-jwt-token", responseDto.getToken());
         assertEquals(1L, responseDto.getUserId());
+        assertEquals("Om", responseDto.getUsername());
+        assertEquals("om@example.com", responseDto.getEmail());
+        assertEquals("https://cdn.example.com/om.jpg", responseDto.getProfilePhoto());
         assertEquals(Set.of(RoleType.PATIENT), responseDto.getRoles());
 
         verify(authenticationManager)
