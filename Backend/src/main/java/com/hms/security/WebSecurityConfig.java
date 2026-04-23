@@ -82,6 +82,7 @@ public class WebSecurityConfig {
                         .requestMatchers("/head-admin/**").hasRole(HEADADMIN.name())
                         .requestMatchers("/admin/**").hasAnyRole(ADMIN.name(), HEADADMIN.name())
                         .requestMatchers("/doctor/**").hasAnyRole(DOCTOR.name(), ADMIN.name(), HEADADMIN.name())
+                        .requestMatchers("/user/**").authenticated()
                         .requestMatchers(HttpMethod.POST, "/patients/register").authenticated()
                         .requestMatchers("/patients/**", "/payments/**").hasRole(PATIENT.name())
                         .requestMatchers(HttpMethod.GET,  "/reviews/**").permitAll()
