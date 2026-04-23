@@ -72,7 +72,7 @@ public class WebSecurityConfig {
                 .sessionManagement(
                         sessionConfig -> sessionConfig.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/public/**", "/auth/**", "/cloudinary/upload/**").permitAll()
+                        .requestMatchers("/public/**", "/auth/**").permitAll()
                         .requestMatchers("/payments/stripe/webhook").permitAll()
                         .requestMatchers("/actuator/health/**").permitAll()
                         .requestMatchers("/actuator/info/**").permitAll()
