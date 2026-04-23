@@ -166,6 +166,12 @@
         	<artifactId>cloudinary-http5</artifactId>
         	<version>2.0.0</version>
     	</dependency>
+		<!-- Imageio for validate the image  -->
+		<dependency>
+			<groupId>com.twelvemonkeys.imageio</groupId>
+			<artifactId>imageio-webp</artifactId>
+			<version>3.12.0</version>
+		</dependency>
 		<dependency>
   			<groupId>org.modelmapper</groupId>
   			<artifactId>modelmapper</artifactId>
