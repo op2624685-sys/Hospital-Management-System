@@ -52,6 +52,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         }
 
         String email = oAuth2User.getAttribute("email");
+        String providerPhotoUrl = extractProviderPhotoUrl(provider, oAuth2User);
         if (email == null) {
             log.warn("Email not found in oauth response from {}", provider);
             // Some providers/configurations might not return email.
@@ -63,6 +64,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         User user;
         if (oAuthAccountOpt.isPresent()) {
             user = oAuthAccountOpt.get().getUser();
+            maybeApplyProviderPhoto(user, providerPhotoUrl);
             log.info("Found existing OAuth account for user {}", user.getUsername());
         } else {
             // Check if user with this email already exists
@@ -81,6 +83,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
                 user = User.builder()
                         .username(username)
                         .email(email)
+                        .profilePhoto(providerPhotoUrl)
                         .roles(new HashSet<>())
                         .build();
                 user = userRepository.save(user);
@@ -98,5 +101,27 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         // Set attributes on user so they are available downstream if needed
         user.setAttributes(oAuth2User.getAttributes());
         return user;
+    }
+
+    private void maybeApplyProviderPhoto(User user, String providerPhotoUrl) {
+        if (providerPhotoUrl == null || providerPhotoUrl.isBlank()) {
+            return;
+        }
+        if (user.getProfilePhoto() == null || user.getProfilePhoto().isBlank()) {
+            user.setProfilePhoto(providerPhotoUrl);
+            userRepository.save(user);
+        }
+    }
+
+    private String extractProviderPhotoUrl(String provider, OAuth2User oAuth2User) {
+        if ("google".equalsIgnoreCase(provider)) {
+            Object picture = oAuth2User.getAttribute("picture");
+            return picture != null ? picture.toString() : null;
+        }
+        if ("github".equalsIgnoreCase(provider)) {
+            Object avatarUrl = oAuth2User.getAttribute("avatar_url");
+            return avatarUrl != null ? avatarUrl.toString() : null;
+        }
+        return null;
     }
 }
