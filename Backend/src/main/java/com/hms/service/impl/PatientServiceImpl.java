@@ -31,6 +31,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;
+import jakarta.persistence.EntityManager;
 
 @Service
 @RequiredArgsConstructor
@@ -40,6 +41,7 @@ public class PatientServiceImpl implements PatientService {
     private final UserRepository userRepository;
     private final ModelMapper modelMapper;
     private final AuthUtil authUtil;
+    private final EntityManager entityManager;
 
     @Override
     @Cacheable(value = "patientListAll", key = "'all'")
@@ -94,7 +96,7 @@ public class PatientServiceImpl implements PatientService {
     @Override
     @Transactional
     public SignupCompletionResponseDto registerCurrentUserAsPatient(Long userId, PatientRequest patientRequest) {
-        User user = userRepository.findById(userId)
+        User existingUser = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("User not found with id: " + userId));
 
         if (patientRepository.existsById(userId)) {
@@ -108,11 +110,14 @@ public class PatientServiceImpl implements PatientService {
                     throw new ConflictException("Email already exists");
                 });
 
-        user.setEmail(email);
-        Set<RoleType> updatedRoles = new HashSet<>(user.getRoles());
+        existingUser.setEmail(email);
+        Set<RoleType> updatedRoles = new HashSet<>(existingUser.getRoles());
         updatedRoles.add(RoleType.PATIENT);
-        user.setRoles(updatedRoles);
-        user = userRepository.save(user);
+        existingUser.setRoles(updatedRoles);
+        userRepository.save(existingUser);
+
+        // Always use a managed reference for @MapsId association to avoid detached-entity issues.
+        User managedUserRef = userRepository.getReferenceById(userId);
 
         Patient patient = Patient.builder()
                 .name(patientRequest.getName())
@@ -120,18 +125,19 @@ public class PatientServiceImpl implements PatientService {
                 .gender(patientRequest.getGender())
                 .bloodGroup(patientRequest.getBloodGroup())
                 .email(email)
-                .user(user)
+                .user(managedUserRef)
                 .profileUpdateCount(0)
                 .build();
-        patientRepository.save(patient);
+        entityManager.persist(patient);
 
-        String token = authUtil.generateAccessToken(user);
+        String token = authUtil.generateAccessToken(existingUser);
         return SignupCompletionResponseDto.builder()
                 .token(token)
-                .userId(user.getId())
-                .username(user.getUsername())
-                .email(user.getEmail())
-                .roles(user.getRoles())
+                .userId(existingUser.getId())
+                .username(existingUser.getUsername())
+                .email(existingUser.getEmail())
+                .profilePhoto(existingUser.getProfilePhoto())
+                .roles(existingUser.getRoles())
                 .build();
     }
 
@@ -172,6 +178,7 @@ public class PatientServiceImpl implements PatientService {
     }
 
     @Override
+    @Transactional
     @Caching(evict = {
         @CacheEvict(value = "patientById", allEntries = true),
         @CacheEvict(value = "patientListAll", allEntries = true),
@@ -179,28 +186,30 @@ public class PatientServiceImpl implements PatientService {
         @CacheEvict(value = "patientListPaged", allEntries = true)
     })
     public PatientDto updatePatientProfileWithEditLimit(Long patientId, PatientUpdateRequest patientUpdateRequest) {
-        // Try to find existing patient, or create new one if doesn't exist (for OAuth users)
-        Patient patient = patientRepository.findById(patientId)
-                .orElseGet(() -> {
-                    // Patient doesn't exist yet (typically for OAuth users)
-                    // Create new patient record from user
-                    User user = userRepository.findById(patientId)
-                            .orElseThrow(() -> new NotFoundException("User not found with id: " + patientId));
-                    
-                    Patient newPatient = Patient.builder()
-                            .user(user)
-                            .name(user.getUsername())
-                            .email(user.getEmail())
-                            .birthDate(null)  // Will be set below
-                            .gender(null)     // Will be set below
-                            .bloodGroup(null) // Will be set below
-                            .profileUpdateCount(0)
-                            .build();
-                    return newPatient;
-                });
+        boolean patientExists = patientRepository.existsById(patientId);
+        Patient patient;
+        if (patientExists) {
+            patient = patientRepository.findById(patientId)
+                    .orElseThrow(() -> new NotFoundException("Patient not found with id: " + patientId));
+        } else {
+            // Patient doesn't exist yet (typically for OAuth users)
+            User user = userRepository.findById(patientId)
+                    .orElseThrow(() -> new NotFoundException("User not found with id: " + patientId));
+            User managedUserRef = userRepository.getReferenceById(patientId);
+
+            patient = Patient.builder()
+                    .user(managedUserRef)
+                    .name(user.getUsername())
+                    .email(user.getEmail())
+                    .birthDate(null)  // Will be set below
+                    .gender(null)     // Will be set below
+                    .bloodGroup(null) // Will be set below
+                    .profileUpdateCount(0)
+                    .build();
+        }
 
         // Validate edit limit: max 3 edits per 7-day rolling window (skip for new patients)
-        if (patientRepository.findById(patientId).isPresent()) {
+        if (patientExists) {
             validateProfileEditLimit(patient);
         }
 
@@ -212,8 +221,12 @@ public class PatientServiceImpl implements PatientService {
         int currentCount = (patient.getProfileUpdateCount() == null) ? 0 : patient.getProfileUpdateCount();
         patient.setProfileUpdateCount(currentCount + 1);
 
-        Patient updatedPatient = patientRepository.save(patient);
-        return modelMapper.map(updatedPatient, PatientDto.class);
+        if (patientExists) {
+            patient = patientRepository.save(patient);
+        } else {
+            entityManager.persist(patient);
+        }
+        return modelMapper.map(patient, PatientDto.class);
     }
 
     @Override
