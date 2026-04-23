@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useEffect } from "react";
+import { queryClient } from "../lib/queryClient";
 
 const AuthContext = createContext();
 
@@ -19,6 +20,7 @@ export const AuthProvider = ({ children }) => {
   }));
 
   const [profileComplete, setProfileComplete] = useState(true);
+  const rolesKey = (user?.roles || []).join("|");
 
   // Fetch profile completion status on login
   useEffect(() => {
@@ -41,9 +43,11 @@ export const AuthProvider = ({ children }) => {
     };
 
     fetchProfileCompletionStatus();
-  }, [isLoggedIn, user?.id, user?.roles?.join("|")]);
+  }, [isLoggedIn, user?.id, user?.roles, rolesKey]);
 
   const login = (data) => {
+    // Prevent cross-account stale query data after account switches.
+    queryClient.clear();
     setIsLoggedIn(true);
     const userData = {
       id: data.userId,
@@ -55,14 +59,19 @@ export const AuthProvider = ({ children }) => {
     setUser(userData);
     
     // Store in localStorage for persistence
+    localStorage.setItem("userId", userData.id ?? "");
+    localStorage.setItem("roles", JSON.stringify(userData.roles || []));
     localStorage.setItem("username", userData.username);
     localStorage.setItem("email", userData.email);
     if (userData.profilePhoto) {
       localStorage.setItem("profilePhoto", userData.profilePhoto);
+    } else {
+      localStorage.removeItem("profilePhoto");
     }
   };
 
   const logout = () => {
+    queryClient.clear();
     setIsLoggedIn(false);
     setUser(null);
     setProfileComplete(true);
@@ -84,7 +93,11 @@ export const AuthProvider = ({ children }) => {
     // Update localStorage
     if (profileData.username) localStorage.setItem("username", profileData.username);
     if (profileData.email) localStorage.setItem("email", profileData.email);
-    if (profileData.profilePhoto) localStorage.setItem("profilePhoto", profileData.profilePhoto);
+    if (profileData.profilePhoto) {
+      localStorage.setItem("profilePhoto", profileData.profilePhoto);
+    } else if (Object.prototype.hasOwnProperty.call(profileData, "profilePhoto")) {
+      localStorage.removeItem("profilePhoto");
+    }
   };
 
   const updateProfileCompletionStatus = (isComplete) => {
