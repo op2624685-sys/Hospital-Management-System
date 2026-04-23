@@ -41,11 +41,7 @@ const App = () => {
       <GlobalBackground />
       <Routes>
         <Route path="/" element={<Home />} />
-        <Route path="/appointment" element={
-          <ProtectedRoute role="PATIENT" redirectTo="/profile">
-            <Appointment />
-          </ProtectedRoute>
-        } />
+        <Route path="/appointment" element={<Appointment />} />
         <Route path="/appointment/check" element={
           <ProtectedRoute role="PATIENT" redirectTo="/profile">
             <CheckAppointments />
