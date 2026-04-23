@@ -63,12 +63,12 @@ const Header = () => {
   const isPatient = hasRole('PATIENT');
 
   const { data: doctorProfile } = useQuery({
-    queryKey: ['doctor-profile-nav'],
+    queryKey: ['doctor-profile-nav', user?.id],
     queryFn: async () => {
       const { data } = await doctorAPI.getProfile();
       return data;
     },
-    enabled: isDoctor && isLoggedIn,
+    enabled: Boolean(isDoctor && isLoggedIn && user?.id),
   });
 
   const isHead = Boolean(doctorProfile?.isHead);
