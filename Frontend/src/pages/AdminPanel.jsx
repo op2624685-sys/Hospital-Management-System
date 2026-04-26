@@ -8,39 +8,15 @@ import "react-toastify/dist/ReactToastify.css";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 // ── Mock fallback data (replace with real API calls) ──────────────────────────
-const MOCK = {
-  stats: {
-    totalDoctors: 48,
-    activeDoctors: 41,
-    totalPatients: 12480,
-    todayAppointments: 134,
-    pendingAppointments: 57,
-    completedAppointments: 3920,
-    totalRevenue: 2847500,
-    todayRevenue: 48200,
-  },
-  recentAppointments: [
-    { id: "APT-001", patient: "Rahul Sharma",   doctor: "Dr. Mehta",   dept: "Cardiology",  time: "09:00 AM", status: "Completed", amount: 1200 },
-    { id: "APT-002", patient: "Priya Singh",    doctor: "Dr. Kapoor",  dept: "Neurology",   time: "09:30 AM", status: "In Progress",amount: 1500 },
-    { id: "APT-003", patient: "Amit Verma",     doctor: "Dr. Sharma",  dept: "Orthopedics", time: "10:00 AM", status: "Pending",    amount: 900  },
-    { id: "APT-004", patient: "Sunita Patel",   doctor: "Dr. Gupta",   dept: "Pediatrics",  time: "10:30 AM", status: "Completed",  amount: 800  },
-    { id: "APT-005", patient: "Vikram Joshi",   doctor: "Dr. Reddy",   dept: "Dermatology", time: "11:00 AM", status: "Cancelled",  amount: 700  },
-    { id: "APT-006", patient: "Neha Agarwal",   doctor: "Dr. Mehta",   dept: "Cardiology",  time: "11:30 AM", status: "Pending",    amount: 1200 },
-  ],
-  activeDoctors: [
-    { id: 1, name: "Dr. Arjun Mehta",    speciality: "Cardiology",   patients: 12, status: "Active",   avatar: "AM" },
-    { id: 2, name: "Dr. Priya Kapoor",   speciality: "Neurology",    patients: 8,  status: "Active",   avatar: "PK" },
-    { id: 3, name: "Dr. Ravi Sharma",    speciality: "Orthopedics",  patients: 10, status: "On Leave", avatar: "RS" },
-    { id: 4, name: "Dr. Sneha Gupta",    speciality: "Pediatrics",   patients: 15, status: "Active",   avatar: "SG" },
-    { id: 5, name: "Dr. Kiran Reddy",    speciality: "Dermatology",  patients: 6,  status: "Active",   avatar: "KR" },
-  ],
-  payments: [
-    { id: "PAY-001", patient: "Rahul Sharma",  amount: 1200, method: "Card",       status: "Success", date: "Today, 09:05 AM" },
-    { id: "PAY-002", patient: "Priya Singh",   amount: 1500, method: "Card",      status: "Success", date: "Today, 09:35 AM" },
-    { id: "PAY-003", patient: "Sunita Patel",  amount: 800,  method: "Cash",      status: "Success", date: "Today, 10:35 AM" },
-    { id: "PAY-004", patient: "Vikram Joshi",  amount: 700,  method: "Card",       status: "Refunded",date: "Today, 11:05 AM" },
-    { id: "PAY-005", patient: "Neha Agarwal",  amount: 1200, method: "Net Banking",status: "Pending", date: "Today, 11:35 AM" },
-  ],
+const EMPTY_STATS = {
+  totalDoctors: 0,
+  activeDoctors: 0,
+  totalPatients: 0,
+  todayAppointments: 0,
+  pendingAppointments: 0,
+  completedAppointments: 0,
+  totalRevenue: 0,
+  todayRevenue: 0,
 };
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -159,7 +135,7 @@ const Section = ({ title, subtitle, children, action }) => (
 // ── Main ──────────────────────────────────────────────────────────────────────
 const AdminPanel = () => {
   const queryClient = useQueryClient();
-  const [stats, setStats] = useState(MOCK.stats);
+  const [stats, setStats] = useState(EMPTY_STATS);
   const [appointments, setAppointments] = useState([]);
   const [appointmentsLoading, setAppointmentsLoading] = useState(false);
   const [appointmentsError, setAppointmentsError] = useState("");
@@ -175,7 +151,7 @@ const AdminPanel = () => {
   const [doctorSearch, setDoctorSearch] = useState("");
   const [doctorSpec, setDoctorSpec] = useState("");
   const [doctorSort, setDoctorSort] = useState("name");
-  const [payments] = useState(MOCK.payments);
+  const [payments] = useState([]);
   const [patients, setPatients] = useState([]);
   const [activeTab, setActiveTab] = useState("overview");
   const [loading, setLoading] = useState(false);
@@ -625,12 +601,13 @@ const AdminPanel = () => {
           setStats((prev) => ({
             ...prev,
             totalDoctors: data.stats.totalDoctors ?? prev.totalDoctors,
+            activeDoctors: data.stats.activeDoctors ?? prev.activeDoctors,
             totalPatients: data.stats.totalPatients ?? prev.totalPatients,
             todayAppointments: data.stats.todayAppointments ?? prev.todayAppointments,
             pendingAppointments: data.stats.pendingAppointments ?? prev.pendingAppointments,
-            completedAppointments: data.stats.confirmedAppointments ?? prev.completedAppointments,
-            totalRevenue: prev.totalRevenue,
-            todayRevenue: prev.todayRevenue,
+            completedAppointments: data.stats.completedAppointments ?? data.stats.confirmedAppointments ?? prev.completedAppointments,
+            totalRevenue: data.stats.totalRevenue ?? prev.totalRevenue,
+            todayRevenue: data.stats.todayRevenue ?? prev.todayRevenue,
           }));
         }
         setOverviewDoctors(data.recentDoctors || []);
@@ -799,15 +776,26 @@ const AdminPanel = () => {
         .admin-bar-label { font-size: 10px; font-weight: 800; color: var(--muted-foreground); text-transform: uppercase; }
 
         /* Forms */
-        .admin-form { display: flex; flex-direction: column; gap: 24px; padding: 24px; background: var(--sidebar); border-radius: 20px; border: 1.5px solid var(--border); margin-bottom: 32px; }
+        .admin-form, .admin-form-wrapper { display: flex; flex-direction: column; gap: 24px; padding: 24px; background: var(--sidebar); border-radius: 20px; border: 1.5px solid var(--border); margin-bottom: 32px; }
         .admin-form-group { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
         .admin-form-group.full { grid-template-columns: 1fr; }
         .admin-form-label { font-size: 11px; font-weight: 800; text-transform: uppercase; color: var(--muted-foreground); letter-spacing: .1em; margin-bottom: 8px; display: block; }
-        .admin-form input, .admin-form select { width: 100%; padding: 12px 16px; border-radius: 12px; border: 1.5px solid var(--border); background: var(--card); color: var(--foreground); font-family: inherit; font-size: 14px; outline: none; transition: all .2s; }
-        .admin-form input:focus { border-color: var(--primary); box-shadow: 0 0 0 4px color-mix(in srgb, var(--primary) 12%, transparent); }
+        .admin-form input, .admin-form select, .admin-form-wrapper input, .admin-form-wrapper select, .admin-form-wrapper textarea { width: 100%; padding: 12px 16px; border-radius: 12px; border: 1.5px solid var(--border); background: var(--card); color: var(--foreground); font-family: inherit; font-size: 14px; outline: none; transition: all .2s; }
+        .admin-form input:focus, .admin-form select:focus, .admin-form-wrapper input:focus, .admin-form-wrapper select:focus, .admin-form-wrapper textarea:focus { border-color: var(--primary); box-shadow: 0 0 0 4px color-mix(in srgb, var(--primary) 12%, transparent); }
+        .admin-form-wrapper input::placeholder, .admin-form-wrapper textarea::placeholder { color: var(--muted-foreground); opacity: .85; }
+        .admin-form-wrapper select option { background: var(--card); color: var(--foreground); }
         .admin-form-actions { display: flex; gap: 12px; justify-content: flex-end; margin-top: 12px; }
         .btn-primary { background: var(--primary); color: #fff; border: none; padding: 12px 24px; border-radius: 12px; font-weight: 800; cursor: pointer; transition: all .2s; }
         .btn-cancel { background: var(--card); border: 1.5px solid var(--border); color: var(--foreground); padding: 12px 24px; border-radius: 12px; font-weight: 800; cursor: pointer; }
+        .admin-form-message { font-size: 12px; color: var(--muted-foreground); background: color-mix(in srgb, var(--primary) 8%, transparent); border: 1px solid color-mix(in srgb, var(--primary) 22%, transparent); border-radius: 10px; padding: 10px 12px; }
+        .admin-loading, .admin-empty-state { border: 1px dashed var(--border); border-radius: 14px; padding: 14px 16px; font-size: 13px; color: var(--muted-foreground); background: color-mix(in srgb, var(--card) 80%, transparent); }
+        .admin-patients-list { border: 1px solid var(--border); border-radius: 14px; overflow: hidden; }
+        .admin-patients-header, .admin-patient-row { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 12px; padding: 12px 16px; align-items: center; }
+        .admin-patients-header { background: var(--secondary); border-bottom: 1px solid var(--border); color: var(--muted-foreground); }
+        .admin-patient-row { border-bottom: 1px solid var(--border); color: var(--foreground); }
+        .admin-patient-row:last-child { border-bottom: none; }
+        .admin-patient-col.name { font-weight: 700; }
+        .admin-patient-sub { font-size: 12px; color: var(--muted-foreground); margin-top: 3px; }
 
         .admin-pagination {
           display: flex;
@@ -1011,30 +999,34 @@ const AdminPanel = () => {
             {/* Payments */}
             <div className="admin-section">
               <Section title="Recent Payments" subtitle="Today's transactions" action="View All">
-                <div className="admin-payment-list">
-                  {payments.map(pay => {
-                    const s = statusColor[pay.status] || statusColor.Pending;
-                    return (
-                      <div key={pay.id} className="admin-payment-row">
-                        <div className="admin-pay-icon">
-                          { pay.method === "Card" ? "💳" : pay.method === "Cash" ? "💵" : "🏦"}
+                {payments.length === 0 ? (
+                  <div className="admin-empty-state">No payments available</div>
+                ) : (
+                  <div className="admin-payment-list">
+                    {payments.map(pay => {
+                      const s = statusColor[pay.status] || statusColor.Pending;
+                      return (
+                        <div key={pay.id} className="admin-payment-row">
+                          <div className="admin-pay-icon">
+                            { pay.method === "Card" ? "💳" : pay.method === "Cash" ? "💵" : "🏦"}
+                          </div>
+                          <div className="admin-pay-info">
+                            <div className="admin-pay-patient">{pay.patient}</div>
+                            <div className="admin-pay-meta">{pay.date} · {pay.method}</div>
+                          </div>
+                          <div className="admin-pay-right">
+                            <div className="admin-pay-amount">₹{pay.amount}</div>
+                            <span className="admin-status-pill"
+                              style={{ background: s.bg, color: s.color, fontSize: 10 }}>
+                              <span className="admin-status-dot" style={{ background: s.dot }} />
+                              {pay.status}
+                            </span>
+                          </div>
                         </div>
-                        <div className="admin-pay-info">
-                          <div className="admin-pay-patient">{pay.patient}</div>
-                          <div className="admin-pay-meta">{pay.date} · {pay.method}</div>
-                        </div>
-                        <div className="admin-pay-right">
-                          <div className="admin-pay-amount">₹{pay.amount}</div>
-                          <span className="admin-status-pill"
-                            style={{ background: s.bg, color: s.color, fontSize: 10 }}>
-                            <span className="admin-status-dot" style={{ background: s.dot }} />
-                            {pay.status}
-                          </span>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
+                      );
+                    })}
+                  </div>
+                )}
               </Section>
             </div>
 
@@ -1622,5 +1614,4 @@ const AdminPanel = () => {
 };
 
 export default AdminPanel;
-
 
