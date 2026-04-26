@@ -155,14 +155,22 @@ const FontLoader = () => (
     }
     .had-field-input {
       width: 100%;
-      background: var(--background);
-      border: 1.5px solid var(--border);
+      background: var(--card);
+      border: 1.5px solid color-mix(in srgb, var(--primary) 28%, var(--border));
       border-radius: 12px;
       padding: 14px 16px;
       font-size: 14px;
       color: var(--foreground);
       outline: none;
       transition: all 0.2s;
+    }
+    .had-field-input::placeholder {
+      color: var(--muted-foreground);
+      opacity: 0.9;
+    }
+    .had-field-input option {
+      background: var(--card);
+      color: var(--foreground);
     }
     .had-field-input:focus {
       border-color: var(--primary);
