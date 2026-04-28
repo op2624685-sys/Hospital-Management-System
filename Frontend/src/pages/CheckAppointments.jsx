@@ -14,6 +14,11 @@ const statusConfig = {
     banner: 'linear-gradient(135deg, #047857, #059669, #10b981)',
     icon: <svg width="22" height="22" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>,
   },
+  IN_PROGRESS: {
+    label: 'In Progress',
+    banner: 'linear-gradient(135deg, #0f766e, #0284c7, #22d3ee)',
+    icon: <svg width="22" height="22" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6l4 2m8-2a10 10 0 11-20 0 10 10 0 0120 0z"/></svg>,
+  },
   CANCELLED: {
     label: 'Cancelled',
     banner: 'linear-gradient(135deg, #9b1c1c, #e42320, #ef4444)',

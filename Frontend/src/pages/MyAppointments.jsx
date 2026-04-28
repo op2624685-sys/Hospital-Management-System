@@ -48,6 +48,7 @@ const MyAppointments = () => {
   const badgeClassByStatus = (status) => {
     const value = (status || "").toUpperCase();
     if (value === "CONFIRMED") return "ux-badge ux-badge-approved";
+    if (value === "IN_PROGRESS") return "ux-badge ux-badge-progress";
     if (value === "CANCELLED") return "ux-badge ux-badge-pending";
     return "ux-badge ux-badge-completed";
   };
@@ -191,6 +192,7 @@ const MyAppointments = () => {
         }
         .ux-badge-pending { color: var(--destructive); background: color-mix(in srgb, var(--destructive) 10%, transparent); border: 1px solid color-mix(in srgb, var(--destructive) 20%, transparent); }
         .ux-badge-approved { color: #16a34a; background: rgba(22,163,74,0.1); border: 1px solid rgba(22,163,74,0.2); }
+        .ux-badge-progress { color: #0f766e; background: rgba(6,182,212,0.12); border: 1px solid rgba(6,182,212,0.24); }
         .ux-btn-rate {
           background: linear-gradient(135deg, #f59e0b, #d97706);
           color: #fff;

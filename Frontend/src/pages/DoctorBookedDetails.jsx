@@ -46,7 +46,9 @@ const DoctorBookedDetails = () => {
   const statusClass = (status) => {
     const value = (status || "").toUpperCase();
     if (value === "CONFIRMED") return "doc-status doc-status-confirmed";
+    if (value === "IN_PROGRESS") return "doc-status doc-status-progress";
     if (value === "CANCELLED") return "doc-status doc-status-cancelled";
+    if (value === "COMPLETED") return "doc-status doc-status-completed";
     return "doc-status doc-status-pending";
   };
 
@@ -117,6 +119,8 @@ const DoctorBookedDetails = () => {
           margin-top: 8px;
         }
         .doc-status-confirmed { color: #0f766e; background: #ccfbf1; border: 1px solid #99f6e4; }
+        .doc-status-progress { color: #0f766e; background: #a5f3fc; border: 1px solid #67e8f9; }
+        .doc-status-completed { color: var(--primary); background: var(--secondary); border: 1px solid color-mix(in srgb, var(--primary) 20%, transparent); }
         .doc-status-cancelled { color: #991b1b; background: #fee2e2; border: 1px solid #fecaca; }
         .doc-status-pending { color: #a16207; background: #fef3c7; border: 1px solid #fde68a; }
       `}</style>

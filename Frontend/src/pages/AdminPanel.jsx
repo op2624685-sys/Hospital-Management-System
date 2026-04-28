@@ -39,6 +39,7 @@ const formatStatus = (status) => {
   const upper = String(status).toUpperCase();
   if (upper === "PENDING") return "Pending";
   if (upper === "CONFIRMED") return "Confirmed";
+  if (upper === "IN_PROGRESS") return "In Progress";
   if (upper === "CANCELLED") return "Cancelled";
   return String(status);
 };
