@@ -442,11 +442,35 @@ public class AppointmentServiceImpl implements AppointmentService {
                 appointment.getReason(),
                 appointment.getAmount(),
                 mapDoctorResponse(appointment.getDoctor()),
-                appointment.getStatus(),
+                resolveAppointmentStatus(appointment),
                 mapPatientResponse(appointment.getPatient()),
                 mapBranchResponse(appointment.getBranch()),
                 appointment.getDepartment() != null ? appointment.getDepartment().getName() : null
         );
+    }
+
+    private AppointmentStatusType resolveAppointmentStatus(Appointment appointment) {
+        AppointmentStatusType status = appointment.getStatus();
+        if (status == AppointmentStatusType.CANCELLED
+                || status == AppointmentStatusType.REFUNDED
+                || status == AppointmentStatusType.COMPLETED) {
+            return status;
+        }
+
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime appointmentTime = appointment.getAppointmentTime();
+        if (appointmentTime == null) {
+            return status;
+        }
+
+        LocalDateTime endTime = appointmentTime.plusMinutes(APPOINTMENT_SLOT_MINUTES);
+        if (!now.isBefore(appointmentTime) && now.isBefore(endTime)) {
+            return AppointmentStatusType.IN_PROGRESS;
+        }
+        if (!now.isBefore(endTime)) {
+            return AppointmentStatusType.COMPLETED;
+        }
+        return status;
     }
 
     private DoctorResponseDto mapDoctorResponse(Doctor doctor) {
