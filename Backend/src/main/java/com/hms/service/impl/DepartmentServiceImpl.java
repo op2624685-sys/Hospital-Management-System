@@ -99,6 +99,7 @@ public class DepartmentServiceImpl implements DepartmentService{
             @CacheEvict(value = "doctorById", key = "'id:' + #addDepartmentToBranchRequestDto.headDoctorId", condition = "#addDepartmentToBranchRequestDto.headDoctorId != null"),
             @CacheEvict(value = "doctorListPaged", allEntries = true),
             @CacheEvict(value = "doctorListByName", allEntries = true),
+            @CacheEvict(value = "myDoctorDepartments", allEntries = true),
             @CacheEvict(value = "branchDoctors", allEntries = true)
     })
     public DepartmentDto addDepartmentToBranch(AddDepartmentToBranchRequestDto addDepartmentToBranchRequestDto) {

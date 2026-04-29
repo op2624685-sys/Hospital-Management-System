@@ -59,6 +59,7 @@ public class DoctorServiceImpl implements DoctorService {
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = "doctorListPaged", key = "'search:' + (#search == null ? '' : #search.trim().toLowerCase()) + ':' + #page + ':' + #size")
     public List<DoctorDto> getAllDoctorsSearch(String search, int page, int size) {
         return doctorRepository.findAllSearch(search, PageRequest.of(page, size))
                 .stream()
@@ -68,6 +69,7 @@ public class DoctorServiceImpl implements DoctorService {
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = "doctorById", key = "'id:' + #id")
     public DoctorDto getDoctorById(Long id) {
         Doctor doctor = doctorRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Doctor not found with id: " + id));
@@ -76,6 +78,7 @@ public class DoctorServiceImpl implements DoctorService {
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = "doctorListByName", key = "'name:' + (#name == null ? '' : #name.trim().toLowerCase())")
     public List<DoctorDto> getDoctorByName(String name) {
         List<Doctor> doctors = doctorRepository.findByName(name);
         return doctors
@@ -90,6 +93,7 @@ public class DoctorServiceImpl implements DoctorService {
         @CacheEvict(value = "doctorById", allEntries = true),
         @CacheEvict(value = "doctorListPaged", allEntries = true),
         @CacheEvict(value = "doctorListByName", allEntries = true),
+        @CacheEvict(value = "myDoctorDepartments", allEntries = true),
         @CacheEvict(value = "branchDoctors", allEntries = true)
     })
     public String deleteDoctorById(Long id) {
@@ -106,6 +110,7 @@ public class DoctorServiceImpl implements DoctorService {
         @CacheEvict(value = "doctorById", allEntries = true),
         @CacheEvict(value = "doctorListPaged", allEntries = true),
         @CacheEvict(value = "doctorListByName", allEntries = true),
+        @CacheEvict(value = "myDoctorDepartments", allEntries = true),
         @CacheEvict(value = "branchDoctors", allEntries = true)
     })
     public DoctorResponseDto onBoardNewDoctor(OnBoardDoctorRequestDto onBoardDoctorRequestDto) {
@@ -163,6 +168,7 @@ public class DoctorServiceImpl implements DoctorService {
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = "myDoctorDepartments", key = "#root.target.getCurrentUser().id")
     public List<DepartmentDto> getMyDepartments() {
         User currentUser = getCurrentUser();
         Doctor doctor = doctorRepository.findById(currentUser.getId())
@@ -239,6 +245,7 @@ public class DoctorServiceImpl implements DoctorService {
         @CacheEvict(value = "doctorById", allEntries = true),
         @CacheEvict(value = "doctorListPaged", allEntries = true),
         @CacheEvict(value = "doctorListByName", allEntries = true),
+        @CacheEvict(value = "myDoctorDepartments", allEntries = true),
         @CacheEvict(value = "branchDoctors", allEntries = true),
         @CacheEvict(value = "departmentListAll", allEntries = true),
         @CacheEvict(value = "departmentById", key = "'id:' + #deptId"),
@@ -272,6 +279,7 @@ public class DoctorServiceImpl implements DoctorService {
         @CacheEvict(value = "doctorById", allEntries = true),
         @CacheEvict(value = "doctorListPaged", allEntries = true),
         @CacheEvict(value = "doctorListByName", allEntries = true),
+        @CacheEvict(value = "myDoctorDepartments", allEntries = true),
         @CacheEvict(value = "branchDoctors", allEntries = true),
         @CacheEvict(value = "departmentListAll", allEntries = true),
         @CacheEvict(value = "departmentById", key = "'id:' + #deptId"),
@@ -305,6 +313,7 @@ public class DoctorServiceImpl implements DoctorService {
         @CacheEvict(value = "doctorById", allEntries = true),
         @CacheEvict(value = "doctorListPaged", allEntries = true),
         @CacheEvict(value = "doctorListByName", allEntries = true),
+        @CacheEvict(value = "myDoctorDepartments", allEntries = true),
         @CacheEvict(value = "branchDoctors", allEntries = true),
         @CacheEvict(value = "departmentListAll", allEntries = true),
         @CacheEvict(value = "departmentById", key = "'id:' + #deptId"),
@@ -411,4 +420,3 @@ public class DoctorServiceImpl implements DoctorService {
     }
 
 }
-

@@ -27,6 +27,7 @@ import com.hms.repository.PatientRepository;
 import com.hms.repository.UserRepository;
 import com.hms.service.PatientService;
 import com.hms.security.AuthUtil;
+import com.hms.security.RefreshTokenService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
@@ -41,6 +42,7 @@ public class PatientServiceImpl implements PatientService {
     private final UserRepository userRepository;
     private final ModelMapper modelMapper;
     private final AuthUtil authUtil;
+    private final RefreshTokenService refreshTokenService;
     private final EntityManager entityManager;
 
     @Override
@@ -131,8 +133,10 @@ public class PatientServiceImpl implements PatientService {
         entityManager.persist(patient);
 
         String token = authUtil.generateAccessToken(existingUser);
+        String refreshToken = refreshTokenService.createRefreshToken(existingUser.getId());
         return SignupCompletionResponseDto.builder()
                 .token(token)
+                .refreshToken(refreshToken)
                 .userId(existingUser.getId())
                 .username(existingUser.getUsername())
                 .email(existingUser.getEmail())
