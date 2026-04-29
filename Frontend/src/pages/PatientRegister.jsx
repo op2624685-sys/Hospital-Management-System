@@ -47,13 +47,9 @@ const PatientRegister = () => {
     try {
       const response = await patientAPI.register(formData);
       if (response.data.token) {
-        localStorage.setItem('token', response.data.token);
-        localStorage.setItem('userId', response.data.userId);
-        localStorage.setItem('roles', JSON.stringify(response.data.roles || []));
-        localStorage.setItem('username', response.data.username || user?.username || '');
-        localStorage.setItem('email', response.data.email || formData.email || '');
-
         login({
+          token: response.data.token,
+          refreshToken: response.data.refreshToken,
           userId: response.data.userId,
           username: response.data.username || user?.username || '',
           email: response.data.email || formData.email || '',
