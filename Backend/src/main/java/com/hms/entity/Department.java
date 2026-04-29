@@ -13,6 +13,8 @@ import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToOne;
+import jakarta.persistence.Table;
+import jakarta.persistence.Index;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -23,6 +25,11 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
+@Table(indexes = {
+    @Index(name = "idx_department_branch_id", columnList = "branch_id"),
+    @Index(name = "idx_department_head_doctor_user_id", columnList = "head_doctor_user_id"),
+    @Index(name = "idx_department_name_branch", columnList = "name, branch_id")
+})
 public class Department {
 
     @Id
@@ -51,13 +58,18 @@ public class Department {
     private String sectionsJson;
 
     @OneToOne
+    @JoinColumn(name = "head_doctor_user_id")
     private Doctor headDoctor;
 
     @ManyToMany
     @JoinTable(
         name = "department_doctor",
         joinColumns = @JoinColumn(name = "department_id"),
-        inverseJoinColumns = @JoinColumn(name = "doctor_id")
+        inverseJoinColumns = @JoinColumn(name = "doctor_id"),
+        indexes = {
+            @Index(name = "idx_department_doctor_department_doctor", columnList = "department_id, doctor_id"),
+            @Index(name = "idx_department_doctor_doctor_department", columnList = "doctor_id, department_id")
+        }
     )
     private Set<Doctor> doctors = new HashSet<>();
 
