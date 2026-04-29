@@ -10,6 +10,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import com.hms.entity.User;
 import com.hms.security.AuthUtil;
+import com.hms.security.RefreshTokenService;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -21,6 +22,7 @@ import lombok.RequiredArgsConstructor;
 public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
 
     private final AuthUtil authUtil;
+    private final RefreshTokenService refreshTokenService;
 
     @Value("${app.oauth2.redirect-uri:http://localhost:5173/oauth2/redirect}")
     private String redirectUri;
@@ -31,9 +33,11 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
         
         User user = (User) authentication.getPrincipal();
         String token = authUtil.generateAccessToken(user);
+        String refreshToken = refreshTokenService.createRefreshToken(user.getId());
 
         String targetUrl = UriComponentsBuilder.fromUriString(redirectUri)
                 .queryParam("token", token)
+                .queryParam("refreshToken", refreshToken)
                 .build().toUriString();
 
         getRedirectStrategy().sendRedirect(request, response, targetUrl);
