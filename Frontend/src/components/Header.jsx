@@ -274,7 +274,11 @@ const Header = () => {
             <div className='mt-8 pt-6 border-t' style={{ borderColor: 'var(--border)' }}>
               {isLoggedIn ? (
                 <button
-                  onClick={() => { logout(); setMenuOpen(false); }}
+                  onClick={async () => {
+                    await logout();
+                    setMenuOpen(false);
+                    navigate('/login');
+                  }}
                   className='w-full flex items-center justify-center gap-2 text-white py-3 rounded-xl font-semibold text-sm transition-all duration-300'
                   style={{ background: '#ef4444' }}>
                   <LogOut size={15} />

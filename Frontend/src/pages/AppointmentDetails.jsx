@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import appointmentApi from '../api/appointments'
 import { useAuth } from '../context/AuthContext'
@@ -74,7 +74,6 @@ const AppointmentDetails = () => {
   const { user, hasRole } = useAuth()
 
   const [copied, setCopied]           = useState(false)
-  const [copiedLink, setCopiedLink]   = useState(false)
   const [cancelling, setCancelling]   = useState(false)
 
   const {
@@ -94,12 +93,6 @@ const AppointmentDetails = () => {
     navigator.clipboard.writeText(appointment.appointmentId)
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
-  }
-
-  const handleCopyLink = () => {
-    navigator.clipboard.writeText(window.location.href)
-    setCopiedLink(true)
-    setTimeout(() => setCopiedLink(false), 2000)
   }
 
   const canPatientCancel = Boolean(
@@ -125,8 +118,6 @@ const AppointmentDetails = () => {
   if (error)   return <ErrorScreen onBack={() => navigate('/appointment')} />
 
   const status = statusConfig[appointment.status] || statusConfig.PENDING
-  const formattedDate = new Date(appointment.appointmentTime)
-    .toLocaleString('en-IN', { dateStyle: 'long', timeStyle: 'short' })
   const dateOnly = new Date(appointment.appointmentTime)
     .toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })
   const timeOnly = new Date(appointment.appointmentTime)

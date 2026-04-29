@@ -52,14 +52,12 @@ export default function DepartmentControl() {
   const [activeTab, setActiveTab] = useState("overview");
   const [isEditing, setIsEditing] = useState(false);
   const [editData, setEditData] = useState({ description: "", services: "" });
-  const [hoveredCard, setHoveredCard] = useState(null);
 
   useEffect(() => {
     const fetchHeadDepts = async () => {
       try {
         const { data } = await doctorAPI.getMyDepartments();
         const headDepts = data.filter(d => String(d.headDoctorId) === String(user?.id));
-        setDepartments(headDepts);
         setDepartments(headDepts);
         if (headDepts.length > 0) {
           const initial = departmentId 
@@ -75,7 +73,7 @@ export default function DepartmentControl() {
       }
     };
     if (user) fetchHeadDepts();
-  }, [user]);
+  }, [departmentId, user]);
 
   const handleUpdate = async () => {
     try {

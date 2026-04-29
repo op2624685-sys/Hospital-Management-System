@@ -68,8 +68,8 @@ const ProfileDropdown = () => {
     return () => clearTimeout(hoverTimeoutRef.current);
   }, []);
 
-  const handleLogout = () => {
-    logout();
+  const handleLogout = async () => {
+    await logout();
     setIsOpen(false);
     navigate('/');
   };

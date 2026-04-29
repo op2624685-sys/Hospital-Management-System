@@ -1,4 +1,5 @@
-import { createContext, useContext, useState, useEffect } from "react";
+import { createContext, useContext, useState, useEffect, useCallback } from "react";
+import { authAPI, clearAuthTokens, getAccessToken, getRefreshToken, patientAPI, saveAuthTokens } from "../api/api";
 import { queryClient } from "../lib/queryClient";
 
 const AuthContext = createContext();
@@ -8,7 +9,7 @@ export const useAuth = () => useContext(AuthContext);
 
 export const AuthProvider = ({ children }) => {
   const [isLoggedIn, setIsLoggedIn] = useState(
-    () => localStorage.getItem("token") !== null
+    () => getAccessToken() !== null
   );
 
   const [user, setUser] = useState(() => ({
@@ -27,15 +28,8 @@ export const AuthProvider = ({ children }) => {
     const fetchProfileCompletionStatus = async () => {
       if (isLoggedIn && user?.id && user?.roles?.includes("PATIENT")) {
         try {
-          const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/patients/profile/completion-status`, {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem("token")}`,
-            },
-          });
-          if (response.ok) {
-            const data = await response.json();
-            setProfileComplete(data.isComplete);
-          }
+          const response = await patientAPI.getProfileCompletionStatus();
+          setProfileComplete(response.data.isComplete);
         } catch (error) {
           console.error("Error fetching profile completion status:", error);
         }
@@ -45,9 +39,35 @@ export const AuthProvider = ({ children }) => {
     fetchProfileCompletionStatus();
   }, [isLoggedIn, user?.id, user?.roles, rolesKey]);
 
+  const clearSession = useCallback(() => {
+    queryClient.clear();
+    setIsLoggedIn(false);
+    setUser(null);
+    setProfileComplete(true);
+    clearAuthTokens();
+    localStorage.removeItem("userId");
+    localStorage.removeItem("roles");
+    localStorage.removeItem("username");
+    localStorage.removeItem("email");
+    localStorage.removeItem("profilePhoto");
+  }, []);
+
+  useEffect(() => {
+    const handleAuthExpired = () => {
+      clearSession();
+    };
+
+    window.addEventListener("hms:auth-expired", handleAuthExpired);
+    return () => window.removeEventListener("hms:auth-expired", handleAuthExpired);
+  }, [clearSession]);
+
   const login = (data) => {
     // Prevent cross-account stale query data after account switches.
     queryClient.clear();
+    saveAuthTokens({
+      token: data.token,
+      refreshToken: data.refreshToken,
+    });
     setIsLoggedIn(true);
     const userData = {
       id: data.userId,
@@ -70,17 +90,16 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const logout = () => {
-    queryClient.clear();
-    setIsLoggedIn(false);
-    setUser(null);
-    setProfileComplete(true);
-    localStorage.removeItem("token");
-    localStorage.removeItem("userId");
-    localStorage.removeItem("roles");
-    localStorage.removeItem("username");
-    localStorage.removeItem("email");
-    localStorage.removeItem("profilePhoto");
+  const logout = async () => {
+    const refreshToken = getRefreshToken();
+    if (refreshToken) {
+      try {
+        await authAPI.logout(refreshToken);
+      } catch (error) {
+        console.error("Logout request failed:", error);
+      }
+    }
+    clearSession();
   };
 
   const updateUserProfile = (profileData) => {

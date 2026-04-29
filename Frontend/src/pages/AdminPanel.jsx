@@ -144,14 +144,13 @@ const AdminPanel = () => {
   const [overviewDoctors, setOverviewDoctors] = useState([]);
   const [departmentLoad, setDepartmentLoad] = useState([]);
   const [weeklyAppointments, setWeeklyAppointments] = useState([]);
-  const [overviewError, setOverviewError] = useState("");
   const [doctors, setDoctors] = useState([]);
   const [doctorsLoading, setDoctorsLoading] = useState(false);
   const [doctorsError, setDoctorsError] = useState("");
   const [doctorPage, setDoctorPage] = useState(0);
   const [doctorSearch, setDoctorSearch] = useState("");
-  const [doctorSpec, setDoctorSpec] = useState("");
-  const [doctorSort, setDoctorSort] = useState("name");
+  const doctorSpec = "";
+  const doctorSort = "name";
   const [payments] = useState([]);
   const [patients, setPatients] = useState([]);
   const [activeTab, setActiveTab] = useState("overview");
@@ -593,10 +592,7 @@ const AdminPanel = () => {
         setAppointments(overviewAppointmentsQuery.data || []);
       }
 
-      if (overviewQuery.error) {
-        setOverviewError(getApiErrorMessage(overviewQuery.error, "Failed to load overview"));
-      } else {
-        setOverviewError("");
+      if (!overviewQuery.error) {
         const data = overviewQuery.data || {};
         if (data.stats) {
           setStats((prev) => ({
@@ -973,9 +969,6 @@ const AdminPanel = () => {
               >
                 <div className="admin-doctor-list">
                   {overviewDoctors.map(doc => {
-                    const patientCount = Array.isArray(doc.patients)
-                      ? doc.patients.length
-                      : (typeof doc.patients === "number" ? doc.patients : 0);
                     const initials = (doc.name || "DR").split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2);
                     return (
                     <div key={doc.id} className="admin-doctor-row">
@@ -1035,7 +1028,7 @@ const AdminPanel = () => {
             <div className="admin-section">
               <Section title="Department Load" subtitle="Active patients by department">
                 <div className="admin-progress-wrap">
-                  {departmentLoad.map((d, idx) => {
+                  {departmentLoad.map((d) => {
                     const max = Math.max(1, ...departmentLoad.map(x => x.patientCount || 0));
                     const val = Math.round(((d.patientCount || 0) / max) * 100);
                     const color = deptColor[d.name] || deptColor.default;

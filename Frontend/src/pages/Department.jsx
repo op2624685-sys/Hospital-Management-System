@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useRef } from 'react'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import Header from '../components/Header'
@@ -25,8 +25,6 @@ const Department = () => {
   const accentBarRef  = useRef(null)
   const currentIdx    = useRef(0)
   
-  const [error, setError] = useState('')
-
   const {
     data: departments = [],
     error: departmentsError,
@@ -73,13 +71,9 @@ const Department = () => {
     },
   })
 
-  useEffect(() => {
-    if (!departmentsError) {
-      setError('')
-      return
-    }
-    setError(getApiErrorMessage(departmentsError, 'Failed to load departments'))
-  }, [departmentsError])
+  const error = departmentsError
+    ? getApiErrorMessage(departmentsError, 'Failed to load departments')
+    : ''
 
   useEffect(() => {
     const cards = cardRefs.current.filter(Boolean)

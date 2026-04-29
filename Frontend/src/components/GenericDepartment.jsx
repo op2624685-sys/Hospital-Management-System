@@ -1,7 +1,7 @@
 import React, { useMemo, useState, useEffect, useRef } from 'react'
 import gsap from 'gsap'
 
-const GenericDepartment = ({ name, icon, description, members, headDoctor, accent, bg, imageUrl, sectionsJson }) => {
+const GenericDepartment = ({ name, icon, description, members, headDoctor, accent, imageUrl, sectionsJson }) => {
   const [active, setActive] = useState(0)
   const containerRef = useRef(null)
   
@@ -9,7 +9,9 @@ const GenericDepartment = ({ name, icon, description, members, headDoctor, accen
     try {
       const parsed = sectionsJson ? JSON.parse(sectionsJson) : null
       if (Array.isArray(parsed) && parsed.length > 0) return parsed
-    } catch { }
+    } catch {
+      // Fall back to default department sections.
+    }
     return [
       { title: 'Core Function', icon: '⚡', items: [description || 'Advanced clinical unit managing specialized medical protocols.'] },
       { title: 'Authority', icon: '🛡️', items: [`Chief: ${headDoctor || 'Dr. Pending'}`, `Operational Force: ${members || 0} Staff`] },
