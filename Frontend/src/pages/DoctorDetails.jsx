@@ -275,7 +275,7 @@ const DoctorDetails = () => {
                 { Icon: Wallet,    text: doctor.consultationFee != null ? `INR ${doctor.consultationFee}` : "Not specified", label: "Consultation Fee: " },
               ].map(({ Icon, text, label = "" }) => (
                 <div key={text} style={{ display: "flex", alignItems: "flex-start", gap: 10 }}>
-                  <Icon size={16} style={{ color: "var(--primary)", marginTop: 2, flexShrink: 0 }} />
+                  {React.createElement(Icon, { size: 16, style: { color: "var(--primary)", marginTop: 2, flexShrink: 0 } })}
                   <span style={{ color: "var(--foreground)" }}>{label}{text}</span>
                 </div>
               ))}
