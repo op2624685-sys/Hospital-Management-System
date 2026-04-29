@@ -14,6 +14,8 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.MapsId;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
+import jakarta.persistence.Table;
+import jakarta.persistence.Index;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -26,6 +28,11 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@Table(indexes = {
+    @Index(name = "idx_doctor_branch_id", columnList = "branch_id"),
+    @Index(name = "idx_doctor_name", columnList = "name"),
+    @Index(name = "idx_doctor_specialization", columnList = "specialization")
+})
 public class Doctor {
 
     @Id
