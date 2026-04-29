@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.hms.config.RateLimitProtected;
 import com.hms.dto.Request.MagicLinkSignupCompleteRequestDto;
 import com.hms.dto.Request.MagicLinkSignupRequestDto;
+import com.hms.dto.Request.RefreshTokenRequestDto;
 import com.hms.dto.Request.ForgotPasswordRequestDto;
 import com.hms.dto.Request.LoginRequestDto;
 import com.hms.dto.Request.ResetPasswordRequestDto;
@@ -48,6 +49,18 @@ public class AuthController {
     public ResponseEntity<LoginResponseDto> login(@RequestBody @Valid LoginRequestDto loginRequestDto) {
         return ResponseEntity.status(200).body(authService.login(loginRequestDto));
     }
+
+    @PostMapping("/refresh")
+    public ResponseEntity<LoginResponseDto> refreshToken(@RequestBody @Valid RefreshTokenRequestDto refreshTokenRequestDto) {
+        return ResponseEntity.ok(authService.refreshToken(refreshTokenRequestDto.getRefreshToken()));
+    }
+    
+    @PostMapping("/logout")
+    public ResponseEntity<?> logout(@RequestBody @Valid RefreshTokenRequestDto refreshTokenRequestDto) {
+        authService.logout(refreshTokenRequestDto.getRefreshToken());
+        return ResponseEntity.ok("Logged out");
+    }
+    
 
     @PostMapping("/signup-link")
     @RateLimitProtected(limiterName = "authRateLimiter")
