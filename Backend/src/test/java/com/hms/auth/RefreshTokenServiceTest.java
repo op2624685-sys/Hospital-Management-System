@@ -141,7 +141,6 @@ public class RefreshTokenServiceTest {
         // Arrange
         String token = "test-delete-token";
         when(redisTemplate.delete("refresh-token:" + token)).thenReturn(true);
-        when(redisTemplate.delete("refresh:" + token)).thenReturn(false);
 
         // Act
         refreshTokenService.deleteToken(token);
