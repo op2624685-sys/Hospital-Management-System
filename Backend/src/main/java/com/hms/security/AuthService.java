@@ -45,6 +45,7 @@ public class AuthService {
     private final OtpService otpService;
     private final SignupMagicLinkTokenRepository signupMagicLinkTokenRepository;
     private final EmailService emailService;
+    private final RefreshTokenService refreshTokenService;
 
     @Transactional
     public LoginResponseDto login(LoginRequestDto loginRequestDto) {
@@ -54,14 +55,43 @@ public class AuthService {
         );
         User user = (User) authentication.getPrincipal();
         String token = authUtil.generateAccessToken(user);
+        String refreshToken = refreshTokenService.createRefreshToken(user.getId());
 
         return new LoginResponseDto(
                 token,
+                refreshToken,
                 user.getId(),
                 user.getUsername(),
                 user.getEmail(),
                 user.getProfilePhoto(),
                 user.getRoles());
+    }
+
+    public LoginResponseDto refreshToken(String refreshToken) {
+        
+        Long userId = refreshTokenService.validateRefreshToken(refreshToken);
+        
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ValidationException("User no longer exists. Please log in again"));
+
+        // Revoke old refresh token immediately to prevent token reuse
+        refreshTokenService.deleteToken(refreshToken);
+
+        String newAccessToken = authUtil.generateAccessToken(user);
+        String newRefreshToken = refreshTokenService.createRefreshToken(user.getId());
+
+        return new LoginResponseDto(
+            newAccessToken, 
+            newRefreshToken, 
+            user.getId(),
+            user.getUsername(), 
+            user.getEmail(), 
+            user.getProfilePhoto(), 
+            user.getRoles());
+    }
+
+    public void logout(String refreshToken){
+        refreshTokenService.deleteToken(refreshToken);
     }
 
     @Transactional
@@ -277,6 +307,7 @@ public class AuthService {
         User user = (User) auth.getPrincipal();
         return new LoginResponseDto(
                 null,
+                null, 
                 user.getId(),
                 user.getUsername(),
                 user.getEmail(),
