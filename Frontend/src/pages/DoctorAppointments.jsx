@@ -1,42 +1,39 @@
 import React, { useEffect, useMemo, useState } from "react";
 import Header from "../components/Header";
 import appointmentApi from "../api/appointments";
-import { useAuth } from "../context/AuthContext";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import PageLoader from "../components/PageLoader";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 const DoctorAppointments = () => {
-  const { user } = useAuth();
-  const [appointments, setAppointments] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
   const [savingId, setSavingId] = useState(null);
   const [query, setQuery] = useState("");
   const [formById, setFormById] = useState({});
   const [page, setPage] = useState(0);
-  const [hasMore, setHasMore] = useState(true);
   const size = 15;
 
-  const loadAppointments = async (targetPage = 0) => {
-    setLoading(true);
-    try {
-      const response = await appointmentApi.getDoctorAppointments(null, targetPage, size);
-      const data = response.data || [];
-      setAppointments(data);
-      setPage(targetPage);
-      setHasMore(data.length === size);
-    } catch (error) {
-      console.error(error);
-      const msg = error.response?.data?.message || "Failed to load appointments";
-      toast.error(msg);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const {
+    data: appointments = [],
+    isFetching: loading,
+    error,
+  } = useQuery({
+    queryKey: ["doctor-appointments", page, size],
+    queryFn: async () => {
+      const response = await appointmentApi.getDoctorAppointments(null, page, size);
+      return response.data || [];
+    },
+  });
 
   useEffect(() => {
-    loadAppointments(0);
-  }, []);
+    if (!error) return;
+    console.error(error);
+    const msg = error.response?.data?.message || "Failed to load appointments";
+    toast.error(msg);
+  }, [error]);
+
+  const hasMore = appointments.length === size;
 
   const filtered = useMemo(() => {
     const term = query.toLowerCase().trim();
@@ -78,9 +75,13 @@ const DoctorAppointments = () => {
       const payload = {
         status: f.status,
       };
-      await appointmentApi.updateDetails(appointment.appointmentId, payload);
+      const response = await appointmentApi.updateDetails(appointment.appointmentId, payload);
+      queryClient.setQueryData(["doctor-appointments", page, size], (prev = []) =>
+        prev.map((item) =>
+          item.appointmentId === appointment.appointmentId ? response.data : item
+        )
+      );
       toast.success("Appointment updated successfully");
-      loadAppointments(page);
     } catch (error) {
       console.error(error);
       const msg = error.response?.data?.message || "Update failed";
@@ -336,7 +337,11 @@ const DoctorAppointments = () => {
                   </button>
                   <button
                     disabled={isSaving}
-                    onClick={() => loadAppointments(page)}
+                    onClick={() =>
+                      queryClient.invalidateQueries({
+                        queryKey: ["doctor-appointments", page, size],
+                      })
+                    }
                     className="dr-btn dr-btn-outline"
                   >
                     Refresh
@@ -350,7 +355,7 @@ const DoctorAppointments = () => {
         <div className="dr-pagination">
           <button
             disabled={loading || page === 0}
-            onClick={() => loadAppointments(page - 1)}
+            onClick={() => setPage((currentPage) => Math.max(0, currentPage - 1))}
             className="dr-btn dr-btn-outline"
           >
             ← Previous
@@ -358,7 +363,7 @@ const DoctorAppointments = () => {
           <span className="dr-page-num">Page {page + 1}</span>
           <button
             disabled={loading || !hasMore}
-            onClick={() => loadAppointments(page + 1)}
+            onClick={() => setPage((currentPage) => currentPage + 1)}
             className="dr-btn dr-btn-outline"
           >
             Next →
