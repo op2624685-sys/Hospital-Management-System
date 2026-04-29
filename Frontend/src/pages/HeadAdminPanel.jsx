@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { Building2, IndianRupee, RefreshCw, Stethoscope, Users, Plus, UserCog, ChevronRight, Activity, Sparkles } from "lucide-react";
 import API from "../api/api";
 import Header from "../components/Header";
@@ -250,16 +250,12 @@ const HeadAdminPanel = () => {
   const [selectedBranchId, setSelectedBranchId] = useState(null);
   const [details, setDetails]                 = useState(null);
   const [loading, setLoading]                 = useState(true);
-  const [detailsLoading, setDetailsLoading]   = useState(false);
-  const [error, setError]                     = useState("");
-  const [detailsError, setDetailsError]       = useState("");
   const [spinning, setSpinning]               = useState(false);
   const [selectedTab, setSelectedTab]         = useState("Branch");
 
   const [branchForm, setBranchForm] = useState(emptyBranchForm);
   const [adminForm,  setAdminForm]  = useState(emptyAdminForm);
   const [doctorForm, setDoctorForm] = useState(emptyDoctorForm);
-  const [branchNameSuggestions,     setBranchNameSuggestions]     = useState([]);
   const [submitting, setSubmitting] = useState(false);
   const [departmentTemplates, setDepartmentTemplates] = useState([]);
   const [departmentForm, setDepartmentForm] = useState({
@@ -275,9 +271,8 @@ const HeadAdminPanel = () => {
     ],
   });
   const [departmentSubmitting, setDepartmentSubmitting] = useState(false);
-  const [departmentError, setDepartmentError] = useState("");
 
-  const refreshAll = async () => {
+  const refreshAll = useCallback(async () => {
     setLoading(true); setSpinning(true);
     try { 
       const [overRes, deptRes] = await Promise.all([
@@ -286,13 +281,14 @@ const HeadAdminPanel = () => {
       ]);
       const items = Array.isArray(overRes.data) ? overRes.data : [];
       setOverview(items);
-      if (items.length && !selectedBranchId) setSelectedBranchId(items[0].branchId);
+      if (items.length) {
+        setSelectedBranchId((current) => current || items[0].branchId);
+      }
       setDepartmentTemplates(Array.isArray(deptRes.data) ? deptRes.data : []);
-      setError(""); 
     }
-    catch (e) { setError("Failed to load dashboard data"); }
+    catch { /* keep the existing screen available if refresh fails */ }
     finally { setLoading(false); setTimeout(() => setSpinning(false), 800); }
-  };
+  }, []);
 
   const handleCreateBranch = async (e) => {
     e.preventDefault();
@@ -406,17 +402,15 @@ const HeadAdminPanel = () => {
     }
   };
 
-  useEffect(() => { refreshAll(); }, []);
+  useEffect(() => { refreshAll(); }, [refreshAll]);
 
   useEffect(() => {
     if (!selectedBranchId) return;
     const loadDetails = async () => {
-      setDetailsLoading(true);
       try {
         const res = await API.get(`/head-admin/branch/${selectedBranchId}/details`);
         setDetails(res.data);
-      } catch (e) { setDetailsError("Failed to load branch details"); }
-      finally { setDetailsLoading(false); }
+      } catch { /* branch detail panel can render from the last successful load */ }
     };
     loadDetails();
   }, [selectedBranchId]);
