@@ -322,8 +322,10 @@ public class AuthService {
 
     private SignupCompletionResponseDto buildSignupCompletionResponse(User user) {
         String jwt = authUtil.generateAccessToken(user);
+        String refreshToken = refreshTokenService.createRefreshToken(user.getId());
         return SignupCompletionResponseDto.builder()
                 .token(jwt)
+                .refreshToken(refreshToken)
                 .userId(user.getId())
                 .username(user.getUsername())
                 .email(user.getEmail())
