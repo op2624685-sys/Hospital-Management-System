@@ -26,6 +26,7 @@ import com.hms.dto.Request.MagicLinkSignupCompleteRequestDto;
 import com.hms.dto.Request.MagicLinkSignupRequestDto;
 import com.hms.dto.Request.ForgotPasswordRequestDto;
 import com.hms.dto.Request.LoginRequestDto;
+import com.hms.dto.Request.RefreshTokenRequestDto;
 import com.hms.dto.Request.ResetPasswordRequestDto;
 import com.hms.dto.Request.VerifyOtpRequestDto;
 import com.hms.dto.Response.MagicLinkResponseDto;
@@ -58,7 +59,7 @@ public class AuthControllerTest {
     @Test
     void login_ShouldReturnOk() throws Exception {
         LoginRequestDto request = new LoginRequestDto("testuser", "password");
-        LoginResponseDto response = new LoginResponseDto("token", 1L, "testuser", "test@example.com", null, Set.of(RoleType.PATIENT));
+        LoginResponseDto response = new LoginResponseDto("token", "refreshToken", 1L, "testuser", "test@example.com", null, Set.of(RoleType.PATIENT));
 
         when(authService.login(any(LoginRequestDto.class))).thenReturn(response);
 
@@ -203,12 +204,107 @@ public class AuthControllerTest {
 
     @Test
     void getCurrentUser_ShouldReturnOk() throws Exception {
-        LoginResponseDto response = new LoginResponseDto(null, 1L, "testuser", "test@example.com", null, Set.of(RoleType.PATIENT));
+        LoginResponseDto response = new LoginResponseDto(null, null, 1L, "testuser", "test@example.com", null, Set.of(RoleType.PATIENT));
 
         when(authService.getCurrentUser()).thenReturn(response);
 
         mockMvc.perform(get("/auth/me"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.userId").value(1));
+    }
+
+    @Test
+    void refreshToken_ShouldReturnOkWithNewToken() throws Exception {
+        RefreshTokenRequestDto request = new RefreshTokenRequestDto("valid-refresh-token");
+        LoginResponseDto response = new LoginResponseDto(
+                "new-access-token",
+                "new-refresh-token",
+                1L,
+                "testuser",
+                "test@example.com",
+                null,
+                Set.of(RoleType.PATIENT)
+        );
+
+        when(authService.refreshToken("valid-refresh-token")).thenReturn(response);
+
+        mockMvc.perform(post("/auth/refresh")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.token").value("new-access-token"))
+                .andExpect(jsonPath("$.refreshToken").value("new-refresh-token"))
+                .andExpect(jsonPath("$.userId").value(1L))
+                .andExpect(jsonPath("$.username").value("testuser"));
+    }
+
+    @Test
+    void refreshToken_ShouldReturnBadRequest_WhenRefreshTokenIsBlank() throws Exception {
+        RefreshTokenRequestDto request = new RefreshTokenRequestDto("");
+
+        mockMvc.perform(post("/auth/refresh")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void refreshToken_ShouldReturnBadRequest_WhenRefreshTokenIsNull() throws Exception {
+        String requestBody = "{\"refreshToken\": null}";
+
+        mockMvc.perform(post("/auth/refresh")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestBody))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void refreshToken_ShouldReturnBadRequest_WhenRefreshTokenIsMissing() throws Exception {
+        String requestBody = "{}";
+
+        mockMvc.perform(post("/auth/refresh")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestBody))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void logout_ShouldReturnOk() throws Exception {
+        RefreshTokenRequestDto request = new RefreshTokenRequestDto("valid-refresh-token");
+
+        mockMvc.perform(post("/auth/logout")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void logout_ShouldReturnBadRequest_WhenRefreshTokenIsBlank() throws Exception {
+        RefreshTokenRequestDto request = new RefreshTokenRequestDto("");
+
+        mockMvc.perform(post("/auth/logout")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void logout_ShouldReturnBadRequest_WhenRefreshTokenIsNull() throws Exception {
+        String requestBody = "{\"refreshToken\": null}";
+
+        mockMvc.perform(post("/auth/logout")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestBody))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void logout_ShouldReturnBadRequest_WhenRefreshTokenIsMissing() throws Exception {
+        String requestBody = "{}";
+
+        mockMvc.perform(post("/auth/logout")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestBody))
+                .andExpect(status().isBadRequest());
     }
 }
