@@ -12,14 +12,15 @@ import reviewsAPI from "../api/reviews";
  *   showCount {boolean} — show review count (default true)
  */
 const DoctorRatingDisplay = ({ doctorId, summary: initialSummary, size = "sm", showCount = true }) => {
-  const [summary, setSummary] = useState(initialSummary || null);
+  const [fetchedSummary, setFetchedSummary] = useState(null);
+  const summary = initialSummary || fetchedSummary;
 
   useEffect(() => {
-    if (initialSummary) { setSummary(initialSummary); return; }
+    if (initialSummary) return;
     if (!doctorId) return;
     reviewsAPI
       .getRatingSummary(doctorId)
-      .then((res) => setSummary(res.data))
+      .then((res) => setFetchedSummary(res.data))
       .catch(() => {/* silently ignore — ratings are non-critical */});
   }, [doctorId, initialSummary]);
 
