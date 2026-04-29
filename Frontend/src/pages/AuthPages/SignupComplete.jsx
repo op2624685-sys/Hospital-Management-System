@@ -56,13 +56,9 @@ const SignupComplete = () => {
         if (!isActive) return;
 
         if (response.data.token) {
-          localStorage.setItem('token', response.data.token);
-          localStorage.setItem('userId', response.data.userId);
-          localStorage.setItem('roles', JSON.stringify(response.data.roles || []));
-          localStorage.setItem('username', response.data.username || '');
-          localStorage.setItem('email', response.data.email || '');
-
           login({
+            token: response.data.token,
+            refreshToken: response.data.refreshToken,
             userId: response.data.userId,
             username: response.data.username || '',
             email: response.data.email || '',
@@ -115,13 +111,9 @@ const SignupComplete = () => {
       });
 
       if (response.data.token) {
-        localStorage.setItem('token', response.data.token);
-        localStorage.setItem('userId', response.data.userId);
-        localStorage.setItem('roles', JSON.stringify(response.data.roles));
-        localStorage.setItem('username', response.data.username || formData.username);
-        localStorage.setItem('email', response.data.email || '');
-
         login({
+          token: response.data.token,
+          refreshToken: response.data.refreshToken,
           userId: response.data.userId,
           username: response.data.username || formData.username,
           email: response.data.email || '',

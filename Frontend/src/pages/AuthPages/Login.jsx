@@ -35,12 +35,10 @@ const Login = () => {
       const response = await API.post('/auth/login', { username, password });
 
       if (response.data.token) {
-        localStorage.setItem('token', response.data.token);
-        localStorage.setItem('userId', response.data.userId);
-        localStorage.setItem('roles', JSON.stringify(response.data.roles));
-        
         // Store additional user data if provided by backend, with fallback
         const loginData = {
+          token: response.data.token,
+          refreshToken: response.data.refreshToken,
           userId: response.data.userId,
           username: response.data.username || username,
           email: response.data.email || '',

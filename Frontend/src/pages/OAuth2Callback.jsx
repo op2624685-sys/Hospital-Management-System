@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { toast } from 'react-toastify';
-import API from '../api/api';
+import API, { saveAuthTokens } from '../api/api';
 
 const OAuth2Callback = () => {
     const navigate = useNavigate();
@@ -12,10 +12,11 @@ const OAuth2Callback = () => {
     useEffect(() => {
         const params = new URLSearchParams(location.search);
         const token = params.get('token');
+        const refreshToken = params.get('refreshToken');
 
         if (token) {
-            localStorage.setItem('token', token);
-            
+            saveAuthTokens({ token, refreshToken });
+
             // Fetch user profile to get roles and ID (since OAuth redirect only gives token for simplicity)
             // Or we could have passed them in the URL too, but fetching is safer.
             const fetchUserProfile = async () => {
@@ -25,10 +26,9 @@ const OAuth2Callback = () => {
                     const response = await API.get('/auth/me');
                     const userData = response.data;
                     
-                    localStorage.setItem('userId', userData.userId);
-                    localStorage.setItem('roles', JSON.stringify(userData.roles || []));
-                    
                     login({
+                        token,
+                        refreshToken,
                         userId: userData.userId,
                         username: userData.username || '',
                         email: userData.email || '',
