@@ -16,6 +16,7 @@ import lombok.NoArgsConstructor;
 public class SignupCompletionResponseDto {
 
     private String token;
+    private String refreshToken;
     private Long userId;
     private String username;
     private String email;
