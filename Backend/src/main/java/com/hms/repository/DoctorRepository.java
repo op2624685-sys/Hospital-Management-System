@@ -37,10 +37,22 @@ public interface DoctorRepository extends JpaRepository<Doctor, Long> {
             @Param("specialization") String specialization,
             Pageable pageable);
 
-    @Query("""
-            SELECT d FROM Doctor d
-            WHERE (:search IS NULL OR :search = '' OR LOWER(d.name) LIKE LOWER(CONCAT('%', :search, '%')))
-            """)
+    @Query(
+            value = """
+                    SELECT DISTINCT d FROM Doctor d
+                    LEFT JOIN d.departments dept
+                    WHERE (:search IS NULL OR :search = '' OR LOWER(d.name) LIKE LOWER(CONCAT('%', :search, '%')))
+                       OR (:search IS NULL OR :search = '' OR LOWER(d.specialization) LIKE LOWER(CONCAT('%', :search, '%')))
+                       OR (:search IS NULL OR :search = '' OR LOWER(dept.name) LIKE LOWER(CONCAT('%', :search, '%')))
+                    """,
+            countQuery = """
+                    SELECT COUNT(DISTINCT d) FROM Doctor d
+                    LEFT JOIN d.departments dept
+                    WHERE (:search IS NULL OR :search = '' OR LOWER(d.name) LIKE LOWER(CONCAT('%', :search, '%')))
+                       OR (:search IS NULL OR :search = '' OR LOWER(d.specialization) LIKE LOWER(CONCAT('%', :search, '%')))
+                       OR (:search IS NULL OR :search = '' OR LOWER(dept.name) LIKE LOWER(CONCAT('%', :search, '%')))
+                    """
+    )
     Page<Doctor> findAllSearch(@Param("search") String search, Pageable pageable);
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
