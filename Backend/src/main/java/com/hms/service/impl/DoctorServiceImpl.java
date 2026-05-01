@@ -16,12 +16,14 @@ import com.hms.dto.DoctorDto;
 import com.hms.dto.Request.OnBoardDoctorRequestDto;
 import com.hms.dto.Response.DoctorResponseDto;
 import com.hms.dto.Response.BranchResponseDto;
+import com.hms.dto.Response.RatingSummaryResponse;
 import com.hms.dto.BranchDto;
 import com.hms.dto.DepartmentDto;
 import com.hms.dto.AdminDto;
 import com.hms.entity.Branch;
 import com.hms.entity.Admin;
 import com.hms.entity.Doctor;
+import com.hms.entity.DoctorRatingSummary;
 import com.hms.entity.User;
 import com.hms.entity.Department;
 import com.hms.entity.type.RoleType;
@@ -31,12 +33,15 @@ import com.hms.error.ValidationException;
 import com.hms.repository.AdminRepository;
 import com.hms.repository.BranchRepository;
 import com.hms.repository.DoctorRepository;
+import com.hms.repository.DoctorRatingSummaryRepository;
 import com.hms.repository.UserRepository;
 import com.hms.repository.DepartmentRepository;
 import com.hms.service.DoctorService;
 import com.hms.service.HMSAuditLogService;
 import lombok.RequiredArgsConstructor;
 import java.util.stream.Collectors;
+import java.util.Map;
+import java.util.function.Function;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 @Service
@@ -48,6 +53,7 @@ public class DoctorServiceImpl implements DoctorService {
     private final BranchRepository branchRepository;
     private final AdminRepository adminRepository;
     private final DepartmentRepository departmentRepository;
+    private final DoctorRatingSummaryRepository doctorRatingSummaryRepository;
 
     private final HMSAuditLogService auditLogService;
 
@@ -61,9 +67,17 @@ public class DoctorServiceImpl implements DoctorService {
     @Transactional(readOnly = true)
     @Cacheable(value = "doctorListPaged", key = "'search:' + (#search == null ? '' : #search.trim().toLowerCase()) + ':' + #page + ':' + #size")
     public List<DoctorDto> getAllDoctorsSearch(String search, int page, int size) {
-        return doctorRepository.findAllSearch(search, PageRequest.of(page, size))
+        List<Doctor> doctors = doctorRepository.findAllSearch(search, PageRequest.of(page, size))
                 .stream()
-                .map(this::mapToDoctorDto)
+                .toList();
+        Map<Long, RatingSummaryResponse> ratingSummariesByDoctorId = getRatingSummariesByDoctorId(doctors);
+
+        return doctors.stream()
+                .map(doctor -> mapToDoctorDto(
+                        doctor,
+                        ratingSummariesByDoctorId.getOrDefault(
+                                doctor.getId(),
+                                emptyRatingSummary(doctor.getId()))))
                 .toList();
     }
 
@@ -73,7 +87,10 @@ public class DoctorServiceImpl implements DoctorService {
     public DoctorDto getDoctorById(Long id) {
         Doctor doctor = doctorRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Doctor not found with id: " + id));
-        return mapToDoctorDto(doctor);
+        RatingSummaryResponse ratingSummary = doctorRatingSummaryRepository.findById(id)
+                .map(this::mapToRatingSummaryResponse)
+                .orElse(emptyRatingSummary(id));
+        return mapToDoctorDto(doctor, ratingSummary);
     }
 
     @Override
@@ -83,7 +100,7 @@ public class DoctorServiceImpl implements DoctorService {
         List<Doctor> doctors = doctorRepository.findByName(name);
         return doctors
                 .stream()
-                .map(this::mapToDoctorDto)
+                .map(doctor -> mapToDoctorDto(doctor, null))
                 .toList();
     }
 
@@ -210,7 +227,7 @@ public class DoctorServiceImpl implements DoctorService {
         });
     }
 
-    private DoctorDto mapToDoctorDto(Doctor doctor) {
+    private DoctorDto mapToDoctorDto(Doctor doctor, RatingSummaryResponse ratingSummary) {
         return new DoctorDto(
                 doctor.getId(),
                 doctor.getName(),
@@ -219,8 +236,35 @@ public class DoctorServiceImpl implements DoctorService {
                 mapDepartments(doctor),
                 mapBranch(doctor.getBranch()),
                 isDoctorHeadOfAnyDepartment(doctor),
-                doctor.getConsultationFee()
+                doctor.getConsultationFee(),
+                ratingSummary
         );
+    }
+
+    private Map<Long, RatingSummaryResponse> getRatingSummariesByDoctorId(List<Doctor> doctors) {
+        List<Long> doctorIds = doctors.stream()
+                .map(Doctor::getId)
+                .toList();
+        if (doctorIds.isEmpty()) {
+            return Map.of();
+        }
+
+        return doctorRatingSummaryRepository.findByDoctorIdIn(doctorIds)
+                .stream()
+                .map(this::mapToRatingSummaryResponse)
+                .collect(Collectors.toMap(RatingSummaryResponse::doctorId, Function.identity()));
+    }
+
+    private RatingSummaryResponse mapToRatingSummaryResponse(DoctorRatingSummary summary) {
+        return new RatingSummaryResponse(
+                summary.getDoctorId(),
+                summary.getAverageRating(),
+                summary.getTotalReviews()
+        );
+    }
+
+    private RatingSummaryResponse emptyRatingSummary(Long doctorId) {
+        return new RatingSummaryResponse(doctorId, 0.0, 0L);
     }
 
     private DoctorResponseDto mapToDoctorResponseDto(Doctor doctor) {
