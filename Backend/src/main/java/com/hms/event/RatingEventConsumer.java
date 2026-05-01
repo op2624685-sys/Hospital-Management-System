@@ -9,6 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import java.util.List;
 
 import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.support.Acknowledgment;
 import org.springframework.stereotype.Component;
@@ -39,7 +40,10 @@ public class RatingEventConsumer {
             groupId = "rating-aggregator"
     )
     @Transactional
-    @CacheEvict(value = "doctorRating", key = "#event.doctorId()")
+    @Caching(evict = {
+            @CacheEvict(value = "doctorRating", key = "#event.doctorId()"),
+            @CacheEvict(value = "doctorListPaged", allEntries = true)
+    })
     public void consume(RatingEvent event, Acknowledgment ack) {
         Long doctorId = event.doctorId();
         log.info("Consuming {} RatingEvent for doctorId={}", event.eventType(), doctorId);
