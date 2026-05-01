@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import Header from '../components/Header'
 import DoctorCard from '../components/DoctorCard'
 import API from '../api/api'
@@ -7,36 +7,38 @@ import { useQuery } from '@tanstack/react-query'
 
 const Doctor = () => {
   const [search, setSearch] = useState('')
+  const [debouncedSearch, setDebouncedSearch] = useState('')
   const [page, setPage] = useState(0)
   const [size] = useState(10)
+
+  useEffect(() => {
+    const timeoutId = window.setTimeout(() => {
+      setDebouncedSearch(search.trim())
+      setPage(0)
+    }, 300)
+
+    return () => window.clearTimeout(timeoutId)
+  }, [search])
 
   const {
     data: doctors = [],
     isLoading: loading,
+    isFetching,
   } = useQuery({
-    queryKey: ['public-doctors', page, size],
+    queryKey: ['public-doctors', page, size, debouncedSearch],
     queryFn: async () => {
-      const response = await API.get(`/public/doctors?page=${page}&size=${size}`)
+      const response = await API.get('/public/doctors', {
+        params: {
+          page,
+          size,
+          ...(debouncedSearch ? { search: debouncedSearch } : {}),
+        },
+      })
       return Array.isArray(response.data) ? response.data : []
     },
   })
 
   const hasMore = doctors.length === size
-
-  const normalizedSearch = search.toLowerCase().trim()
-  const filtered = doctors.filter(doctor => {
-    const firstDepartment = Array.isArray(doctor.departments) ? doctor.departments[0] : doctor.department
-    const doctorName = (doctor?.name || '').toLowerCase()
-    const doctorSpeciality = (doctor?.speciality || '').toLowerCase()
-    const doctorSpecialization = (doctor?.specialization || '').toLowerCase()
-    const departmentName = (firstDepartment?.name || '').toLowerCase()
-    return (
-      doctorName.includes(normalizedSearch) ||
-      doctorSpeciality.includes(normalizedSearch) ||
-      doctorSpecialization.includes(normalizedSearch) ||
-      departmentName.includes(normalizedSearch)
-    )
-  })
 
   return (
     <>
@@ -210,8 +212,9 @@ const Doctor = () => {
           </div>
           {!loading && (
             <p className="doc-result-pill">
-              <strong>{filtered.length}</strong> result{filtered.length !== 1 ? 's' : ''}
+              <strong>{doctors.length}</strong> result{doctors.length !== 1 ? 's' : ''}
               {search && <> for <span>"{search}"</span></>}
+              {isFetching && !loading && <> &middot; updating</>}
             </p>
           )}
         </div>
@@ -219,7 +222,7 @@ const Doctor = () => {
         <section className="doc-grid-section">
           {loading && <PageLoader fullPage={false} size="md" bg='Transparent' message='Loading our specialists...'/>}
 
-          {!loading && filtered.length === 0 && (
+          {!loading && doctors.length === 0 && (
             <div className="doc-empty">
               <h3>No doctors found</h3>
               {search && (
@@ -228,11 +231,16 @@ const Doctor = () => {
             </div>
           )}
 
-          {!loading && filtered.length > 0 && (
+          {!loading && doctors.length > 0 && (
             <>
               <div className="doc-cards-grid">
-                {filtered.map((doctor, i) => (
-                  <DoctorCard key={doctor.id} doctor={doctor} index={i} />
+                {doctors.map((doctor, i) => (
+                  <DoctorCard
+                    key={doctor.id}
+                    doctor={doctor}
+                    ratingSummary={doctor.ratingSummary}
+                    index={i}
+                  />
                 ))}
               </div>
 
