@@ -3,6 +3,7 @@ package com.hms.dto;
 import java.io.Serializable;
 import java.util.Set;
 
+import com.hms.dto.Response.RatingSummaryResponse;
 import lombok.*;
 
 @Data
@@ -18,4 +19,5 @@ public class DoctorDto implements Serializable{
     private BranchDto branch;
     private boolean isHead;
     private Long consultationFee;
+    private RatingSummaryResponse ratingSummary;
 }
