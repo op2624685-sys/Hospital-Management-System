@@ -20,4 +20,5 @@ public class DoctorDto implements Serializable{
     private boolean isHead;
     private Long consultationFee;
     private RatingSummaryResponse ratingSummary;
+    private String profilePhoto;
 }
