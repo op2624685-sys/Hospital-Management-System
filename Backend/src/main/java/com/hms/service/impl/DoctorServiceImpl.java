@@ -237,7 +237,8 @@ public class DoctorServiceImpl implements DoctorService {
                 mapBranch(doctor.getBranch()),
                 isDoctorHeadOfAnyDepartment(doctor),
                 doctor.getConsultationFee(),
-                ratingSummary
+                ratingSummary,
+                doctor.getUser() != null ? doctor.getUser().getProfilePhoto() : null
         );
     }
 
@@ -275,7 +276,8 @@ public class DoctorServiceImpl implements DoctorService {
                 doctor.getEmail(),
                 mapDepartments(doctor),
                 mapBranchResponse(doctor.getBranch()),
-                doctor.getConsultationFee()
+                doctor.getConsultationFee(),
+                doctor.getUser() != null ? doctor.getUser().getProfilePhoto() : null
         );
     }
 
