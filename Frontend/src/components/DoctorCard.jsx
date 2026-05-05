@@ -1,6 +1,7 @@
 import React from 'react'
 import { useNavigate } from 'react-router-dom'
 import DoctorRatingDisplay from './DoctorRatingDisplay'
+import { getBranchImage } from '../utils/branchImages'
 
 const specialityConfig = {
   'Cardiology':    { color: 'var(--primary)', bg: 'var(--secondary)', border: 'var(--border)' },
@@ -90,13 +91,23 @@ const DoctorCard = ({ doctor, ratingSummary, index = 0 }) => {
           position: relative;
           height: 100px;
           background: linear-gradient(135deg, var(--dc-c1), var(--dc-c2));
+          background-size: cover;
+          background-position: center;
           overflow: hidden;
           flex-shrink: 0;
+        }
+        .dc-banner::before {
+          content: '';
+          position: absolute;
+          inset: 0;
+          background: linear-gradient(135deg, rgba(0,0,0,0.3), rgba(0,0,0,0.3));
+          pointer-events: none;
         }
         .dc-banner-ring {
           position: absolute;
           border-radius: 50%;
           border: 1.5px solid rgba(255,255,255,.15);
+          z-index: 1;
         }
         .dc-banner-ring-1 { width: 160px; height: 160px; top: -60px; right: -40px; }
         .dc-banner-ring-2 { width: 100px; height: 100px; bottom: -50px; left: -20px; }
@@ -113,6 +124,7 @@ const DoctorCard = ({ doctor, ratingSummary, index = 0 }) => {
           font-size: 11px;
           font-weight: 600;
           color: var(--foreground);
+          z-index: 3;
         }
         .dc-avail-dot {
           width: 7px; height: 7px;
@@ -148,6 +160,19 @@ const DoctorCard = ({ doctor, ratingSummary, index = 0 }) => {
           display: flex;
           align-items: center;
           justify-content: center;
+          overflow: hidden;
+          position: relative;
+        }
+        .dc-avatar-img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+          position: absolute;
+          top: 0;
+          left: 0;
+        }
+        .dc-avatar-fallback {
+          z-index: 1;
         }
         .dc-initials {
           font-family: 'Cormorant Garamond', serif;
@@ -251,7 +276,14 @@ const DoctorCard = ({ doctor, ratingSummary, index = 0 }) => {
         }}
       >
         <div className="dc-inner">
-          <div className="dc-banner">
+          <div 
+            className="dc-banner"
+            style={{
+              backgroundImage: doctor?.branch?.id 
+                ? `url(${getBranchImage(doctor.branch)})` 
+                : `linear-gradient(135deg, ${c1}, ${c2})`,
+            }}
+          >
             <div className="dc-banner-ring dc-banner-ring-1" />
             <div className="dc-banner-ring dc-banner-ring-2" />
             <div className="dc-avail-badge">
@@ -262,14 +294,25 @@ const DoctorCard = ({ doctor, ratingSummary, index = 0 }) => {
 
           <div className="dc-avatar-wrap">
             <div className="dc-avatar">
-              <span className="dc-initials">{initials}</span>
+              {doctor.profilePhoto && (
+                <img 
+                  src={doctor.profilePhoto} 
+                  alt={doctor.name}
+                  className="dc-avatar-img"
+                  onError={(e) => {
+                    e.target.style.display = 'none';
+                  }}
+                />
+              )}
+              <span className="dc-initials dc-avatar-fallback">
+                {initials}
+              </span>
             </div>
           </div>
 
           <div className="dc-body">
             <div>
               <h3 className="dc-name">{doctor.name}</h3>
-              <p className="dc-email">{doctor.email}</p>
             </div>
 
             <span className="dc-speciality-badge">
@@ -284,7 +327,7 @@ const DoctorCard = ({ doctor, ratingSummary, index = 0 }) => {
               <span>{firstDepartment?.name || 'General Department'}</span>
             </div>
 
-            <div className="dc-meta-row">
+            <div className="dc-meta-row self-center-safe">
               <span className="dc-branch">{doctor?.branch?.name || 'Branch N/A'}</span>
               <DoctorRatingDisplay doctorId={doctor.id} summary={ratingSummary} size="sm" />
             </div>
