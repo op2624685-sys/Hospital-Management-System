@@ -6,6 +6,8 @@ import java.util.concurrent.TimeUnit;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
+import com.hms.error.UnauthorizedException;
+
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -37,10 +39,22 @@ public class RefreshTokenService {
         Object userId = redisTemplate.opsForValue().get(key);
 
         if (userId == null) {
-            throw new RuntimeException("Invalid or expired refresh token");
+            throw new UnauthorizedException("Invalid or expired refresh token");
         }
 
-        return (Long) userId;
+        if (userId instanceof Number number) {
+            return number.longValue();
+        }
+
+        if (userId instanceof String value) {
+            try {
+                return Long.parseLong(value);
+            } catch (NumberFormatException ex) {
+                throw new UnauthorizedException("Invalid refresh token payload");
+            }
+        }
+
+        throw new UnauthorizedException("Invalid refresh token payload");
     }
 
     public void deleteToken(String token) {
