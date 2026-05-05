@@ -16,6 +16,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 
+import com.hms.error.UnauthorizedException;
 import com.hms.security.RefreshTokenService;
 
 @ExtendWith(MockitoExtension.class)
@@ -98,7 +99,7 @@ public class RefreshTokenServiceTest {
         when(valueOperations.get(key)).thenReturn(null);
 
         // Act & Assert
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
+        UnauthorizedException exception = assertThrows(UnauthorizedException.class, () -> {
             refreshTokenService.validateRefreshToken(token);
         });
 
@@ -114,7 +115,7 @@ public class RefreshTokenServiceTest {
         when(valueOperations.get(key)).thenReturn(null);
 
         // Act & Assert
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
+        UnauthorizedException exception = assertThrows(UnauthorizedException.class, () -> {
             refreshTokenService.validateRefreshToken(token);
         });
 
@@ -220,6 +221,49 @@ public class RefreshTokenServiceTest {
         assertNotNull(result);
         assertEquals(expectedUserId, result);
         assertInstanceOf(Long.class, result);
+    }
+
+    @Test
+    void validateRefreshToken_shouldConvertIntegerUserIdFromRedis() {
+        // Arrange
+        String token = "integer-user-id-token";
+
+        when(valueOperations.get("refresh-token:" + token)).thenReturn(12345);
+
+        // Act
+        Long result = refreshTokenService.validateRefreshToken(token);
+
+        // Assert
+        assertEquals(12345L, result);
+    }
+
+    @Test
+    void validateRefreshToken_shouldConvertStringUserIdFromRedis() {
+        // Arrange
+        String token = "string-user-id-token";
+
+        when(valueOperations.get("refresh-token:" + token)).thenReturn("12345");
+
+        // Act
+        Long result = refreshTokenService.validateRefreshToken(token);
+
+        // Assert
+        assertEquals(12345L, result);
+    }
+
+    @Test
+    void validateRefreshToken_shouldRejectInvalidUserIdPayload() {
+        // Arrange
+        String token = "bad-user-id-token";
+
+        when(valueOperations.get("refresh-token:" + token)).thenReturn("abc");
+
+        // Act & Assert
+        UnauthorizedException exception = assertThrows(UnauthorizedException.class, () -> {
+            refreshTokenService.validateRefreshToken(token);
+        });
+
+        assertEquals("Invalid refresh token payload", exception.getMessage());
     }
 
     @Test
