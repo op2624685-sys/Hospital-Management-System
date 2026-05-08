@@ -21,6 +21,7 @@ import { doctorAPI } from '../api/api';
 import SwitchToggleThemeDemo from '@/components/ui/toggle-theme';
 import ProfileDropdown from './ProfileDropdown';
 import { useQuery } from '@tanstack/react-query';
+import NotificationBell from './NotificationBell';
 
 const baseNavLinks = [
   { to: '/', label: 'Home', icon: Activity },
@@ -155,20 +156,21 @@ const Header = () => {
             ))}
           </nav>
 
-          <div className='flex items-center gap-3'>
-            <div className="flex items-center bg-[var(--muted)]/50 dark:bg-[var(--card)]/50 p-1.5 rounded-xl border border-[var(--border)]">
-              <SwitchToggleThemeDemo />
-            </div>
+          <div className='flex items-center gap-2.5'>
+            <SwitchToggleThemeDemo />
             
-            <div className='hidden lg:flex items-center gap-3'>
+            <div className='hidden lg:flex items-center gap-2.5'>
             {isLoggedIn ? (
-              <ProfileDropdown />
+              <>
+                <NotificationBell />
+                <ProfileDropdown />
+              </>
             ) : (
               <RouterLink
                 to="/login"
-                className='group flex items-center gap-2 text-white text-sm font-semibold py-2.5 px-5 rounded-xl transition-all duration-300 hover:scale-105 active:scale-95 shadow-md hover:shadow-lg'
-                style={{ background: 'linear-gradient(135deg, var(--primary), var(--chart-5))', boxShadow: '0 4px 16px color-mix(in srgb, var(--primary) 30%, transparent)' }}>
-                <LogIn size={15} className='group-hover:-rotate-12 transition-transform duration-300' />
+                className='group inline-flex h-9 items-center gap-1.5 rounded-full px-3.5 text-xs font-bold uppercase tracking-wide text-[var(--primary-foreground)] transition-all duration-300 hover:-translate-y-0.5 active:translate-y-0 shadow-sm hover:shadow-md'
+                style={{ background: 'linear-gradient(135deg, var(--primary), var(--chart-5))', boxShadow: '0 4px 12px color-mix(in srgb, var(--primary) 22%, transparent)' }}>
+                <LogIn size={13} className='transition-transform duration-300 group-hover:-rotate-12' />
                 <span>Login</span>
               </RouterLink>
             )}
@@ -273,22 +275,25 @@ const Header = () => {
 
             <div className='mt-8 pt-6 border-t' style={{ borderColor: 'var(--border)' }}>
               {isLoggedIn ? (
-                <button
-                  onClick={async () => {
-                    await logout();
-                    setMenuOpen(false);
-                    navigate('/login');
-                  }}
-                  className='w-full flex items-center justify-center gap-2 text-white py-3 rounded-xl font-semibold text-sm transition-all duration-300'
-                  style={{ background: '#ef4444' }}>
-                  <LogOut size={15} />
-                  Logout
-                </button>
+                <>
+                  <NotificationBell inMobileMenu onNavigate={() => setMenuOpen(false)} />
+                  <button
+                    onClick={async () => {
+                      await logout();
+                      setMenuOpen(false);
+                      navigate('/login');
+                    }}
+                    className='w-full mt-3 flex items-center justify-center gap-2 text-white py-3 rounded-xl font-semibold text-sm transition-all duration-300'
+                    style={{ background: '#ef4444' }}>
+                    <LogOut size={15} />
+                    Logout
+                  </button>
+                </>
               ) : (
                 <RouterLink
                   to="/login"
                   onClick={() => setMenuOpen(false)}
-                  className='w-full flex items-center justify-center gap-2 text-white py-3 rounded-xl font-semibold text-sm transition-all duration-300'
+                  className='mx-auto flex h-10 w-fit min-w-32 items-center justify-center gap-2 rounded-full px-5 text-sm font-semibold text-[var(--primary-foreground)] transition-all duration-300'
                   style={{ background: 'linear-gradient(135deg, var(--primary), var(--chart-5))' }}>
                   <LogIn size={15} />
                   Login
