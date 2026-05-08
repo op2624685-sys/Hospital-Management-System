@@ -144,4 +144,11 @@ export const userAPI = {
   }),
 };
 
+export const notificationAPI = {
+  getList: (size = 10) => API.get('/user/notifications', { params: { size } }),
+  getUnreadCount: () => API.get('/user/notifications/unread-count'),
+  markRead: (id) => API.put(`/user/notifications/${id}/read`),
+  markAllRead: () => API.put('/user/notifications/read-all'),
+};
+
 export default API;
