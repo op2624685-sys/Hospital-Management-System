@@ -681,7 +681,7 @@ const AdminPanel = () => {
         }
         .admin-refresh-btn {
           display: inline-flex; align-items: center; gap: 8px;
-          background: var(--primary); color: #fff; border: none;
+          background: var(--primary); color: var(--primary-foreground); border: none;
           padding: 12px 24px; border-radius: 14px;
           font-size: 13px; font-weight: 800; cursor: pointer;
           transition: all .2s; box-shadow: 0 10px 25px -5px color-mix(in srgb, var(--primary) 40%, transparent);
@@ -700,7 +700,7 @@ const AdminPanel = () => {
           font-size: 13px; font-weight: 800; color: var(--muted-foreground); cursor: pointer;
           transition: all .2s; text-transform: uppercase; letter-spacing: 0.05em;
         }
-        .admin-tab.active { background: var(--primary); color: #fff; box-shadow: 0 8px 16px -4px color-mix(in srgb, var(--primary) 40%, transparent); }
+        .admin-tab.active { background: var(--primary); color: var(--primary-foreground); box-shadow: 0 8px 16px -4px color-mix(in srgb, var(--primary) 40%, transparent); }
         .admin-tab:not(.active):hover { background: var(--secondary); color: var(--primary); }
 
         /* Stats Grid */
@@ -782,7 +782,7 @@ const AdminPanel = () => {
         .admin-form-wrapper input::placeholder, .admin-form-wrapper textarea::placeholder { color: var(--muted-foreground); opacity: .85; }
         .admin-form-wrapper select option { background: var(--card); color: var(--foreground); }
         .admin-form-actions { display: flex; gap: 12px; justify-content: flex-end; margin-top: 12px; }
-        .btn-primary { background: var(--primary); color: #fff; border: none; padding: 12px 24px; border-radius: 12px; font-weight: 800; cursor: pointer; transition: all .2s; }
+        .btn-primary { background: var(--primary); color: var(--primary-foreground); border: none; padding: 12px 24px; border-radius: 12px; font-weight: 800; cursor: pointer; transition: all .2s; }
         .btn-cancel { background: var(--card); border: 1.5px solid var(--border); color: var(--foreground); padding: 12px 24px; border-radius: 12px; font-weight: 800; cursor: pointer; }
         .admin-form-message { font-size: 12px; color: var(--muted-foreground); background: color-mix(in srgb, var(--primary) 8%, transparent); border: 1px solid color-mix(in srgb, var(--primary) 22%, transparent); border-radius: 10px; padding: 10px 12px; }
         .admin-loading, .admin-empty-state { border: 1px dashed var(--border); border-radius: 14px; padding: 14px 16px; font-size: 13px; color: var(--muted-foreground); background: color-mix(in srgb, var(--card) 80%, transparent); }
@@ -816,7 +816,7 @@ const AdminPanel = () => {
         }
         .admin-pagination button:hover:not(:disabled) {
           background: var(--primary);
-          color: #fff;
+          color: var(--primary-foreground);
         }
         .admin-pagination button:disabled {
           opacity: 0.5;

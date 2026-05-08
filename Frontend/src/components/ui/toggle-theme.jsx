@@ -26,18 +26,27 @@ const SwitchToggleThemeDemo = () => {
   }, [isDark]);
 
   return (
-    <div className="group inline-flex items-center gap-2">
-      <span
+    <div
+      className="inline-flex items-center gap-1 rounded-full border border-[var(--border)] bg-[var(--card)]/80 p-0.5 shadow-sm backdrop-blur"
+      role="group"
+      aria-label="Theme mode"
+    >
+      <button
         id={`${id}-light`}
+        type="button"
         className={cn(
-          "cursor-pointer text-left text-sm font-medium transition-colors",
-          isDark ? "text-muted-foreground/50 hover:text-muted-foreground" : "text-foreground",
+          "inline-flex size-7 items-center justify-center rounded-full transition-all duration-200",
+          !isDark
+            ? "bg-[var(--primary)] text-[var(--primary-foreground)] shadow-sm"
+            : "text-[var(--muted-foreground)] hover:bg-[var(--muted)] hover:text-[var(--foreground)]",
         )}
         aria-controls={id}
+        aria-label="Use light mode"
+        title="Light mode"
         onClick={() => setIsDark(false)}
       >
-        <SunIcon className="size-4" aria-hidden="true" />
-      </span>
+        <SunIcon className="size-3.5" aria-hidden="true" />
+      </button>
 
       <Switch
         id={id}
@@ -45,19 +54,25 @@ const SwitchToggleThemeDemo = () => {
         onCheckedChange={setIsDark}
         aria-labelledby={`${id}-light ${id}-dark`}
         aria-label="Toggle between dark and light mode"
+        className="sr-only"
       />
 
-      <span
+      <button
         id={`${id}-dark`}
+        type="button"
         className={cn(
-          "cursor-pointer text-right text-sm font-medium transition-colors",
-          !isDark ? "text-muted-foreground/50 hover:text-muted-foreground" : "text-foreground",
+          "inline-flex size-7 items-center justify-center rounded-full transition-all duration-200",
+          isDark
+            ? "bg-[var(--primary)] text-[var(--primary-foreground)] shadow-sm"
+            : "text-[var(--muted-foreground)] hover:bg-[var(--muted)] hover:text-[var(--foreground)]",
         )}
         aria-controls={id}
+        aria-label="Use dark mode"
+        title="Dark mode"
         onClick={() => setIsDark(true)}
       >
-        <MoonIcon className="size-4" aria-hidden="true" />
-      </span>
+        <MoonIcon className="size-3.5" aria-hidden="true" />
+      </button>
     </div>
   );
 };

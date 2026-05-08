@@ -177,7 +177,7 @@ const FontLoader = () => (
       box-shadow: 0 0 0 4px color-mix(in srgb, var(--primary) 12%, transparent);
     }
     
-    .had-btn-teal { background: var(--primary); color: #fff; border: none; border-radius: 12px; padding: 12px 24px; font-weight: 800; cursor: pointer; width: 100%; transition: all 0.2s; box-shadow: 0 10px 25px -5px color-mix(in srgb, var(--primary) 40%, transparent); }
+    .had-btn-teal { background: var(--primary); color: var(--primary-foreground); border: none; border-radius: 12px; padding: 12px 24px; font-weight: 800; cursor: pointer; width: 100%; transition: all 0.2s; box-shadow: 0 10px 25px -5px color-mix(in srgb, var(--primary) 40%, transparent); }
     .had-btn-teal:hover { transform: translateY(-2px); filter: brightness(1.1); }
     .had-btn-slate { background: var(--secondary); color: var(--primary); border: 1px solid color-mix(in srgb, var(--primary) 20%, transparent); border-radius: 12px; padding: 12px 24px; font-weight: 800; cursor: pointer; width: 100%; transition: all 0.2s; }
     .had-btn-slate:hover { background: color-mix(in srgb, var(--primary) 10%, var(--secondary)); }
@@ -611,7 +611,7 @@ const HeadAdminPanel = () => {
                   <div className="border-t border-dashed border-[var(--border)] pt-4 mt-4">
                     <div className="flex justify-between items-center mb-4">
                       <span className="text-[10px] font-black uppercase text-[var(--muted)]">Sections & Guidelines</span>
-                      <button type="button" onClick={addDeptSection} className="text-[10px] bg-[var(--primary)] text-white px-2 py-1 rounded-sm">+ Add Section</button>
+                      <button type="button" onClick={addDeptSection} className="text-[10px] bg-[var(--primary)] text-[var(--primary-foreground)] px-2 py-1 rounded-sm">+ Add Section</button>
                     </div>
                     <div className="space-y-4 max-h-[300px] overflow-y-auto pr-2">
                        {departmentForm.sections.map((s, si) => (

@@ -62,7 +62,7 @@ const GLOBAL_CSS = `
   }
   .dd-card:hover { transform: translateY(-12px); box-shadow: 0 28px 64px color-mix(in srgb, var(--primary) 15%, transparent) !important; border-color: var(--primary) !important; }
   .dd-card:hover .dd-shimmer { opacity: 1 !important; }
-  .dd-card:hover .dd-icon-wrap { transform: rotate(8deg) scale(1.12) !important; background: var(--primary) !important; color: #fff !important; }
+  .dd-card:hover .dd-icon-wrap { transform: rotate(8deg) scale(1.12) !important; background: var(--primary) !important; color: var(--primary-foreground) !important; }
   .dd-card:hover .dd-card-name { color: var(--primary) !important; }
   
   .dd-card:hover .dd-stat-blue { background: var(--secondary) !important; border-color: var(--primary) !important; }
@@ -223,7 +223,7 @@ const DoctorDepartment = () => {
                         <div className="dd-fadeup bg-[var(--card)] rounded-[2.5rem] border border-[var(--border)] overflow-hidden shadow-2xl relative">
                             <button 
                                 onClick={() => navigate('/doctor/my-department')}
-                                className="absolute top-8 left-8 z-50 flex items-center gap-3 px-6 py-3 rounded-2xl bg-[var(--background)]/60 backdrop-blur-xl border border-[var(--border)] text-[var(--foreground)] text-xs font-black uppercase tracking-widest hover:bg-[var(--primary)] hover:text-white transition-all shadow-xl active:scale-95 group">
+                                className="absolute top-8 left-8 z-50 flex items-center gap-3 px-6 py-3 rounded-2xl bg-[var(--background)]/60 backdrop-blur-xl border border-[var(--border)] text-[var(--foreground)] text-xs font-black uppercase tracking-widest hover:bg-[var(--primary)] hover:text-[var(--primary-foreground)] transition-all shadow-xl active:scale-95 group">
                                 <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" /> 
                                 Return to Overview
                             </button>
@@ -305,7 +305,7 @@ const DoctorDepartment = () => {
 
                                         <button
                                             onClick={() => navigate(isHead ? `/department/${dept.id}/control` : `/department/${dept.id}`)}
-                                            className="dd-btn w-full py-5 rounded-[1.25rem] bg-[var(--primary)] text-white font-black text-xs uppercase tracking-[0.2em] flex items-center justify-center gap-3 shadow-xl shadow-black/[0.1]">
+                                            className="dd-btn w-full py-5 rounded-[1.25rem] bg-[var(--primary)] text-[var(--primary-foreground)] font-black text-xs uppercase tracking-[0.2em] flex items-center justify-center gap-3 shadow-xl shadow-black/[0.1]">
                                             {isHead ? (
                                                 <>
                                                     <Settings className="dd-gear" size={18} />
@@ -339,7 +339,7 @@ const DoctorDepartment = () => {
                                     DR
                                 </div>
                             ))}
-                            <div className="w-10 h-10 rounded-full border-4 border-[var(--card)] bg-[var(--primary)] flex items-center justify-center text-white font-black text-[10px]">
+                            <div className="w-10 h-10 rounded-full border-4 border-[var(--card)] bg-[var(--primary)] flex items-center justify-center text-[var(--primary-foreground)] font-black text-[10px]">
                                 +{departments.length}
                             </div>
                         </div>

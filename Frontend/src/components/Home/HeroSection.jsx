@@ -80,7 +80,7 @@ const HeroSection = () => {
         {/* Buttons */}
         <div ref={btnsRef} className='flex gap-4 mb-16'>
           <Link to="/appointment"
-            className='group relative overflow-hidden flex items-center gap-2 text-white font-bold py-4 px-8 rounded-2xl hover:scale-105 active:scale-95 transition-transform duration-300'
+            className='group relative overflow-hidden flex items-center gap-2 text-[var(--primary-foreground)] font-bold py-4 px-8 rounded-2xl hover:scale-105 active:scale-95 transition-transform duration-300'
             style={{ background: 'linear-gradient(135deg, var(--primary), var(--chart-5))', boxShadow: '0 8px 28px color-mix(in srgb, var(--primary) 30%, transparent)' }}>
             <span className='absolute inset-0 translate-y-full group-hover:translate-y-0 transition-transform duration-300'
               style={{ background: 'linear-gradient(135deg, var(--chart-5), var(--primary))' }}></span>

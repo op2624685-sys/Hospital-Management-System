@@ -29,7 +29,7 @@ const StorySection = () => {
             <span className='text-[var(--foreground)] font-semibold'> people before profit.</span>
           </p>
           <Link to='/contact'
-            className='inline-flex items-center gap-2 text-white font-bold py-4 px-8 rounded-2xl hover:scale-105 active:scale-95 transition-all duration-300 shadow-lg text-sm group'
+            className='inline-flex items-center gap-2 text-[var(--primary-foreground)] font-bold py-4 px-8 rounded-2xl hover:scale-105 active:scale-95 transition-all duration-300 shadow-lg text-sm group'
             style={{ background: 'linear-gradient(135deg, var(--primary), var(--chart-5))' }}>
             Get In Touch
             <span className='group-hover:translate-x-1 transition-transform duration-300'>→</span>
