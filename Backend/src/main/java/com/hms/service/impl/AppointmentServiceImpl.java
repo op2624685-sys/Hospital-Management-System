@@ -482,7 +482,8 @@ public class AppointmentServiceImpl implements AppointmentService {
                 doctor.getEmail(),
                 mapDepartments(doctor),
                 mapBranchResponse(doctor.getBranch()),
-                doctor.getConsultationFee()
+                doctor.getConsultationFee(),
+                doctor.getUser() != null ? doctor.getUser().getProfilePhoto() : null
         );
     }
 

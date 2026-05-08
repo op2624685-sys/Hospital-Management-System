@@ -185,7 +185,8 @@ public class AdminServiceImpl implements AdminService {
                 doctor.getEmail(),
                 mapDoctorDepartments(doctor), 
                 null,          // No branch mapping here
-                doctor.getConsultationFee()
+                doctor.getConsultationFee(),
+                doctor.getUser() != null ? doctor.getUser().getProfilePhoto() : null
         );
     }
 
