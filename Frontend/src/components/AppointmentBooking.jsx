@@ -326,21 +326,21 @@ const AppointmentBooking = () => {
         }
         .ab-drop-item { display: flex; align-items: center; gap: 12px; padding: 14px 18px; cursor: pointer; transition: background .15s; border-bottom: 1px solid var(--border); }
         .ab-drop-item:hover { background: var(--secondary); }
-        .ab-drop-avatar { width: 36px; height: 36px; border-radius: 12px; background: var(--primary); display: flex; align-items: center; justify-content: center; font-weight: 800; color: #fff; flex-shrink: 0; font-size: 13px; }
+        .ab-drop-avatar { width: 36px; height: 36px; border-radius: 12px; background: var(--primary); display: flex; align-items: center; justify-content: center; font-weight: 800; color: var(--primary-foreground); flex-shrink: 0; font-size: 13px; }
         .ab-drop-name { font-size: 14px; font-weight: 700; color: var(--foreground); }
         .ab-drop-spec { font-size: 11px; color: var(--muted-foreground); }
 
         .ab-slots { display: grid; grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); gap: 10px; }
         .ab-slot { padding: 12px 10px; border-radius: 12px; border: 1.5px solid var(--border); background: var(--card); font-size: 13px; font-weight: 700; color: var(--foreground); cursor: pointer; transition: all .15s; text-align: center; }
         .ab-slot:hover:not(:disabled) { border-color: var(--primary); background: var(--secondary); color: var(--primary); }
-        .ab-slot-selected { border-color: var(--primary) !important; background: var(--primary) !important; color: #fff !important; }
+        .ab-slot-selected { border-color: var(--primary) !important; background: var(--primary) !important; color: var(--primary-foreground) !important; }
         .ab-slot-booked { opacity: 0.35; cursor: not-allowed; text-decoration: line-through; }
         .ab-slot-disabled { opacity: 0.3; cursor: not-allowed; }
 
         .ab-submit {
           width: 100%;
           display: flex; align-items: center; justify-content: center; gap: 12px;
-          background: var(--primary); color: #fff; border: none; border-radius: 18px;
+          background: var(--primary); color: var(--primary-foreground); border: none; border-radius: 18px;
           padding: 18px; font-size: 15px; font-weight: 800; cursor: pointer;
           transition: all .2s; box-shadow: 0 10px 30px -10px color-mix(in srgb, var(--primary) 40%, transparent);
         }
