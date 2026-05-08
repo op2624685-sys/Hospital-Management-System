@@ -94,7 +94,7 @@ const DoctorAppointments = () => {
   const badgeClassByStatus = (status) => {
     const value = (status || "").toUpperCase();
     if (value === "CONFIRMED") return "dr-badge dr-badge-approved";
-    if (value === "CANCELLED" || value === "REJECTED") return "dr-badge dr-badge-rejected";
+    if (value === "CANCELLED") return "dr-badge dr-badge-rejected";
     if (value === "COMPLETED") return "dr-badge dr-badge-completed";
     if (value === "IN_PROGRESS") return "dr-badge dr-badge-progress";
     return "dr-badge dr-badge-pending";
@@ -314,7 +314,6 @@ const DoctorAppointments = () => {
                       <option value="CONFIRMED">CONFIRMED</option>
                       <option value="IN_PROGRESS">IN_PROGRESS</option>
                       <option value="COMPLETED">COMPLETED</option>
-                      <option value="REJECTED">REJECTED</option>
                       <option value="CANCELLED">CANCELLED</option>
                     </select>
                   </label>
