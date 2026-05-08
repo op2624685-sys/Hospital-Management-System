@@ -261,7 +261,7 @@ const DoctorCard = ({ doctor, ratingSummary, index = 0 }) => {
           letter-spacing: .02em;
         }
         .dc-btn-default { background: var(--background); color: var(--foreground); }
-        .dc-btn-primary { background: var(--dc-c1); color: #fff; border-color: transparent; box-shadow: 0 8px 24px rgba(0,0,0,.15); }
+        .dc-btn-primary { background: var(--dc-c1); color: var(--primary-foreground); border-color: transparent; box-shadow: 0 8px 24px rgba(0,0,0,.15); }
         .dc-btn:active { transform: scale(.97); }
       `}</style>
 
