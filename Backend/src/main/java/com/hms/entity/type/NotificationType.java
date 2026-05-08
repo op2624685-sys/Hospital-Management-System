@@ -1,0 +1,10 @@
+package com.hms.entity.type;
+
+public enum NotificationType {
+    APPOINTMENT_CREATED,
+    APPOINTMENT_STATUS_CHANGED,
+    APPOINTMENT_UPDATED,
+    APPOINTMENT_CANCELLED,
+    BRANCH_DOCTOR_ADDED,
+    BRANCH_DEPARTMENT_ADDED
+}
