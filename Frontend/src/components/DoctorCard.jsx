@@ -170,6 +170,7 @@ const DoctorCard = ({ doctor, ratingSummary, index = 0 }) => {
           position: absolute;
           top: 0;
           left: 0;
+          z-index: 2;
         }
         .dc-avatar-fallback {
           z-index: 1;
@@ -301,10 +302,14 @@ const DoctorCard = ({ doctor, ratingSummary, index = 0 }) => {
                   className="dc-avatar-img"
                   onError={(e) => {
                     e.target.style.display = 'none';
+                    e.target.parentElement.querySelector('.dc-avatar-fallback').style.display = 'flex';
                   }}
                 />
               )}
-              <span className="dc-initials dc-avatar-fallback">
+              <span 
+                className="dc-initials dc-avatar-fallback"
+                style={{ display: doctor.profilePhoto ? 'none' : 'flex' }}
+              >
                 {initials}
               </span>
             </div>
