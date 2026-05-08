@@ -11,6 +11,7 @@ const doctors = [
     color: "linear-gradient(135deg, var(--chart-1), var(--chart-5))",
     soft: "color-mix(in srgb, var(--chart-1) 15%, transparent)",
     text: "var(--chart-1)",
+    foreground: "#ffffff",
   },
   {
     id: 2,
@@ -21,6 +22,7 @@ const doctors = [
     color: "linear-gradient(135deg, var(--chart-2), var(--primary))",
     soft: "color-mix(in srgb, var(--chart-2) 15%, transparent)",
     text: "var(--chart-2)",
+    foreground: "#172126",
   },
   {
     id: 3,
@@ -31,6 +33,7 @@ const doctors = [
     color: "linear-gradient(135deg, var(--chart-4), var(--chart-3))",
     soft: "color-mix(in srgb, var(--chart-4) 15%, transparent)",
     text: "var(--chart-4)",
+    foreground: "#172126",
   },
 ];
 
@@ -71,9 +74,9 @@ const DoctorsSection = () => {
                 <span className='text-xs font-semibold text-white/90'>Available</span>
               </div>
               <div className='w-24 h-24 bg-white/20 rounded-full flex items-center justify-center border-4 border-white/40 mb-3 group-hover:scale-110 transition-transform duration-300'>
-                <span className='text-white font-black text-2xl'>{doctor.initials}</span>
+                <span className='font-black text-2xl' style={{ color: doctor.foreground }}>{doctor.initials}</span>
               </div>
-              <h3 className='text-white font-black text-xl'>{doctor.name}</h3>
+              <h3 className='font-black text-xl' style={{ color: doctor.foreground }}>{doctor.name}</h3>
             </div>
 
             {/* Card body */}
@@ -94,8 +97,8 @@ const DoctorsSection = () => {
               </div>
 
               <Link to='/appointment'
-                className='w-full flex items-center justify-center gap-2 text-white font-bold py-3 rounded-xl hover:scale-105 active:scale-95 transition-all duration-300 shadow-md text-sm'
-                style={{ background: doctor.color }}>
+                className='w-full flex items-center justify-center gap-2 font-bold py-3 rounded-xl hover:scale-105 active:scale-95 transition-all duration-300 shadow-md text-sm'
+                style={{ background: doctor.color, color: doctor.foreground }}>
                 Book Appointment →
               </Link>
             </div>
