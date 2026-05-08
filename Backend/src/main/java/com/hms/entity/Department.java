@@ -15,6 +15,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.Index;
+import jakarta.persistence.UniqueConstraint;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -42,19 +43,19 @@ public class Department {
     @Column(length = 500)
     private String description;
 
-    @Column(length = 500)
+    @Column(name = "image_url", length = 500)
     private String imageUrl;
 
-    @Column(length = 20)
+    @Column(name = "accent_color", length = 20)
     private String accentColor;
 
-    @Column(length = 20)
+    @Column(name = "bg_color", length = 20)
     private String bgColor;
 
     @Column(length = 20)
     private String icon;
 
-    @Column(columnDefinition = "TEXT")
+    @Column(name = "sections_json", columnDefinition = "TEXT")
     private String sectionsJson;
 
     @OneToOne
@@ -77,7 +78,13 @@ public class Department {
     @JoinTable(
         name = "department_patient",
         joinColumns = @JoinColumn(name = "department_id"),
-        inverseJoinColumns = @JoinColumn(name = "patient_id")
+        inverseJoinColumns = @JoinColumn(name = "patient_id"),
+        uniqueConstraints = {
+            @UniqueConstraint(name = "uk_department_patient_pair", columnNames = { "department_id", "patient_id" })
+        },
+        indexes = {
+            @Index(name = "idx_department_patient_department_patient", columnList = "department_id, patient_id")
+        }
     )
     private Set<Patient> patients = new HashSet<>();
 

@@ -88,7 +88,7 @@ public class Patient {
     @Column
     private LocalDateTime lastProfileUpdateTime;
 
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "integer default 0")
     @Builder.Default
     private Integer profileUpdateCount = 0;
 

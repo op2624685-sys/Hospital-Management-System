@@ -27,6 +27,7 @@ import com.hms.entity.DoctorRatingSummary;
 import com.hms.entity.User;
 import com.hms.entity.Department;
 import com.hms.entity.type.RoleType;
+import com.hms.entity.type.NotificationType;
 import com.hms.error.ForbiddenException;
 import com.hms.error.NotFoundException;
 import com.hms.error.ValidationException;
@@ -56,6 +57,7 @@ public class DoctorServiceImpl implements DoctorService {
     private final DoctorRatingSummaryRepository doctorRatingSummaryRepository;
 
     private final HMSAuditLogService auditLogService;
+    private final NotificationServiceImpl notificationService;
 
     @Override
     @Transactional(readOnly = true)
@@ -151,11 +153,24 @@ public class DoctorServiceImpl implements DoctorService {
                 .user(user)
                 .build();
 
-            user.setRoles(new HashSet<>(Set.of(RoleType.DOCTOR)));
-            user.setEmail(onBoardDoctorRequestDto.getEmail());
-            userRepository.save(user);
+        user.setRoles(new HashSet<>(Set.of(RoleType.DOCTOR)));
+        user.setEmail(onBoardDoctorRequestDto.getEmail());
+        userRepository.save(user);
 
-            return mapToDoctorResponseDto(doctorRepository.save(doctor));
+        Doctor savedDoctor = doctorRepository.save(doctor);
+        List<Doctor> branchDoctors = doctorRepository.findByBranch_Id(branch.getId());
+        for (Doctor branchDoctor : branchDoctors) {
+            if (branchDoctor.getId().equals(savedDoctor.getId())) {
+                continue;
+            }
+            notificationService.createNotificationForUser(
+                    branchDoctor.getId(),
+                    NotificationType.BRANCH_DOCTOR_ADDED,
+                    "New doctor joined branch",
+                    "Dr. " + savedDoctor.getName() + " joined " + branch.getName() + ".",
+                    null);
+        }
+        return mapToDoctorResponseDto(savedDoctor);
     }
 
     @Override

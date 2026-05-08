@@ -19,6 +19,7 @@ import com.hms.entity.Doctor;
 import com.hms.entity.Admin;
 import com.hms.entity.User;
 import com.hms.entity.type.RoleType;
+import com.hms.entity.type.NotificationType;
 import com.hms.dto.Response.AdminDepartmentListDto;
 import com.hms.error.ForbiddenException;
 import com.hms.error.NotFoundException;
@@ -40,6 +41,7 @@ public class DepartmentServiceImpl implements DepartmentService{
     private final DepartmentRepository departmentRepository;
     private final DoctorRepository doctorRepository;
     private final AdminRepository adminRepository;
+    private final NotificationServiceImpl notificationService;
 
     @Override
     @Cacheable(value = "departmentListAll", key = "'all'")
@@ -143,6 +145,15 @@ public class DepartmentServiceImpl implements DepartmentService{
 
         department.setDoctors(doctors);
         Department savedDepartment = departmentRepository.save(department);
+        List<Doctor> branchDoctors = doctorRepository.findByBranch_Id(admin.getBranch().getId());
+        for (Doctor branchDoctor : branchDoctors) {
+            notificationService.createNotificationForUser(
+                    branchDoctor.getId(),
+                    NotificationType.BRANCH_DEPARTMENT_ADDED,
+                    "New department added",
+                    savedDepartment.getName() + " was added in " + admin.getBranch().getName() + ".",
+                    null);
+        }
         return mapToDepartmentDto(savedDepartment);
     }
 

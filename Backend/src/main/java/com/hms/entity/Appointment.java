@@ -51,7 +51,7 @@ public class Appointment {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, unique = true, updatable = false)
+    @Column(name = "appointment_id", nullable = false, unique = true, updatable = false)
     private String appointmentId;
 
     @PrePersist
@@ -61,7 +61,7 @@ public class Appointment {
         }
     }
 
-    @Column(nullable = false)
+    @Column(name = "appointment_time", nullable = false)
     private LocalDateTime appointmentTime;
 
     @Column(length = 500)
@@ -70,7 +70,7 @@ public class Appointment {
     private Long amount;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(nullable = false, length = 32)
     private AppointmentStatusType status;
 
     @ManyToOne(fetch = FetchType.LAZY)

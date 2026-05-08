@@ -4,8 +4,10 @@ import com.hms.entity.Appointment;
 import com.hms.entity.Doctor;
 import com.hms.entity.Patient;
 import com.hms.entity.type.AppointmentStatusType;
+import com.hms.entity.type.NotificationType;
 import com.hms.repository.AppointmentRepository;
 import com.hms.service.EmailService;
+import com.hms.service.impl.NotificationServiceImpl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -22,6 +24,7 @@ public class AppointmentNotificationListener {
 
     private final AppointmentRepository appointmentRepository;
     private final EmailService emailService;
+    private final NotificationServiceImpl notificationService;
 
     @Value("${app.appointment-details-base-url}")
     private String appointmentDetailsBaseUrl;
@@ -47,6 +50,18 @@ public class AppointmentNotificationListener {
     private void sendAppointmentCreatedEmails(Appointment appointment) {
         Patient patient = appointment.getPatient();
         Doctor doctor = appointment.getDoctor();
+        notificationService.createNotificationForUser(
+                patient.getId(),
+                NotificationType.APPOINTMENT_CREATED,
+                "Appointment booked",
+                "Your appointment with Dr. " + doctor.getName() + " has been booked.",
+                appointment.getAppointmentId());
+        notificationService.createNotificationForUser(
+                doctor.getId(),
+                NotificationType.APPOINTMENT_CREATED,
+                "New appointment booked",
+                "A patient booked an appointment with you.",
+                appointment.getAppointmentId());
 
         if (StringUtils.hasText(patient.getEmail())) {
             sendSafely(
@@ -83,6 +98,18 @@ public class AppointmentNotificationListener {
         Patient patient = appointment.getPatient();
         Doctor doctor = appointment.getDoctor();
         AppointmentStatusType status = appointment.getStatus();
+        notificationService.createNotificationForUser(
+                patient.getId(),
+                NotificationType.APPOINTMENT_STATUS_CHANGED,
+                "Appointment status updated",
+                "Your appointment status is now " + status + ".",
+                appointment.getAppointmentId());
+        notificationService.createNotificationForUser(
+                doctor.getId(),
+                NotificationType.APPOINTMENT_STATUS_CHANGED,
+                "Appointment status changed",
+                "Appointment " + appointment.getAppointmentId() + " is now " + status + ".",
+                appointment.getAppointmentId());
 
         if (StringUtils.hasText(patient.getEmail())) {
             String subject = "Appointment Status Update: " + status;
@@ -123,6 +150,18 @@ public class AppointmentNotificationListener {
     private void sendAppointmentUpdatedEmails(Appointment appointment, String changeSummary) {
         Patient patient = appointment.getPatient();
         Doctor doctor = appointment.getDoctor();
+        notificationService.createNotificationForUser(
+                patient.getId(),
+                NotificationType.APPOINTMENT_UPDATED,
+                "Appointment updated",
+                changeSummary == null ? "Your appointment details were updated." : changeSummary,
+                appointment.getAppointmentId());
+        notificationService.createNotificationForUser(
+                doctor.getId(),
+                NotificationType.APPOINTMENT_UPDATED,
+                "Appointment updated",
+                changeSummary == null ? "An appointment was updated." : changeSummary,
+                appointment.getAppointmentId());
 
         if (StringUtils.hasText(patient.getEmail())) {
             sendSafely(
@@ -160,6 +199,18 @@ public class AppointmentNotificationListener {
     private void sendPatientCancelledEmails(Appointment appointment) {
         Patient patient = appointment.getPatient();
         Doctor doctor = appointment.getDoctor();
+        notificationService.createNotificationForUser(
+                patient.getId(),
+                NotificationType.APPOINTMENT_CANCELLED,
+                "Appointment cancelled",
+                "You cancelled your appointment with Dr. " + doctor.getName() + ".",
+                appointment.getAppointmentId());
+        notificationService.createNotificationForUser(
+                doctor.getId(),
+                NotificationType.APPOINTMENT_CANCELLED,
+                "Patient cancelled appointment",
+                "A patient cancelled appointment " + appointment.getAppointmentId() + ".",
+                appointment.getAppointmentId());
 
         if (StringUtils.hasText(patient.getEmail())) {
             sendSafely(
