@@ -4,19 +4,18 @@ import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Mail, User, Upload, Briefcase, Stethoscope, AlertCircle, Loader, Heart, MapPin, Phone, Droplet, Calendar, Award, Building2, X, Save, Edit2 } from 'lucide-react';
 import { userAPI, doctorAPI, patientAPI, adminAPI } from '../api/api';
 import { toast } from 'react-toastify';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+
+const isPatientProfileComplete = (patient) =>
+  Boolean(patient?.birthDate && patient?.gender && patient?.bloodGroup && patient?.name && patient?.email);
 
 const Profile = () => {
   const { user, isLoggedIn, updateUserProfile, updateProfileCompletionStatus } = useAuth();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [profilePhoto, setProfilePhoto] = useState(null);
   const [isLoadingPhoto, setIsLoadingPhoto] = useState(false);
   const [previewUrl, setPreviewUrl] = useState(user?.profilePhoto || null);
-  
-  // Role-specific data states
-  const [roleData, setRoleData] = useState(null);
-  const [isLoadingRoleData, setIsLoadingRoleData] = useState(false);
-  const [roleDataError, setRoleDataError] = useState(null);
   const completionToastShownRef = useRef(false);
 
   // Edit profile states for patient
@@ -65,24 +64,24 @@ const Profile = () => {
     },
   });
 
+  const roleData = roleDataQuery.data;
+  const isLoadingRoleData = roleDataQuery.isFetching;
+  const roleDataError = roleDataQuery.error
+    ? roleDataQuery.error?.response?.data?.message || 'Failed to load profile details'
+    : null;
+
   useEffect(() => {
-    setRoleData(null);
-    setRoleDataError(null);
     setEditMode(false);
     setProfilePhoto(null);
     setPreviewUrl(user?.profilePhoto || null);
   }, [user?.id, user?.profilePhoto]);
 
   useEffect(() => {
-    setIsLoadingRoleData(roleDataQuery.isFetching);
     if (roleDataQuery.error) {
       console.error('Failed to fetch role data:', roleDataQuery.error);
-      setRoleDataError(roleDataQuery.error?.response?.data?.message || 'Failed to load profile details');
       return;
     }
-    setRoleDataError(null);
     if (!roleDataQuery.data) return;
-    setRoleData(roleDataQuery.data);
     if (roleDataQuery.data.needsCompletion) {
       setEditMode(true);
       if (!completionToastShownRef.current) {
@@ -90,7 +89,10 @@ const Profile = () => {
         completionToastShownRef.current = true;
       }
     }
-  }, [roleDataQuery.isFetching, roleDataQuery.error, roleDataQuery.data]);
+    if (roleDataQuery.data.type === 'PATIENT') {
+      updateProfileCompletionStatus(isPatientProfileComplete(roleDataQuery.data.data));
+    }
+  }, [roleDataQuery.error, roleDataQuery.data, updateProfileCompletionStatus]);
 
   // Initialize edit form data when roleData is loaded
   useEffect(() => {
@@ -188,15 +190,13 @@ const Profile = () => {
     setIsUpdatingProfile(true);
     try {
       const response = await patientAPI.updateProfile(editFormData);
-      
-      // Update roleData with new patient info
-      setRoleData({
-        type: 'PATIENT',
-        data: response.data
-      });
+      queryClient.setQueryData(
+        ['profile-role-data', user?.id, (user?.roles || []).join('|')],
+        { type: 'PATIENT', data: response.data }
+      );
       
       // Update profile completion status in context
-      updateProfileCompletionStatus(true);
+      updateProfileCompletionStatus(isPatientProfileComplete(response.data));
       
       setEditMode(false);
       toast.success('Profile updated successfully!');

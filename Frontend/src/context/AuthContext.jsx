@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect, useCallback } from "react";
 import { authAPI, clearAuthTokens, getAccessToken, getRefreshToken, patientAPI, saveAuthTokens } from "../api/api";
 import { queryClient } from "../lib/queryClient";
+import { useLocation } from "react-router-dom";
 
 const AuthContext = createContext();
 
@@ -8,6 +9,7 @@ const AuthContext = createContext();
 export const useAuth = () => useContext(AuthContext);
 
 export const AuthProvider = ({ children }) => {
+  const location = useLocation();
   const [isLoggedIn, setIsLoggedIn] = useState(
     () => getAccessToken() !== null
   );
@@ -26,6 +28,7 @@ export const AuthProvider = ({ children }) => {
   // Fetch profile completion status on login
   useEffect(() => {
     const fetchProfileCompletionStatus = async () => {
+      if (location.pathname === "/profile") return;
       if (isLoggedIn && user?.id && user?.roles?.includes("PATIENT")) {
         try {
           const response = await patientAPI.getProfileCompletionStatus();
@@ -37,7 +40,7 @@ export const AuthProvider = ({ children }) => {
     };
 
     fetchProfileCompletionStatus();
-  }, [isLoggedIn, user?.id, user?.roles, rolesKey]);
+  }, [isLoggedIn, user?.id, user?.roles, rolesKey, location.pathname]);
 
   const clearSession = useCallback(() => {
     queryClient.clear();
