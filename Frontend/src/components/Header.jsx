@@ -276,7 +276,7 @@ const Header = () => {
             <div className='mt-8 pt-6 border-t' style={{ borderColor: 'var(--border)' }}>
               {isLoggedIn ? (
                 <>
-                  <NotificationBell inMobileMenu onNavigate={() => setMenuOpen(false)} />
+                  <NotificationBell inMobileMenu mobileMenuOpen={menuOpen} onNavigate={() => setMenuOpen(false)} />
                   <button
                     onClick={async () => {
                       await logout();
