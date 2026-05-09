@@ -39,17 +39,21 @@ const OAuth2Callback = () => {
                     toast.success('Login successful via OAuth');
                     
                     const userRoles = userData.roles || [];
-                    if (userRoles.includes('HEADADMIN')) {
-                        navigate('/head-admin');
-                    } else if (userRoles.includes('ADMIN')) {
-                        navigate('/admin');
-                    } else if (userRoles.includes('DOCTOR')) {
-                        navigate('/doctor/booked-details');
-                    } else if (userRoles.includes('PATIENT')) {
-                        navigate('/my-appointments');
-                    } else {
-                        navigate('/');
-                    }
+                    
+                    // Small delay to ensure state updates propagate
+                    setTimeout(() => {
+                        if (userRoles.includes('HEADADMIN')) {
+                            navigate('/head-admin');
+                        } else if (userRoles.includes('ADMIN')) {
+                            navigate('/admin');
+                        } else if (userRoles.includes('DOCTOR')) {
+                            navigate('/doctor/booked-details');
+                        } else if (userRoles.includes('PATIENT')) {
+                            navigate('/doctors');
+                        } else {
+                            navigate('/');
+                        }
+                    }, 100);
                 } catch (error) {
                     console.error("Failed to fetch user profile after OAuth", error);
                     toast.error("Auth failed during profile sync");
