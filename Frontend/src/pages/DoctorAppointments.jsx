@@ -5,9 +5,11 @@ import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import PageLoader from "../components/PageLoader";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useAuth } from "../context/AuthContext";
 
 const DoctorAppointments = () => {
   const queryClient = useQueryClient();
+  const { isLoggedIn, user } = useAuth();
   const [savingId, setSavingId] = useState(null);
   const [query, setQuery] = useState("");
   const [formById, setFormById] = useState({});
@@ -24,6 +26,11 @@ const DoctorAppointments = () => {
       const response = await appointmentApi.getDoctorAppointments(null, page, size);
       return response.data || [];
     },
+    enabled: isLoggedIn && !!user?.id,
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
+    retry: 3,
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
   });
 
   useEffect(() => {
