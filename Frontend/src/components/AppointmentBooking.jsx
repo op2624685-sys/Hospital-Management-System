@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import API from '../api/api';
 import appointmentApi from '../api/appointments';
 import { useAuth } from '../context/AuthContext';
@@ -18,6 +18,8 @@ const AppointmentBooking = () => {
   const [doctorName, setDoctorName] = useState(state?.doctorName || '');
   const [doctorId, setDoctorId] = useState(state?.doctorId || null);
   const [doctorSuggestions, setDoctorSuggestions] = useState([]);
+  const [doctorSearchTerm, setDoctorSearchTerm] = useState('');
+  const [debouncedDoctorSearchTerm, setDebouncedDoctorSearchTerm] = useState('');
   const [reason, setReason] = useState('');
   const [appointmentDate, setAppointmentDate] = useState('');
   const [appointmentSlot, setAppointmentSlot] = useState('');
@@ -30,6 +32,10 @@ const AppointmentBooking = () => {
   const START_HOUR = 10;
   const END_HOUR = 19; // exclusive
   const MAX_ADVANCE_DAYS = 30;
+  const stateDepartments = useMemo(
+    () => Array.isArray(state?.departments) ? state.departments : [],
+    [state?.departments]
+  );
 
   const { data: allDoctors = [] } = useQuery({
     queryKey: ['public-doctors-meta'],
@@ -63,15 +69,58 @@ const AppointmentBooking = () => {
     enabled: Boolean(doctorId && appointmentDate),
   });
 
+  const { data: searchedDoctors = [] } = useQuery({
+    queryKey: ['public-doctors-search', debouncedDoctorSearchTerm, branchId],
+    queryFn: async () => {
+      const response = await API.get('/public/doctors', {
+        params: { search: debouncedDoctorSearchTerm, size: 15 }
+      });
+      const doctors = response.data || [];
+      return doctors.filter((doctor) => {
+        if (!branchId) return true;
+        return doctor?.branch?.id === branchId;
+      });
+    },
+    enabled: debouncedDoctorSearchTerm.trim().length >= 2,
+  });
+
   useEffect(() => {
-    if (!state?.doctorId || !allDoctors.length) return;
+    if (!doctorSearchTerm.trim() || debouncedDoctorSearchTerm.trim().length < 2) {
+      setDoctorSuggestions([]);
+      return;
+    }
+    setDoctorSuggestions(searchedDoctors);
+  }, [searchedDoctors, doctorSearchTerm, debouncedDoctorSearchTerm]);
+
+  useEffect(() => {
+    const term = doctorSearchTerm.trim();
+    if (term.length < 2) {
+      setDebouncedDoctorSearchTerm('');
+      return;
+    }
+    const timeoutId = window.setTimeout(() => {
+      setDebouncedDoctorSearchTerm(term);
+    }, 400);
+    return () => window.clearTimeout(timeoutId);
+  }, [doctorSearchTerm]);
+
+  useEffect(() => {
+    if (!state?.doctorId) return;
+    if (stateDepartments.length > 0) {
+      setAvailableDepartments(stateDepartments);
+      if (stateDepartments.length === 1) {
+        setSelectedDepartmentId(stateDepartments[0].id);
+      }
+      return;
+    }
+    if (!allDoctors.length) return;
     const preselectedDoctor = allDoctors.find((d) => d.id === state.doctorId) || null;
     if (!preselectedDoctor?.departments) return;
     setAvailableDepartments(preselectedDoctor.departments);
     if (preselectedDoctor.departments.length === 1) {
       setSelectedDepartmentId(preselectedDoctor.departments[0].id);
     }
-  }, [allDoctors, state]);
+  }, [allDoctors, state, stateDepartments]);
 
   // Patient profile fetch removed as patientName is not displayed
 
@@ -116,37 +165,24 @@ const AppointmentBooking = () => {
     setBranchSuggestions([]);
     setDoctorName('');
     setDoctorId(null);
+    setDoctorSearchTerm('');
+    setDebouncedDoctorSearchTerm('');
+    setDoctorSuggestions([]);
     setAvailableDepartments([]);
     setSelectedDepartmentId(null);
     setAppointmentSlot('');
   };
 
-  const handleDoctorSearch = async (e) => {
+  const handleDoctorSearch = (e) => {
     const val = e.target.value;
     setDoctorName(val);
+    setDoctorSearchTerm(val);
     setDoctorId(null);
     setAvailableDepartments([]);
     setSelectedDepartmentId(null);
+    setAppointmentSlot('');
 
     if (val.length < 2) { setDoctorSuggestions([]); return; }
-    
-    try {
-      // Search from backend instead of just clientside filtering to respect pagination
-      const response = await API.get('/public/doctors', { 
-        params: { search: val, size: 15 } 
-      });
-      const filtered = response.data || [];
-      
-      // Still apply clientside branch filter if needed
-      const result = filtered.filter(d => {
-        if (!branchId) return true;
-        return d?.branch?.id === branchId;
-      });
-      
-      setDoctorSuggestions(result);
-    } catch (err) {
-      console.error("Doctor search failed:", err);
-    }
   };
 
   const handleSelectDoctor = (doctor) => {
@@ -167,6 +203,8 @@ const AppointmentBooking = () => {
       setBranchName(doctor.branch.name);
     }
     setDoctorSuggestions([]);
+    setDoctorSearchTerm('');
+    setDebouncedDoctorSearchTerm('');
   };
 
   const handleSubmit = async (e) => {
