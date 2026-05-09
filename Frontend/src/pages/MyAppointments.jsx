@@ -7,9 +7,11 @@ import "react-toastify/dist/ReactToastify.css";
 import PageLoader from "../components/PageLoader";
 import DoctorRatingModal from "../components/DoctorRatingModal";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useAuth } from "../context/AuthContext";
 
 const MyAppointments = () => {
   const queryClient = useQueryClient();
+  const { isLoggedIn, user } = useAuth();
   const [search, setSearch] = useState("");
   const [busyId, setBusyId] = useState(null);
   const [page, setPage] = useState(0);
@@ -22,6 +24,11 @@ const MyAppointments = () => {
       const response = await appointmentApi.getMyAppointments(page, size);
       return response.data || [];
     },
+    enabled: isLoggedIn && !!user?.id,
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
+    retry: 3,
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
   });
 
   useEffect(() => {
