@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { notificationAPI } from '../api/api';
 import { useAuth } from '../context/AuthContext';
 
-const NotificationBell = ({ inMobileMenu = false, onNavigate }) => {
+const NotificationBell = ({ inMobileMenu = false, mobileMenuOpen = false, onNavigate }) => {
   const [open, setOpen] = useState(false);
   const panelRef = useRef(null);
   const navigate = useNavigate();
@@ -18,11 +18,13 @@ const NotificationBell = ({ inMobileMenu = false, onNavigate }) => {
     refetchInterval: 30000,
   });
 
+  const listEnabled = open || (inMobileMenu && mobileMenuOpen);
+
   const { data: notifications = [] } = useQuery({
     queryKey: ['notifications-list'],
     queryFn: async () => (await notificationAPI.getList(12)).data,
-    enabled: open || inMobileMenu,
-    refetchInterval: 30000,
+    enabled: listEnabled,
+    refetchInterval: listEnabled ? 30000 : false,
   });
 
   const markReadMutation = useMutation({
