@@ -1,10 +1,11 @@
-import React, { useEffect, useMemo, useState, useCallback } from "react";
+import React, { useMemo } from "react";
 import { ArrowLeft, Building2, CalendarDays, Mail, Stethoscope, Wallet, MessageSquare, Star } from "lucide-react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import Header from "../components/Header";
 import API from "../api/api";
 import PageLoader from "../components/PageLoader";
 import reviewsAPI from "../api/reviews";
+import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 
 /* ─── Star bar (read-only filled stars) ──── */
 const StarBar = ({ rating }) => (
@@ -78,59 +79,41 @@ const DoctorDetails = () => {
   const { doctorId } = useParams();
   const navigate = useNavigate();
 
-  const [doctor, setDoctor] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-
-  // Rating state
-  const [summary, setSummary] = useState(null);
-  const [reviews, setReviews] = useState([]);
-  const [reviewPage, setReviewPage] = useState(0);
-  const [reviewsLoading, setReviewsLoading] = useState(false);
-  const [hasMoreReviews, setHasMoreReviews] = useState(true);
   const REVIEW_SIZE = 5;
 
-  /* ── Fetch doctor ── */
-  useEffect(() => {
-    const fetchDoctor = async () => {
-      setLoading(true); setError("");
-      try {
-        const res = await API.get(`/public/doctors/${doctorId}`);
-        setDoctor(res.data || null);
-      } catch {
-        setDoctor(null);
-        setError("Doctor not found");
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchDoctor();
-  }, [doctorId]);
+  const {
+    data: doctor = null,
+    isLoading: loading,
+    error: doctorError,
+  } = useQuery({
+    queryKey: ["doctor-details", doctorId],
+    queryFn: async () => {
+      const res = await API.get(`/public/doctors/${doctorId}`);
+      return res.data || null;
+    },
+    enabled: Boolean(doctorId),
+  });
 
-  /* ── Fetch rating summary ── */
-  useEffect(() => {
-    if (!doctorId) return;
-    reviewsAPI.getRatingSummary(doctorId)
-      .then((res) => setSummary(res.data))
-      .catch(() => setSummary({ averageRating: 0, totalReviews: 0 }));
-  }, [doctorId]);
-
-  /* ── Fetch reviews (paginated) ── */
-  const fetchReviews = useCallback(async (page) => {
-    setReviewsLoading(true);
-    try {
-      const res = await reviewsAPI.getReviews(doctorId, page, REVIEW_SIZE);
+  const {
+    data: reviewsData,
+    isFetching: reviewsLoading,
+    isFetchingNextPage,
+    hasNextPage: hasMoreReviews,
+    fetchNextPage,
+  } = useInfiniteQuery({
+    queryKey: ["doctor-reviews", doctorId, REVIEW_SIZE],
+    queryFn: async ({ pageParam }) => {
+      const res = await reviewsAPI.getReviews(doctorId, pageParam, REVIEW_SIZE);
       const content = res.data?.content || res.data || [];
-      setReviews((prev) => page === 0 ? content : [...prev, ...content]);
-      setHasMoreReviews(content.length === REVIEW_SIZE);
-    } catch {
-      /* silently ignore */
-    } finally {
-      setReviewsLoading(false);
-    }
-  }, [doctorId]);
+      return Array.isArray(content) ? content : [];
+    },
+    enabled: Boolean(doctorId),
+    initialPageParam: 0,
+    getNextPageParam: (lastPage, allPages) =>
+      lastPage.length === REVIEW_SIZE ? allPages.length : undefined,
+  });
 
-  useEffect(() => { fetchReviews(0); }, [fetchReviews]);
+  const reviews = useMemo(() => reviewsData?.pages?.flat() || [], [reviewsData]);
 
   const departments = useMemo(() => {
     if (!doctor?.departments) return [];
@@ -152,6 +135,7 @@ const DoctorDetails = () => {
         department: departments[0]?.name || "",
         branchId: doctor?.branch?.id || null,
         branchName: doctor?.branch?.name || "",
+        departments,
       },
     });
   };
@@ -166,12 +150,12 @@ const DoctorDetails = () => {
     </div>
   );
 
-  if (error || !doctor) return (
+  if (doctorError || !doctor) return (
     <div className="min-h-screen bg-[var(--background)] text-[var(--foreground)]">
       <Header />
       <div className="max-w-5xl mx-auto px-6 pt-28 pb-16">
         <div className="rounded-3xl border border-[var(--border)] bg-[var(--card)] p-8">
-          <p className="text-lg font-semibold">{error || "Doctor not found"}</p>
+          <p className="text-lg font-semibold">Doctor not found</p>
           <Link to="/doctors" className="inline-flex items-center gap-2 mt-4 text-[var(--primary)]">
             <ArrowLeft size={16} /> Back to doctors
           </Link>
@@ -180,6 +164,7 @@ const DoctorDetails = () => {
     </div>
   );
 
+  const summary = doctor?.ratingSummary;
   const avg = summary?.averageRating ?? 0;
   const totalReviews = summary?.totalReviews ?? 0;
 
@@ -368,14 +353,10 @@ const DoctorDetails = () => {
           {hasMoreReviews && reviews.length > 0 && (
             <button
               className="dd-load-more"
-              disabled={reviewsLoading}
-              onClick={() => {
-                const next = reviewPage + 1;
-                setReviewPage(next);
-                fetchReviews(next);
-              }}
+              disabled={isFetchingNextPage}
+              onClick={() => fetchNextPage()}
             >
-              {reviewsLoading ? "Loading…" : "Load More Reviews"}
+              {isFetchingNextPage ? "Loading…" : "Load More Reviews"}
             </button>
           )}
         </div>
