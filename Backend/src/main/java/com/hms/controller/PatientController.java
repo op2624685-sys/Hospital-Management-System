@@ -42,7 +42,7 @@ public class PatientController {
     private final AppointmentService appointmentService;
     private final InsuranceService insuranceService;
 
-     @PostMapping("/appointments")
+    @PostMapping("/appointments")
     public ResponseEntity<AppointmentResponseDto> createNewAppointment(@Valid @RequestBody CreateAppointmentRequestDto createAppointmentRequestDto) {
         return ResponseEntity.status(HttpStatus.CREATED).body(appointmentService.createConfirmedAppointment(createAppointmentRequestDto));
     }
