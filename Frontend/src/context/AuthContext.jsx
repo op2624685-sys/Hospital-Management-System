@@ -1,7 +1,9 @@
-import { createContext, useContext, useState, useEffect, useCallback } from "react";
+import { createContext, useContext, useState, useEffect, useCallback, useRef } from "react";
 import { authAPI, clearAuthTokens, getAccessToken, getRefreshToken, patientAPI, saveAuthTokens } from "../api/api";
+import API from "../api/api";
 import { queryClient } from "../lib/queryClient";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 
 const AuthContext = createContext();
 
@@ -10,6 +12,9 @@ export const useAuth = () => useContext(AuthContext);
 
 export const AuthProvider = ({ children }) => {
   const location = useLocation();
+  const navigate = useNavigate();
+  const oauthProcessingRef = useRef(false);
+
   const [isLoggedIn, setIsLoggedIn] = useState(
     () => getAccessToken() !== null
   );
@@ -64,7 +69,7 @@ export const AuthProvider = ({ children }) => {
     return () => window.removeEventListener("hms:auth-expired", handleAuthExpired);
   }, [clearSession]);
 
-  const login = (data) => {
+  const login = useCallback((data) => {
     // Prevent cross-account stale query data after account switches.
     queryClient.clear();
     saveAuthTokens({
@@ -91,9 +96,67 @@ export const AuthProvider = ({ children }) => {
     } else {
       localStorage.removeItem("profilePhoto");
     }
-  };
+  }, []);
 
-  const logout = async () => {
+  // Integrated OAuth Detection & Sync
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const token = params.get('token');
+    const refreshToken = params.get('refreshToken');
+
+    if (token && !oauthProcessingRef.current) {
+        oauthProcessingRef.current = true;
+        saveAuthTokens({ token, refreshToken });
+
+        const syncOAuthProfile = async () => {
+            try {
+                // Fetch profile using the newly saved token
+                const response = await API.get('/auth/me');
+                const userData = response.data;
+                
+                login({
+                    token,
+                    refreshToken,
+                    userId: userData.userId,
+                    username: userData.username || '',
+                    email: userData.email || '',
+                    profilePhoto: userData.profilePhoto || null,
+                    roles: userData.roles || [],
+                });
+
+                toast.success('Login successful via OAuth');
+                
+                // Clean URL parameters
+                const newUrl = window.location.pathname;
+                window.history.replaceState({}, document.title, newUrl);
+
+                // Role-based redirection
+                const userRoles = userData.roles || [];
+                if (userRoles.includes('HEADADMIN')) {
+                    navigate('/head-admin', { replace: true });
+                } else if (userRoles.includes('ADMIN')) {
+                    navigate('/admin', { replace: true });
+                } else if (userRoles.includes('DOCTOR')) {
+                    navigate('/doctor/booked-details', { replace: true });
+                } else if (userRoles.includes('PATIENT')) {
+                    navigate('/my-appointments', { replace: true });
+                } else {
+                    navigate('/', { replace: true });
+                }
+            } catch (error) {
+                console.error("OAuth profile sync failed:", error);
+                toast.error("Authentication failed during profile sync");
+                navigate('/login', { replace: true });
+            } finally {
+                oauthProcessingRef.current = false;
+            }
+        };
+
+        syncOAuthProfile();
+    }
+  }, [location.search, login, navigate]);
+
+  const logout = useCallback(async () => {
     const refreshToken = getRefreshToken();
     if (refreshToken) {
       try {
@@ -103,30 +166,33 @@ export const AuthProvider = ({ children }) => {
       }
     }
     clearSession();
-  };
+  }, [clearSession]);
 
-  const updateUserProfile = (profileData) => {
-    const updatedUser = {
-      ...user,
-      ...profileData,
-    };
-    setUser(updatedUser);
-    
-    // Update localStorage
-    if (profileData.username) localStorage.setItem("username", profileData.username);
-    if (profileData.email) localStorage.setItem("email", profileData.email);
-    if (profileData.profilePhoto) {
-      localStorage.setItem("profilePhoto", profileData.profilePhoto);
-    } else if (Object.prototype.hasOwnProperty.call(profileData, "profilePhoto")) {
-      localStorage.removeItem("profilePhoto");
-    }
-  };
+  const updateUserProfile = useCallback((profileData) => {
+    setUser((prev) => {
+        const updatedUser = {
+            ...prev,
+            ...profileData,
+        };
+        
+        // Update localStorage
+        if (profileData.username) localStorage.setItem("username", profileData.username);
+        if (profileData.email) localStorage.setItem("email", profileData.email);
+        if (profileData.profilePhoto) {
+            localStorage.setItem("profilePhoto", profileData.profilePhoto);
+        } else if (Object.prototype.hasOwnProperty.call(profileData, "profilePhoto")) {
+            localStorage.removeItem("profilePhoto");
+        }
+        
+        return updatedUser;
+    });
+  }, []);
 
-  const updateProfileCompletionStatus = (isComplete) => {
+  const updateProfileCompletionStatus = useCallback((isComplete) => {
     setProfileComplete(isComplete);
-  };
+  }, []);
 
-  const hasRole = (role) => user?.roles?.includes(role);
+  const hasRole = useCallback((role) => user?.roles?.includes(role), [user?.roles]);
 
   return (
     <AuthContext.Provider value={{ isLoggedIn, login, logout, user, hasRole, updateUserProfile, profileComplete, updateProfileCompletionStatus }}>

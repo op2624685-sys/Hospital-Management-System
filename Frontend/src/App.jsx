@@ -11,7 +11,7 @@ import Login from "./pages/AuthPages/Login";
 import Signup from "./pages/AuthPages/Signup";
 import SignupComplete from "./pages/AuthPages/SignupComplete";
 import ForgotPassword from "./pages/AuthPages/ForgotPassword";
-import OAuth2Callback from "./pages/OAuth2Callback";
+
 
 // ── Lazy loaded (heavy / role-gated pages) ──────────────────────────────────
 const AdminPanel = React.lazy(() => import("./pages/AdminPanel"));
@@ -98,7 +98,7 @@ const App = () => {
             </ProtectedRoute>
           } />
           <Route path="/login/forgotpassword" element={<ForgotPassword />} />
-          <Route path="/oauth2/callback" element={<OAuth2Callback />} />
+
 
           <Route
             path="/admin"
