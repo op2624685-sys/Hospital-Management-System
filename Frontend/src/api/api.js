@@ -113,7 +113,9 @@ export const forgotPasswordAPI = {
 
 // Signup Magic Link API Endpoints
 export const signupAPI = {
-  requestMagicLink: (email) => API.post('/auth/signup-link', { email }),
+  requestMagicLink: (email, cfTurnstileToken) =>
+    API.post('/auth/signup-link', { email, cfTurnstileToken }),
+
   completeMagicLinkSignup: (payload) => API.post('/auth/signup/complete', payload),
 };
 
