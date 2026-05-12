@@ -500,6 +500,22 @@ body {
     box-shadow: 0 6px 15px color-mix(in srgb, var(--auth-accent) 12%, transparent);
 }
 
+/* ─── Cloudflare Turnstile widget ─── */
+.auth-turnstile {
+    border-radius: 14px;
+    overflow: hidden;
+    border: 1px solid color-mix(in srgb, var(--auth-accent) 20%, transparent);
+    background: var(--auth-field-bg);
+    min-height: 65px;
+    display: flex;
+    align-items: center;
+}
+
+.auth-turnstile > * {
+    width: 100%;
+}
+
+
 @keyframes authOrbFloat {
     0%, 100% {
         transform: translate3d(0, 0, 0);
