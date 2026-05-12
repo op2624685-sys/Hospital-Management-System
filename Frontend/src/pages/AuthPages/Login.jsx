@@ -6,6 +6,7 @@ import { Eye, EyeOff, Lock, UserRound, Github } from 'lucide-react';
 import { gsap } from 'gsap';
 import 'react-toastify/dist/ReactToastify.css';
 import { useAuth } from '../../context/AuthContext';
+import { Turnstile } from '@marsidev/react-turnstile';
 
 const Login = () => {
   const { login } = useAuth();
@@ -14,8 +15,10 @@ const Login = () => {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-
+  const [turnstileToken, setTurnstileToken] = useState('');
   const shellRef = useRef(null);
+  const turnstileRef = useRef(null);
+
 
   useLayoutEffect(() => {
     const ctx = gsap.context(() => {
@@ -29,13 +32,22 @@ const Login = () => {
 
   const handleLogin = async (e) => {
     e.preventDefault();
+
+    if (!turnstileToken) {
+      toast.warn('Please complete the human verification check.');
+      return;
+    }
+
     setIsLoading(true);
 
     try {
-      const response = await API.post('/auth/login', { username, password });
+      const response = await API.post('/auth/login', {
+        username,
+        password,
+        cfTurnstileToken: turnstileToken,
+      });
 
       if (response.data.token) {
-        // Store additional user data if provided by backend, with fallback
         const loginData = {
           token: response.data.token,
           refreshToken: response.data.refreshToken,
@@ -51,7 +63,6 @@ const Login = () => {
         toast.success('Login successful');
         const userRoles = response.data.roles || [];
 
-        setTimeout(() => {
           if (userRoles.includes('HEADADMIN')) {
             navigate('/head-admin');
           } else if (userRoles.includes('ADMIN')) {
@@ -59,14 +70,16 @@ const Login = () => {
           } else if (userRoles.includes('DOCTOR')) {
             navigate('/doctor/booked-details');
           } else if (userRoles.includes('PATIENT')) {
-            navigate('/doctors');
+            navigate('/my-appointments');
           } else {
             navigate('/');
           }
-        }, 100);
       }
     } catch (error) {
       toast.error(error?.response?.data?.message || 'Login failed. Please verify credentials.');
+      // Reset widget so user can re-verify after a failed attempt
+      setTurnstileToken('');
+      if (turnstileRef.current?.reset) turnstileRef.current.reset();
     } finally {
       setIsLoading(false);
     }
@@ -120,7 +133,29 @@ const Login = () => {
               </button>
             </label>
 
-            <button type="submit" className="auth-btn auth-fade" disabled={isLoading}>
+            {/* Cloudflare Turnstile CAPTCHA */}
+            <div className="auth-turnstile auth-fade">
+              <Turnstile
+                ref={turnstileRef}
+                siteKey={import.meta.env.VITE_CLOUDFLARE_SITE_KEY}
+                onSuccess={(token) => setTurnstileToken(token)}
+                onExpire={() => {
+                  setTurnstileToken('');
+                  toast.info('Verification expired. Please verify again.');
+                }}
+                onError={() => {
+                  setTurnstileToken('');
+                  toast.error('Verification error. Please try again.');
+                }}
+                options={{ theme: 'auto', size: 'flexible' }}
+              />
+            </div>
+
+            <button
+              type="submit"
+              className="auth-btn auth-fade"
+              disabled={isLoading || !turnstileToken}
+            >
               {isLoading ? 'Logging in...' : 'Login'}
             </button>
           </form>

@@ -5,13 +5,16 @@ import { Mail, Sparkles, ShieldCheck, Clock3, ArrowRight } from 'lucide-react';
 import { gsap } from 'gsap';
 import 'react-toastify/dist/ReactToastify.css';
 import { ToastContainer, toast, Zoom } from 'react-toastify';
+import { Turnstile } from '@marsidev/react-turnstile';
 
 const Signup = () => {
   const shellRef = useRef(null);
+  const turnstileRef = useRef(null);
   const [email, setEmail] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [sentTo, setSentTo] = useState('');
+  const [turnstileToken, setTurnstileToken] = useState('');
 
   useLayoutEffect(() => {
     const ctx = gsap.context(() => {
@@ -26,15 +29,25 @@ const Signup = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+
+    if (!turnstileToken) {
+      setError('Please complete the human verification check.');
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
-      const response = await signupAPI.requestMagicLink(email);
+      const response = await signupAPI.requestMagicLink(email, turnstileToken);
       setSentTo(response.data.email || email);
       toast.success(response.data.message || 'Magic link sent');
       setEmail('');
+      setTurnstileToken('');
+      if (turnstileRef.current?.reset) turnstileRef.current.reset();
     } catch (err) {
       setError(err?.response?.data?.message || 'Could not send magic link. Please try again.');
+      setTurnstileToken('');
+      if (turnstileRef.current?.reset) turnstileRef.current.reset();
     } finally {
       setIsSubmitting(false);
     }
@@ -98,7 +111,29 @@ const Signup = () => {
               </p>
             )}
 
-            <button type="submit" className="auth-btn auth-field-full auth-fade" disabled={isSubmitting}>
+            {/* Cloudflare Turnstile CAPTCHA */}
+            <div className="auth-turnstile auth-fade auth-field-full">
+              <Turnstile
+                ref={turnstileRef}
+                siteKey={import.meta.env.VITE_CLOUDFLARE_SITE_KEY}
+                onSuccess={(token) => setTurnstileToken(token)}
+                onExpire={() => {
+                  setTurnstileToken('');
+                  toast.info('Verification expired. Please verify again.');
+                }}
+                onError={() => {
+                  setTurnstileToken('');
+                  toast.error('Verification error. Please try again.');
+                }}
+                options={{ theme: 'auto', size: 'flexible' }}
+              />
+            </div>
+
+            <button
+              type="submit"
+              className="auth-btn auth-field-full auth-fade"
+              disabled={isSubmitting || !turnstileToken}
+            >
               {isSubmitting ? 'Sending link...' : 'Send Magic Link'}
             </button>
           </form>

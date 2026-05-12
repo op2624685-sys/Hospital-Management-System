@@ -6,6 +6,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { useQuery } from '@tanstack/react-query';
+import { Turnstile } from '@marsidev/react-turnstile';
 
 const AppointmentBooking = () => {
   const { user, isLoggedIn, profileComplete, hasRole } = useAuth();
@@ -26,6 +27,9 @@ const AppointmentBooking = () => {
   const [availableDepartments, setAvailableDepartments] = useState([]);
   const [selectedDepartmentId, setSelectedDepartmentId] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [turnstileToken, setTurnstileToken] = useState('');
+  const [turnstileError, setTurnstileError] = useState(false);
+  const turnstileRef = useRef(null);
   const doctorDropdownRef = useRef(null);
   const branchDropdownRef = useRef(null);
   const SLOT_MINUTES = 20;
@@ -229,6 +233,14 @@ const AppointmentBooking = () => {
     if (!selectedDepartmentId) { toast.warn('Please select a department!'); return; }
     if (!appointmentDate) { toast.warn('Please select a date!'); return; }
     if (!appointmentSlot) { toast.warn('Please select a time slot!'); return; }
+
+    if (!turnstileToken) {
+      setTurnstileError(true);
+      toast.warn('Please complete the human verification check before booking.');
+      return;
+    }
+    setTurnstileError(false);
+
     setLoading(true);
     try {
       const appointmentTime = `${appointmentDate}T${appointmentSlot}`;
@@ -239,7 +251,9 @@ const AppointmentBooking = () => {
         appointmentTime,
         branchId,
         departmentId: selectedDepartmentId,
+        cfTurnstileToken: turnstileToken,
       };
+
       
       toast.info('Redirecting to secure payment page...');
       
@@ -249,6 +263,9 @@ const AppointmentBooking = () => {
     } catch (error) {
       toast.error('Booking failed. Please try again.');
       console.error(error);
+      // Reset widget so user can re-verify
+      setTurnstileToken('');
+      if (turnstileRef.current?.reset) turnstileRef.current.reset();
     } finally {
       setLoading(false);
     }
@@ -568,6 +585,43 @@ const AppointmentBooking = () => {
                 </div>
               ) : (
                 <div className="ab-msg">Select specialist and date to see slots.</div>
+              )}
+            </div>
+
+            {/* Cloudflare Turnstile CAPTCHA */}
+            <div className="ab-field">
+              <label className="ab-label">Human Verification</label>
+              <div
+                style={{
+                  border: turnstileError ? '1.5px solid #ef4444' : '1.5px solid transparent',
+                  borderRadius: '16px',
+                  overflow: 'hidden',
+                  transition: 'border-color 0.2s',
+                }}
+              >
+                <Turnstile
+                  ref={turnstileRef}
+                  siteKey={import.meta.env.VITE_CLOUDFLARE_SITE_KEY}
+                  onSuccess={(token) => {
+                    setTurnstileToken(token);
+                    setTurnstileError(false);
+                  }}
+                  onExpire={() => {
+                    setTurnstileToken('');
+                    toast.info('Verification expired. Please verify again.');
+                  }}
+                  onError={() => {
+                    setTurnstileToken('');
+                    setTurnstileError(true);
+                    toast.error('Verification error. Please try again.');
+                  }}
+                  options={{ theme: 'auto', size: 'flexible' }}
+                />
+              </div>
+              {turnstileError && (
+                <p style={{ fontSize: '12px', color: '#ef4444', margin: '4px 0 0', fontWeight: 600 }}>
+                  Please complete the verification to continue.
+                </p>
               )}
             </div>
 
