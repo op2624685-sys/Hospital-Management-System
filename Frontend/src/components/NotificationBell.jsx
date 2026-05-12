@@ -8,6 +8,7 @@ import { useAuth } from '../context/AuthContext';
 const NotificationBell = ({ inMobileMenu = false, mobileMenuOpen = false, onNavigate }) => {
   const [open, setOpen] = useState(false);
   const panelRef = useRef(null);
+  const hoverTimeoutRef = useRef(null);
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { hasRole } = useAuth();
@@ -43,6 +44,25 @@ const NotificationBell = ({ inMobileMenu = false, mobileMenuOpen = false, onNavi
     },
   });
 
+  const handleMouseEnter = () => {
+    if (!inMobileMenu && window.innerWidth > 1024) {
+      clearTimeout(hoverTimeoutRef.current);
+      setOpen(true);
+    }
+  };
+
+  const handleMouseLeave = () => {
+    if (!inMobileMenu && window.innerWidth > 1024) {
+      hoverTimeoutRef.current = setTimeout(() => {
+        setOpen(false);
+      }, 150);
+    }
+  };
+
+  useEffect(() => {
+    return () => clearTimeout(hoverTimeoutRef.current);
+  }, []);
+
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (panelRef.current && !panelRef.current.contains(event.target)) {
@@ -75,7 +95,12 @@ const NotificationBell = ({ inMobileMenu = false, mobileMenuOpen = false, onNavi
   };
 
   return (
-    <div className={`relative ${inMobileMenu ? 'w-full' : ''}`} ref={panelRef}>
+    <div 
+      className={`relative ${inMobileMenu ? 'w-full' : ''}`} 
+      ref={panelRef}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+    >
       <button
         onClick={() => setOpen((prev) => !prev)}
         className={`relative ${inMobileMenu ? 'w-full justify-center py-2.5' : 'p-2'} rounded-xl border border-[var(--border)] bg-[var(--card)]/60 hover:bg-[var(--card)] transition-all flex items-center gap-2`}

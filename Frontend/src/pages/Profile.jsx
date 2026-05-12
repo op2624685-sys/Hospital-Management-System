@@ -147,10 +147,10 @@ const Profile = () => {
       formData.append('profilePhoto', profilePhoto);
 
       const response = await userAPI.updateProfilePhoto(formData);
-      
+
       // Update context with new profile photo
       updateUserProfile({ profilePhoto: response.data.profilePhoto });
-      
+
       toast.success('Profile photo updated successfully!');
       setProfilePhoto(null);
     } catch (error) {
@@ -194,10 +194,10 @@ const Profile = () => {
         ['profile-role-data', user?.id, (user?.roles || []).join('|')],
         { type: 'PATIENT', data: response.data }
       );
-      
+
       // Update profile completion status in context
       updateProfileCompletionStatus(isPatientProfileComplete(response.data));
-      
+
       setEditMode(false);
       toast.success('Profile updated successfully!');
     } catch (error) {
@@ -279,7 +279,7 @@ const Profile = () => {
                   borderColor: 'rgba(255, 255, 255, 0.3)'
                 }}>
                 {!previewUrl && initials}
-                
+
                 {/* Upload Button */}
                 <label
                   htmlFor='photo-upload'
