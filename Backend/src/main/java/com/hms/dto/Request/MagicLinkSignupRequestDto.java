@@ -14,4 +14,7 @@ public class MagicLinkSignupRequestDto {
     @Email(message = "Invalid email address")
     @NotBlank(message = "Email is required")
     private String email;
+
+    /** Cloudflare Turnstile response token submitted by the browser widget. */
+    private String cfTurnstileToken;
 }

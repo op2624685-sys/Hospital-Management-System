@@ -15,4 +15,7 @@ public class LoginRequestDto {
 
     @NotBlank(message = "Password is required")
     private String password;
+
+    /** Cloudflare Turnstile response token submitted by the browser widget. */
+    private String cfTurnstileToken;
 }

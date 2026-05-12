@@ -42,4 +42,8 @@ public class CreateAppointmentRequestDto {
     private Long departmentId;
 
     private String sessionId;
+
+    /** Cloudflare Turnstile response token submitted by the browser widget. */
+    private String cfTurnstileToken;
 }
+

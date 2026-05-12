@@ -14,7 +14,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class PatientUpdateRequest {
-    
+
     @NotNull(message = "Birth date is required")
     private LocalDate birthDate;
 
