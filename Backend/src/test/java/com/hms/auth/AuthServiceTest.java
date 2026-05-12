@@ -27,6 +27,7 @@ import com.hms.repository.UserRepository;
 import com.hms.security.AuthService;
 import com.hms.security.AuthUtil;
 import com.hms.security.RefreshTokenService;
+import com.hms.service.TurnstileService;
 
 @ExtendWith(MockitoExtension.class)
 public class AuthServiceTest {
@@ -42,6 +43,9 @@ public class AuthServiceTest {
 
     @Mock
     private RefreshTokenService refreshTokenService;
+    
+    @Mock
+    private TurnstileService turnstileService;
 
     @InjectMocks
     private AuthService authService;
@@ -49,7 +53,7 @@ public class AuthServiceTest {
     @Test
     void testLogin_success() {
 
-        LoginRequestDto requestDto = new LoginRequestDto("Om", "password");
+        LoginRequestDto requestDto = new LoginRequestDto("Om", "password", "valid-token");
 
         User user = new User();
         user.setId(1L);
@@ -68,6 +72,8 @@ public class AuthServiceTest {
 
         when(authUtil.generateAccessToken(user))
                 .thenReturn("mocked-jwt-token");
+
+        when(turnstileService.verify("valid-token")).thenReturn(true);
 
         //Act
         LoginResponseDto responseDto = authService.login(requestDto);
@@ -91,7 +97,9 @@ public class AuthServiceTest {
     void login_shouldThrowException_whenCredentialsAreInvalid() {
 
         // Arrange
-        LoginRequestDto requestDto = new LoginRequestDto("Om", "wrong-password");
+        LoginRequestDto requestDto = new LoginRequestDto("Om", "wrong-password", "valid-token");
+
+        when(turnstileService.verify("valid-token")).thenReturn(true);
 
         when(authenticationManager.authenticate(any()))
                 .thenThrow(new BadCredentialsException("Invalid credentials"));

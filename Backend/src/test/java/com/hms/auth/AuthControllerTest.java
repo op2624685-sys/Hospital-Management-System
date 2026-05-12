@@ -58,7 +58,7 @@ public class AuthControllerTest {
 
     @Test
     void login_ShouldReturnOk() throws Exception {
-        LoginRequestDto request = new LoginRequestDto("testuser", "password");
+        LoginRequestDto request = new LoginRequestDto("testuser", "password", "valid-token");
         LoginResponseDto response = new LoginResponseDto("token", "refreshToken", 1L, "testuser", "test@example.com", null, Set.of(RoleType.PATIENT));
 
         when(authService.login(any(LoginRequestDto.class))).thenReturn(response);
@@ -73,7 +73,7 @@ public class AuthControllerTest {
 
     @Test
     void requestSignupMagicLink_ShouldReturnOk() throws Exception {
-        MagicLinkSignupRequestDto request = new MagicLinkSignupRequestDto("test@example.com");
+        MagicLinkSignupRequestDto request = new MagicLinkSignupRequestDto("test@example.com", "valid-token");
 
         MagicLinkResponseDto response = MagicLinkResponseDto.builder()
                 .success(true)
