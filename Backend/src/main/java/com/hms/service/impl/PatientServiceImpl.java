@@ -72,7 +72,7 @@ public class PatientServiceImpl implements PatientService {
                 .map(patient -> modelMapper.map(patient, PatientDto.class))
                 .toList();
     }
-    
+
     @Override
     public PatientDto getPatientByNameAndBirthDate(String name, LocalDate birthDate) {
         List<Patient> patients = patientRepository.findByNameAndBirthDate(name, birthDate);
@@ -84,10 +84,10 @@ public class PatientServiceImpl implements PatientService {
 
     @Override
     @Caching(evict = {
-        @CacheEvict(value = "patientListAll", allEntries = true),
-        @CacheEvict(value = "patientById", allEntries = true),
-        @CacheEvict(value = "patientListByName", allEntries = true),
-        @CacheEvict(value = "patientListPaged", allEntries = true)
+            @CacheEvict(value = "patientListAll", allEntries = true),
+            @CacheEvict(value = "patientById", allEntries = true),
+            @CacheEvict(value = "patientListByName", allEntries = true),
+            @CacheEvict(value = "patientListPaged", allEntries = true)
     })
     public PatientDto createNewPatient(PatientRequest patientRequest) {
         Patient patient = modelMapper.map(patientRequest, Patient.class);
@@ -118,7 +118,8 @@ public class PatientServiceImpl implements PatientService {
         existingUser.setRoles(updatedRoles);
         userRepository.save(existingUser);
 
-        // Always use a managed reference for @MapsId association to avoid detached-entity issues.
+        // Always use a managed reference for @MapsId association to avoid
+        // detached-entity issues.
         User managedUserRef = userRepository.getReferenceById(userId);
 
         Patient patient = Patient.builder()
@@ -147,10 +148,10 @@ public class PatientServiceImpl implements PatientService {
 
     @Override
     @Caching(evict = {
-        @CacheEvict(value = "patientListAll", allEntries = true),
-        @CacheEvict(value = "patientById", allEntries = true),
-        @CacheEvict(value = "patientListByName", allEntries = true),
-        @CacheEvict(value = "patientListPaged", allEntries = true)
+            @CacheEvict(value = "patientListAll", allEntries = true),
+            @CacheEvict(value = "patientById", allEntries = true),
+            @CacheEvict(value = "patientListByName", allEntries = true),
+            @CacheEvict(value = "patientListPaged", allEntries = true)
     })
     public String deletePatientById(Long id) {
         Patient patient = patientRepository.findById(id)
@@ -161,10 +162,10 @@ public class PatientServiceImpl implements PatientService {
 
     @Override
     @Caching(evict = {
-        @CacheEvict(value = "patientListAll", allEntries = true),
-        @CacheEvict(value = "patientById", allEntries = true),
-        @CacheEvict(value = "patientListByName", allEntries = true),
-        @CacheEvict(value = "patientListPaged", allEntries = true)
+            @CacheEvict(value = "patientListAll", allEntries = true),
+            @CacheEvict(value = "patientById", allEntries = true),
+            @CacheEvict(value = "patientListByName", allEntries = true),
+            @CacheEvict(value = "patientListPaged", allEntries = true)
     })
     public PatientDto updatePatientById(PatientRequest patientRequest) {
         Patient patient = modelMapper.map(patientRequest, Patient.class);
@@ -184,10 +185,10 @@ public class PatientServiceImpl implements PatientService {
     @Override
     @Transactional
     @Caching(evict = {
-        @CacheEvict(value = "patientById", allEntries = true),
-        @CacheEvict(value = "patientListAll", allEntries = true),
-        @CacheEvict(value = "patientListByName", allEntries = true),
-        @CacheEvict(value = "patientListPaged", allEntries = true)
+            @CacheEvict(value = "patientById", allEntries = true),
+            @CacheEvict(value = "patientListAll", allEntries = true),
+            @CacheEvict(value = "patientListByName", allEntries = true),
+            @CacheEvict(value = "patientListPaged", allEntries = true)
     })
     public PatientDto updatePatientProfileWithEditLimit(Long patientId, PatientUpdateRequest patientUpdateRequest) {
         boolean patientExists = patientRepository.existsById(patientId);
@@ -205,14 +206,15 @@ public class PatientServiceImpl implements PatientService {
                     .user(managedUserRef)
                     .name(user.getUsername())
                     .email(user.getEmail())
-                    .birthDate(null)  // Will be set below
-                    .gender(null)     // Will be set below
+                    .birthDate(null) // Will be set below
+                    .gender(null) // Will be set below
                     .bloodGroup(null) // Will be set below
                     .profileUpdateCount(0)
                     .build();
         }
 
-        // Validate edit limit: max 3 edits per 7-day rolling window (skip for new patients)
+        // Validate edit limit: max 3 edits per 7-day rolling window (skip for new
+        // patients)
         if (patientExists) {
             validateProfileEditLimit(patient);
         }

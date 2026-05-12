@@ -30,6 +30,7 @@ import com.hms.repository.SignupMagicLinkTokenRepository;
 import com.hms.repository.UserRepository;
 import com.hms.service.EmailService;
 import com.hms.service.OtpService;
+import com.hms.service.TurnstileService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -46,10 +47,15 @@ public class AuthService {
     private final SignupMagicLinkTokenRepository signupMagicLinkTokenRepository;
     private final EmailService emailService;
     private final RefreshTokenService refreshTokenService;
+    private final TurnstileService turnstileService;
 
     @Transactional
     public LoginResponseDto login(LoginRequestDto loginRequestDto) {
-        
+
+        if (!turnstileService.verify(loginRequestDto.getCfTurnstileToken())) {
+            throw new ValidationException("Human verification failed. Please complete the CAPTCHA and try again.");
+        }
+
         Authentication authentication = authenticationManager.authenticate(
             new UsernamePasswordAuthenticationToken(loginRequestDto.getUsername(), loginRequestDto.getPassword())
         );
@@ -97,6 +103,10 @@ public class AuthService {
     @Transactional
     public MagicLinkResponseDto requestSignupMagicLink(MagicLinkSignupRequestDto requestDto) {
         String email = requestDto.getEmail().trim().toLowerCase();
+
+        if (!turnstileService.verify(requestDto.getCfTurnstileToken())) {
+            throw new ValidationException("Human verification failed. Please complete the CAPTCHA and try again.");
+        }
 
         signupMagicLinkTokenRepository.findByEmailAndIsUsedFalse(email)
                 .ifPresent(existing -> {

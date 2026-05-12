@@ -15,6 +15,7 @@ import com.hms.repository.AppointmentRepository;
 import com.hms.repository.DoctorRepository;
 import com.hms.repository.PaymentRepository;
 import com.hms.service.AppointmentService;
+import com.hms.service.TurnstileService;
 import com.stripe.model.Event;
 import com.stripe.model.PaymentIntent;
 import com.stripe.model.StripeObject;
@@ -53,6 +54,7 @@ public class PaymentService {
     private final AppointmentRepository appointmentRepository;
     private final DoctorRepository doctorRepository;
     private final AppointmentService appointmentService;
+    private final TurnstileService turnstileService;
 
     @Value("${app.payment.redirect-base-url:http://localhost:5173}")
     private String paymentRedirectBaseUrl;
@@ -62,6 +64,10 @@ public class PaymentService {
     private final AtomicLong departmentFallbackCounter = new AtomicLong();
 
     public PaymentInitiationResponse createPaymentForDoctor(Long doctorId, CreateAppointmentRequestDto request) throws Exception {
+        if (!turnstileService.verify(request.getCfTurnstileToken())) {
+            throw new ValidationException("Human verification failed. Please complete the CAPTCHA and try again.");
+        }
+        
         Doctor doctor = doctorRepository.findById(doctorId)
                 .orElseThrow(() -> new NotFoundException("Doctor not found"));
 
@@ -162,6 +168,10 @@ public class PaymentService {
     }
 
     public Map<String, String> createStripeCheckoutSession(Long doctorId, CreateAppointmentRequestDto request) throws Exception {
+        if (!turnstileService.verify(request.getCfTurnstileToken())) {
+            throw new ValidationException("Human verification failed. Please complete the CAPTCHA and try again.");
+        }
+
         Doctor doctor = doctorRepository.findById(doctorId)
                 .orElseThrow(() -> new NotFoundException("Doctor not found"));
 
