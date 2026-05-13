@@ -297,7 +297,7 @@ public class DoctorServiceImpl implements DoctorService {
     }
 
     private boolean isDoctorHeadOfAnyDepartment(Doctor doctor) {
-        return departmentRepository.existsByHeadDoctor_Id(doctor.getId());
+        return doctor.getHeadedDepartments() != null && !doctor.getHeadedDepartments().isEmpty();
     }
 
     @Override
@@ -394,22 +394,19 @@ public class DoctorServiceImpl implements DoctorService {
     }
 
     private Set<DepartmentDto> mapDepartments(Doctor doctor) {
-        // Use a Map with Department ID as key to ensure truly unique departments by ID
         java.util.Map<Long, Department> uniqueDepts = new java.util.HashMap<>();
         
         if (doctor.getDepartments() != null) {
             doctor.getDepartments().forEach(d -> {
-                // Ensure the department belongs to a branch (not just a template)
                 if (d != null && d.getId() != null && d.getBranch() != null) {
                     uniqueDepts.put(d.getId(), d);
                 }
             });
         }
         
-        // Include departments where this doctor is HEAD but maybe not listed in member doctors
-        List<Department> headedDepts = departmentRepository.findHeadedDepartments(doctor.getId());
-        if (headedDepts != null) {
-            headedDepts.forEach(d -> {
+        // Use eager-loaded headedDepartments collection
+        if (doctor.getHeadedDepartments() != null) {
+            doctor.getHeadedDepartments().forEach(d -> {
                 if (d != null && d.getId() != null && d.getBranch() != null) {
                     uniqueDepts.put(d.getId(), d);
                 }
@@ -425,16 +422,16 @@ public class DoctorServiceImpl implements DoctorService {
                     dto.setName(department.getName());
                     dto.setBranchId(department.getBranch().getId());
                     dto.setHeadDoctorId(department.getHeadDoctor() != null ? department.getHeadDoctor().getId() : null);
-                    dto.setDoctorIds(department.getDoctors() == null ? Set.of()
-                            : department.getDoctors().stream().map(Doctor::getId).collect(Collectors.toSet()));
+                    // Optimized: Avoid loading all members and patients for efficiency during bulk mapping
+                    dto.setDoctorIds(Set.of());
                     dto.setHeadDoctorName(department.getHeadDoctor() != null ? department.getHeadDoctor().getName() : null);
-                    dto.setMemberCount(department.getDoctors() == null ? 0 : department.getDoctors().size());
+                    dto.setMemberCount(0); 
                     dto.setDescription(department.getDescription());
                     dto.setImageUrl(department.getImageUrl());
                     dto.setAccentColor(department.getAccentColor());
                     dto.setBgColor(department.getBgColor());
                     dto.setIcon(department.getIcon());
-                    dto.setPatientCount(department.getPatients() == null ? 0 : department.getPatients().size());
+                    dto.setPatientCount(0);
                     dto.setSectionsJson(department.getSectionsJson());
                     return dto;
                 })

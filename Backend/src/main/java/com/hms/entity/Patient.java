@@ -99,7 +99,7 @@ public class Patient {
     @ManyToMany(mappedBy = "patients")
     private List<Branch> branches;
 
-    @OneToMany(mappedBy = "patient", cascade = {CascadeType.REMOVE}, orphanRemoval = true, fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "patient", cascade = {CascadeType.REMOVE}, orphanRemoval = true, fetch = FetchType.LAZY)
     @Builder.Default
     private List<Appointment> Appointments = new ArrayList<>();
 

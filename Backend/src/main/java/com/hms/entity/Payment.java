@@ -26,7 +26,9 @@ import lombok.NoArgsConstructor;
 @Table(
     name = "payments",
     indexes = {
-        @Index(name = "idx_payment_status_created_at", columnList = "status, createdAt")
+        @Index(name = "idx_payment_status_created_at", columnList = "status, createdAt"),
+        @Index(name = "idx_payment_appointment_id", columnList = "appointment_id"),
+        @Index(name = "idx_payment_created_at", columnList = "createdAt")
     }
 )
 @Data

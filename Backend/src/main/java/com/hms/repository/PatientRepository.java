@@ -18,7 +18,8 @@ public interface PatientRepository extends JpaRepository<Patient, Long> {
 
     List<Patient> findByNameAndBirthDate(String name, LocalDate birthDate);
 
-    @Query(value = "select * from patient", nativeQuery = true)
+    @org.springframework.data.jpa.repository.EntityGraph(attributePaths = {"user"})
+    @Query("SELECT p FROM Patient p")
     Page<Patient> findAllPatients(Pageable pageable);
 
     List<Patient> findByBranches_Id(Long branchId);

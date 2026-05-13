@@ -4,7 +4,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.Locale;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -26,6 +25,7 @@ import com.hms.dto.Response.BranchResponseDto;
 import com.hms.dto.Response.DoctorResponseDto;
 import com.hms.entity.Admin;
 import com.hms.entity.Branch;
+
 import com.hms.entity.Doctor;
 import com.hms.entity.User;
 import com.hms.entity.type.RoleType;
@@ -35,9 +35,13 @@ import com.hms.repository.AppointmentRepository;
 import com.hms.repository.BranchRepository;
 import com.hms.repository.DoctorRepository;
 import com.hms.repository.PatientRepository;
-import com.hms.repository.DepartmentRepository;
+import com.hms.repository.PaymentRepository;
 import com.hms.repository.UserRepository;
+import com.hms.repository.DepartmentRepository;
+import com.hms.dto.Response.AdminRevenueGrowthDto;
 import com.hms.service.AdminService;
+
+
 
 import lombok.RequiredArgsConstructor;
 
@@ -52,6 +56,8 @@ public class AdminServiceImpl implements AdminService {
     private final PatientRepository patientRepository;
     private final AppointmentRepository appointmentRepository;
     private final DepartmentRepository departmentRepository;
+    private final PaymentRepository paymentRepository;
+
     
     @Override
     public List<AdminDto> getAllAdmins() {
@@ -103,33 +109,79 @@ public class AdminServiceImpl implements AdminService {
         Long adminUserId = getAuthenticatedUserId();
         Admin admin = adminRepository.findById(adminUserId).orElseThrow(() -> new RuntimeException("Admin profile not found"));
         Long branchId = admin.getBranch().getId();
-
-        long totalDoctors = doctorRepository.countByBranch_Id(branchId);
-        long totalPatients = patientRepository.countByBranches_Id(branchId);
-
         LocalDate today = LocalDate.now();
         LocalDateTime start = today.atStartOfDay();
         LocalDateTime end = today.plusDays(1).atStartOfDay().minusNanos(1);
-        long todayAppointments = appointmentRepository.countByBranch_IdAndAppointmentTimeBetween(branchId, start, end);
-        long confirmedAppointments = appointmentRepository.countByBranch_IdAndStatus(branchId, AppointmentStatusType.CONFIRMED);
 
-        AdminStatsDto stats = new AdminStatsDto(totalDoctors, totalPatients, todayAppointments, 0L, confirmedAppointments);
-
-        List<DoctorResponseDto> recentDoctors = doctorRepository.findByBranch_IdOrderByIdDesc(branchId)
-                .stream().limit(5).map(this::mapToDoctorResponseDto).toList();
-
-        List<AdminDepartmentLoadDto> departmentLoad = departmentRepository.findByBranch_Id(branchId).stream()
-                .map(dep -> new AdminDepartmentLoadDto(dep.getName(), dep.getPatients() == null ? 0 : dep.getPatients().size()))
-                .sorted(Comparator.comparing(AdminDepartmentLoadDto::getPatientCount).reversed()).toList();
-
-        List<AdminWeeklyCountDto> weekly = new ArrayList<>();
-        for (int i = 6; i >= 0; i--) {
-            LocalDate day = today.minusDays(i);
-            long count = appointmentRepository.countByBranch_IdAndAppointmentTimeBetween(branchId, day.atStartOfDay(), day.plusDays(1).atStartOfDay().minusNanos(1));
-            weekly.add(new AdminWeeklyCountDto(day.getDayOfWeek().getDisplayName(TextStyle.SHORT, Locale.ENGLISH), count));
+        // 1. Stats & Revenue (Fast Database Aggregations)
+        AdminStatsDto stats = new AdminStatsDto();
+        stats.setTotalDoctors(doctorRepository.countByBranch_Id(branchId));
+        stats.setTotalPatients(patientRepository.countByBranches_Id(branchId));
+        stats.setTodayAppointments(appointmentRepository.countByBranch_IdAndAppointmentTimeBetween(branchId, start, end));
+        
+        List<Object[]> statusCounts = appointmentRepository.countStatusByBranch(branchId);
+        for (Object[] row : statusCounts) {
+            if (row[0] != null) {
+                AppointmentStatusType status = (AppointmentStatusType) row[0];
+                long count = ((Number) row[1]).longValue();
+                if (status == AppointmentStatusType.PENDING) stats.setPendingAppointments(count);
+                else if (status == AppointmentStatusType.CONFIRMED) stats.setConfirmedAppointments(count);
+                else if (status == AppointmentStatusType.COMPLETED) stats.setCompletedAppointments(count);
+                else if (status == AppointmentStatusType.CANCELLED) stats.setCancelledAppointments(count);
+            }
         }
 
-        return new AdminOverviewDto(stats, recentDoctors, departmentLoad, weekly);
+        Double totalRev = paymentRepository.sumRevenueByBranch(branchId);
+        Double todayRev = paymentRepository.sumRevenueByBranchAndDate(branchId, start, end);
+        stats.setTotalRevenue(totalRev != null ? totalRev : 0.0);
+        stats.setTodayRevenue(todayRev != null ? todayRev : 0.0);
+
+        // 2. Recent Doctors
+        List<Object[]> recentDocsNative = doctorRepository.findRecentDoctorsNative(branchId);
+        List<DoctorResponseDto> recentDoctors = recentDocsNative.stream().map(row -> {
+            DoctorResponseDto dto = new DoctorResponseDto();
+            dto.setId(((Number) row[0]).longValue());
+            dto.setName((String) row[1]);
+            dto.setSpecialization((String) row[2]);
+            dto.setProfilePhoto((String) row[3]);
+            return dto;
+        }).toList();
+
+        // 3. Department Load
+        List<AdminDepartmentLoadDto> departmentLoad = appointmentRepository.getDepartmentLoad(branchId);
+        
+        // 4. Weekly Activity (Optimized Aggregation)
+        LocalDateTime weekStart = today.minusDays(6).atStartOfDay();
+        List<Object[]> weeklyData = appointmentRepository.getWeeklyCount(branchId, weekStart);
+        java.util.Map<String, Long> weeklyMap = new java.util.HashMap<>();
+        for (Object[] row : weeklyData) {
+            if (row[0] != null) weeklyMap.put(row[0].toString(), ((Number) row[1]).longValue());
+        }
+        List<AdminWeeklyCountDto> weekly = new ArrayList<>();
+        for (int i = 6; i >= 0; i--) {
+            LocalDate d = today.minusDays(i);
+            weekly.add(new AdminWeeklyCountDto(d.getDayOfWeek().getDisplayName(TextStyle.SHORT, Locale.ENGLISH), weeklyMap.getOrDefault(d.toString(), 0L)));
+        }
+
+        // 5. Monthly Growth (Optimized Aggregation)
+        LocalDateTime sixMonthsAgo = today.minusMonths(5).withDayOfMonth(1).atStartOfDay();
+        List<Object[]> monthlyData = paymentRepository.getMonthlyRevenue(branchId, sixMonthsAgo);
+        java.util.Map<Integer, Double> monthlyMap = new java.util.HashMap<>();
+        for (Object[] row : monthlyData) {
+            if (row[0] != null) {
+                // Robust parsing for various timestamp formats
+                String tsStr = row[0].toString();
+                int monthVal = Integer.parseInt(tsStr.split("-")[1]); // Get MM from YYYY-MM-...
+                monthlyMap.put(monthVal, ((Number) row[1]).doubleValue());
+            }
+        }
+        List<AdminRevenueGrowthDto> growth = new ArrayList<>();
+        for (int i = 5; i >= 0; i--) {
+            LocalDate m = today.minusMonths(i);
+            growth.add(new AdminRevenueGrowthDto(m.getMonth().getDisplayName(TextStyle.SHORT, Locale.ENGLISH), monthlyMap.getOrDefault(m.getMonthValue(), 0.0)));
+        }
+
+        return new AdminOverviewDto(stats, recentDoctors, departmentLoad, weekly, growth);
     }
 
     private Long getAuthenticatedUserId() {
@@ -195,9 +247,8 @@ public class AdminServiceImpl implements AdminService {
         if (doctor.getDepartments() != null) {
             allDepts.addAll(doctor.getDepartments());
         }
-        java.util.List<com.hms.entity.Department> headedDepts = departmentRepository.findHeadedDepartments(doctor.getId());
-        if (headedDepts != null) {
-            allDepts.addAll(headedDepts);
+        if (doctor.getHeadedDepartments() != null) {
+            allDepts.addAll(doctor.getHeadedDepartments());
         }
         
         return allDepts.stream().map(dep -> {

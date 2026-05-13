@@ -58,6 +58,12 @@ public class Doctor {
     @Builder.Default
     private List<Appointment> Appointments = new ArrayList<>();
 
+    @org.hibernate.annotations.BatchSize(size = 10)
+    @OneToMany(mappedBy = "headDoctor")
+    @Builder.Default
+    private Set<Department> headedDepartments = new HashSet<>();
+
+    @org.hibernate.annotations.BatchSize(size = 10)
     @ManyToMany(mappedBy = "doctors")
     @Builder.Default
     private Set<Department> departments = new HashSet<>();

@@ -11,6 +11,7 @@ import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import jakarta.persistence.LockModeType;
+import org.springframework.data.jpa.repository.EntityGraph;
 
 import com.hms.entity.Doctor;
 
@@ -23,7 +24,7 @@ public interface DoctorRepository extends JpaRepository<Doctor, Long> {
 
     long countByBranch_Id(Long branchId);
 
-    List<Doctor> findByBranch_IdOrderByIdDesc(Long branchId);
+    List<Doctor> findByBranch_IdOrderByIdDesc(Long branchId, org.springframework.data.domain.Pageable pageable);
 
     @Query("""
             SELECT d FROM Doctor d
@@ -54,6 +55,21 @@ public interface DoctorRepository extends JpaRepository<Doctor, Long> {
                     """
     )
     Page<Doctor> findAllSearch(@Param("search") String search, Pageable pageable);
+
+    @Query("SELECT d.id FROM Doctor d WHERE d.branch.id = :branchId")
+    List<Long> findBranchDoctorIds(@Param("branchId") Long branchId, Pageable pageable);
+
+    @EntityGraph(attributePaths = {"departments", "headedDepartments", "branch", "user"})
+    List<Doctor> findAllByIdIn(List<Long> ids);
+
+    @Query(value = """
+        SELECT d.user_id, d.name, d.specialization, u.profile_photo 
+        FROM doctor d 
+        JOIN app_user u ON d.user_id = u.id 
+        WHERE d.branch_id = :branchId 
+        ORDER BY d.user_id DESC LIMIT 5
+        """, nativeQuery = true)
+    List<Object[]> findRecentDoctorsNative(@Param("branchId") Long branchId);
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("select d from Doctor d where d.id = :id")
