@@ -3,6 +3,8 @@ import { Building2, IndianRupee, RefreshCw, Stethoscope, Users, Plus, UserCog, C
 import API from "../api/api";
 import Header from "../components/Header";
 import PageLoader from "../components/PageLoader";
+import { BranchPerformanceChart } from "../components/DashboardCharts";
+
 
 /* ─── Google Fonts injected once ─── */
 const FontLoader = () => (
@@ -232,7 +234,7 @@ const Field = ({ label, className = "", hint, ...props }) => (
 );
 
 const emptyBranchForm = { branchName: "", branchAddress: "", branchContactNumber: "", branchEmail: "" };
-const emptyAdminForm  = { username: "", name: "", email: "", branchName: "" };
+const emptyAdminForm = { username: "", name: "", email: "", branchName: "" };
 const emptyDoctorForm = { username: "", name: "", specialization: "", email: "", consultationFee: "", branchName: "" };
 
 const DEPT_LIMITS = {
@@ -246,15 +248,15 @@ const DEPT_LIMITS = {
 };
 
 const HeadAdminPanel = () => {
-  const [overview, setOverview]               = useState([]);
+  const [overview, setOverview] = useState([]);
   const [selectedBranchId, setSelectedBranchId] = useState(null);
-  const [details, setDetails]                 = useState(null);
-  const [loading, setLoading]                 = useState(true);
-  const [spinning, setSpinning]               = useState(false);
-  const [selectedTab, setSelectedTab]         = useState("Branch");
+  const [details, setDetails] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [spinning, setSpinning] = useState(false);
+  const [selectedTab, setSelectedTab] = useState("Branch");
 
   const [branchForm, setBranchForm] = useState(emptyBranchForm);
-  const [adminForm,  setAdminForm]  = useState(emptyAdminForm);
+  const [adminForm, setAdminForm] = useState(emptyAdminForm);
   const [doctorForm, setDoctorForm] = useState(emptyDoctorForm);
   const [submitting, setSubmitting] = useState(false);
   const [departmentTemplates, setDepartmentTemplates] = useState([]);
@@ -274,7 +276,7 @@ const HeadAdminPanel = () => {
 
   const refreshAll = useCallback(async () => {
     setLoading(true); setSpinning(true);
-    try { 
+    try {
       const [overRes, deptRes] = await Promise.all([
         API.get("/head-admin/overview"),
         API.get("/head-admin/departments")
@@ -424,7 +426,7 @@ const HeadAdminPanel = () => {
       <FontLoader />
       <Header />
       <div className="max-w-[1400px] mx-auto px-6 pt-32 pb-20">
-        
+
         {/* Hero */}
         <div className="had-hero mb-10">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
@@ -449,9 +451,9 @@ const HeadAdminPanel = () => {
             { label: 'Active Depts', value: departmentTemplates.length, icon: Activity, type: 'rose' }
           ].map((s, i) => (
             <div key={i} className={`had-stat had-stat-${s.type}`}>
-               <div className="had-stat-icon"><s.icon size={22} /></div>
-               <div className="had-stat-label">{s.label}</div>
-               <div className="had-stat-value">{s.value}</div>
+              <div className="had-stat-icon"><s.icon size={22} /></div>
+              <div className="had-stat-label">{s.label}</div>
+              <div className="had-stat-value">{s.value}</div>
             </div>
           ))}
         </div>
@@ -460,7 +462,23 @@ const HeadAdminPanel = () => {
           {/* Left: Branches Table */}
           <div className="lg:col-span-8 space-y-10">
             <div className="had-card">
-              <h2 className="had-section-title"><div className="had-section-title-dot" /> Branch List & Performance</h2>
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="had-section-title !mb-0"><div className="had-section-title-dot" /> Branch List & Performance</h2>
+                <div className="flex gap-4">
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 rounded-full" style={{ background: 'var(--primary)' }} />
+                    <span className="text-[10px] font-black uppercase text-[var(--muted)]">Revenue Distribution</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Chart Integration */}
+              <div className="mb-10 p-6 rounded-2xl bg-white/5 border border-white/5">
+                <div style={{ height: '320px' }}>
+                  <BranchPerformanceChart data={overview} />
+                </div>
+              </div>
+
               <table className="had-table">
                 <thead>
                   <tr>
@@ -489,37 +507,37 @@ const HeadAdminPanel = () => {
             {/* Selected Branch Details */}
             {selectedBranchId && details && (
               <div className="had-card">
-                 <h2 className="had-section-title"><div className="had-section-title-dot" /> Details: {details.branchName}</h2>
-                 <div className="had-detail-grid">
-                    <div className="had-detail-pane">
-                       <div className="had-detail-pane-title">Branch Administrators <span className="had-detail-pane-count">{details.admins?.length || 0}</span></div>
-                       <div className="had-scroll">
-                         {details.admins?.map(adm => (
-                           <div key={adm.id} className="had-detail-item">
-                              <UserCog size={14} />
-                              <div className="flex-1">
-                                <div className="had-detail-name">{adm.name}</div>
-                                <div className="had-detail-sub">{adm.email}</div>
-                              </div>
-                           </div>
-                         ))}
-                       </div>
+                <h2 className="had-section-title"><div className="had-section-title-dot" /> Details: {details.branchName}</h2>
+                <div className="had-detail-grid">
+                  <div className="had-detail-pane">
+                    <div className="had-detail-pane-title">Branch Administrators <span className="had-detail-pane-count">{details.admins?.length || 0}</span></div>
+                    <div className="had-scroll">
+                      {details.admins?.map(adm => (
+                        <div key={adm.id} className="had-detail-item">
+                          <UserCog size={14} />
+                          <div className="flex-1">
+                            <div className="had-detail-name">{adm.name}</div>
+                            <div className="had-detail-sub">{adm.email}</div>
+                          </div>
+                        </div>
+                      ))}
                     </div>
-                    <div className="had-detail-pane">
-                       <div className="had-detail-pane-title">Clinical Staff <span className="had-detail-pane-count">{details.doctors?.length || 0}</span></div>
-                       <div className="had-scroll">
-                         {details.doctors?.map(doc => (
-                           <div key={doc.id} className="had-detail-item">
-                              <Stethoscope size={14} />
-                              <div className="flex-1">
-                                <div className="had-detail-name">{doc.name}</div>
-                                <div className="had-detail-sub">{doc.specialization}</div>
-                              </div>
-                           </div>
-                         ))}
-                       </div>
+                  </div>
+                  <div className="had-detail-pane">
+                    <div className="had-detail-pane-title">Clinical Staff <span className="had-detail-pane-count">{details.doctors?.length || 0}</span></div>
+                    <div className="had-scroll">
+                      {details.doctors?.map(doc => (
+                        <div key={doc.id} className="had-detail-item">
+                          <Stethoscope size={14} />
+                          <div className="flex-1">
+                            <div className="had-detail-name">{doc.name}</div>
+                            <div className="had-detail-sub">{doc.specialization}</div>
+                          </div>
+                        </div>
+                      ))}
                     </div>
-                 </div>
+                  </div>
+                </div>
               </div>
             )}
           </div>
@@ -537,10 +555,10 @@ const HeadAdminPanel = () => {
                 <h3 className="had-form-title">Branch Operations</h3>
                 <p className="had-form-subtitle mb-6">Initialize a new medical center</p>
                 <form onSubmit={handleCreateBranch} className="space-y-4">
-                  <Field label="Branch Name" value={branchForm.branchName} onChange={e => setBranchForm({...branchForm, branchName: e.target.value})} required />
-                  <Field label="Postal Address" value={branchForm.branchAddress} onChange={e => setBranchForm({...branchForm, branchAddress: e.target.value})} required />
-                  <Field label="Contact Number" value={branchForm.branchContactNumber} onChange={e => setBranchForm({...branchForm, branchContactNumber: e.target.value})} required />
-                  <Field label="Branch Email" type="email" value={branchForm.branchEmail} onChange={e => setBranchForm({...branchForm, branchEmail: e.target.value})} required />
+                  <Field label="Branch Name" value={branchForm.branchName} onChange={e => setBranchForm({ ...branchForm, branchName: e.target.value })} required />
+                  <Field label="Postal Address" value={branchForm.branchAddress} onChange={e => setBranchForm({ ...branchForm, branchAddress: e.target.value })} required />
+                  <Field label="Contact Number" value={branchForm.branchContactNumber} onChange={e => setBranchForm({ ...branchForm, branchContactNumber: e.target.value })} required />
+                  <Field label="Branch Email" type="email" value={branchForm.branchEmail} onChange={e => setBranchForm({ ...branchForm, branchEmail: e.target.value })} required />
                   <button className="had-btn-teal" type="submit" disabled={submitting}>Onboard Branch</button>
                 </form>
               </div>
@@ -551,12 +569,12 @@ const HeadAdminPanel = () => {
                 <h3 className="had-form-title">Admin Management</h3>
                 <p className="had-form-subtitle mb-6">Assign branch administrator</p>
                 <form onSubmit={handleOnboardAdmin} className="space-y-4">
-                  <Field label="Username" value={adminForm.username} onChange={e => setAdminForm({...adminForm, username: e.target.value})} required />
-                  <Field label="Full Name" value={adminForm.name} onChange={e => setAdminForm({...adminForm, name: e.target.value})} required />
-                  <Field label="Email Address" type="email" value={adminForm.email} onChange={e => setAdminForm({...adminForm, email: e.target.value})} required />
+                  <Field label="Username" value={adminForm.username} onChange={e => setAdminForm({ ...adminForm, username: e.target.value })} required />
+                  <Field label="Full Name" value={adminForm.name} onChange={e => setAdminForm({ ...adminForm, name: e.target.value })} required />
+                  <Field label="Email Address" type="email" value={adminForm.email} onChange={e => setAdminForm({ ...adminForm, email: e.target.value })} required />
                   <div className="had-field">
                     <label style={{ fontSize: '11px', fontWeight: 800, textTransform: 'uppercase', color: 'var(--muted-foreground)', marginBottom: '8px', display: 'block' }}>Branch</label>
-                    <select className="had-field-input" value={adminForm.branchName} onChange={e => setAdminForm({...adminForm, branchName: e.target.value})} required>
+                    <select className="had-field-input" value={adminForm.branchName} onChange={e => setAdminForm({ ...adminForm, branchName: e.target.value })} required>
                       <option value="">Select Branch</option>
                       {overview.map(b => (
                         <option key={b.branchId} value={b.branchName}>{b.branchName}</option>
@@ -573,14 +591,14 @@ const HeadAdminPanel = () => {
                 <h3 className="had-form-title">Staff Credentials</h3>
                 <p className="had-form-subtitle mb-6">Onboard clinical personnel</p>
                 <form onSubmit={handleOnboardDoctor} className="space-y-4">
-                  <Field label="Username" value={doctorForm.username} onChange={e => setDoctorForm({...doctorForm, username: e.target.value})} required />
-                  <Field label="Full Name" value={doctorForm.name} onChange={e => setDoctorForm({...doctorForm, name: e.target.value})} required />
-                  <Field label="Specialization" value={doctorForm.specialization} onChange={e => setDoctorForm({...doctorForm, specialization: e.target.value})} required />
-                  <Field label="Email" type="email" value={doctorForm.email} onChange={e => setDoctorForm({...doctorForm, email: e.target.value})} required />
-                  <Field label="Consultation Fee (₹)" type="number" min="0" value={doctorForm.consultationFee} onChange={e => setDoctorForm({...doctorForm, consultationFee: e.target.value})} required />
+                  <Field label="Username" value={doctorForm.username} onChange={e => setDoctorForm({ ...doctorForm, username: e.target.value })} required />
+                  <Field label="Full Name" value={doctorForm.name} onChange={e => setDoctorForm({ ...doctorForm, name: e.target.value })} required />
+                  <Field label="Specialization" value={doctorForm.specialization} onChange={e => setDoctorForm({ ...doctorForm, specialization: e.target.value })} required />
+                  <Field label="Email" type="email" value={doctorForm.email} onChange={e => setDoctorForm({ ...doctorForm, email: e.target.value })} required />
+                  <Field label="Consultation Fee (₹)" type="number" min="0" value={doctorForm.consultationFee} onChange={e => setDoctorForm({ ...doctorForm, consultationFee: e.target.value })} required />
                   <div className="had-field">
                     <label style={{ fontSize: '11px', fontWeight: 800, textTransform: 'uppercase', color: 'var(--muted-foreground)', marginBottom: '8px', display: 'block' }}>Assigned Branch</label>
-                    <select className="had-field-input" value={doctorForm.branchName} onChange={e => setDoctorForm({...doctorForm, branchName: e.target.value})} required>
+                    <select className="had-field-input" value={doctorForm.branchName} onChange={e => setDoctorForm({ ...doctorForm, branchName: e.target.value })} required>
                       <option value="">Select Branch</option>
                       {overview.map(b => (
                         <option key={b.branchId} value={b.branchName}>{b.branchName}</option>
@@ -598,14 +616,14 @@ const HeadAdminPanel = () => {
                 <p className="had-form-subtitle mb-6">Create global department template</p>
                 <form onSubmit={handleCreateDepartmentTemplate} className="space-y-4">
                   <div className="grid grid-cols-2 gap-4">
-                    <Field label="Dept Name" value={departmentForm.name} onChange={e => setDepartmentForm({...departmentForm, name: e.target.value})} required />
-                    <Field label="Icon / Code" value={departmentForm.icon} onChange={e => setDepartmentForm({...departmentForm, icon: e.target.value})} required />
+                    <Field label="Dept Name" value={departmentForm.name} onChange={e => setDepartmentForm({ ...departmentForm, name: e.target.value })} required />
+                    <Field label="Icon / Code" value={departmentForm.icon} onChange={e => setDepartmentForm({ ...departmentForm, icon: e.target.value })} required />
                   </div>
-                  <Field label="Description" value={departmentForm.description} onChange={e => setDepartmentForm({...departmentForm, description: e.target.value})} required />
-                  <Field label="Image URL" value={departmentForm.imageUrl} onChange={e => setDepartmentForm({...departmentForm, imageUrl: e.target.value})} />
+                  <Field label="Description" value={departmentForm.description} onChange={e => setDepartmentForm({ ...departmentForm, description: e.target.value })} required />
+                  <Field label="Image URL" value={departmentForm.imageUrl} onChange={e => setDepartmentForm({ ...departmentForm, imageUrl: e.target.value })} />
                   <div className="grid grid-cols-2 gap-4">
-                    <Field label="Accent Color" value={departmentForm.accentColor} onChange={e => setDepartmentForm({...departmentForm, accentColor: e.target.value})} />
-                    <Field label="Bg Color" value={departmentForm.bgColor} onChange={e => setDepartmentForm({...departmentForm, bgColor: e.target.value})} />
+                    <Field label="Accent Color" value={departmentForm.accentColor} onChange={e => setDepartmentForm({ ...departmentForm, accentColor: e.target.value })} />
+                    <Field label="Bg Color" value={departmentForm.bgColor} onChange={e => setDepartmentForm({ ...departmentForm, bgColor: e.target.value })} />
                   </div>
 
                   <div className="border-t border-dashed border-[var(--border)] pt-4 mt-4">
@@ -614,21 +632,21 @@ const HeadAdminPanel = () => {
                       <button type="button" onClick={addDeptSection} className="text-[10px] bg-[var(--primary)] text-[var(--primary-foreground)] px-2 py-1 rounded-sm">+ Add Section</button>
                     </div>
                     <div className="space-y-4 max-h-[300px] overflow-y-auto pr-2">
-                       {departmentForm.sections.map((s, si) => (
-                         <div key={si} className="p-3 bg-[var(--background)] rounded-lg border border-[var(--border)] relative">
-                            <button type="button" onClick={() => removeDeptSection(si)} className="absolute top-2 right-2 text-rose-500 text-[10px]">✕</button>
-                            <div className="flex gap-2 mb-2">
-                              <input className="had-field-input !py-1 text-xs" value={s.title} onChange={e => updateDeptSection(si, 'title', e.target.value)} placeholder="Title" />
-                              <input className="had-field-input !py-1 text-xs w-12 text-center" value={s.icon} onChange={e => updateDeptSection(si, 'icon', e.target.value)} placeholder="Icon" />
-                            </div>
-                            <div className="space-y-1">
-                               {s.items.map((it, ii) => (
-                                 <input key={ii} className="had-field-input !py-1 text-[11px] !bg-white/50" value={it} onChange={e => updateSectionItem(si, ii, e.target.value)} placeholder="Item text" />
-                               ))}
-                               <button type="button" onClick={() => addSectionItem(si)} className="text-[9px] text-[var(--primary)] mt-1 opacity-70 hover:opacity-100">+ Add Item</button>
-                            </div>
-                         </div>
-                       ))}
+                      {departmentForm.sections.map((s, si) => (
+                        <div key={si} className="p-3 bg-[var(--background)] rounded-lg border border-[var(--border)] relative">
+                          <button type="button" onClick={() => removeDeptSection(si)} className="absolute top-2 right-2 text-rose-500 text-[10px]">✕</button>
+                          <div className="flex gap-2 mb-2">
+                            <input className="had-field-input !py-1 text-xs" value={s.title} onChange={e => updateDeptSection(si, 'title', e.target.value)} placeholder="Title" />
+                            <input className="had-field-input !py-1 text-xs w-12 text-center" value={s.icon} onChange={e => updateDeptSection(si, 'icon', e.target.value)} placeholder="Icon" />
+                          </div>
+                          <div className="space-y-1">
+                            {s.items.map((it, ii) => (
+                              <input key={ii} className="had-field-input !py-1 text-[11px] !bg-white/50" value={it} onChange={e => updateSectionItem(si, ii, e.target.value)} placeholder="Item text" />
+                            ))}
+                            <button type="button" onClick={() => addSectionItem(si)} className="text-[9px] text-[var(--primary)] mt-1 opacity-70 hover:opacity-100">+ Add Item</button>
+                          </div>
+                        </div>
+                      ))}
                     </div>
                   </div>
 
