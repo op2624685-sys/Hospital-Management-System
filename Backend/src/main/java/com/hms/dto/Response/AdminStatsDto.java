@@ -13,4 +13,16 @@ public class AdminStatsDto {
     private long todayAppointments;
     private long pendingAppointments;
     private long confirmedAppointments;
+    private long completedAppointments;
+    private long cancelledAppointments;
+    private double totalRevenue;
+    private double todayRevenue;
+
+    // Manual setters to ensure compilation if Lombok lags
+    public void setCompletedAppointments(long completedAppointments) {
+        this.completedAppointments = completedAppointments;
+    }
+    public void setCancelledAppointments(long cancelledAppointments) {
+        this.cancelledAppointments = cancelledAppointments;
+    }
 }

@@ -14,4 +14,6 @@ public class AdminOverviewDto {
     private List<DoctorResponseDto> recentDoctors;
     private List<AdminDepartmentLoadDto> departmentLoad;
     private List<AdminWeeklyCountDto> weeklyAppointments;
+    private List<AdminRevenueGrowthDto> revenueGrowth;
+
 }
