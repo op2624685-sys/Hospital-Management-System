@@ -75,19 +75,19 @@ resilience4j:
                 baseConfig: default
             authRateLimiter:
                 limitRefreshPeriod: 1m
-                limitForPeriod: 30
+                limitForPeriod: 20
                 timeoutDuration: 1s
             userRateLimiter:
                 limitRefreshPeriod: 1m
-                limitForPeriod: 30
+                limitForPeriod: 40
                 timeoutDuration: 1s
             readOnlyRateLimiter:
                 limitRefreshPeriod: 1m
-                limitForPeriod: 40
+                limitForPeriod: 80
                 timeoutDuration: 1s
             adminRateLimiter:
                 limitRefreshPeriod: 1m
-                limitForPeriod: 80
+                limitForPeriod: 120
                 timeoutDuration: 1s
 
 app:
@@ -96,7 +96,7 @@ app:
             prefix: "hms:v1:"
             default-ttl: 60m
             ttl:
-                bookedSlots: 5m
+                bookedSlots: 1m
                 appointmentDetails: 15m
                 doctorAppointments: 10m
                 patientAppointments: 10m
