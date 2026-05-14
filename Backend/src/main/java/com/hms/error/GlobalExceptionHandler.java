@@ -95,6 +95,11 @@ public class GlobalExceptionHandler {
         return build(HttpStatus.CONFLICT, ErrorCode.CONFLICT, message, request);
     }
 
+    @ExceptionHandler(UnsupportedOperationException.class)
+    public ResponseEntity<ApiError> handleUnsupportedOperation(UnsupportedOperationException ex, HttpServletRequest request) {
+        return build(HttpStatus.BAD_REQUEST, ErrorCode.VALIDATION_FAILED, "Unsupported operation: " + ex.getMessage(), request);
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiError> handleException(Exception ex, HttpServletRequest request) {
         return build(HttpStatus.INTERNAL_SERVER_ERROR, ErrorCode.INTERNAL_ERROR, "An unexpected error occurred", request);
