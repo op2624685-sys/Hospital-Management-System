@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Mail, User, Upload, Briefcase, Stethoscope, AlertCircle, Loader, Heart, MapPin, Phone, Droplet, Calendar, Award, Building2, X, Save, Edit2 } from 'lucide-react';
-import { userAPI, doctorAPI, patientAPI, adminAPI } from '../api/api';
+import { userAPI, doctorAPI, patientAPI, adminAPI, receptionistAPI } from '../api/api';
 import { toast } from 'react-toastify';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 
@@ -56,6 +56,10 @@ const Profile = () => {
       if (user.roles.includes('ADMIN')) {
         const response = await adminAPI.getProfile();
         return { type: 'ADMIN', data: response.data };
+      }
+      if (user.roles.includes('RECEPTIONIST')) {
+        const response = await receptionistAPI.getProfile();
+        return { type: 'RECEPTIONIST', data: response.data };
       }
       if (user.roles.includes('HEADADMIN')) {
         return { type: 'HEADADMIN', data: null };
@@ -856,6 +860,53 @@ const Profile = () => {
                     </>
                   )}
                 </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {!isLoadingRoleData && roleData?.type === 'RECEPTIONIST' && roleData?.data && (
+          <div className='mb-6 sm:mb-8'>
+            <div className='flex items-center gap-2 sm:gap-3 mb-4 sm:mb-6'>
+              <div className='p-2 sm:p-3 rounded-lg' style={{ background: 'color-mix(in srgb, var(--primary) 15%, transparent)' }}>
+                <Building2 size={20} className='sm:w-6 sm:h-6' style={{ color: 'var(--primary)' }} />
+              </div>
+              <h2 className='text-xl sm:text-2xl md:text-3xl font-bold' style={{ color: 'var(--foreground)' }}>Receptionist Profile</h2>
+            </div>
+
+            <div className='grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4 md:gap-6'>
+              <div className='md:col-span-2 rounded-lg sm:rounded-2xl p-4 sm:p-5 md:p-6 shadow-md hover:shadow-lg transition-shadow' style={{ background: 'var(--card)', border: '1px solid var(--border)' }}>
+                <h3 className='text-base sm:text-lg font-bold mb-3 sm:mb-4' style={{ color: 'var(--foreground)' }}>Desk Assignment</h3>
+                <div className='grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5 md:gap-6'>
+                  <div className='flex items-start gap-3'>
+                    <User size={18} style={{ color: 'var(--primary)', marginTop: '2px' }} className='shrink-0 sm:w-5 sm:h-5' />
+                    <div className='min-w-0'>
+                      <p className='text-xs sm:text-sm font-semibold' style={{ color: 'var(--muted-foreground)' }}>Name</p>
+                      <p className='text-base sm:text-lg md:text-xl font-bold mt-0.5 sm:mt-1' style={{ color: 'var(--foreground)' }}>{roleData.data.name || 'N/A'}</p>
+                    </div>
+                  </div>
+                  <div className='flex items-start gap-3'>
+                    <Mail size={18} style={{ color: 'var(--primary)', marginTop: '2px' }} className='shrink-0 sm:w-5 sm:h-5' />
+                    <div className='min-w-0'>
+                      <p className='text-xs sm:text-sm font-semibold' style={{ color: 'var(--muted-foreground)' }}>Email</p>
+                      <p className='text-base sm:text-lg md:text-xl font-bold mt-0.5 sm:mt-1' style={{ color: 'var(--foreground)' }}>{roleData.data.email || user?.email || 'N/A'}</p>
+                    </div>
+                  </div>
+                  <div className='flex items-start gap-3'>
+                    <Building2 size={18} style={{ color: 'var(--primary)', marginTop: '2px' }} className='shrink-0 sm:w-5 sm:h-5' />
+                    <div className='min-w-0'>
+                      <p className='text-xs sm:text-sm font-semibold' style={{ color: 'var(--muted-foreground)' }}>Branch</p>
+                      <p className='text-base sm:text-lg md:text-xl font-bold mt-0.5 sm:mt-1' style={{ color: 'var(--foreground)' }}>{roleData.data.branch?.name || 'N/A'}</p>
+                    </div>
+                  </div>
+                  <div className='flex items-start gap-3'>
+                    <Briefcase size={18} style={{ color: 'var(--primary)', marginTop: '2px' }} className='shrink-0 sm:w-5 sm:h-5' />
+                    <div className='min-w-0'>
+                      <p className='text-xs sm:text-sm font-semibold' style={{ color: 'var(--muted-foreground)' }}>Department</p>
+                      <p className='text-base sm:text-lg md:text-xl font-bold mt-0.5 sm:mt-1' style={{ color: 'var(--foreground)' }}>{roleData.data.departmentName || 'N/A'}</p>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
