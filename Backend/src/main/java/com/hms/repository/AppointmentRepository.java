@@ -2,6 +2,7 @@ package com.hms.repository;
 
 import java.util.List;
 import java.util.Optional;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -32,11 +33,18 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
 
     Optional<Appointment> findByAppointmentId(String appointmentId);
 
+    @EntityGraph(attributePaths = {"doctor", "doctor.user", "patient", "branch", "department"})
+    Optional<Appointment> findByAppointmentIdAndBranch_IdAndDepartment_Id(
+            String appointmentId,
+            Long branchId,
+            Long departmentId);
+
     @Query("""
             SELECT a FROM Appointment a
             LEFT JOIN FETCH a.patient p
             LEFT JOIN FETCH a.doctor d
             LEFT JOIN FETCH a.branch b
+            LEFT JOIN FETCH a.department dep
             WHERE a.appointmentId = :appointmentId
             """)
     Optional<Appointment> findByAppointmentIdWithDetails(@Param("appointmentId") String appointmentId);
@@ -53,6 +61,95 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
     List<com.hms.dto.Response.AdminDepartmentLoadDto> getDepartmentLoad(@Param("branchId") Long branchId);
 
     List<Appointment> findByBranch_IdAndAppointmentTimeBetween(Long branchId, LocalDateTime start, LocalDateTime end);
+
+    @EntityGraph(attributePaths = {"doctor", "doctor.user", "patient", "branch", "department"})
+    Page<Appointment> findByBranch_IdAndDepartment_IdAndAppointmentTimeBetweenOrderByAppointmentTimeAsc(
+            Long branchId,
+            Long departmentId,
+            LocalDateTime start,
+            LocalDateTime end,
+            Pageable pageable);
+
+    @EntityGraph(attributePaths = {"doctor", "doctor.user", "patient", "branch", "department"})
+    Page<Appointment> findByBranch_IdAndDepartment_IdAndStatusAndAppointmentTimeBetweenOrderByAppointmentTimeAsc(
+            Long branchId,
+            Long departmentId,
+            AppointmentStatusType status,
+            LocalDateTime start,
+            LocalDateTime end,
+            Pageable pageable);
+
+    @Query("""
+           SELECT a FROM Appointment a
+           JOIN FETCH a.patient p
+           JOIN FETCH a.doctor d
+           LEFT JOIN FETCH d.user du
+           JOIN FETCH a.branch b
+           LEFT JOIN FETCH a.department dep
+           WHERE a.branch.id = :branchId
+             AND dep.id = :departmentId
+             AND LOWER(p.name) LIKE LOWER(CONCAT('%', :patientName, '%'))
+             AND p.birthDate = :birthDate
+           ORDER BY a.appointmentTime ASC
+           """)
+    List<Appointment> searchByPatientIdentityInDepartment(
+            @Param("branchId") Long branchId,
+            @Param("departmentId") Long departmentId,
+            @Param("patientName") String patientName,
+            @Param("birthDate") LocalDate birthDate);
+
+    @Query("""
+           SELECT a FROM Appointment a
+           JOIN FETCH a.patient p
+           JOIN FETCH a.doctor d
+           LEFT JOIN FETCH d.user du
+           JOIN FETCH a.branch b
+           LEFT JOIN FETCH a.department dep
+           WHERE a.branch.id = :branchId
+             AND dep.id = :departmentId
+             AND a.doctor.id = :doctorId
+             AND a.status = :status
+             AND a.queueDate = :queueDate
+           ORDER BY a.queueNumber ASC, a.queuedAt ASC
+           """)
+    List<Appointment> findQueueByDoctor(
+            @Param("branchId") Long branchId,
+            @Param("departmentId") Long departmentId,
+            @Param("doctorId") Long doctorId,
+            @Param("queueDate") LocalDate queueDate,
+            @Param("status") AppointmentStatusType status);
+
+    @Query("""
+           SELECT COALESCE(MAX(a.queueNumber), 0) FROM Appointment a
+           WHERE a.branch.id = :branchId
+             AND a.department.id = :departmentId
+             AND a.doctor.id = :doctorId
+             AND a.queueDate = :queueDate
+           """)
+    Integer findMaxQueueNumber(
+            @Param("branchId") Long branchId,
+            @Param("departmentId") Long departmentId,
+            @Param("doctorId") Long doctorId,
+            @Param("queueDate") LocalDate queueDate);
+
+    @Query("""
+           SELECT a FROM Appointment a
+           JOIN FETCH a.patient p
+           JOIN FETCH a.doctor d
+           LEFT JOIN FETCH d.user du
+           JOIN FETCH a.branch b
+           LEFT JOIN FETCH a.department dep
+           WHERE a.branch.id = :branchId
+             AND dep.id = :departmentId
+             AND a.status = :status
+             AND a.queueDate = :queueDate
+           ORDER BY d.name ASC, a.queueNumber ASC
+           """)
+    List<Appointment> findAllQueuedForDepartment(
+            @Param("branchId") Long branchId,
+            @Param("departmentId") Long departmentId,
+            @Param("queueDate") LocalDate queueDate,
+            @Param("status") AppointmentStatusType status);
 
 
 
