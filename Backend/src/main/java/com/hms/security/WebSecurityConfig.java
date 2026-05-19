@@ -6,6 +6,7 @@ import static com.hms.entity.type.RoleType.ADMIN;
 import static com.hms.entity.type.RoleType.DOCTOR;
 import static com.hms.entity.type.RoleType.HEADADMIN;
 import static com.hms.entity.type.RoleType.PATIENT;
+import static com.hms.entity.type.RoleType.RECEPTIONIST;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -82,6 +83,7 @@ public class WebSecurityConfig {
                         .requestMatchers("/head-admin/**").hasRole(HEADADMIN.name())
                         .requestMatchers("/admin/**").hasAnyRole(ADMIN.name(), HEADADMIN.name())
                         .requestMatchers("/doctor/**").hasAnyRole(DOCTOR.name(), ADMIN.name(), HEADADMIN.name())
+                        .requestMatchers("/receptionist/**").hasRole(RECEPTIONIST.name())
                         .requestMatchers("/user/**").authenticated()
                         .requestMatchers(HttpMethod.POST, "/patients/register").authenticated()
                         .requestMatchers("/patients/**", "/payments/**").hasRole(PATIENT.name())
