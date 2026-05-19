@@ -61,6 +61,7 @@ const Header = () => {
   const isHeadAdmin = hasRole('HEADADMIN');
   const isAdmin = hasRole('ADMIN');
   const isDoctor = hasRole('DOCTOR');
+  const isReceptionist = hasRole('RECEPTIONIST');
   const isPatient = hasRole('PATIENT');
 
   const { data: doctorProfile } = useQuery({
@@ -97,6 +98,12 @@ const Header = () => {
     if (isHead) {
       navLinks.splice(3, 0, { to: '/doctor/department-head', label: 'Dept Head', icon: LayoutDashboard });
     }
+  } else if (isReceptionist) {
+    navLinks = [
+      { to: '/', label: 'Home', icon: Activity },
+      { to: '/receptionist/appointments', label: 'Reception Desk', icon: CalendarDays },
+      { to: '/contact', label: 'Contact Us', icon: Phone },
+    ];
   } else if (isPatient) {
     navLinks = [...baseNavLinks, { to: '/my-appointments', label: 'My Appointments', icon: CalendarDays }];
   }

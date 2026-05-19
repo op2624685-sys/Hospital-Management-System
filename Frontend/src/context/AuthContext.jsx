@@ -138,6 +138,8 @@ export const AuthProvider = ({ children }) => {
                     navigate('/admin', { replace: true });
                 } else if (userRoles.includes('DOCTOR')) {
                     navigate('/doctor/booked-details', { replace: true });
+                } else if (userRoles.includes('RECEPTIONIST')) {
+                    navigate('/receptionist/appointments', { replace: true });
                 } else if (userRoles.includes('PATIENT')) {
                     navigate('/my-appointments', { replace: true });
                 } else {

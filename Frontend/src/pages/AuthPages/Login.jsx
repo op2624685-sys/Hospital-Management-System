@@ -69,6 +69,8 @@ const Login = () => {
             navigate('/admin');
           } else if (userRoles.includes('DOCTOR')) {
             navigate('/doctor/booked-details');
+          } else if (userRoles.includes('RECEPTIONIST')) {
+            navigate('/receptionist/appointments');
           } else if (userRoles.includes('PATIENT')) {
             navigate('/my-appointments');
           } else {

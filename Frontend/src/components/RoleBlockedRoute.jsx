@@ -13,6 +13,7 @@ const RoleBlockedRoute = ({ children, blockedRoles = [] }) => {
   if (hasRole("HEADADMIN")) return <Navigate to="/head-admin" replace />;
   if (hasRole("ADMIN")) return <Navigate to="/admin" replace />;
   if (hasRole("DOCTOR")) return <Navigate to="/doctor/booked-details" replace />;
+  if (hasRole("RECEPTIONIST")) return <Navigate to="/receptionist/appointments" replace />;
 
   return <Navigate to="/" replace />;
 };
