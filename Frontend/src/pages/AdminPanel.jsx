@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
 import Header from "../components/Header";
-import API from "../api/api";
 import adminApi from "../api/admin";
 import { gsap } from "gsap";
 import { toast, ToastContainer } from "react-toastify";
@@ -193,13 +192,20 @@ const AdminPanel = () => {
     email: "",
     consultationFee: "",
   });
+  const [receptionistForm, setReceptionistForm] = useState({
+    username: "",
+    name: "",
+    email: "",
+    departmentId: "",
+  });
   const [doctorSubmitting, setDoctorSubmitting] = useState(false);
   const [doctorMessage, setDoctorMessage] = useState("");
   const [currentPage, setCurrentPage] = useState(0);
   const [_totalPatients, _setTotalPatients] = useState(0);
+  const [onboardingSubTab, setOnboardingSubTab] = useState("doctor");
   const headerRef = useRef(null);
 
-  const tabs = ["overview", "appointments", "doctors", "payments", "patients", "departments"];
+  const tabs = ["overview", "onboarding", "appointments", "doctors", "payments", "patients", "departments"];
 
   const getApiErrorMessage = (err, fallback) => {
 
@@ -248,7 +254,7 @@ const AdminPanel = () => {
       const response = await adminApi.getDepartments();
       return response.data || [];
     },
-    enabled: activeTab === "departments",
+    enabled: activeTab === "departments" || activeTab === "overview" || activeTab === "onboarding",
   });
 
   const templatesQuery = useQuery({
@@ -325,6 +331,55 @@ const AdminPanel = () => {
     }
   }, [activeTab, doctorsQuery.data]);
 
+  useEffect(() => {
+    if (departmentsQuery.data) {
+      setDepartments(departmentsQuery.data || []);
+    }
+  }, [departmentsQuery.data]);
+
+  const handleReceptionistOnboard = async (event) => {
+    event.preventDefault();
+    try {
+      setDoctorSubmitting(true);
+      await adminApi.onboardReceptionist({
+        ...receptionistForm,
+        departmentId: Number(receptionistForm.departmentId),
+      });
+      toast.success("Receptionist onboarded successfully");
+      setReceptionistForm({ username: "", name: "", email: "", departmentId: "" });
+      queryClient.invalidateQueries({ queryKey: ["admin-overview"] });
+    } catch (error) {
+      toast.error(getApiErrorMessage(error, "Failed to onboard receptionist"));
+    } finally {
+      setDoctorSubmitting(false);
+    }
+  };
+
+  const handleDoctorOnboard = async (event) => {
+    event.preventDefault();
+    try {
+      setDoctorSubmitting(true);
+      await adminApi.onboardDoctor({
+        ...doctorForm,
+        consultationFee: Number(doctorForm.consultationFee),
+      });
+      toast.success("Doctor onboarded successfully");
+      setDoctorForm({
+        username: "",
+        name: "",
+        specialization: "",
+        email: "",
+        consultationFee: "",
+      });
+      queryClient.invalidateQueries({ queryKey: ["admin-overview"] });
+      queryClient.invalidateQueries({ queryKey: ["admin-doctors"] });
+    } catch (error) {
+      toast.error(getApiErrorMessage(error, "Failed to onboard doctor"));
+    } finally {
+      setDoctorSubmitting(false);
+    }
+  };
+
 
   return (
     <>
@@ -358,9 +413,28 @@ const AdminPanel = () => {
         .admin-table th { text-align: left; padding: 16px; font-size: 11px; font-weight: 800; color: var(--muted-foreground); text-transform: uppercase; border-bottom: 1.5px solid var(--border); }
         .admin-table td { padding: 18px 16px; border-bottom: 1.5px solid var(--border); }
         .admin-status-pill { padding: 6px 12px; border-radius: 20px; font-size: 11px; font-weight: 800; }
+        .admin-input { width: 100%; padding: 12px 14px; border-radius: 14px; border: 1.5px solid var(--border); background: var(--background); color: var(--foreground); }
         .admin-progress-track { height: 8px; background: var(--secondary); border-radius: 999px; overflow: hidden; margin-top: 8px; }
         .admin-progress-fill { height: 100%; transition: width 1s ease-out; }
-        @media (max-width: 1200px) { .admin-stats-grid { grid-template-columns: repeat(2, 1fr); } .admin-sections-grid { grid-template-columns: 1fr; } }
+        /* Onboarding Sub-tabs */
+        .admin-onboarding-tabs { display: flex; gap: 8px; margin-bottom: 24px; background: transparent; padding: 0; border-radius: 0; border: none; overflow-x: auto; }
+        .admin-onboarding-tab { padding: 10px 20px; border-radius: 12px; border: 1.5px solid var(--border); background: transparent; font-size: 12px; font-weight: 800; color: var(--muted-foreground); cursor: pointer; transition: all .3s; text-transform: capitalize; }
+        .admin-onboarding-tab.active { background: var(--primary); color: var(--primary-foreground); border-color: var(--primary); }
+        .admin-onboarding-tab:hover { border-color: var(--primary); background: color-mix(in srgb, var(--primary) 10%, transparent); }
+        /* Form styling improvements */
+        .admin-onboarding-form { display: grid; gap: 16px; }
+        .admin-form-group { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
+        .admin-form-group.full { grid-template-columns: 1fr; }
+        .admin-form-input-wrapper { display: flex; flex-direction: column; gap: 6px; }
+        .admin-form-input-wrapper label { font-size: 11px; font-weight: 800; text-transform: uppercase; color: var(--muted-foreground); }
+        .admin-input:focus { outline: none; border-color: var(--primary); background: color-mix(in srgb, var(--primary) 5%, var(--background)); }
+        .admin-submit-btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; background: var(--primary); color: var(--primary-foreground); border: none; padding: 12px 28px; border-radius: 14px; font-size: 12px; font-weight: 800; cursor: pointer; transition: all .3s; }
+        .admin-submit-btn:hover { transform: translateY(-2px); box-shadow: 0 10px 25px -5px color-mix(in srgb, var(--primary) 40%, transparent); }
+        .admin-submit-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+        /* Chart improvements */
+        .admin-chart-container { background: linear-gradient(135deg, color-mix(in srgb, var(--primary) 5%, transparent) 0%, color-mix(in srgb, var(--primary) 2%, transparent) 100%); border-radius: 20px; padding: 20px; }
+        @media (max-width: 1200px) { .admin-stats-grid { grid-template-columns: repeat(2, 1fr); } .admin-sections-grid { grid-template-columns: 1fr; } .admin-form-group { grid-template-columns: 1fr; } }
+        @media (max-width: 768px) { .admin-onboarding-tabs { flex-wrap: wrap; } .admin-onboarding-tab { padding: 8px 16px; font-size: 11px; } .admin-form-group { grid-template-columns: 1fr; } .admin-stats-grid { grid-template-columns: 1fr; } }
       `}</style>
 
       <div className="admin-page">
@@ -394,25 +468,32 @@ const AdminPanel = () => {
           </div>
 
           <div className="admin-sections-grid">
-            {activeTab === "overview" && (
+            {(activeTab === "overview" || activeTab === "onboarding") && (
               <>
+                {activeTab === "overview" && (
+                  <>
                 <div className="admin-section full">
                   <Section title="Real-time Activity" subtitle="Weekly performance insights">
-                    <div style={{ minHeight: '320px', height: '320px', marginTop: '20px', position: 'relative', width: '100%' }}>
+                    <div className="admin-chart-container" style={{ minHeight: '360px', height: '360px', marginTop: '20px', position: 'relative', width: '100%' }}>
                       <AppointmentsTrendChart key={`atc-${weeklyAppointments.length}`} data={weeklyAppointments} />
                     </div>
                   </Section>
                 </div>
                 <div className="admin-section">
-                  <Section title="Department Load" subtitle="Patient distribution">
-                    <div style={{ display: 'flex', gap: '30px', alignItems: 'center', minHeight: '300px', position: 'relative', width: '100%' }}>
-                      <div style={{ flex: 1, height: '260px' }}><DepartmentLoadChart key={`dlc-${departmentLoad.length}`} data={departmentLoad} /></div>
+                  <Section title="Department Load" subtitle="Patient distribution across departments">
+                    <div style={{ display: 'flex', gap: '30px', alignItems: 'center', minHeight: '340px', position: 'relative', width: '100%' }}>
+                      <div style={{ flex: 1, height: '300px', background: 'linear-gradient(135deg, color-mix(in srgb, var(--primary) 8%, transparent) 0%, color-mix(in srgb, var(--primary) 3%, transparent) 100%)', borderRadius: '16px', padding: '16px' }}>
+                        <DepartmentLoadChart key={`dlc-${departmentLoad.length}`} data={departmentLoad} />
+                      </div>
                       <div style={{ flex: 1 }}>
-                        {departmentLoad.slice(0, 4).map(d => (
-                          <div key={d.name} style={{ marginBottom: '15px' }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', fontWeight: 800 }}>
-                              <span style={{ color: deptColor[d.name] || deptColor.default }}>{d.name}</span>
-                              <span>{d.patientCount || 0}</span>
+                        {departmentLoad.slice(0, 5).map((d, idx) => (
+                          <div key={d.name} style={{ marginBottom: '18px' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', fontWeight: 800, marginBottom: '6px', alignItems: 'center' }}>
+                              <span style={{ color: deptColor[d.name] || deptColor.default, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: deptColor[d.name] || deptColor.default }} />
+                                {d.name}
+                              </span>
+                              <span style={{ color: 'var(--foreground)', fontWeight: 900 }}>{d.patientCount || 0}</span>
                             </div>
                             <div className="admin-progress-track">
                               <div className="admin-progress-fill" style={{ width: `${Math.min(100, ((d.patientCount || 0)/10)*100)}%`, background: deptColor[d.name] || deptColor.default }} />
@@ -424,22 +505,303 @@ const AdminPanel = () => {
                   </Section>
                 </div>
                 <div className="admin-section">
-                  <Section title="Appointment Status" subtitle="Capacity distribution">
-                    <div style={{ height: '300px', minHeight: '300px', position: 'relative', width: '100%' }}>
+                  <Section title="Appointment Status" subtitle="Current capacity distribution">
+                    <div className="admin-chart-container" style={{ height: '340px', minHeight: '340px', position: 'relative', width: '100%' }}>
                       <StatusDoughnut key={`sd-${stats.totalAppointments || 0}`} stats={stats} />
                     </div>
                   </Section>
                 </div>
 
                 <div className="admin-section">
-                  <Section title="Payments Growth" subtitle="Monthly revenue trend">
-                    <div style={{ height: '300px', minHeight: '300px', marginTop: '10px', position: 'relative', width: '100%' }}>
+                  <Section title="Revenue Growth" subtitle="Monthly financial trends">
+                    <div className="admin-chart-container" style={{ height: '340px', minHeight: '340px', marginTop: '10px', position: 'relative', width: '100%' }}>
                       <PaymentsGrowthChart key={`pgc-${revenueGrowth.length}`} data={revenueGrowth} />
                     </div>
                   </Section>
                 </div>
+                  </>
+                )}
 
+                {activeTab === "onboarding" && (
+                  <>
+                    {/* Onboarding Sub-tabs */}
+                    <div className="admin-section full">
+                      <div className="admin-onboarding-tabs">
+                        {["doctor", "receptionist", "departments"].map(tab => (
+                          <button
+                            key={tab}
+                            className={`admin-onboarding-tab ${onboardingSubTab === tab ? "active" : ""}`}
+                            onClick={() => setOnboardingSubTab(tab)}
+                          >
+                            <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                              {tab === "doctor" && "👨‍⚕️ Doctor"}
+                              {tab === "receptionist" && "👩‍💼 Receptionist"}
+                              {tab === "departments" && "🏥 Departments"}
+                            </span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
 
+                    {/* Doctor Onboarding */}
+                    {onboardingSubTab === "doctor" && (
+                      <div className="admin-section full">
+                        <Section title="Onboard Doctor" subtitle="Create doctor access for this branch">
+                          <form onSubmit={handleDoctorOnboard} className="admin-onboarding-form">
+                            <div className="admin-form-group">
+                              <div className="admin-form-input-wrapper">
+                                <label>Username</label>
+                                <input
+                                  className="admin-input"
+                                  placeholder="Enter unique username"
+                                  value={doctorForm.username}
+                                  onChange={(e) => setDoctorForm((prev) => ({ ...prev, username: e.target.value }))}
+                                  required
+                                />
+                              </div>
+                              <div className="admin-form-input-wrapper">
+                                <label>Full Name</label>
+                                <input
+                                  className="admin-input"
+                                  placeholder="Dr. John Doe"
+                                  value={doctorForm.name}
+                                  onChange={(e) => setDoctorForm((prev) => ({ ...prev, name: e.target.value }))}
+                                  required
+                                />
+                              </div>
+                              <div className="admin-form-input-wrapper">
+                                <label>Specialization</label>
+                                <input
+                                  className="admin-input"
+                                  placeholder="e.g., Cardiology"
+                                  value={doctorForm.specialization}
+                                  onChange={(e) => setDoctorForm((prev) => ({ ...prev, specialization: e.target.value }))}
+                                  required
+                                />
+                              </div>
+                              <div className="admin-form-input-wrapper">
+                                <label>Email Address</label>
+                                <input
+                                  className="admin-input"
+                                  type="email"
+                                  placeholder="doctor@hospital.com"
+                                  value={doctorForm.email}
+                                  onChange={(e) => setDoctorForm((prev) => ({ ...prev, email: e.target.value }))}
+                                  required
+                                />
+                              </div>
+                              <div className="admin-form-input-wrapper">
+                                <label>Consultation Fee (₹)</label>
+                                <input
+                                  className="admin-input"
+                                  type="number"
+                                  min="0"
+                                  placeholder="500"
+                                  value={doctorForm.consultationFee}
+                                  onChange={(e) => setDoctorForm((prev) => ({ ...prev, consultationFee: e.target.value }))}
+                                  required
+                                />
+                              </div>
+                            </div>
+                            <div>
+                              <button className="admin-submit-btn" type="submit" disabled={doctorSubmitting}>
+                                {doctorSubmitting ? "Creating..." : "✓ Create Doctor"}
+                              </button>
+                            </div>
+                          </form>
+                        </Section>
+                      </div>
+                    )}
+
+                    {/* Receptionist Onboarding */}
+                    {onboardingSubTab === "receptionist" && (
+                      <div className="admin-section full">
+                        <Section title="Onboard Receptionist" subtitle="Assign one receptionist to one department in this branch">
+                          <form onSubmit={handleReceptionistOnboard} className="admin-onboarding-form">
+                            <div className="admin-form-group">
+                              <div className="admin-form-input-wrapper">
+                                <label>Username</label>
+                                <input
+                                  className="admin-input"
+                                  placeholder="Enter unique username"
+                                  value={receptionistForm.username}
+                                  onChange={(e) => setReceptionistForm((prev) => ({ ...prev, username: e.target.value }))}
+                                  required
+                                />
+                              </div>
+                              <div className="admin-form-input-wrapper">
+                                <label>Full Name</label>
+                                <input
+                                  className="admin-input"
+                                  placeholder="Jane Smith"
+                                  value={receptionistForm.name}
+                                  onChange={(e) => setReceptionistForm((prev) => ({ ...prev, name: e.target.value }))}
+                                  required
+                                />
+                              </div>
+                              <div className="admin-form-input-wrapper">
+                                <label>Email Address</label>
+                                <input
+                                  className="admin-input"
+                                  type="email"
+                                  placeholder="receptionist@hospital.com"
+                                  value={receptionistForm.email}
+                                  onChange={(e) => setReceptionistForm((prev) => ({ ...prev, email: e.target.value }))}
+                                  required
+                                />
+                              </div>
+                              <div className="admin-form-input-wrapper">
+                                <label>Select Department</label>
+                                <select
+                                  className="admin-input"
+                                  value={receptionistForm.departmentId}
+                                  onChange={(e) => setReceptionistForm((prev) => ({ ...prev, departmentId: e.target.value }))}
+                                  required
+                                  style={{ cursor: 'pointer' }}
+                                >
+                                  <option value="">Choose a department...</option>
+                                  {departments.map((department) => (
+                                    <option key={department.id} value={department.id}>
+                                      {department.name} · #{department.id}
+                                    </option>
+                                  ))}
+                                </select>
+                              </div>
+                            </div>
+                            <div>
+                              <button className="admin-submit-btn" type="submit" disabled={doctorSubmitting}>
+                                {doctorSubmitting ? "Creating..." : "✓ Create Receptionist"}
+                              </button>
+                            </div>
+                          </form>
+                        </Section>
+                      </div>
+                    )}
+
+                    {/* Departments Management */}
+                    {onboardingSubTab === "departments" && (
+                      <div className="admin-section full">
+                        <Section title="Manage Departments" subtitle="Add and manage hospital departments">
+                          <div style={{ display: 'grid', gap: '20px' }}>
+                            <div>
+                              <button
+                                className="admin-submit-btn"
+                                onClick={() => setShowDepartmentForm(!showDepartmentForm)}
+                              >
+                                {showDepartmentForm ? "✕ Cancel" : "+ Add New Department"}
+                              </button>
+                            </div>
+                            
+                            {showDepartmentForm && (
+                              <div className="admin-chart-container">
+                                <form onSubmit={async (e) => {
+                                  e.preventDefault();
+                                  try {
+                                    const { errors, sectionsJson } = validateDepartmentPayload();
+                                    if (errors.length > 0) {
+                                      toast.error(errors.join(", "));
+                                      return;
+                                    }
+                                    const payload = { ...formData, sectionsJson };
+                                    await adminApi.addDepartmentToBranch(payload);
+                                    toast.success("Department added successfully");
+                                    setFormData({
+                                      name: "",
+                                      description: "",
+                                      imageUrl: "",
+                                      accentColor: "var(--primary)",
+                                      bgColor: "var(--secondary)",
+                                      icon: "DEPT",
+                                      sections: DEFAULT_DEPARTMENT_SECTIONS,
+                                    });
+                                    setShowDepartmentForm(false);
+                                    queryClient.invalidateQueries({ queryKey: ["admin-departments"] });
+                                  } catch (error) {
+                                    toast.error(getApiErrorMessage(error, "Failed to add department"));
+                                  }
+                                }} className="admin-onboarding-form">
+                                  <div className="admin-form-group full">
+                                    <div className="admin-form-input-wrapper">
+                                      <label>Department Name</label>
+                                      <input
+                                        className="admin-input"
+                                        placeholder="e.g., Cardiology"
+                                        value={formData.name}
+                                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                                        required
+                                      />
+                                    </div>
+                                    <div className="admin-form-input-wrapper">
+                                      <label>Description</label>
+                                      <textarea
+                                        className="admin-input"
+                                        placeholder="Department description..."
+                                        rows="3"
+                                        value={formData.description}
+                                        onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                                        style={{ fontFamily: 'inherit', resize: 'vertical' }}
+                                      />
+                                    </div>
+                                  </div>
+                                  <div className="admin-form-group">
+                                    <div className="admin-form-input-wrapper">
+                                      <label>Icon</label>
+                                      <input
+                                        className="admin-input"
+                                        placeholder="DEPT"
+                                        value={formData.icon}
+                                        onChange={(e) => setFormData({ ...formData, icon: e.target.value })}
+                                      />
+                                    </div>
+                                    <div className="admin-form-input-wrapper">
+                                      <label>Image URL</label>
+                                      <input
+                                        className="admin-input"
+                                        placeholder="https://..."
+                                        value={formData.imageUrl}
+                                        onChange={(e) => setFormData({ ...formData, imageUrl: e.target.value })}
+                                      />
+                                    </div>
+                                  </div>
+                                  <div>
+                                    <button className="admin-submit-btn" type="submit">
+                                      ✓ Create Department
+                                    </button>
+                                  </div>
+                                </form>
+                              </div>
+                            )}
+
+                            <div>
+                              <h4 style={{ fontSize: '14px', fontWeight: 800, marginBottom: '12px', color: 'var(--foreground)' }}>
+                                Existing Departments ({departments.length})
+                              </h4>
+                              <div style={{ display: 'grid', grid: 'repeat(auto-fill, minmax(240px, 1fr))', gap: '16px' }}>
+                                {departments.length === 0 ? (
+                                  <p style={{ color: 'var(--muted-foreground)', gridColumn: '1 / -1' }}>No departments yet</p>
+                                ) : (
+                                  departments.map(dept => (
+                                    <div key={dept.id} style={{
+                                      background: 'var(--card)',
+                                      border: '1.5px solid var(--border)',
+                                      borderRadius: '16px',
+                                      padding: '16px',
+                                      transition: 'all .3s'
+                                    }}>
+                                      <div style={{ fontSize: '20px', marginBottom: '8px' }}>{dept.icon || '🏥'}</div>
+                                      <h5 style={{ fontSize: '13px', fontWeight: 800, color: 'var(--foreground)', margin: '0 0 4px' }}>{dept.name}</h5>
+                                      <p style={{ fontSize: '11px', color: 'var(--muted-foreground)', margin: '0' }}>{dept.description?.substring(0, 50)}...</p>
+                                    </div>
+                                  ))
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        </Section>
+                      </div>
+                    )}
+                  </>
+                )}
 
               </>
             )}
