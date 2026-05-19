@@ -161,6 +161,9 @@ public class PaymentService {
 
         if (appointment.getStatus() != AppointmentStatusType.CONFIRMED) {
             appointment.setStatus(AppointmentStatusType.CONFIRMED);
+            if (appointment.getConfirmedAt() == null) {
+                appointment.setConfirmedAt(LocalDateTime.now());
+            }
             appointmentRepository.save(appointment);
         }
 
@@ -314,6 +317,9 @@ public class PaymentService {
                     .orElseThrow(() -> new NotFoundException("Appointment not found after booking"));
         } else if (appointment.getStatus() != AppointmentStatusType.CONFIRMED) {
             appointment.setStatus(AppointmentStatusType.CONFIRMED);
+            if (appointment.getConfirmedAt() == null) {
+                appointment.setConfirmedAt(LocalDateTime.now());
+            }
             appointment = appointmentRepository.save(appointment);
         }
 
@@ -367,6 +373,9 @@ public class PaymentService {
 
         if (appointment.getStatus() != AppointmentStatusType.CONFIRMED) {
             appointment.setStatus(AppointmentStatusType.CONFIRMED);
+            if (appointment.getConfirmedAt() == null) {
+                appointment.setConfirmedAt(LocalDateTime.now());
+            }
             appointment = appointmentRepository.save(appointment);
         }
         return appointment;
