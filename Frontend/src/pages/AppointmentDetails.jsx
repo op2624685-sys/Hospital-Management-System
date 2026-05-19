@@ -19,17 +19,41 @@ const statusConfig = {
     glow: 'rgba(217,119,6,0.4)',
     icon: <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>,
   },
+  VISITED: {
+    label: 'Checked In',
+    banner: 'linear-gradient(135deg, #0f766e, #14b8a6, #5eead4)',
+    glow: 'rgba(20,184,166,0.35)',
+    icon: <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7"/></svg>,
+  },
+  QUEUED: {
+    label: 'Queued',
+    banner: 'linear-gradient(135deg, #1d4ed8, #0284c7, #38bdf8)',
+    glow: 'rgba(2,132,199,0.35)',
+    icon: <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h8M8 12h8M8 17h8"/></svg>,
+  },
   IN_PROGRESS: {
     label: 'In Progress',
     banner: 'linear-gradient(135deg, #0f766e, #0284c7, #22d3ee)',
     glow: 'rgba(16,185,129,0.35)',
     icon: <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6l4 2m8-2a10 10 0 11-20 0 10 10 0 0120 0z"/></svg>,
   },
+  COMPLETED: {
+    label: 'Completed',
+    banner: 'linear-gradient(135deg, #14532d, #16a34a, #4ade80)',
+    glow: 'rgba(22,163,74,0.35)',
+    icon: <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7"/></svg>,
+  },
   CANCELLED: {
     label: 'Cancelled',
     banner: 'linear-gradient(135deg, #7f1d1d, #e42320, #ef4444)',
     glow: 'rgba(228,35,32,0.4)',
     icon: <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>,
+  },
+  NO_SHOW: {
+    label: 'No Show',
+    banner: 'linear-gradient(135deg, #7f1d1d, #b91c1c, #ef4444)',
+    glow: 'rgba(185,28,28,0.35)',
+    icon: <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>,
   },
 }
 
