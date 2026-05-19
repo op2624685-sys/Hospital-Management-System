@@ -125,6 +125,10 @@ export const doctorAPI = {
   getMyDepartments: () => API.get('/doctor/my-departments'),
 };
 
+export const receptionistAPI = {
+  getProfile: () => API.get('/receptionist/profile'),
+};
+
 // Patient API Endpoints
 export const patientAPI = {
   getProfile: () => API.get('/patients/profile'),

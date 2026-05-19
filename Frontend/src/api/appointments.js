@@ -35,6 +35,30 @@ export const appointmentApi = {
     return API.put(`/doctor/appointments/${appointmentId}`, payload);
   },
 
+  getReceptionistAppointments(params = {}) {
+    return API.get("/receptionist/appointments", { params });
+  },
+
+  searchReceptionistAppointments(params = {}) {
+    return API.get("/receptionist/appointments/search", { params });
+  },
+
+  getReceptionistAppointment(appointmentId) {
+    return API.get(`/receptionist/appointments/${appointmentId}`);
+  },
+
+  updateReceptionistStatus(appointmentId, status) {
+    return API.put(`/receptionist/appointments/${appointmentId}/status?status=${status}`);
+  },
+
+  getDepartmentQueue(params = {}) {
+    return API.get("/receptionist/queue", { params });
+  },
+
+  getDoctorQueue(doctorId, params = {}) {
+    return API.get(`/receptionist/queue/doctors/${doctorId}`, { params });
+  },
+
   createPaymentIntentForDoctor(doctorId, payload) {
     return API.post(`/payments/create-for-doctor/${doctorId}`, payload);
   },

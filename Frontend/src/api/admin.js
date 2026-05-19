@@ -41,6 +41,10 @@ export const adminApi = {
   onboardDoctor(payload) {
     return API.post("/admin/onBoardNewDoctor", payload);
   },
+
+  onboardReceptionist(payload) {
+    return API.post("/admin/onBoardNewReceptionist", payload);
+  },
 };
 
 export default adminApi;
