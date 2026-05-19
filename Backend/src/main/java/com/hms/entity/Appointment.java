@@ -3,6 +3,7 @@ package com.hms.entity;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
+import java.time.LocalDate;
 
 import com.hms.entity.type.AppointmentStatusType;
 
@@ -72,6 +73,36 @@ public class Appointment {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 32)
     private AppointmentStatusType status;
+
+    @Column(name = "confirmed_at")
+    private LocalDateTime confirmedAt;
+
+    @Column(name = "visited_at")
+    private LocalDateTime visitedAt;
+
+    @Column(name = "queued_at")
+    private LocalDateTime queuedAt;
+
+    @Column(name = "in_progress_at")
+    private LocalDateTime inProgressAt;
+
+    @Column(name = "completed_at")
+    private LocalDateTime completedAt;
+
+    @Column(name = "no_show_at")
+    private LocalDateTime noShowAt;
+
+    @Column(name = "cancelled_at")
+    private LocalDateTime cancelledAt;
+
+    @Column(name = "refunded_at")
+    private LocalDateTime refundedAt;
+
+    @Column(name = "queue_number")
+    private Integer queueNumber;
+
+    @Column(name = "queue_date")
+    private LocalDate queueDate;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @ToString.Exclude
