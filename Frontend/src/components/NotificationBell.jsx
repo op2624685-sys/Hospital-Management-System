@@ -86,9 +86,13 @@ const NotificationBell = ({ inMobileMenu = false, mobileMenuOpen = false, onNavi
         navigate(`/appointment/${item.appointmentId}`);
       } else if (hasRole('DOCTOR')) {
         navigate('/doctor/booked-details');
+      } else if (hasRole('RECEPTIONIST')) {
+        navigate('/receptionist/appointments');
       }
     } else if (hasRole('DOCTOR')) {
       navigate('/doctor/booked-details');
+    } else if (hasRole('RECEPTIONIST')) {
+      navigate('/receptionist/appointments');
     }
     setOpen(false);
     if (onNavigate) onNavigate();
