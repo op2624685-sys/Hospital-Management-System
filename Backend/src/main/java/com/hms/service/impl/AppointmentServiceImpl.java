@@ -1,6 +1,7 @@
 package com.hms.service.impl;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.StringJoiner;
 import java.util.Set;
@@ -116,6 +117,7 @@ public class AppointmentServiceImpl implements AppointmentService {
                 .reason(createAppointmentRequestDto.getReason())
                 .appointmentTime(createAppointmentRequestDto.getAppointmentTime())
                 .status(AppointmentStatusType.CONFIRMED)
+                .confirmedAt(LocalDateTime.now())
                 .patient(patient)
                 .doctor(doctor)
                 .branch(branchToUse)
@@ -257,13 +259,7 @@ public class AppointmentServiceImpl implements AppointmentService {
         Appointment appointment = appointmentRepository.findByAppointmentId(appointmentId)
                 .orElseThrow(() -> new NotFoundException("Appointment not found with ID: " + appointmentId));
 
-        enforceDoctorCanAccessOwnAppointment(appointment);
-
-        if (appointment.getStatus() == AppointmentStatusType.CANCELLED) {
-            throw new IllegalStateException("Cannot change status of a cancelled appointment");
-        }
-
-        appointment.setStatus(status);
+        updateStatusWithActorRules(appointment, status);
         Appointment savedAppointment = appointmentRepository.save(appointment);
         eventPublisher.publishEvent(new AppointmentNotificationEvent(
                 savedAppointment.getAppointmentId(),
@@ -292,6 +288,9 @@ public class AppointmentServiceImpl implements AppointmentService {
         }
 
         appointment.setStatus(AppointmentStatusType.CANCELLED);
+        if (appointment.getCancelledAt() == null) {
+            appointment.setCancelledAt(LocalDateTime.now());
+        }
         Appointment savedAppointment = appointmentRepository.save(appointment);
         eventPublisher.publishEvent(new AppointmentNotificationEvent(
                 savedAppointment.getAppointmentId(),
@@ -314,17 +313,11 @@ public class AppointmentServiceImpl implements AppointmentService {
         Appointment appointment = appointmentRepository.findByAppointmentId(appointmentId)
                 .orElseThrow(() -> new NotFoundException("Appointment not found with ID: " + appointmentId));
 
-        enforceDoctorCanAccessOwnAppointment(appointment);
-
-        if (appointment.getStatus() == AppointmentStatusType.CANCELLED) {
-            throw new IllegalStateException("Cannot change status of a cancelled appointment");
-        }
-
         boolean statusChanged = false;
         StringJoiner changeSummary = new StringJoiner(", ");
 
         if (updateAppointmentRequestDto.getStatus() != null && !updateAppointmentRequestDto.getStatus().equals(appointment.getStatus())) {
-            appointment.setStatus(updateAppointmentRequestDto.getStatus());
+            updateStatusWithActorRules(appointment, updateAppointmentRequestDto.getStatus());
             changeSummary.add("Status changed to " + updateAppointmentRequestDto.getStatus());
             statusChanged = true;
         }
@@ -394,6 +387,93 @@ public class AppointmentServiceImpl implements AppointmentService {
         throw new AccessDeniedException("User authentication is required");
     }
 
+    private com.hms.entity.User getAuthenticatedUser() {
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        if (principal instanceof com.hms.entity.User user) {
+            return user;
+        }
+        throw new AccessDeniedException("User authentication is required");
+    }
+
+    private void updateStatusWithActorRules(Appointment appointment, AppointmentStatusType targetStatus) {
+        com.hms.entity.User user = getAuthenticatedUser();
+        AppointmentStatusType currentStatus = appointment.getStatus();
+
+        if (currentStatus == targetStatus) {
+            throw new ValidationException("Appointment is already in status " + targetStatus);
+        }
+
+        if (Arrays.asList(
+                AppointmentStatusType.CANCELLED,
+                AppointmentStatusType.REFUNDED,
+                AppointmentStatusType.COMPLETED,
+                AppointmentStatusType.NO_SHOW).contains(currentStatus)) {
+            throw new ValidationException("Cannot change status after appointment is " + currentStatus);
+        }
+
+        if (user.getRoles().contains(RoleType.DOCTOR)) {
+            enforceDoctorCanAccessOwnAppointment(appointment);
+            validateDoctorTransition(currentStatus, targetStatus);
+        } else if (user.getRoles().contains(RoleType.ADMIN)) {
+            enforceAdminBranchAccess(appointment, user.getId());
+        } else if (!user.getRoles().contains(RoleType.HEADADMIN)) {
+            throw new AccessDeniedException("You are not allowed to update appointment status");
+        }
+
+        applyStatusTransition(appointment, targetStatus);
+    }
+
+    private void validateDoctorTransition(AppointmentStatusType currentStatus, AppointmentStatusType targetStatus) {
+        boolean valid = (currentStatus == AppointmentStatusType.QUEUED && targetStatus == AppointmentStatusType.IN_PROGRESS)
+                || (currentStatus == AppointmentStatusType.IN_PROGRESS && targetStatus == AppointmentStatusType.COMPLETED);
+        if (!valid) {
+            throw new ValidationException("Doctors can only move appointments from QUEUED to IN_PROGRESS or IN_PROGRESS to COMPLETED");
+        }
+    }
+
+    private void enforceAdminBranchAccess(Appointment appointment, Long adminUserId) {
+        Admin admin = adminRepository.findById(adminUserId)
+                .orElseThrow(() -> new NotFoundException("Admin profile not found for user id: " + adminUserId));
+        if (appointment.getBranch() == null || admin.getBranch() == null
+                || !appointment.getBranch().getId().equals(admin.getBranch().getId())) {
+            throw new AccessDeniedException("You can only update appointments for your branch");
+        }
+    }
+
+    private void applyStatusTransition(Appointment appointment, AppointmentStatusType targetStatus) {
+        appointment.setStatus(targetStatus);
+        LocalDateTime now = LocalDateTime.now();
+        switch (targetStatus) {
+            case CONFIRMED -> {
+                if (appointment.getConfirmedAt() == null) appointment.setConfirmedAt(now);
+            }
+            case VISITED -> {
+                if (appointment.getVisitedAt() == null) appointment.setVisitedAt(now);
+            }
+            case QUEUED -> {
+                if (appointment.getQueuedAt() == null) appointment.setQueuedAt(now);
+                if (appointment.getQueueDate() == null) appointment.setQueueDate(now.toLocalDate());
+            }
+            case IN_PROGRESS -> {
+                if (appointment.getInProgressAt() == null) appointment.setInProgressAt(now);
+            }
+            case COMPLETED -> {
+                if (appointment.getCompletedAt() == null) appointment.setCompletedAt(now);
+            }
+            case NO_SHOW -> {
+                if (appointment.getNoShowAt() == null) appointment.setNoShowAt(now);
+            }
+            case CANCELLED -> {
+                if (appointment.getCancelledAt() == null) appointment.setCancelledAt(now);
+            }
+            case REFUNDED -> {
+                if (appointment.getRefundedAt() == null) appointment.setRefundedAt(now);
+            }
+            default -> {
+            }
+        }
+    }
+
     private void validateWithinWorkingHours(java.time.LocalDateTime appointmentTime) {
         if (appointmentTime == null) {
             throw new IllegalArgumentException("Appointment time is required");
@@ -445,32 +525,23 @@ public class AppointmentServiceImpl implements AppointmentService {
                 resolveAppointmentStatus(appointment),
                 mapPatientResponse(appointment.getPatient()),
                 mapBranchResponse(appointment.getBranch()),
-                appointment.getDepartment() != null ? appointment.getDepartment().getName() : null
+                appointment.getDepartment() != null ? appointment.getDepartment().getId() : null,
+                appointment.getDepartment() != null ? appointment.getDepartment().getName() : null,
+                appointment.getQueueNumber(),
+                appointment.getQueueDate(),
+                appointment.getConfirmedAt(),
+                appointment.getVisitedAt(),
+                appointment.getQueuedAt(),
+                appointment.getInProgressAt(),
+                appointment.getCompletedAt(),
+                appointment.getNoShowAt(),
+                appointment.getCancelledAt(),
+                appointment.getRefundedAt()
         );
     }
 
     private AppointmentStatusType resolveAppointmentStatus(Appointment appointment) {
-        AppointmentStatusType status = appointment.getStatus();
-        if (status == AppointmentStatusType.CANCELLED
-                || status == AppointmentStatusType.REFUNDED
-                || status == AppointmentStatusType.COMPLETED) {
-            return status;
-        }
-
-        LocalDateTime now = LocalDateTime.now();
-        LocalDateTime appointmentTime = appointment.getAppointmentTime();
-        if (appointmentTime == null) {
-            return status;
-        }
-
-        LocalDateTime endTime = appointmentTime.plusMinutes(APPOINTMENT_SLOT_MINUTES);
-        if (!now.isBefore(appointmentTime) && now.isBefore(endTime)) {
-            return AppointmentStatusType.IN_PROGRESS;
-        }
-        if (!now.isBefore(endTime)) {
-            return AppointmentStatusType.COMPLETED;
-        }
-        return status;
+        return appointment.getStatus();
     }
 
     private DoctorResponseDto mapDoctorResponse(Doctor doctor) {
