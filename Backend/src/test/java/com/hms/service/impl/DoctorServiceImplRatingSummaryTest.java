@@ -3,7 +3,6 @@ package com.hms.service.impl;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyCollection;
-import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -66,8 +65,6 @@ class DoctorServiceImplRatingSummaryTest {
                 .thenReturn(new PageImpl<>(List.of(doctor)));
         when(doctorRatingSummaryRepository.findByDoctorIdIn(anyCollection()))
                 .thenReturn(List.of(summary));
-        when(departmentRepository.findHeadedDepartments(anyLong())).thenReturn(List.of());
-
         List<DoctorDto> doctors = doctorService.getAllDoctorsSearch("cardio", 0, 10);
 
         assertThat(doctors).hasSize(1);
@@ -85,8 +82,6 @@ class DoctorServiceImplRatingSummaryTest {
                 .thenReturn(new PageImpl<>(List.of(doctor)));
         when(doctorRatingSummaryRepository.findByDoctorIdIn(anyCollection()))
                 .thenReturn(List.of());
-        when(departmentRepository.findHeadedDepartments(anyLong())).thenReturn(List.of());
-
         List<DoctorDto> doctors = doctorService.getAllDoctorsSearch(null, 0, 10);
 
         assertThat(doctors).hasSize(1);
