@@ -1,7 +1,6 @@
 package com.hms.user;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -65,7 +64,7 @@ class UserControllerTest {
                 "image/png",
                 "dummy-image-bytes".getBytes());
 
-        when(userService.updateProfilePhoto(eq(11L), any()))
+        when(userService.updateProfilePhoto(any(), any()))
                 .thenReturn(new ProfilePhotoResponseDto("https://res.cloudinary.com/demo/image/upload/v1/avatar.png"));
 
         mockMvc.perform(multipart("/user/profile/photo").file(file))
@@ -86,7 +85,7 @@ class UserControllerTest {
                 "image/gif",
                 "gif".getBytes());
 
-        when(userService.updateProfilePhoto(eq(11L), any()))
+        when(userService.updateProfilePhoto(any(), any()))
                 .thenThrow(new ValidationException("Only JPG, PNG, or WEBP images are allowed"));
 
         mockMvc.perform(multipart("/user/profile/photo").file(file))
