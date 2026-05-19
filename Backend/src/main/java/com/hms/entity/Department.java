@@ -91,4 +91,7 @@ public class Department {
     @ManyToOne
     @JoinColumn(name = "branch_id")
     private Branch branch;
+
+    @OneToOne(mappedBy = "department")
+    private Receptionist receptionist;
 }

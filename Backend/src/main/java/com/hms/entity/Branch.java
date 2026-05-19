@@ -47,6 +47,9 @@ public class Branch {
     private Admin admin;
 
     @OneToMany(mappedBy = "branch")
+    private List<Receptionist> receptionists = new ArrayList<>();
+
+    @OneToMany(mappedBy = "branch")
     private List<Department> departments = new ArrayList<>();
 
     @OneToMany(mappedBy = "branch")
