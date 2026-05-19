@@ -41,6 +41,7 @@ const Orthopedics = React.lazy(() => import("./components/Orthopedics"));
 const Pediatrics = React.lazy(() => import("./components/Pediatrics"));
 const Radiology = React.lazy(() => import("./components/Radiology"));
 const DoctorBookedDetails = React.lazy(() => import("./pages/DoctorBookedDetails"));
+const ReceptionistAppointments = React.lazy(() => import("./pages/ReceptionistAppointments"));
 
 const App = () => {
   return (
@@ -161,6 +162,14 @@ const App = () => {
             element={
               <ProtectedRoute role="DOCTOR">
                 <DepartmentControl />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/receptionist/appointments"
+            element={
+              <ProtectedRoute role="RECEPTIONIST">
+                <ReceptionistAppointments />
               </ProtectedRoute>
             }
           />
