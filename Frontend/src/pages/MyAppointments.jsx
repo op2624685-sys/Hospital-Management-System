@@ -55,8 +55,11 @@ const MyAppointments = () => {
   const badgeClassByStatus = (status) => {
     const value = (status || "").toUpperCase();
     if (value === "CONFIRMED") return "ux-badge ux-badge-approved";
+    if (value === "VISITED") return "ux-badge ux-badge-progress";
+    if (value === "QUEUED") return "ux-badge ux-badge-progress";
     if (value === "IN_PROGRESS") return "ux-badge ux-badge-progress";
     if (value === "CANCELLED") return "ux-badge ux-badge-pending";
+    if (value === "NO_SHOW") return "ux-badge ux-badge-pending";
     return "ux-badge ux-badge-completed";
   };
 

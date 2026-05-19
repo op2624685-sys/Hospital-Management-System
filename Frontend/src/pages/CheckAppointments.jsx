@@ -14,15 +14,35 @@ const statusConfig = {
     banner: 'linear-gradient(135deg, #047857, #059669, #10b981)',
     icon: <svg width="22" height="22" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>,
   },
+  VISITED: {
+    label: 'Checked In',
+    banner: 'linear-gradient(135deg, #0f766e, #14b8a6, #5eead4)',
+    icon: <svg width="22" height="22" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7"/></svg>,
+  },
+  QUEUED: {
+    label: 'Queued',
+    banner: 'linear-gradient(135deg, #1d4ed8, #0284c7, #38bdf8)',
+    icon: <svg width="22" height="22" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h8M8 12h8M8 17h8"/></svg>,
+  },
   IN_PROGRESS: {
     label: 'In Progress',
     banner: 'linear-gradient(135deg, #0f766e, #0284c7, #22d3ee)',
     icon: <svg width="22" height="22" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6l4 2m8-2a10 10 0 11-20 0 10 10 0 0120 0z"/></svg>,
   },
+  COMPLETED: {
+    label: 'Completed',
+    banner: 'linear-gradient(135deg, #14532d, #16a34a, #4ade80)',
+    icon: <svg width="22" height="22" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7"/></svg>,
+  },
   CANCELLED: {
     label: 'Cancelled',
     banner: 'linear-gradient(135deg, #9b1c1c, #e42320, #ef4444)',
     icon: <svg width="22" height="22" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>,
+  },
+  NO_SHOW: {
+    label: 'No Show',
+    banner: 'linear-gradient(135deg, #7f1d1d, #b91c1c, #ef4444)',
+    icon: <svg width="22" height="22" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>,
   },
 }
 
@@ -429,6 +449,11 @@ const CheckAppointment = () => {
                       <div>
                         <div className="ck-banner-title">
                           {appointment.status === 'CONFIRMED' ? 'Appointment Confirmed'
+                           : appointment.status === 'VISITED' ? 'Patient Checked In'
+                           : appointment.status === 'QUEUED' ? 'Waiting for Doctor'
+                           : appointment.status === 'IN_PROGRESS' ? 'Consultation In Progress'
+                           : appointment.status === 'COMPLETED' ? 'Consultation Completed'
+                           : appointment.status === 'NO_SHOW' ? 'Patient Did Not Visit'
                            : appointment.status === 'CANCELLED' ? 'Appointment Cancelled'
                            : 'Appointment Pending'}
                         </div>
