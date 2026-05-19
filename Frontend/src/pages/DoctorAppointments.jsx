@@ -12,7 +12,6 @@ const DoctorAppointments = () => {
   const { isLoggedIn, user } = useAuth();
   const [savingId, setSavingId] = useState(null);
   const [query, setQuery] = useState("");
-  const [formById, setFormById] = useState({});
   const [page, setPage] = useState(0);
   const size = 15;
 
@@ -57,38 +56,16 @@ const DoctorAppointments = () => {
     });
   }, [appointments, query]);
 
-  const getForm = (appointment) =>
-    formById[appointment.appointmentId] || {
-      appointmentTime: appointment.appointmentTime?.slice(0, 16) || "",
-      reason: appointment.reason || "",
-      status: appointment.status || "PENDING",
-    };
-
-  const setForm = (appointmentId, patch) => {
-    setFormById((prev) => ({
-      ...prev,
-      [appointmentId]: {
-        ...prev[appointmentId],
-        ...patch,
-      },
-    }));
-  };
-
-  const handleUpdate = async (appointment) => {
-    const f = getForm(appointment);
-    if (!f) return;
+  const handleStatusUpdate = async (appointment, status) => {
     setSavingId(appointment.appointmentId);
     try {
-      const payload = {
-        status: f.status,
-      };
-      const response = await appointmentApi.updateDetails(appointment.appointmentId, payload);
+      const response = await appointmentApi.updateStatus(appointment.appointmentId, status);
       queryClient.setQueryData(["doctor-appointments", page, size], (prev = []) =>
         prev.map((item) =>
           item.appointmentId === appointment.appointmentId ? response.data : item
         )
       );
-      toast.success("Appointment updated successfully");
+      toast.success(`Appointment marked ${status}`);
     } catch (error) {
       console.error(error);
       const msg = error.response?.data?.message || "Update failed";
@@ -104,8 +81,21 @@ const DoctorAppointments = () => {
     if (value === "CANCELLED") return "dr-badge dr-badge-rejected";
     if (value === "COMPLETED") return "dr-badge dr-badge-completed";
     if (value === "IN_PROGRESS") return "dr-badge dr-badge-progress";
+    if (value === "QUEUED") return "dr-badge dr-badge-progress";
+    if (value === "VISITED") return "dr-badge dr-badge-pending";
+    if (value === "NO_SHOW") return "dr-badge dr-badge-rejected";
     return "dr-badge dr-badge-pending";
   };
+
+  const allowedActions = (status) => {
+    if (status === "QUEUED") return [{ label: "Start Visit", status: "IN_PROGRESS" }];
+    if (status === "IN_PROGRESS") return [{ label: "Complete Visit", status: "COMPLETED" }];
+    return [];
+  };
+
+  const renderTimestamp = (label, value) => (
+    <div className="dr-line"><strong>{label}:</strong> {value ? new Date(value).toLocaleString("en-IN") : "Not recorded"}</div>
+  );
 
   return (
     <div className="dr-page">
@@ -281,7 +271,6 @@ const DoctorAppointments = () => {
 
         <div className="dr-grid">
           {filtered.map((a) => {
-            const form = getForm(a);
             const isSaving = savingId === a.appointmentId;
             return (
               <div key={a.appointmentId} className="dr-card">
@@ -309,38 +298,53 @@ const DoctorAppointments = () => {
                     />
                   </label>
 
-                  <label className="dr-label">
-                    <span>Consultation Status</span>
-                    <select
-                      className="dr-input"
-                      value={form.status}
-                      onChange={(e) => setForm(a.appointmentId, { status: e.target.value })}
-                      disabled={a.status === "CANCELLED"}
-                    >
-                      <option value="PENDING">PENDING</option>
-                      <option value="CONFIRMED">CONFIRMED</option>
-                      <option value="IN_PROGRESS">IN_PROGRESS</option>
-                      <option value="COMPLETED">COMPLETED</option>
-                      <option value="CANCELLED">CANCELLED</option>
-                    </select>
-                  </label>
+                  <div className="dr-label">
+                    <span>Queue Position</span>
+                    <div style={{ background: 'var(--background)', padding: '12px 14px', borderRadius: '12px', fontSize: '14px', border: '1.5px solid var(--border)' }}>
+                      {a.queueNumber ? `Queue #${a.queueNumber}` : "Not queued"}
+                    </div>
+                  </div>
                 </div>
 
                 <div className="dr-label" style={{ marginTop: 16 }}>
                   <span>Clinical Reason</span>
                   <div style={{ background: 'var(--background)', padding: '12px 14px', borderRadius: '12px', fontSize: '14px', border: '1.5px solid var(--border)' }}>
-                    {form.reason || "N/A"}
+                    {a.reason || "N/A"}
+                  </div>
+                </div>
+
+                <div className="dr-form-grid" style={{ marginTop: 16 }}>
+                  <div className="dr-label">
+                    <span>Status Timeline</span>
+                    <div style={{ display: "grid", gap: 6 }}>
+                      {renderTimestamp("Visited", a.visitedAt)}
+                      {renderTimestamp("Queued", a.queuedAt)}
+                      {renderTimestamp("In Progress", a.inProgressAt)}
+                      {renderTimestamp("Completed", a.completedAt)}
+                      {renderTimestamp("No Show", a.noShowAt)}
+                    </div>
+                  </div>
+                  <div className="dr-label">
+                    <span>Branch and Department</span>
+                    <div style={{ display: "grid", gap: 6 }}>
+                      <div className="dr-line"><strong>Branch:</strong> {a.branch?.name || "N/A"}</div>
+                      <div className="dr-line"><strong>Department:</strong> {a.departmentName || "N/A"}</div>
+                      <div className="dr-line"><strong>DOB:</strong> {a.patient?.birthDate || "N/A"}</div>
+                    </div>
                   </div>
                 </div>
 
                 <div className="dr-actions">
-                  <button
-                    disabled={isSaving || a.status === "CANCELLED"}
-                    onClick={() => handleUpdate(a)}
-                    className="dr-btn dr-btn-primary"
-                  >
-                    {isSaving ? "Updating..." : a.status === "CANCELLED" ? "Booking Cancelled" : "Save Changes"}
-                  </button>
+                  {allowedActions(a.status).map((action) => (
+                    <button
+                      key={action.status}
+                      disabled={isSaving}
+                      onClick={() => handleStatusUpdate(a, action.status)}
+                      className="dr-btn dr-btn-primary"
+                    >
+                      {isSaving ? "Updating..." : action.label}
+                    </button>
+                  ))}
                   <button
                     disabled={isSaving}
                     onClick={() =>
@@ -352,6 +356,11 @@ const DoctorAppointments = () => {
                   >
                     Refresh
                   </button>
+                  {a.status === "NO_SHOW" && (
+                    <div className="dr-btn dr-btn-outline" style={{ cursor: "default" }}>
+                      Patient did not check in
+                    </div>
+                  )}
                 </div>
               </div>
             );
