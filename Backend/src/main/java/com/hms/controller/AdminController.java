@@ -8,11 +8,13 @@ import com.hms.dto.AdminDto;
 import com.hms.dto.DepartmentDto;
 import com.hms.dto.Request.AddDepartmentToBranchRequestDto;
 import com.hms.dto.Request.OnBoardDoctorRequestDto;
+import com.hms.dto.Request.OnBoardReceptionistRequestDto;
 import com.hms.dto.Response.AppointmentResponseDto;
 import com.hms.dto.Response.AdminOverviewDto;
 import com.hms.dto.Response.AdminDepartmentListDto;
 import com.hms.dto.Response.DoctorResponseDto;
 import com.hms.dto.Response.PatientResponseDto;
+import com.hms.dto.Response.ReceptionistResponseDto;
 import com.hms.service.AppointmentService;
 import com.hms.service.DepartmentService;
 import com.hms.service.DoctorService;
@@ -67,6 +69,13 @@ public class AdminController {
     public ResponseEntity<DoctorResponseDto> onBoardNewDoctor(
             @Valid @RequestBody OnBoardDoctorRequestDto onBoardDoctorRequestDto) {
         return ResponseEntity.status(HttpStatus.CREATED).body(doctorService.onBoardNewDoctor(onBoardDoctorRequestDto));
+    }
+
+    @PostMapping("/onBoardNewReceptionist")
+    public ResponseEntity<ReceptionistResponseDto> onBoardNewReceptionist(
+            @Valid @RequestBody OnBoardReceptionistRequestDto onBoardReceptionistRequestDto) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(adminService.onBoardNewReceptionist(onBoardReceptionistRequestDto));
     }
 
     @PostMapping("/addDepartmentToBranch")

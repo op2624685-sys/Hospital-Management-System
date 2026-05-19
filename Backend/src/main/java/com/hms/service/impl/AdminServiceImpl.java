@@ -16,6 +16,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 
 import com.hms.dto.AdminDto;
 import com.hms.dto.Request.OnBoardAdminRequestDto;
+import com.hms.dto.Request.OnBoardReceptionistRequestDto;
 import com.hms.dto.Response.AdminResponseDto;
 import com.hms.dto.Response.AdminOverviewDto;
 import com.hms.dto.Response.AdminStatsDto;
@@ -23,19 +24,26 @@ import com.hms.dto.Response.AdminDepartmentLoadDto;
 import com.hms.dto.Response.AdminWeeklyCountDto;
 import com.hms.dto.Response.BranchResponseDto;
 import com.hms.dto.Response.DoctorResponseDto;
+import com.hms.dto.Response.ReceptionistResponseDto;
 import com.hms.entity.Admin;
 import com.hms.entity.Branch;
+import com.hms.entity.Department;
 
 import com.hms.entity.Doctor;
+import com.hms.entity.Receptionist;
 import com.hms.entity.User;
 import com.hms.entity.type.RoleType;
 import com.hms.entity.type.AppointmentStatusType;
+import com.hms.error.ConflictException;
+import com.hms.error.NotFoundException;
+import com.hms.error.ValidationException;
 import com.hms.repository.AdminRepository;
 import com.hms.repository.AppointmentRepository;
 import com.hms.repository.BranchRepository;
 import com.hms.repository.DoctorRepository;
 import com.hms.repository.PatientRepository;
 import com.hms.repository.PaymentRepository;
+import com.hms.repository.ReceptionistRepository;
 import com.hms.repository.UserRepository;
 import com.hms.repository.DepartmentRepository;
 import com.hms.dto.Response.AdminRevenueGrowthDto;
@@ -57,6 +65,7 @@ public class AdminServiceImpl implements AdminService {
     private final AppointmentRepository appointmentRepository;
     private final DepartmentRepository departmentRepository;
     private final PaymentRepository paymentRepository;
+    private final ReceptionistRepository receptionistRepository;
 
     
     @Override
@@ -100,6 +109,41 @@ public class AdminServiceImpl implements AdminService {
         user.setEmail(dto.getEmail());
         userRepository.save(user);
         return mapToAdminResponseDto(adminRepository.save(admin));
+    }
+
+    @Override
+    @PreAuthorize("hasRole('ADMIN')")
+    @Transactional
+    public ReceptionistResponseDto onBoardNewReceptionist(OnBoardReceptionistRequestDto dto) {
+        Long adminUserId = getAuthenticatedUserId();
+        Admin admin = adminRepository.findById(adminUserId)
+                .orElseThrow(() -> new NotFoundException("Admin profile not found"));
+
+        User user = userRepository.findByUsernameIgnoreCase(dto.getUsername())
+                .orElseThrow(() -> new NotFoundException("User not found"));
+        Department department = departmentRepository.findById(dto.getDepartmentId())
+                .orElseThrow(() -> new NotFoundException("Department not found"));
+
+        if (department.getBranch() == null || !department.getBranch().getId().equals(admin.getBranch().getId())) {
+            throw new ValidationException("Department does not belong to your branch");
+        }
+        if (receptionistRepository.existsByDepartment_Id(department.getId())) {
+            throw new ConflictException("This department already has a receptionist");
+        }
+
+        Receptionist receptionist = Receptionist.builder()
+                .user(user)
+                .name(dto.getName())
+                .email(dto.getEmail())
+                .branch(admin.getBranch())
+                .department(department)
+                .build();
+
+        user.setRoles(new HashSet<>(Set.of(RoleType.RECEPTIONIST)));
+        user.setEmail(dto.getEmail());
+        userRepository.save(user);
+
+        return mapToReceptionistResponseDto(receptionistRepository.save(receptionist));
     }
 
     @Override
@@ -216,6 +260,22 @@ public class AdminServiceImpl implements AdminService {
                 admin.getName(),
                 admin.getEmail(),
                 admin.getBranch() != null ? admin.getBranch().getId() : null);
+    }
+
+    private ReceptionistResponseDto mapToReceptionistResponseDto(Receptionist receptionist) {
+        return new ReceptionistResponseDto(
+                receptionist.getUser() != null ? receptionist.getUser().getId() : receptionist.getId(),
+                receptionist.getName(),
+                receptionist.getEmail(),
+                receptionist.getBranch() == null ? null : new BranchResponseDto(
+                        receptionist.getBranch().getId(),
+                        receptionist.getBranch().getName(),
+                        receptionist.getBranch().getAddress(),
+                        receptionist.getBranch().getEmail(),
+                        receptionist.getBranch().getContactNumber()),
+                receptionist.getDepartment() != null ? receptionist.getDepartment().getId() : null,
+                receptionist.getDepartment() != null ? receptionist.getDepartment().getName() : null
+        );
     }
 
     @Override
