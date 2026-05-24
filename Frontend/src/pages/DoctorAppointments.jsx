@@ -292,7 +292,7 @@ const DoctorAppointments = () => {
                     <input
                       className="dr-input"
                       type="datetime-local"
-                      value={form.appointmentTime}
+                      value={a.appointmentTime}
                       readOnly
                       style={{ backgroundColor: "var(--background)", cursor: "not-allowed", opacity: 0.7 }}
                     />
