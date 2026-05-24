@@ -46,6 +46,7 @@
       		<groupId>org.springframework.boot</groupId>
       		<artifactId>spring-boot-starter-security</artifactId>
     	</dependency>
+		<!-- Oauth-client -->
 		<dependency>
       		<groupId>org.springframework.boot</groupId>
       		<artifactId>spring-boot-starter-oauth2-client</artifactId>
@@ -118,6 +119,7 @@
 			<version>0.12.6</version>
 			<scope>runtime</scope>
 		</dependency>
+		<!-- springboot mail -->
 		<dependency>
     		<groupId>org.springframework.boot</groupId>
     		<artifactId>spring-boot-starter-mail</artifactId>
@@ -128,14 +130,17 @@
 			<artifactId>spring-boot-devtools</artifactId>
 			<version>3.5.14</version>
 		</dependency>
+		<!-- Postgresql DB -->
 		<dependency>
  			<groupId>org.postgresql</groupId>
  			<artifactId>postgresql</artifactId>
  			<version>42.7.11</version>
 		</dependency>
+		<!-- Lombok -->
 		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
+			<version>1.18.46</version>
 			<optional>true</optional>
 		</dependency>
 		<dependency>
@@ -143,6 +148,7 @@
 			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>test</scope>
 		</dependency>
+		<!-- Flyway db migration -->
 		<dependency>
 			<groupId>org.flywaydb</groupId>
 			<artifactId>flyway-core</artifactId>
@@ -174,6 +180,7 @@
 			<artifactId>imageio-webp</artifactId>
 			<version>3.12.0</version>
 		</dependency>
+		<!-- Modelmapper  -->
 		<dependency>
   			<groupId>org.modelmapper</groupId>
   			<artifactId>modelmapper</artifactId>
