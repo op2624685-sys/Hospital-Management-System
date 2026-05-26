@@ -16,6 +16,10 @@ import com.hms.dto.DoctorDto;
 import com.hms.dto.Request.OnBoardDoctorRequestDto;
 import com.hms.dto.Response.DoctorResponseDto;
 import com.hms.dto.Response.BranchResponseDto;
+import com.hms.dto.Response.PublicDoctorDepartmentDto;
+import com.hms.dto.Response.PublicDoctorDepartmentRow;
+import com.hms.dto.Response.PublicDoctorListDto;
+import com.hms.dto.Response.PublicDoctorListRow;
 import com.hms.dto.Response.RatingSummaryResponse;
 import com.hms.dto.BranchDto;
 import com.hms.dto.DepartmentDto;
@@ -42,12 +46,15 @@ import com.hms.service.HMSAuditLogService;
 import lombok.RequiredArgsConstructor;
 import java.util.stream.Collectors;
 import java.util.Map;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.function.Function;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 @Service
 @RequiredArgsConstructor
 public class DoctorServiceImpl implements DoctorService {
+    private static final int PUBLIC_DOCTOR_MAX_PAGE_SIZE = 10;
 
     private final DoctorRepository doctorRepository;
     private final UserRepository userRepository;
@@ -81,6 +88,62 @@ public class DoctorServiceImpl implements DoctorService {
                                 doctor.getId(),
                                 emptyRatingSummary(doctor.getId()))))
                 .toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    @Cacheable(value = "doctorListPaged", key = "'public:' + (#search == null ? '' : #search.trim().toLowerCase()) + ':' + T(java.lang.Math).max(#page, 0) + ':' + T(java.lang.Math).min(T(java.lang.Math).max(#size, 1), 10)")
+    public List<PublicDoctorListDto> getPublicDoctors(String search, int page, int size) {
+        int safePage = normalizePage(page);
+        int safeSize = normalizePublicPageSize(size);
+        String normalizedSearch = normalizeSearch(search);
+        PageRequest pageable = PageRequest.of(safePage, safeSize);
+
+        List<PublicDoctorListRow> doctorRows = (normalizedSearch == null
+                ? doctorRepository.findPublicDoctorListRows(pageable)
+                : doctorRepository.searchPublicDoctorListRows(normalizedSearch, pageable))
+                .stream()
+                .toList();
+
+        List<Long> doctorIds = doctorRows.stream()
+                .map(PublicDoctorListRow::id)
+                .toList();
+
+        Map<Long, List<PublicDoctorDepartmentDto>> departmentsByDoctorId = getPublicDepartmentsByDoctorId(doctorIds);
+        Map<Long, RatingSummaryResponse> ratingSummariesByDoctorId = getRatingSummariesByDoctorIds(doctorIds);
+
+        return doctorRows.stream()
+                .map(row -> new PublicDoctorListDto(
+                        row.id(),
+                        row.name(),
+                        row.specialization(),
+                        departmentsByDoctorId.getOrDefault(row.id(), List.of()),
+                        new BranchDto(
+                                row.branchId(),
+                                row.branchName(),
+                                row.branchAddress(),
+                                row.branchContactNumber(),
+                                row.branchEmail()),
+                        row.consultationFee(),
+                        ratingSummariesByDoctorId.getOrDefault(row.id(), emptyRatingSummary(row.id())),
+                        row.profilePhoto()))
+                .toList();
+    }
+
+    private int normalizePage(int page) {
+        return Math.max(page, 0);
+    }
+
+    private int normalizePublicPageSize(int size) {
+        return Math.min(Math.max(size, 1), PUBLIC_DOCTOR_MAX_PAGE_SIZE);
+    }
+
+    private String normalizeSearch(String search) {
+        if (search == null) {
+            return null;
+        }
+        String trimmed = search.trim();
+        return trimmed.isEmpty() ? null : trimmed;
     }
 
     @Override
@@ -269,6 +332,38 @@ public class DoctorServiceImpl implements DoctorService {
                 .stream()
                 .map(this::mapToRatingSummaryResponse)
                 .collect(Collectors.toMap(RatingSummaryResponse::doctorId, Function.identity()));
+    }
+
+    private Map<Long, RatingSummaryResponse> getRatingSummariesByDoctorIds(List<Long> doctorIds) {
+        if (doctorIds.isEmpty()) {
+            return Map.of();
+        }
+
+        return doctorRatingSummaryRepository.findByDoctorIdIn(doctorIds)
+                .stream()
+                .map(this::mapToRatingSummaryResponse)
+                .collect(Collectors.toMap(RatingSummaryResponse::doctorId, Function.identity()));
+    }
+
+    private Map<Long, List<PublicDoctorDepartmentDto>> getPublicDepartmentsByDoctorId(List<Long> doctorIds) {
+        if (doctorIds.isEmpty()) {
+            return Map.of();
+        }
+
+        Map<Long, List<PublicDoctorDepartmentDto>> departmentsByDoctorId = new LinkedHashMap<>();
+        for (Long doctorId : doctorIds) {
+            departmentsByDoctorId.put(doctorId, new ArrayList<>());
+        }
+
+        for (PublicDoctorDepartmentRow row : doctorRepository.findPublicDoctorDepartmentsByDoctorIds(doctorIds)) {
+            List<PublicDoctorDepartmentDto> departments = departmentsByDoctorId.get(row.doctorId());
+            if (departments != null) {
+                departments.add(new PublicDoctorDepartmentDto(row.departmentId(), row.departmentName()));
+            }
+        }
+
+        return departmentsByDoctorId.entrySet().stream()
+                .collect(Collectors.toMap(Map.Entry::getKey, entry -> List.copyOf(entry.getValue())));
     }
 
     private RatingSummaryResponse mapToRatingSummaryResponse(DoctorRatingSummary summary) {

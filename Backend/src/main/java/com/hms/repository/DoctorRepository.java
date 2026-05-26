@@ -3,6 +3,8 @@ package com.hms.repository;
 import java.util.List;
 import java.util.Optional;
 
+import com.hms.dto.Response.PublicDoctorDepartmentRow;
+import com.hms.dto.Response.PublicDoctorListRow;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -55,6 +57,77 @@ public interface DoctorRepository extends JpaRepository<Doctor, Long> {
                     """
     )
     Page<Doctor> findAllSearch(@Param("search") String search, Pageable pageable);
+
+    @Query("""
+            SELECT new com.hms.dto.Response.PublicDoctorListRow(
+                d.id,
+                d.name,
+                d.specialization,
+                d.consultationFee,
+                u.profilePhoto,
+                b.id,
+                b.name,
+                b.address,
+                b.contactNumber,
+                b.email
+            )
+            FROM Doctor d
+            LEFT JOIN d.user u
+            LEFT JOIN d.branch b
+            """)
+    Page<PublicDoctorListRow> findPublicDoctorListRows(Pageable pageable);
+
+    @Query(
+            value = """
+                    SELECT new com.hms.dto.Response.PublicDoctorListRow(
+                        d.id,
+                        d.name,
+                        d.specialization,
+                        d.consultationFee,
+                        u.profilePhoto,
+                        b.id,
+                        b.name,
+                        b.address,
+                        b.contactNumber,
+                        b.email
+                    )
+                    FROM Doctor d
+                    LEFT JOIN d.user u
+                    LEFT JOIN d.branch b
+                    WHERE LOWER(d.name) LIKE LOWER(CONCAT('%', :search, '%'))
+                       OR LOWER(d.specialization) LIKE LOWER(CONCAT('%', :search, '%'))
+                       OR EXISTS (
+                            SELECT 1
+                            FROM d.departments dept
+                            WHERE LOWER(dept.name) LIKE LOWER(CONCAT('%', :search, '%'))
+                        )
+                    """,
+            countQuery = """
+                    SELECT COUNT(d)
+                    FROM Doctor d
+                    WHERE LOWER(d.name) LIKE LOWER(CONCAT('%', :search, '%'))
+                       OR LOWER(d.specialization) LIKE LOWER(CONCAT('%', :search, '%'))
+                       OR EXISTS (
+                            SELECT 1
+                            FROM d.departments dept
+                            WHERE LOWER(dept.name) LIKE LOWER(CONCAT('%', :search, '%'))
+                        )
+                    """
+    )
+    Page<PublicDoctorListRow> searchPublicDoctorListRows(@Param("search") String search, Pageable pageable);
+
+    @Query("""
+            SELECT new com.hms.dto.Response.PublicDoctorDepartmentRow(
+                doc.id,
+                dept.id,
+                dept.name
+            )
+            FROM Doctor doc
+            JOIN doc.departments dept
+            WHERE doc.id IN :doctorIds
+            ORDER BY doc.id ASC, dept.name ASC
+            """)
+    List<PublicDoctorDepartmentRow> findPublicDoctorDepartmentsByDoctorIds(@Param("doctorIds") List<Long> doctorIds);
 
     @Query("SELECT d.id FROM Doctor d WHERE d.branch.id = :branchId")
     List<Long> findBranchDoctorIds(@Param("branchId") Long branchId, Pageable pageable);

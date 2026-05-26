@@ -6,11 +6,13 @@ import com.hms.dto.DoctorDto;
 import com.hms.dto.DepartmentDto;
 import com.hms.dto.Request.OnBoardDoctorRequestDto;
 import com.hms.dto.Response.DoctorResponseDto;
+import com.hms.dto.Response.PublicDoctorListDto;
 
 public interface DoctorService {
 
     List<DoctorDto> getAllDoctors(int page, int size);
     List<DoctorDto> getAllDoctorsSearch(String search, int page, int size);
+    List<PublicDoctorListDto> getPublicDoctors(String search, int page, int size);
     DoctorDto getDoctorById(Long id);
 
     List<DoctorDto> getDoctorByName(String name);

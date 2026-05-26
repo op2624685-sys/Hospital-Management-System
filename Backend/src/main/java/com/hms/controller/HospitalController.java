@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 
 import com.hms.dto.BranchDto;
 import com.hms.dto.DoctorDto;
+import com.hms.dto.Response.PublicDoctorListDto;
 import com.hms.service.AppointmentService;
 import com.hms.service.BranchService;
 import com.hms.service.DoctorService;
@@ -26,11 +27,11 @@ public class HospitalController {
     private final AppointmentService appointmentService;
 
     @GetMapping("/doctors")
-    public ResponseEntity<List<DoctorDto>> getAllDoctors(
+    public ResponseEntity<List<PublicDoctorListDto>> getAllDoctors(
             @RequestParam(name = "search", required = false) String search,
             @RequestParam(name = "page", defaultValue = "0") int page,
             @RequestParam(name = "size", defaultValue = "10") int size) {
-        return ResponseEntity.ok(doctorService.getAllDoctorsSearch(search, page, size));
+        return ResponseEntity.ok(doctorService.getPublicDoctors(search, page, size));
     }
 
     @GetMapping("/doctors/{doctorId}")
