@@ -8,6 +8,8 @@ import 'react-toastify/dist/ReactToastify.css';
 import { useQuery } from '@tanstack/react-query';
 import { Turnstile } from '@marsidev/react-turnstile';
 
+const EMPTY_ARRAY = Object.freeze([]);
+
 const AppointmentBooking = () => {
   const { user, isLoggedIn, profileComplete, hasRole } = useAuth();
   const navigate = useNavigate();
@@ -41,7 +43,7 @@ const AppointmentBooking = () => {
     [state?.departments]
   );
 
-  const { data: allDoctors = [] } = useQuery({
+  const { data: allDoctors = EMPTY_ARRAY } = useQuery({
     queryKey: ['public-doctors-meta'],
     queryFn: async () => {
       const doctorResponse = await API.get('/public/doctors');
@@ -49,7 +51,7 @@ const AppointmentBooking = () => {
     },
   });
 
-  const { data: allBranches = [] } = useQuery({
+  const { data: allBranches = EMPTY_ARRAY } = useQuery({
     queryKey: ['public-branches'],
     queryFn: async () => {
       const branchResponse = await API.get('/public/branches');
@@ -58,7 +60,7 @@ const AppointmentBooking = () => {
   });
 
   const {
-    data: bookedSlots = [],
+    data: bookedSlots = EMPTY_ARRAY,
     isFetching: loadingSlots,
   } = useQuery({
     queryKey: ['booked-slots', doctorId, appointmentDate],
@@ -73,7 +75,7 @@ const AppointmentBooking = () => {
     enabled: Boolean(doctorId && appointmentDate),
   });
 
-  const { data: searchedDoctors = [] } = useQuery({
+  const { data: searchedDoctors = EMPTY_ARRAY } = useQuery({
     queryKey: ['public-doctors-search', debouncedDoctorSearchTerm, branchId],
     queryFn: async () => {
       const response = await API.get('/public/doctors', {
@@ -90,7 +92,7 @@ const AppointmentBooking = () => {
 
   useEffect(() => {
     if (!doctorSearchTerm.trim() || debouncedDoctorSearchTerm.trim().length < 2) {
-      setDoctorSuggestions([]);
+      setDoctorSuggestions((current) => current.length ? [] : current);
       return;
     }
     setDoctorSuggestions(searchedDoctors);
