@@ -3,6 +3,9 @@ package com.hms.service.impl;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.awt.image.BufferedImage;
+import java.io.IOException;
+import java.util.Locale;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.cache.annotation.CacheEvict;
@@ -15,6 +18,7 @@ import org.springframework.security.access.AccessDeniedException;
 import com.hms.dto.DoctorDto;
 import com.hms.dto.Request.OnBoardDoctorRequestDto;
 import com.hms.dto.Response.DoctorResponseDto;
+import com.hms.dto.Response.DoctorStampResponseDto;
 import com.hms.dto.Response.BranchResponseDto;
 import com.hms.dto.Response.PublicDoctorDepartmentDto;
 import com.hms.dto.Response.PublicDoctorDepartmentRow;
@@ -43,6 +47,7 @@ import com.hms.repository.UserRepository;
 import com.hms.repository.DepartmentRepository;
 import com.hms.service.DoctorService;
 import com.hms.service.HMSAuditLogService;
+import com.hms.service.CloudinaryService;
 import lombok.RequiredArgsConstructor;
 import java.util.stream.Collectors;
 import java.util.Map;
@@ -50,11 +55,18 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.function.Function;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.multipart.MultipartFile;
+import javax.imageio.ImageIO;
 
 @Service
 @RequiredArgsConstructor
 public class DoctorServiceImpl implements DoctorService {
     private static final int PUBLIC_DOCTOR_MAX_PAGE_SIZE = 10;
+    private static final long MAX_STAMP_FILE_SIZE_BYTES = 5L * 1024L * 1024L;
+    private static final Set<String> ALLOWED_STAMP_CONTENT_TYPES = Set.of(
+            "image/jpeg",
+            "image/png",
+            "image/webp");
 
     private final DoctorRepository doctorRepository;
     private final UserRepository userRepository;
@@ -62,6 +74,7 @@ public class DoctorServiceImpl implements DoctorService {
     private final AdminRepository adminRepository;
     private final DepartmentRepository departmentRepository;
     private final DoctorRatingSummaryRepository doctorRatingSummaryRepository;
+    private final CloudinaryService cloudinaryService;
 
     private final HMSAuditLogService auditLogService;
     private final NotificationServiceImpl notificationService;
@@ -316,7 +329,8 @@ public class DoctorServiceImpl implements DoctorService {
                 isDoctorHeadOfAnyDepartment(doctor),
                 doctor.getConsultationFee(),
                 ratingSummary,
-                doctor.getUser() != null ? doctor.getUser().getProfilePhoto() : null
+                doctor.getUser() != null ? doctor.getUser().getProfilePhoto() : null,
+                doctor.getDoctorStampUrl()
         );
     }
 
@@ -387,8 +401,53 @@ public class DoctorServiceImpl implements DoctorService {
                 mapDepartments(doctor),
                 mapBranchResponse(doctor.getBranch()),
                 doctor.getConsultationFee(),
-                doctor.getUser() != null ? doctor.getUser().getProfilePhoto() : null
+                doctor.getUser() != null ? doctor.getUser().getProfilePhoto() : null,
+                doctor.getDoctorStampUrl()
         );
+    }
+
+    @Override
+    @Transactional
+    @Caching(evict = {
+        @CacheEvict(value = "doctorById", allEntries = true),
+        @CacheEvict(value = "doctorListPaged", allEntries = true),
+        @CacheEvict(value = "branchDoctors", allEntries = true)
+    })
+    public DoctorStampResponseDto updateDoctorStamp(Long doctorId, MultipartFile stamp) {
+        validateDoctorStamp(stamp);
+        Doctor doctor = doctorRepository.findById(doctorId)
+                .orElseThrow(() -> new NotFoundException("Doctor not found with id: " + doctorId));
+        Map<?, ?> response = cloudinaryService.upload(stamp);
+        Object secureUrl = response.get("secure_url");
+        if (secureUrl == null || secureUrl.toString().isBlank()) {
+            throw new ValidationException("Doctor stamp upload failed. Please try again.");
+        }
+        doctor.setDoctorStampUrl(secureUrl.toString());
+        doctorRepository.save(doctor);
+        return new DoctorStampResponseDto(doctor.getDoctorStampUrl());
+    }
+
+    private void validateDoctorStamp(MultipartFile stamp) {
+        if (stamp == null || stamp.isEmpty()) {
+            throw new ValidationException("Doctor stamp image is required");
+        }
+        if (stamp.getSize() > MAX_STAMP_FILE_SIZE_BYTES) {
+            throw new ValidationException("Doctor stamp image must be 5 MB or less");
+        }
+        String contentType = stamp.getContentType() == null
+                ? ""
+                : stamp.getContentType().toLowerCase(Locale.ROOT).trim();
+        if (!ALLOWED_STAMP_CONTENT_TYPES.contains(contentType)) {
+            throw new ValidationException("Only JPG, PNG, or WEBP stamp images are allowed");
+        }
+        try {
+            BufferedImage image = ImageIO.read(stamp.getInputStream());
+            if (image == null) {
+                throw new ValidationException("Invalid doctor stamp image content");
+            }
+        } catch (IOException e) {
+            throw new ValidationException("Failed to read doctor stamp image");
+        }
     }
 
     private boolean isDoctorHeadOfAnyDepartment(Doctor doctor) {

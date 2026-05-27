@@ -6,7 +6,9 @@ import com.hms.dto.DoctorDto;
 import com.hms.dto.DepartmentDto;
 import com.hms.dto.Request.OnBoardDoctorRequestDto;
 import com.hms.dto.Response.DoctorResponseDto;
+import com.hms.dto.Response.DoctorStampResponseDto;
 import com.hms.dto.Response.PublicDoctorListDto;
+import org.springframework.web.multipart.MultipartFile;
 
 public interface DoctorService {
 
@@ -27,5 +29,6 @@ public interface DoctorService {
     void addDoctorToDepartment(Long deptId, Long doctorId);
     void removeDoctorFromDepartment(Long deptId, Long doctorId);
     void updateDepartment(Long deptId, DepartmentDto deptDto);
+    DoctorStampResponseDto updateDoctorStamp(Long doctorId, MultipartFile stamp);
 
 }
