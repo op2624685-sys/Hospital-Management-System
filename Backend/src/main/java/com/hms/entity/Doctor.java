@@ -54,6 +54,9 @@ public class Doctor {
     @Column(nullable = false)
     private Long consultationFee;
 
+    @Column(name = "doctor_stamp_url", length = 500)
+    private String doctorStampUrl;
+
     @OneToMany(mappedBy = "doctor")
     @Builder.Default
     private List<Appointment> Appointments = new ArrayList<>();
