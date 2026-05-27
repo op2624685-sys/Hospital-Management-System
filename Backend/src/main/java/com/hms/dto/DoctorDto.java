@@ -21,4 +21,5 @@ public class DoctorDto implements Serializable{
     private Long consultationFee;
     private RatingSummaryResponse ratingSummary;
     private String profilePhoto;
+    private String doctorStampUrl;
 }
