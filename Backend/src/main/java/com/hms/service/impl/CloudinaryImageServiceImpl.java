@@ -28,5 +28,19 @@ public class CloudinaryImageServiceImpl implements CloudinaryService {
         }
     }
 
+    @Override
+    public Map uploadRaw(byte[] bytes, String fileName, String contentType) {
+        try {
+            return this.cloudinary.uploader().upload(bytes, Map.of(
+                    "resource_type", "raw",
+                    "folder", "prescriptions",
+                    "public_id", fileName,
+                    "overwrite", true,
+                    "use_filename", true));
+        } catch (IOException e) {
+            throw new ValidationException("Document upload failed");
+        }
+    }
+
     
 }

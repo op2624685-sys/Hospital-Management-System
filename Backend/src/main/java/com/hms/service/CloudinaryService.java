@@ -8,4 +8,6 @@ public interface CloudinaryService {
 
     public Map upload(MultipartFile file);
 
+    public Map uploadRaw(byte[] bytes, String fileName, String contentType);
+
 }
