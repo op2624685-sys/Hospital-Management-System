@@ -6,14 +6,19 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import com.hms.dto.Request.UpdateAppointmentRequestDto;
 import com.hms.dto.Response.AppointmentResponseDto;
+import com.hms.dto.Response.DoctorStampResponseDto;
+import com.hms.dto.Response.PrescriptionResponseDto;
 import com.hms.entity.type.AppointmentStatusType;
 import com.hms.entity.User;
 import com.hms.dto.DoctorDto;
 import com.hms.dto.DepartmentDto;
+import com.hms.dto.Request.PrescriptionRequestDto;
 import com.hms.service.AppointmentService;
 import com.hms.service.DoctorService;
+import com.hms.service.PrescriptionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.multipart.MultipartFile;
 import jakarta.validation.Valid;
 
 
@@ -24,6 +29,7 @@ public class DoctorController {
 
     private final AppointmentService appointmentService;
     private final DoctorService doctorService;
+    private final PrescriptionService prescriptionService;
 
     @GetMapping("/my-departments")
     public ResponseEntity<List<DepartmentDto>> getMyDepartments() {
@@ -34,6 +40,13 @@ public class DoctorController {
     public ResponseEntity<DoctorDto> getDoctorProfile() {
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         return ResponseEntity.ok(doctorService.getDoctorById(user.getId()));
+    }
+
+    @PostMapping("/profile/stamp")
+    public ResponseEntity<DoctorStampResponseDto> updateDoctorStamp(
+            @RequestParam("stamp") MultipartFile stamp) {
+        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        return ResponseEntity.ok(doctorService.updateDoctorStamp(user.getId(), stamp));
     }
 
     @PostMapping("/departments/{deptId}/doctors/{doctorId}")
@@ -76,6 +89,30 @@ public class DoctorController {
             @PathVariable(name = "appointmentId") String appointmentId,
             @Valid @RequestBody UpdateAppointmentRequestDto updateAppointmentRequestDto) {
         return ResponseEntity.ok(appointmentService.updateAppointment(appointmentId, updateAppointmentRequestDto));
+    }
+
+    @PostMapping("/appointments/{appointmentId}/prescription")
+    public ResponseEntity<PrescriptionResponseDto> createPrescription(
+            @PathVariable String appointmentId,
+            @Valid @RequestBody PrescriptionRequestDto request) {
+        return ResponseEntity.ok(prescriptionService.createPrescription(appointmentId, request));
+    }
+
+    @PutMapping("/appointments/{appointmentId}/prescription")
+    public ResponseEntity<PrescriptionResponseDto> updatePrescription(
+            @PathVariable String appointmentId,
+            @Valid @RequestBody PrescriptionRequestDto request) {
+        return ResponseEntity.ok(prescriptionService.updatePrescription(appointmentId, request));
+    }
+
+    @GetMapping("/appointments/{appointmentId}/prescription")
+    public ResponseEntity<PrescriptionResponseDto> getPrescription(@PathVariable String appointmentId) {
+        return ResponseEntity.ok(prescriptionService.getPrescription(appointmentId));
+    }
+
+    @PostMapping("/appointments/{appointmentId}/prescription/retry")
+    public ResponseEntity<PrescriptionResponseDto> retryPrescriptionGeneration(@PathVariable String appointmentId) {
+        return ResponseEntity.ok(prescriptionService.retryGeneration(appointmentId));
     }
     
 }
