@@ -434,9 +434,10 @@ public class DoctorServiceImpl implements DoctorService {
         if (stamp.getSize() > MAX_STAMP_FILE_SIZE_BYTES) {
             throw new ValidationException("Doctor stamp image must be 5 MB or less");
         }
-        String contentType = stamp.getContentType() == null
+        String contentType = stamp.getContentType();
+        contentType = contentType == null
                 ? ""
-                : stamp.getContentType().toLowerCase(Locale.ROOT).trim();
+                : contentType.toLowerCase(Locale.ROOT).trim();
         if (!ALLOWED_STAMP_CONTENT_TYPES.contains(contentType)) {
             throw new ValidationException("Only JPG, PNG, or WEBP stamp images are allowed");
         }
