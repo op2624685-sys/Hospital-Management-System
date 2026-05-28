@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 import com.hms.entity.type.AppointmentStatusType;
+import com.hms.entity.type.PrescriptionDocumentStatus;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -34,4 +35,7 @@ public class AppointmentResponseDto {
     private LocalDateTime noShowAt;
     private LocalDateTime cancelledAt;
     private LocalDateTime refundedAt;
+    private boolean hasPrescription;
+    private PrescriptionDocumentStatus prescriptionDocumentStatus;
+    private String prescriptionDocumentUrl;
 }
