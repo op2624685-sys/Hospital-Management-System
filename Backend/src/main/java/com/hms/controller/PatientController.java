@@ -12,12 +12,14 @@ import com.hms.dto.Request.PatientRequest;
 import com.hms.dto.Request.PatientUpdateRequest;
 import com.hms.dto.Response.AppointmentResponseDto;
 import com.hms.dto.Response.ProfileCompletionStatusDto;
+import com.hms.dto.Response.PrescriptionResponseDto;
 import com.hms.dto.Response.SignupCompletionResponseDto;
 import com.hms.config.RateLimitProtected;
 import com.hms.entity.User;
 import com.hms.service.AppointmentService;
 import com.hms.service.InsuranceService;
 import com.hms.service.PatientService;
+import com.hms.service.PrescriptionService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -41,6 +43,7 @@ public class PatientController {
     private final PatientService patientService;
     private final AppointmentService appointmentService;
     private final InsuranceService insuranceService;
+    private final PrescriptionService prescriptionService;
 
     @PostMapping("/appointments")
     public ResponseEntity<AppointmentResponseDto> createNewAppointment(@Valid @RequestBody CreateAppointmentRequestDto createAppointmentRequestDto) {
@@ -63,6 +66,11 @@ public class PatientController {
     @PutMapping("/appointments/{appointmentId}/cancel")
     public ResponseEntity<AppointmentResponseDto> cancelAppointmentByPatient(@PathVariable(name = "appointmentId") String appointmentId) {
         return ResponseEntity.ok(appointmentService.cancelAppointmentByPatient(appointmentId));
+    }
+
+    @GetMapping("/appointments/{appointmentId}/prescription")
+    public ResponseEntity<PrescriptionResponseDto> getPrescription(@PathVariable(name = "appointmentId") String appointmentId) {
+        return ResponseEntity.ok(prescriptionService.getPrescription(appointmentId));
     }
 
     @PostMapping("/insurance")
