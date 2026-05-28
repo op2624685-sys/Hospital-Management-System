@@ -21,4 +21,5 @@ public class DoctorResponseDto implements Serializable{
     private BranchResponseDto branch;
     private Long consultationFee;
     private String profilePhoto;
+    private String doctorStampUrl;
 }
