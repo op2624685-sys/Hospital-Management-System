@@ -293,6 +293,21 @@ const MyAppointments = () => {
                 >
                   Details
                 </Link>
+                {a.hasPrescription && (a.prescriptionDocumentStatus === "PENDING_GENERATION" || a.prescriptionDocumentStatus === "GENERATING") && (
+                  <span className="ux-btn ux-btn-view" style={{ cursor: "default" }}>
+                    Prescription Generating
+                  </span>
+                )}
+                {a.prescriptionDocumentStatus === "READY" && a.prescriptionDocumentUrl && (
+                  <a
+                    href={a.prescriptionDocumentUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="ux-btn ux-btn-view"
+                  >
+                    Prescription PDF
+                  </a>
+                )}
                 {a.status === "COMPLETED" && (
                   <button
                     onClick={() => setRatingTarget({ doctorId: a.doctor?.id, doctorName: a.doctor?.name || "Doctor" })}
