@@ -113,6 +113,20 @@ const AppointmentDetails = () => {
     enabled: Boolean(appointmentId),
   })
 
+  const {
+    data: prescription = null,
+    isFetching: prescriptionLoading,
+  } = useQuery({
+    queryKey: ['patient-prescription', appointmentId],
+    queryFn: async () => (await appointmentApi.getPatientPrescription(appointmentId)).data,
+    enabled: Boolean(appointmentId && appointment?.hasPrescription),
+    retry: false,
+    refetchInterval: (query) => {
+      const status = query.state.data?.documentStatus || appointment?.prescriptionDocumentStatus
+      return status === 'PENDING_GENERATION' || status === 'GENERATING' ? 3000 : false
+    },
+  })
+
   const handleCopy = () => {
     navigator.clipboard.writeText(appointment.appointmentId)
     setCopied(true)
@@ -146,6 +160,8 @@ const AppointmentDetails = () => {
     .toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })
   const timeOnly = new Date(appointment.appointmentTime)
     .toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })
+  const prescriptionStatus = prescription?.documentStatus || appointment.prescriptionDocumentStatus
+  const prescriptionUrl = prescription?.documentUrl || appointment.prescriptionDocumentUrl
 
   return (
     <>
@@ -543,6 +559,16 @@ const AppointmentDetails = () => {
                 <button className="ad-btn ad-btn-outline" onClick={() => window.print()}>
                   Print Receipt
                 </button>
+                {appointment.hasPrescription && prescriptionStatus !== 'READY' && (
+                  <button className="ad-btn ad-btn-outline" disabled>
+                    {prescriptionLoading ? 'Checking Prescription...' : 'Prescription Generating'}
+                  </button>
+                )}
+                {prescriptionStatus === 'READY' && prescriptionUrl && (
+                  <a className="ad-btn ad-btn-outline" href={prescriptionUrl} target="_blank" rel="noreferrer" style={{ textDecoration: 'none' }}>
+                    Download Prescription
+                  </a>
+                )}
                 <button className="ad-btn ad-btn-primary" onClick={() => navigate('/my-appointments')}>
                   My Appointments
                 </button>
