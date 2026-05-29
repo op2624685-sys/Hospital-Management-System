@@ -105,11 +105,11 @@ const ReceptionistAppointments = () => {
 
   const summaryCards = useMemo(() => {
     const waitingCount = departmentQueue.reduce((total, queue) => total + (queue.waitingCount || 0), 0);
-    const confirmedCount = appointments.filter((appointment) => appointment.status === "CONFIRMED").length;
+    const confirmedCount = appointments.filter((appointment) => appointment.status?.toUpperCase() === "CONFIRMED").length;
     const activeCount = appointments.filter((appointment) =>
-      ["VISITED", "QUEUED", "IN_PROGRESS"].includes(appointment.status)
+      ["VISITED", "QUEUED", "IN_PROGRESS"].includes(appointment.status?.toUpperCase())
     ).length;
-    const completedCount = appointments.filter((appointment) => appointment.status === "COMPLETED").length;
+    const completedCount = appointments.filter((appointment) => appointment.status?.toUpperCase() === "COMPLETED").length;
 
     return [
       { label: "Today's Appointments", value: appointments.length, tone: "neutral" },
@@ -277,7 +277,10 @@ const ReceptionistAppointments = () => {
           letter-spacing: 0.08em;
         }
         .rc-detail strong, .rc-time-item strong { display: block; font-size: 13px; line-height: 1.5; }
-        .rc-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 18px; }
+        .rc-actions { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 18px; align-items: center; }
+        .rc-select-wrap { position: relative; min-width: 210px; }
+        .rc-select-wrap select { appearance: none; cursor: pointer; padding-right: 36px; font-weight: 800; }
+        .rc-select-arrow { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); pointer-events: none; color: var(--muted-foreground); font-size: 10px; }
         .rc-btn {
           border: none;
           border-radius: 14px;
@@ -306,9 +309,15 @@ const ReceptionistAppointments = () => {
           display: flex;
           justify-content: space-between;
           gap: 12px;
-          padding: 12px 0;
+          padding: 12px 10px;
           border-top: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
           font-size: 13px;
+          transition: all 0.2s ease;
+          border-radius: 8px;
+        }
+        .rc-queue-row:hover:not(.empty) {
+          background: color-mix(in srgb, var(--primary) 8%, transparent);
+          transform: translateX(4px);
         }
         .rc-empty {
           padding: 18px;
@@ -455,7 +464,31 @@ const ReceptionistAppointments = () => {
                   {renderTimeline(appointment)}
 
                   <div className="rc-actions">
-                    {(STATUS_FLOW[appointment.status] || []).map((nextStatus) => (
+                    <div className="rc-select-wrap">
+                      <select
+                        className="rc-input"
+                        value={appointment.status?.toUpperCase() || ""}
+                        disabled={updateMutation.isPending || ["COMPLETED", "CANCELLED", "REFUNDED", "NO_SHOW"].includes(appointment.status?.toUpperCase())}
+                        onChange={(e) => {
+                          const nextStatus = e.target.value;
+                          if (nextStatus && nextStatus !== appointment.status?.toUpperCase()) {
+                            updateMutation.mutate({ appointmentId: appointment.appointmentId, nextStatus });
+                          }
+                        }}
+                      >
+                        <option value={appointment.status?.toUpperCase() || ""} disabled>
+                          Current: {formatStatusLabel(appointment.status)}
+                        </option>
+                        {(STATUS_FLOW[appointment.status?.toUpperCase()] || []).map((nextStatus) => (
+                          <option key={nextStatus} value={nextStatus}>
+                            Move to: {formatStatusLabel(nextStatus)}
+                          </option>
+                        ))}
+                      </select>
+                      <span className="rc-select-arrow">▼</span>
+                    </div>
+
+                    {(STATUS_FLOW[appointment.status?.toUpperCase()] || []).map((nextStatus) => (
                       <button
                         key={nextStatus}
                         className="rc-btn primary"
@@ -494,13 +527,24 @@ const ReceptionistAppointments = () => {
                     <span className="rc-badge queue">{queue.waitingCount} waiting</span>
                   </div>
                   {(queue.queue || []).map((entry) => (
-                    <div key={entry.appointmentId} className="rc-queue-row">
+                    <div
+                      key={entry.appointmentId}
+                      className="rc-queue-row"
+                      style={{ cursor: "pointer" }}
+                      onClick={() => {
+                        setSelectedAppointmentId(entry.appointmentId);
+                        setPatientName("");
+                        setBirthDate("");
+                        toast.info(`Selected appointment for ${entry.patientName}`);
+                      }}
+                      title="Click to select and manage this appointment"
+                    >
                       <div>#{entry.queueNumber} {entry.patientName}</div>
                       <div>{formatDateTime(entry.appointmentTime)}</div>
                     </div>
                   ))}
                   {(!queue.queue || queue.queue.length === 0) && (
-                    <div className="rc-queue-row">
+                    <div className="rc-queue-row empty">
                       <div>No queued patients</div>
                       <div>-</div>
                     </div>
