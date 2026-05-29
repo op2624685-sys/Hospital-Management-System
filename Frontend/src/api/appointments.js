@@ -35,6 +35,26 @@ export const appointmentApi = {
     return API.put(`/doctor/appointments/${appointmentId}`, payload);
   },
 
+  createPrescription(appointmentId, payload) {
+    return API.post(`/doctor/appointments/${appointmentId}/prescription`, payload);
+  },
+
+  updatePrescription(appointmentId, payload) {
+    return API.put(`/doctor/appointments/${appointmentId}/prescription`, payload);
+  },
+
+  getDoctorPrescription(appointmentId) {
+    return API.get(`/doctor/appointments/${appointmentId}/prescription`);
+  },
+
+  retryPrescriptionGeneration(appointmentId) {
+    return API.post(`/doctor/appointments/${appointmentId}/prescription/retry`);
+  },
+
+  getPatientPrescription(appointmentId) {
+    return API.get(`/patients/appointments/${appointmentId}/prescription`);
+  },
+
   getReceptionistAppointments(params = {}) {
     return API.get("/receptionist/appointments", { params });
   },
