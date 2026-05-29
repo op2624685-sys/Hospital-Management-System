@@ -32,6 +32,7 @@ import com.hms.entity.type.AppointmentStatusType;
 import com.hms.error.NotFoundException;
 import com.hms.error.ValidationException;
 import com.hms.repository.AppointmentRepository;
+import com.hms.repository.PrescriptionRepository;
 import com.hms.repository.ReceptionistRepository;
 import com.hms.service.ReceptionistService;
 
@@ -43,6 +44,7 @@ public class ReceptionistServiceImpl implements ReceptionistService {
 
     private final AppointmentRepository appointmentRepository;
     private final ReceptionistRepository receptionistRepository;
+    private final PrescriptionRepository prescriptionRepository;
 
 
     @Override
@@ -273,6 +275,7 @@ public class ReceptionistServiceImpl implements ReceptionistService {
     }
 
     private AppointmentResponseDto mapAppointmentResponseDto(Appointment appointment) {
+        com.hms.entity.Prescription prescription = resolvePrescription(appointment.getAppointmentId());
         return new AppointmentResponseDto(
                 appointment.getAppointmentId(),
                 appointment.getAppointmentTime(),
@@ -293,7 +296,12 @@ public class ReceptionistServiceImpl implements ReceptionistService {
                 appointment.getCompletedAt(),
                 appointment.getNoShowAt(),
                 appointment.getCancelledAt(),
-                appointment.getRefundedAt()
+                appointment.getRefundedAt(),
+                prescription != null,
+                prescription != null ? prescription.getDocumentStatus() : null,
+                prescription != null && prescription.getDocumentStatus() == com.hms.entity.type.PrescriptionDocumentStatus.READY
+                        ? prescription.getDocumentUrl()
+                        : null
         );
     }
 
@@ -312,6 +320,13 @@ public class ReceptionistServiceImpl implements ReceptionistService {
                 entries.isEmpty() ? null : entries.get(0),
                 entries
         );
+    }
+
+    private com.hms.entity.Prescription resolvePrescription(String appointmentId) {
+        if (prescriptionRepository == null) {
+            return null;
+        }
+        return prescriptionRepository.findByAppointment_AppointmentId(appointmentId).orElse(null);
     }
 
     private QueueEntryDto mapQueueEntry(Appointment appointment) {
@@ -348,7 +363,8 @@ public class ReceptionistServiceImpl implements ReceptionistService {
                 Set.of(),
                 mapBranchResponse(doctor.getBranch()),
                 doctor.getConsultationFee(),
-                doctor.getUser() != null ? doctor.getUser().getProfilePhoto() : null
+                doctor.getUser() != null ? doctor.getUser().getProfilePhoto() : null,
+                doctor.getDoctorStampUrl()
         );
     }
 
