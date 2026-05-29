@@ -40,6 +40,7 @@ import com.hms.repository.AppointmentRepository;
 import com.hms.repository.AdminRepository;
 import com.hms.repository.DoctorRepository;
 import com.hms.repository.PatientRepository;
+import com.hms.repository.PrescriptionRepository;
 import com.hms.repository.BranchRepository;
 import com.hms.repository.DepartmentRepository;
 import com.hms.service.AppointmentService;
@@ -63,6 +64,7 @@ public class AppointmentServiceImpl implements AppointmentService {
     private final AdminRepository adminRepository;
     private final BranchRepository branchRepository;
     private final DepartmentRepository departmentRepository;
+    private final PrescriptionRepository prescriptionRepository;
     private final ApplicationEventPublisher eventPublisher;
 
     @Override
@@ -516,6 +518,7 @@ public class AppointmentServiceImpl implements AppointmentService {
     }
 
     private AppointmentResponseDto mapToAppointmentResponseDto(Appointment appointment) {
+        com.hms.entity.Prescription prescription = resolvePrescription(appointment.getAppointmentId());
         return new AppointmentResponseDto(
                 appointment.getAppointmentId(),
                 appointment.getAppointmentTime(),
@@ -536,12 +539,24 @@ public class AppointmentServiceImpl implements AppointmentService {
                 appointment.getCompletedAt(),
                 appointment.getNoShowAt(),
                 appointment.getCancelledAt(),
-                appointment.getRefundedAt()
+                appointment.getRefundedAt(),
+                prescription != null,
+                prescription != null ? prescription.getDocumentStatus() : null,
+                prescription != null && prescription.getDocumentStatus() == com.hms.entity.type.PrescriptionDocumentStatus.READY
+                        ? prescription.getDocumentUrl()
+                        : null
         );
     }
 
     private AppointmentStatusType resolveAppointmentStatus(Appointment appointment) {
         return appointment.getStatus();
+    }
+
+    private com.hms.entity.Prescription resolvePrescription(String appointmentId) {
+        if (prescriptionRepository == null) {
+            return null;
+        }
+        return prescriptionRepository.findByAppointment_AppointmentId(appointmentId).orElse(null);
     }
 
     private DoctorResponseDto mapDoctorResponse(Doctor doctor) {
@@ -554,7 +569,8 @@ public class AppointmentServiceImpl implements AppointmentService {
                 mapDepartments(doctor),
                 mapBranchResponse(doctor.getBranch()),
                 doctor.getConsultationFee(),
-                doctor.getUser() != null ? doctor.getUser().getProfilePhoto() : null
+                doctor.getUser() != null ? doctor.getUser().getProfilePhoto() : null,
+                doctor.getDoctorStampUrl()
         );
     }
 
