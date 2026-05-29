@@ -16,6 +16,9 @@ const Profile = () => {
   const [profilePhoto, setProfilePhoto] = useState(null);
   const [isLoadingPhoto, setIsLoadingPhoto] = useState(false);
   const [previewUrl, setPreviewUrl] = useState(user?.profilePhoto || null);
+  const [doctorStamp, setDoctorStamp] = useState(null);
+  const [doctorStampPreview, setDoctorStampPreview] = useState(null);
+  const [isLoadingStamp, setIsLoadingStamp] = useState(false);
   const completionToastShownRef = useRef(false);
 
   // Edit profile states for patient
@@ -78,7 +81,14 @@ const Profile = () => {
     setEditMode(false);
     setProfilePhoto(null);
     setPreviewUrl(user?.profilePhoto || null);
+    setDoctorStamp(null);
   }, [user?.id, user?.profilePhoto]);
+
+  useEffect(() => {
+    if (roleData?.type === 'DOCTOR') {
+      setDoctorStampPreview(roleData.data?.doctorStampUrl || null);
+    }
+  }, [roleData]);
 
   useEffect(() => {
     if (roleDataQuery.error) {
@@ -161,6 +171,38 @@ const Profile = () => {
       toast.error(error?.response?.data?.message || 'Failed to upload profile photo');
     } finally {
       setIsLoadingPhoto(false);
+    }
+  };
+
+  const handleDoctorStampChange = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setDoctorStamp(file);
+    const reader = new FileReader();
+    reader.onloadend = () => setDoctorStampPreview(reader.result);
+    reader.readAsDataURL(file);
+  };
+
+  const handleDoctorStampUpload = async () => {
+    if (!doctorStamp) return;
+    setIsLoadingStamp(true);
+    try {
+      const formData = new FormData();
+      formData.append('stamp', doctorStamp);
+      const response = await doctorAPI.updateStamp(formData);
+      setDoctorStamp(null);
+      setDoctorStampPreview(response.data.doctorStampUrl);
+      queryClient.setQueryData(
+        ['profile-role-data', user?.id, (user?.roles || []).join('|')],
+        (current) => current?.type === 'DOCTOR'
+          ? { ...current, data: { ...current.data, doctorStampUrl: response.data.doctorStampUrl } }
+          : current
+      );
+      toast.success('Doctor stamp updated successfully!');
+    } catch (error) {
+      toast.error(error?.response?.data?.message || 'Failed to upload doctor stamp');
+    } finally {
+      setIsLoadingStamp(false);
     }
   };
 
@@ -477,6 +519,57 @@ const Profile = () => {
                       </div>
                     </div>
                   )}
+                </div>
+              </div>
+
+              <div className='md:col-span-2 rounded-lg sm:rounded-2xl p-4 sm:p-5 md:p-6 shadow-md hover:shadow-lg transition-shadow' style={{ background: 'var(--card)', border: '1px solid var(--border)' }}>
+                <h3 className='text-base sm:text-lg font-bold mb-3 sm:mb-4' style={{ color: 'var(--foreground)' }}>Prescription Stamp</h3>
+                <div className='grid grid-cols-1 md:grid-cols-[220px_1fr] gap-4 sm:gap-5 md:gap-6 items-center'>
+                  <div
+                    className='rounded-lg flex items-center justify-center overflow-hidden'
+                    style={{
+                      minHeight: '120px',
+                      background: 'var(--background)',
+                      border: '1px dashed var(--border)'
+                    }}>
+                    {doctorStampPreview ? (
+                      <img src={doctorStampPreview} alt='Doctor stamp preview' style={{ maxWidth: '100%', maxHeight: 140, objectFit: 'contain' }} />
+                    ) : (
+                      <span className='text-sm font-semibold' style={{ color: 'var(--muted-foreground)' }}>No stamp uploaded</span>
+                    )}
+                  </div>
+                  <div>
+                    <p className='text-sm mb-4' style={{ color: 'var(--muted-foreground)' }}>
+                      This stamp is automatically applied to generated prescription PDFs.
+                    </p>
+                    <div className='flex flex-col sm:flex-row gap-3'>
+                      <label
+                        htmlFor='doctor-stamp-upload'
+                        className='px-4 py-2.5 rounded-lg font-semibold text-sm cursor-pointer inline-flex items-center justify-center gap-2'
+                        style={{ background: 'var(--secondary)', color: 'var(--secondary-foreground)', border: '1px solid var(--border)' }}>
+                        <Upload size={16} />
+                        Select Stamp
+                        <input
+                          id='doctor-stamp-upload'
+                          type='file'
+                          accept='image/*'
+                          onChange={handleDoctorStampChange}
+                          className='hidden'
+                          disabled={isLoadingStamp}
+                        />
+                      </label>
+                      {doctorStamp && (
+                        <button
+                          onClick={handleDoctorStampUpload}
+                          disabled={isLoadingStamp}
+                          className='px-4 py-2.5 rounded-lg font-bold text-sm inline-flex items-center justify-center gap-2'
+                          style={{ background: 'var(--primary)', color: 'white', opacity: isLoadingStamp ? 0.6 : 1 }}>
+                          <Save size={16} />
+                          {isLoadingStamp ? 'Uploading...' : 'Save Stamp'}
+                        </button>
+                      )}
+                    </div>
+                  </div>
                 </div>
               </div>
 
