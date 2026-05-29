@@ -6,9 +6,11 @@ import "react-toastify/dist/ReactToastify.css";
 import PageLoader from "../components/PageLoader";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "../context/AuthContext";
+import { useNavigate } from "react-router-dom";
 
 const DoctorAppointments = () => {
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
   const { isLoggedIn, user } = useAuth();
   const [savingId, setSavingId] = useState(null);
   const [query, setQuery] = useState("");
@@ -92,6 +94,8 @@ const DoctorAppointments = () => {
     if (status === "IN_PROGRESS") return [{ label: "Complete Visit", status: "COMPLETED" }];
     return [];
   };
+
+  const canManagePrescription = (status) => status === "IN_PROGRESS" || status === "COMPLETED";
 
   const renderTimestamp = (label, value) => (
     <div className="dr-line"><strong>{label}:</strong> {value ? new Date(value).toLocaleString("en-IN") : "Not recorded"}</div>
@@ -345,6 +349,35 @@ const DoctorAppointments = () => {
                       {isSaving ? "Updating..." : action.label}
                     </button>
                   ))}
+                  {canManagePrescription(a.status) && (
+                    <button
+                      disabled={isSaving}
+                      onClick={() =>
+                        navigate(`/doctor/appointments/${a.appointmentId}/prescription`, {
+                          state: { appointment: a },
+                        })
+                      }
+                      className="dr-btn dr-btn-primary"
+                    >
+                      {a.hasPrescription ? "Edit Prescription" : "Create Prescription"}
+                    </button>
+                  )}
+                  {a.prescriptionDocumentStatus === "PENDING_GENERATION" || a.prescriptionDocumentStatus === "GENERATING" ? (
+                    <div className="dr-btn dr-btn-outline" style={{ cursor: "default" }}>
+                      Generating prescription...
+                    </div>
+                  ) : null}
+                  {a.prescriptionDocumentStatus === "READY" && a.prescriptionDocumentUrl && (
+                    <a
+                      className="dr-btn dr-btn-outline"
+                      href={a.prescriptionDocumentUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      style={{ textDecoration: "none" }}
+                    >
+                      Open PDF
+                    </a>
+                  )}
                   <button
                     disabled={isSaving}
                     onClick={() =>
