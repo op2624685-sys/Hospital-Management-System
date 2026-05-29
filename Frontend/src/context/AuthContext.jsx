@@ -37,7 +37,8 @@ export const AuthProvider = ({ children }) => {
       if (isLoggedIn && user?.id && user?.roles?.includes("PATIENT")) {
         try {
           const response = await patientAPI.getProfileCompletionStatus();
-          setProfileComplete(response.data.isComplete);
+          const isComp = response.data?.isComplete !== undefined ? response.data?.isComplete : response.data?.complete;
+          setProfileComplete(isComp ?? false);
         } catch (error) {
           console.error("Error fetching profile completion status:", error);
         }
