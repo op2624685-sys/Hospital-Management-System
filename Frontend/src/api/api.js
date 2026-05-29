@@ -123,6 +123,9 @@ export const signupAPI = {
 export const doctorAPI = {
   getProfile: () => API.get('/doctor/profile'),
   getMyDepartments: () => API.get('/doctor/my-departments'),
+  updateStamp: (formData) => API.post('/doctor/profile/stamp', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' }
+  }),
 };
 
 export const receptionistAPI = {
