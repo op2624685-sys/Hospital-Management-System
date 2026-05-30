@@ -140,6 +140,85 @@ const Section = ({ title, subtitle, children, action }) => (
   </div>
 );
 
+// ── Admin Appointment Cards (expand on click) ─────────────────────────────────
+const AdminAppointmentCards = ({ appointments }) => {
+  const [expandedId, setExpandedId] = React.useState(null);
+
+  if (!appointments || appointments.length === 0) {
+    return <p style={{ color: "var(--muted-foreground)", fontStyle: "italic", fontSize: 13 }}>No appointments in this department.</p>;
+  }
+
+  return (
+    <div style={{ display: "grid", gap: 12 }}>
+      {appointments.map((apt) => {
+        const isExpanded = expandedId === apt.appointmentId;
+        const sColor = statusColor[formatStatus(apt.status)] || { bg: "var(--secondary)", color: "var(--foreground)" };
+        return (
+          <div
+            key={apt.appointmentId}
+            style={{
+              background: "var(--card)",
+              border: "1.5px solid var(--border)",
+              borderRadius: 18,
+              overflow: "hidden",
+              cursor: "pointer",
+              transition: "border-color .2s, transform .2s",
+            }}
+            onMouseEnter={(e) => { e.currentTarget.style.borderColor = "var(--primary)"; e.currentTarget.style.transform = "translateY(-2px)"; }}
+            onMouseLeave={(e) => { e.currentTarget.style.borderColor = isExpanded ? "var(--primary)" : "var(--border)"; e.currentTarget.style.transform = ""; }}
+            onClick={() => setExpandedId((prev) => (prev === apt.appointmentId ? null : apt.appointmentId))}
+          >
+            {/* Summary */}
+            <div style={{ padding: "16px 20px", display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 14, flexWrap: "wrap" }}>
+              <div>
+                <div style={{ fontWeight: 800, fontSize: 15, color: "var(--foreground)" }}>{apt.patient?.name || "Patient"}</div>
+                <div style={{ fontSize: 12, color: "var(--muted-foreground)", marginTop: 4 }}>
+                  Dr. {apt.doctor?.name || "N/A"} · {formatTime(apt.appointmentTime)}
+                </div>
+              </div>
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <span className="admin-status-pill" style={{ background: sColor.bg, color: sColor.color }}>{formatStatus(apt.status)}</span>
+                <span style={{ fontSize: 12, color: "var(--primary)", fontWeight: 800 }}>{isExpanded ? "▲" : "▼"}</span>
+              </div>
+            </div>
+            {/* Expanded */}
+            {isExpanded && (
+              <div
+                style={{ borderTop: "1.5px solid var(--border)", padding: "16px 20px 18px", background: "var(--background)" }}
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))", gap: 10, marginBottom: 14 }}>
+                  {[
+                    ["Appointment ID", apt.appointmentId],
+                    ["Patient", apt.patient?.name],
+                    ["Doctor", apt.doctor ? `Dr. ${apt.doctor.name}` : "N/A"],
+                    ["Department", apt.departmentName || apt.department?.name || "N/A"],
+                    ["Scheduled", formatTime(apt.appointmentTime)],
+                    ["Status", formatStatus(apt.status)],
+                    ["Patient Email", apt.patient?.email || "N/A"],
+                    ["Queue No.", apt.queueNumber ? `#${apt.queueNumber}` : "N/A"],
+                  ].map(([label, value]) => (
+                    <div key={label} style={{ background: "var(--card)", border: "1px solid var(--border)", borderRadius: 12, padding: 12 }}>
+                      <div style={{ fontSize: 10, fontWeight: 800, textTransform: "uppercase", letterSpacing: ".08em", color: "var(--muted-foreground)", marginBottom: 5 }}>{label}</div>
+                      <div style={{ fontSize: 13, fontWeight: 700, color: "var(--foreground)", wordBreak: "break-word" }}>{value || "—"}</div>
+                    </div>
+                  ))}
+                </div>
+                {apt.reason && (
+                  <div style={{ background: "var(--card)", border: "1px solid var(--border)", borderLeft: "3px solid var(--primary)", borderRadius: 12, padding: 12 }}>
+                    <div style={{ fontSize: 10, fontWeight: 800, textTransform: "uppercase", color: "var(--muted-foreground)", marginBottom: 5, letterSpacing: ".08em" }}>Reason for Visit</div>
+                    <div style={{ fontSize: 13, color: "var(--foreground)", lineHeight: 1.6 }}>{apt.reason}</div>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+};
+
 // ── Main ──────────────────────────────────────────────────────────────────────
 const AdminPanel = () => {
   const queryClient = useQueryClient();
@@ -806,27 +885,249 @@ const AdminPanel = () => {
               </>
             )}
 
-            {activeTab === "appointments" && (
+            {activeTab === "appointments" && (() => {
+              // Group appointments by department
+              const grouped = {};
+              for (const apt of appointments) {
+                const dept = apt.departmentName || apt.department?.name || "General";
+                if (!grouped[dept]) grouped[dept] = [];
+                grouped[dept].push(apt);
+              }
+              const deptNames = Object.keys(grouped).sort();
+              return (
+                <div className="admin-section full">
+                  <Section title="Appointments" subtitle={`${appointments.length} total hospital appointments`}>
+                    {appointmentsLoading && <p style={{ color: "var(--muted-foreground)", padding: "20px 0" }}>Loading appointments...</p>}
+                    {!appointmentsLoading && appointments.length === 0 && (
+                      <p style={{ color: "var(--muted-foreground)", padding: "20px 0", fontStyle: "italic" }}>No appointments found.</p>
+                    )}
+                    {deptNames.map((dept) => (
+                      <div key={dept} style={{ marginBottom: 32 }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14, paddingBottom: 10, borderBottom: "1.5px solid var(--border)" }}>
+                          <span style={{ width: 10, height: 10, borderRadius: "50%", background: "var(--primary)", display: "inline-block" }} />
+                          <h4 style={{ margin: 0, fontSize: 14, fontWeight: 900, color: "var(--foreground)", textTransform: "uppercase", letterSpacing: ".05em" }}>{dept}</h4>
+                          <span style={{ fontSize: 12, color: "var(--muted-foreground)", fontWeight: 700 }}>({grouped[dept].length})</span>
+                        </div>
+                        <AdminAppointmentCards appointments={grouped[dept]} />
+                      </div>
+                    ))}
+                    {/* Pagination */}
+                    {!appointmentsLoading && appointments.length > 0 && (
+                      <div style={{ display: "flex", gap: 12, justifyContent: "center", marginTop: 24 }}>
+                        <button
+                          className="admin-submit-btn"
+                          style={{ background: "var(--secondary)", color: "var(--foreground)", border: "1.5px solid var(--border)" }}
+                          onClick={() => setAppointmentsPage((p) => Math.max(0, p - 1))}
+                          disabled={appointmentsPage === 0}
+                        >← Previous</button>
+                        <span style={{ display: "flex", alignItems: "center", fontSize: 13, fontWeight: 800, color: "var(--muted-foreground)" }}>Page {appointmentsPage + 1}</span>
+                        <button
+                          className="admin-submit-btn"
+                          style={{ background: "var(--secondary)", color: "var(--foreground)", border: "1.5px solid var(--border)" }}
+                          onClick={() => setAppointmentsPage((p) => p + 1)}
+                          disabled={appointments.length < 10}
+                        >Next →</button>
+                      </div>
+                    )}
+                  </Section>
+                </div>
+              );
+            })()}
+
+            {activeTab === "doctors" && (
               <div className="admin-section full">
-                <Section title="Appointments" subtitle="Manage hospital visits">
-                  <table className="admin-table">
-                    <thead><tr><th>ID</th><th>Patient</th><th>Doctor</th><th>Time</th><th>Status</th></tr></thead>
-                    <tbody>
-                      {appointments.map(apt => (
-                        <tr key={apt.id}>
-                          <td className="admin-apt-id">#{apt.id}</td>
-                          <td>{apt.patient?.name}</td>
-                          <td>Dr. {apt.doctor?.name}</td>
-                          <td>{formatTime(apt.appointmentTime)}</td>
-                          <td>
-                            <span className="admin-status-pill" style={{ background: statusColor[formatStatus(apt.status)]?.bg, color: statusColor[formatStatus(apt.status)]?.color }}>
-                              {formatStatus(apt.status)}
+                <Section title="Doctors" subtitle="All registered doctors in this branch">
+                  <div style={{ marginBottom: 16, display: "flex", gap: 10 }}>
+                    <input
+                      className="admin-input"
+                      style={{ maxWidth: 360 }}
+                      placeholder="Search doctors..."
+                      value={doctorSearch}
+                      onChange={(e) => setDoctorSearch(e.target.value)}
+                    />
+                  </div>
+                  {doctorsQuery.isLoading && <p style={{ color: "var(--muted-foreground)", padding: "20px 0" }}>Loading doctors...</p>}
+                  {!doctorsQuery.isLoading && (doctors || []).length === 0 && (
+                    <p style={{ color: "var(--muted-foreground)", fontStyle: "italic", padding: "20px 0" }}>No doctors found.</p>
+                  )}
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 16 }}>
+                    {(doctors || []).map((doc) => (
+                      <div key={doc.id} style={{ background: "var(--background)", border: "1.5px solid var(--border)", borderRadius: 20, padding: 20, display: "flex", flexDirection: "column", gap: 8, transition: "all .2s" }}
+                           onMouseEnter={(e) => { e.currentTarget.style.borderColor = "var(--primary)"; e.currentTarget.style.transform = "translateY(-2px)"; }}
+                           onMouseLeave={(e) => { e.currentTarget.style.borderColor = "var(--border)"; e.currentTarget.style.transform = ""; }}
+                      >
+                        <div style={{ width: 44, height: 44, borderRadius: 14, background: "var(--primary)", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
+                          {doc.profilePhoto ? (
+                            <img src={doc.profilePhoto} alt={`Dr. ${doc.name}`} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                          ) : (
+                            <span style={{ fontSize: 16, fontWeight: 900, color: "var(--primary-foreground)" }}>
+                              {(doc.name || "?").split(" ").map((w) => w[0]).join("").toUpperCase().slice(0, 2)}
                             </span>
-                          </td>
+                          )}
+                        </div>
+                        <div style={{ fontWeight: 800, fontSize: 15, color: "var(--foreground)" }}>Dr. {doc.name}</div>
+                        <div style={{ fontSize: 13, color: "var(--primary)", fontWeight: 600 }}>{doc.specialization || "General Physician"}</div>
+                        <div style={{ fontSize: 12, color: "var(--muted-foreground)" }}>{doc.email}</div>
+                        {doc.consultationFee && (
+                          <div style={{ fontSize: 12, fontWeight: 700, color: "var(--foreground)" }}>Fee: ₹{doc.consultationFee}</div>
+                        )}
+                        {doc.department?.name && (
+                          <div style={{ display: "inline-flex", alignItems: "center", padding: "4px 10px", borderRadius: 999, background: "var(--secondary)", fontSize: 11, fontWeight: 700, color: "var(--primary)", width: "fit-content" }}>
+                            {doc.department.name}
+                          </div>
+                        )}
+                        <div style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "4px 10px", borderRadius: 999, fontSize: 11, fontWeight: 800, width: "fit-content",
+                          background: doc.active ? "rgba(22,163,74,0.1)" : "rgba(239,68,68,0.1)",
+                          color: doc.active ? "#16a34a" : "#ef4444",
+                          border: `1px solid ${doc.active ? "rgba(22,163,74,0.2)" : "rgba(239,68,68,0.2)"}`
+                        }}>
+                          <span style={{ width: 6, height: 6, borderRadius: "50%", background: "currentColor" }} />
+                          {doc.active ? "Active" : "Inactive"}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  {/* Doctor pagination */}
+                  {(doctors || []).length > 0 && (
+                    <div style={{ display: "flex", gap: 12, justifyContent: "center", marginTop: 24 }}>
+                      <button className="admin-submit-btn" style={{ background: "var(--secondary)", color: "var(--foreground)", border: "1.5px solid var(--border)" }}
+                        onClick={() => setDoctorPage((p) => Math.max(0, p - 1))} disabled={doctorPage === 0}>← Previous</button>
+                      <span style={{ display: "flex", alignItems: "center", fontSize: 13, fontWeight: 800, color: "var(--muted-foreground)" }}>Page {doctorPage + 1}</span>
+                      <button className="admin-submit-btn" style={{ background: "var(--secondary)", color: "var(--foreground)", border: "1.5px solid var(--border)" }}
+                        onClick={() => setDoctorPage((p) => p + 1)} disabled={(doctors || []).length < 10}>Next →</button>
+                    </div>
+                  )}
+                </Section>
+              </div>
+            )}
+
+            {activeTab === "patients" && (
+              <div className="admin-section full">
+                <Section title="Patients" subtitle="Registered patients in the system">
+                  {patientsQuery.isLoading && <p style={{ color: "var(--muted-foreground)", padding: "20px 0" }}>Loading patients...</p>}
+                  {!patientsQuery.isLoading && (patients || []).length === 0 && (
+                    <p style={{ color: "var(--muted-foreground)", fontStyle: "italic", padding: "20px 0" }}>No patients found.</p>
+                  )}
+                  <table className="admin-table">
+                    <thead>
+                      <tr>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Gender</th>
+                        <th>Blood Group</th>
+                        <th>Date of Birth</th>
+                        <th>Phone</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {(patients || []).map((p, i) => (
+                        <tr key={p.id || i}>
+                          <td style={{ fontWeight: 700 }}>{p.name || "—"}</td>
+                          <td style={{ color: "var(--muted-foreground)", fontSize: 13 }}>{p.email || "—"}</td>
+                          <td>{p.gender || "—"}</td>
+                          <td><span className="admin-status-pill" style={{ background: "var(--secondary)", color: "var(--primary)" }}>{p.bloodGroup || "—"}</span></td>
+                          <td style={{ color: "var(--muted-foreground)", fontSize: 13 }}>{p.birthDate || "—"}</td>
+                          <td style={{ color: "var(--muted-foreground)", fontSize: 13 }}>{p.phone || p.mobileNumber || "—"}</td>
                         </tr>
                       ))}
                     </tbody>
                   </table>
+                  {(patients || []).length > 0 && (
+                    <div style={{ display: "flex", gap: 12, justifyContent: "center", marginTop: 24 }}>
+                      <button className="admin-submit-btn" style={{ background: "var(--secondary)", color: "var(--foreground)", border: "1.5px solid var(--border)" }}
+                        onClick={() => setCurrentPage((p) => Math.max(0, p - 1))} disabled={currentPage === 0}>← Previous</button>
+                      <span style={{ display: "flex", alignItems: "center", fontSize: 13, fontWeight: 800, color: "var(--muted-foreground)" }}>Page {currentPage + 1}</span>
+                      <button className="admin-submit-btn" style={{ background: "var(--secondary)", color: "var(--foreground)", border: "1.5px solid var(--border)" }}
+                        onClick={() => setCurrentPage((p) => p + 1)} disabled={(patients || []).length < 10}>Next →</button>
+                    </div>
+                  )}
+                </Section>
+              </div>
+            )}
+
+            {activeTab === "payments" && (
+              <div className="admin-section full">
+                <Section title="Payments" subtitle="Transaction records across all appointments">
+                  <div style={{ padding: "40px 0", textAlign: "center", color: "var(--muted-foreground)" }}>
+                    <div style={{ fontSize: 40, marginBottom: 12 }}>💳</div>
+                    <div style={{ fontWeight: 800, fontSize: 16, marginBottom: 8 }}>Payments Overview</div>
+                    <div style={{ fontSize: 14 }}>Payment data is integrated with the appointments system. View appointment details for payment info.</div>
+                  </div>
+                  {(payments || []).length > 0 ? (
+                    <table className="admin-table">
+                      <thead>
+                        <tr>
+                          <th>ID</th>
+                          <th>Patient</th>
+                          <th>Amount</th>
+                          <th>Status</th>
+                          <th>Date</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {(payments || []).map((pay, i) => (
+                          <tr key={pay.id || i}>
+                            <td className="admin-apt-id">#{pay.id}</td>
+                            <td>{pay.patient?.name || pay.patientName || "—"}</td>
+                            <td style={{ fontWeight: 800, color: "var(--primary)" }}>₹{pay.amount || 0}</td>
+                            <td>
+                              <span className="admin-status-pill" style={{ background: statusColor[pay.status]?.bg, color: statusColor[pay.status]?.color }}>
+                                {pay.status || "—"}
+                              </span>
+                            </td>
+                            <td style={{ color: "var(--muted-foreground)", fontSize: 13 }}>{formatTime(pay.createdAt)}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  ) : null}
+                </Section>
+              </div>
+            )}
+
+            {activeTab === "departments" && (
+              <div className="admin-section full">
+                <Section title="Departments" subtitle="All departments in this branch">
+                  {departmentsQuery.isLoading && <p style={{ color: "var(--muted-foreground)", padding: "20px 0" }}>Loading departments...</p>}
+                  {!departmentsQuery.isLoading && (departments || []).length === 0 && (
+                    <p style={{ color: "var(--muted-foreground)", fontStyle: "italic", padding: "20px 0" }}>No departments found. Add one in the Onboarding tab.</p>
+                  )}
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: 20 }}>
+                    {(departments || []).map((dept) => (
+                      <div key={dept.id} style={{
+                        background: "var(--background)",
+                        border: "1.5px solid var(--border)",
+                        borderRadius: 24,
+                        padding: 24,
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: 10,
+                        transition: "all .2s",
+                        borderTop: `4px solid ${dept.accentColor || "var(--primary)"}`
+                      }}
+                        onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-3px)"; e.currentTarget.style.borderLeftColor = "var(--primary)"; }}
+                        onMouseLeave={(e) => { e.currentTarget.style.transform = ""; }}
+                      >
+                        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                          <div style={{ fontSize: 32, lineHeight: 1 }}>{dept.icon && dept.icon.length <= 4 ? dept.icon : "🏥"}</div>
+                          <div>
+                            <div style={{ fontWeight: 900, fontSize: 16, color: "var(--foreground)" }}>{dept.name}</div>
+                            <div style={{ fontSize: 12, color: "var(--muted-foreground)", marginTop: 2 }}>Dept #{dept.id}</div>
+                          </div>
+                        </div>
+                        {dept.description && (
+                          <p style={{ fontSize: 13, color: "var(--muted-foreground)", margin: 0, lineHeight: 1.6 }}>
+                            {dept.description.substring(0, 120)}{dept.description.length > 120 ? "..." : ""}
+                          </p>
+                        )}
+                        {dept.headDoctorName && (
+                          <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 12px", background: "var(--secondary)", borderRadius: 12 }}>
+                            <span style={{ fontSize: 12, color: "var(--primary)", fontWeight: 700 }}>👨‍⚕️ Head: Dr. {dept.headDoctorName}</span>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
                 </Section>
               </div>
             )}
