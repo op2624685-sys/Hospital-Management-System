@@ -268,9 +268,23 @@ public class DoctorServiceImpl implements DoctorService {
         int safePage = Math.max(page, 0);
         int safeSize = Math.max(size, 1);
         var pageable = PageRequest.of(safePage, safeSize, Sort.by(Sort.Direction.ASC, sortField));
-        return doctorRepository.findBranchDoctors(admin.getBranch().getId(), safeSearch, safeSpec, pageable)
+        
+        List<Doctor> doctors = doctorRepository.findBranchDoctors(admin.getBranch().getId(), safeSearch, safeSpec, pageable)
                 .stream()
-                .map(this::mapToDoctorResponseDto)
+                .toList();
+
+        Map<Long, RatingSummaryResponse> ratingSummaries = getRatingSummariesByDoctorId(doctors);
+
+        return doctors.stream()
+                .map(doc -> {
+                    DoctorResponseDto dto = mapToDoctorResponseDto(doc);
+                    RatingSummaryResponse rating = ratingSummaries.get(doc.getId());
+                    if (rating != null) {
+                        dto.setAverageRating(rating.averageRating());
+                        dto.setTotalReviews(rating.totalReviews());
+                    }
+                    return dto;
+                })
                 .toList();
     }
 
