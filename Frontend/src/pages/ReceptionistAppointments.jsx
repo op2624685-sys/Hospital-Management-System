@@ -34,6 +34,9 @@ const ReceptionistAppointments = () => {
   const [status, setStatus] = useState("");
   const [selectedDoctorId, setSelectedDoctorId] = useState("");
   const [selectedAppointmentId, setSelectedAppointmentId] = useState("");
+  const [expandedId, setExpandedId] = useState(null);
+
+  const toggleExpand = (id) => setExpandedId((prev) => (prev === id ? null : id));
   const [birthDate, setBirthDate] = useState("");
   const [patientName, setPatientName] = useState("");
 
@@ -241,7 +244,12 @@ const ReceptionistAppointments = () => {
         }
         .rc-section-title { font-size: 1.12rem; font-weight: 900; margin: 0; letter-spacing: -0.02em; }
         .rc-list, .rc-queue-list { display: grid; gap: 14px; }
-        .rc-card { padding: 22px; }
+        .rc-card { padding: 0; overflow: hidden; cursor: pointer; transition: border-color .2s, transform .2s; }
+        .rc-card:hover { border-color: color-mix(in srgb, var(--primary) 40%, transparent); transform: translateY(-2px); }
+        .rc-card-summary { padding: 18px 22px; }
+        .rc-card-body { padding: 0 22px 20px; border-top: 1px solid color-mix(in srgb, var(--border) 80%, transparent); animation: rcSlide .22s ease; }
+        @keyframes rcSlide { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }
+        .rc-expand-hint { font-size: 11px; font-weight: 800; color: var(--primary); margin-top: 8px; display: flex; align-items: center; gap: 4px; }
         .rc-card-top { display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
         .rc-patient-name { margin: 0; font-size: 1.18rem; letter-spacing: -0.02em; }
         .rc-subline { color: var(--muted-foreground); margin-top: 7px; line-height: 1.5; }
@@ -431,76 +439,102 @@ const ReceptionistAppointments = () => {
             </div>
 
             <div className="rc-list">
-              {appointmentCards.map((appointment) => (
-                <article key={appointment.appointmentId} className="rc-card">
-                  <div className="rc-card-top">
-                    <div>
-                      <h3 className="rc-patient-name">{appointment.patient?.name}</h3>
-                      <div className="rc-subline">
-                        {appointment.appointmentId} | Dr. {appointment.doctor?.name} | {appointment.departmentName}
+              {appointmentCards.map((appointment) => {
+                const isExpanded = expandedId === appointment.appointmentId;
+                return (
+                <article
+                  key={appointment.appointmentId}
+                  className="rc-card"
+                  onClick={() => toggleExpand(appointment.appointmentId)}
+                >
+                  {/* Summary - always visible */}
+                  <div className="rc-card-summary">
+                    <div className="rc-card-top">
+                      <div>
+                        <h3 className="rc-patient-name">{appointment.patient?.name}</h3>
+                        <div className="rc-subline">
+                          Dr. {appointment.doctor?.name} · {formatDateTime(appointment.appointmentTime)}
+                        </div>
+                      </div>
+                      <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "flex-start" }}>
+                        <span className="rc-badge">{formatStatusLabel(appointment.status)}</span>
+                        {appointment.queueNumber ? <span className="rc-badge queue">Queue #{appointment.queueNumber}</span> : null}
                       </div>
                     </div>
-                    <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-                      <span className="rc-badge">{formatStatusLabel(appointment.status)}</span>
-                      {appointment.queueNumber ? <span className="rc-badge queue">Queue #{appointment.queueNumber}</span> : null}
+                    <div className="rc-expand-hint">
+                      {isExpanded ? "▲ Hide details" : "▼ Click for full details & actions"}
                     </div>
                   </div>
 
-                  <div className="rc-details">
-                    <div className="rc-detail">
-                      <span>Booked Time</span>
-                      <strong>{formatDateTime(appointment.appointmentTime)}</strong>
-                    </div>
-                    <div className="rc-detail">
-                      <span>Patient DOB</span>
-                      <strong>{appointment.patient?.birthDate || "N/A"}</strong>
-                    </div>
-                    <div className="rc-detail">
-                      <span>Reason</span>
-                      <strong>{appointment.reason || "N/A"}</strong>
-                    </div>
-                  </div>
+                  {/* Expanded Details */}
+                  {isExpanded && (
+                    <div className="rc-card-body" onClick={(e) => e.stopPropagation()}>
+                      <div className="rc-details" style={{ marginTop: 16 }}>
+                        <div className="rc-detail">
+                          <span>Appointment ID</span>
+                          <strong style={{ fontFamily: "monospace", fontSize: 11, wordBreak: "break-all" }}>{appointment.appointmentId}</strong>
+                        </div>
+                        <div className="rc-detail">
+                          <span>Booked Time</span>
+                          <strong>{formatDateTime(appointment.appointmentTime)}</strong>
+                        </div>
+                        <div className="rc-detail">
+                          <span>Patient DOB</span>
+                          <strong>{appointment.patient?.birthDate || "N/A"}</strong>
+                        </div>
+                        <div className="rc-detail">
+                          <span>Department</span>
+                          <strong>{appointment.departmentName || "N/A"}</strong>
+                        </div>
+                        <div className="rc-detail">
+                          <span>Reason</span>
+                          <strong>{appointment.reason || "N/A"}</strong>
+                        </div>
+                      </div>
 
-                  {renderTimeline(appointment)}
+                      {renderTimeline(appointment)}
 
-                  <div className="rc-actions">
-                    <div className="rc-select-wrap">
-                      <select
-                        className="rc-input"
-                        value={appointment.status?.toUpperCase() || ""}
-                        disabled={updateMutation.isPending || ["COMPLETED", "CANCELLED", "REFUNDED", "NO_SHOW"].includes(appointment.status?.toUpperCase())}
-                        onChange={(e) => {
-                          const nextStatus = e.target.value;
-                          if (nextStatus && nextStatus !== appointment.status?.toUpperCase()) {
-                            updateMutation.mutate({ appointmentId: appointment.appointmentId, nextStatus });
-                          }
-                        }}
-                      >
-                        <option value={appointment.status?.toUpperCase() || ""} disabled>
-                          Current: {formatStatusLabel(appointment.status)}
-                        </option>
+                      <div className="rc-actions">
+                        <div className="rc-select-wrap">
+                          <select
+                            className="rc-input"
+                            value={appointment.status?.toUpperCase() || ""}
+                            disabled={updateMutation.isPending || ["COMPLETED", "CANCELLED", "REFUNDED", "NO_SHOW"].includes(appointment.status?.toUpperCase())}
+                            onChange={(e) => {
+                              const nextStatus = e.target.value;
+                              if (nextStatus && nextStatus !== appointment.status?.toUpperCase()) {
+                                updateMutation.mutate({ appointmentId: appointment.appointmentId, nextStatus });
+                              }
+                            }}
+                          >
+                            <option value={appointment.status?.toUpperCase() || ""} disabled>
+                              Current: {formatStatusLabel(appointment.status)}
+                            </option>
+                            {(STATUS_FLOW[appointment.status?.toUpperCase()] || []).map((nextStatus) => (
+                              <option key={nextStatus} value={nextStatus}>
+                                Move to: {formatStatusLabel(nextStatus)}
+                              </option>
+                            ))}
+                          </select>
+                          <span className="rc-select-arrow">▼</span>
+                        </div>
+
                         {(STATUS_FLOW[appointment.status?.toUpperCase()] || []).map((nextStatus) => (
-                          <option key={nextStatus} value={nextStatus}>
-                            Move to: {formatStatusLabel(nextStatus)}
-                          </option>
+                          <button
+                            key={nextStatus}
+                            className="rc-btn primary"
+                            disabled={updateMutation.isPending}
+                            onClick={() => updateMutation.mutate({ appointmentId: appointment.appointmentId, nextStatus })}
+                          >
+                            Mark {formatStatusLabel(nextStatus)}
+                          </button>
                         ))}
-                      </select>
-                      <span className="rc-select-arrow">▼</span>
+                      </div>
                     </div>
-
-                    {(STATUS_FLOW[appointment.status?.toUpperCase()] || []).map((nextStatus) => (
-                      <button
-                        key={nextStatus}
-                        className="rc-btn primary"
-                        disabled={updateMutation.isPending}
-                        onClick={() => updateMutation.mutate({ appointmentId: appointment.appointmentId, nextStatus })}
-                      >
-                        Mark {formatStatusLabel(nextStatus)}
-                      </button>
-                    ))}
-                  </div>
+                  )}
                 </article>
-              ))}
+                );
+              })}
 
               {!appointmentQuery.isLoading && appointmentCards.length === 0 && (
                 <div className="rc-empty">No appointments found for this department.</div>
