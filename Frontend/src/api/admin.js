@@ -11,9 +11,15 @@ export const adminApi = {
     return API.get(`/admin/appointments?page=${page}&size=${size}`);
   },
 
-  // Get doctors for admin's branch
+  // Get doctors for admin's branch (filtered params)
   getDoctors(params = {}) {
-    const query = new URLSearchParams(params).toString();
+    const cleanParams = {};
+    Object.entries(params).forEach(([key, val]) => {
+      if (val !== undefined && val !== null && val !== "") {
+        cleanParams[key] = val;
+      }
+    });
+    const query = new URLSearchParams(cleanParams).toString();
     return API.get(`/admin/doctors${query ? `?${query}` : ""}`);
   },
 
