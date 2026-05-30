@@ -15,6 +15,7 @@ const DoctorAppointments = () => {
   const [savingId, setSavingId] = useState(null);
   const [query, setQuery] = useState("");
   const [page, setPage] = useState(0);
+  const [expandedId, setExpandedId] = useState(null);
   const size = 15;
 
   const {
@@ -249,6 +250,15 @@ const DoctorAppointments = () => {
         .dr-badge-completed { color: var(--primary); background: var(--secondary); border: 1px solid color-mix(in srgb, var(--primary) 20%, transparent); }
         .dr-badge-rejected { color: var(--destructive); background: color-mix(in srgb, var(--destructive) 10%, transparent); border: 1px solid color-mix(in srgb, var(--destructive) 20%, transparent); }
         .dr-badge-progress { color: var(--primary); background: var(--secondary); border: 1px solid color-mix(in srgb, var(--primary) 30%, transparent); }
+        .dr-expand-hint {
+          font-size: 12px;
+          font-weight: 700;
+          color: var(--primary);
+          margin-top: 14px;
+          display: flex;
+          align-items: center;
+          gap: 4px;
+        }
         
         @media (max-width: 760px) {
           .dr-form-grid { grid-template-columns: 1fr; }
@@ -276,22 +286,28 @@ const DoctorAppointments = () => {
         <div className="dr-grid">
           {filtered.map((a) => {
             const isSaving = savingId === a.appointmentId;
+            const isExpanded = expandedId === a.appointmentId;
             return (
-              <div key={a.appointmentId} className="dr-card">
+              <div
+                key={a.appointmentId}
+                className="dr-card"
+                onClick={() => setExpandedId(isExpanded ? null : a.appointmentId)}
+                style={{ cursor: "pointer" }}
+              >
                 <div className="dr-head">
                   <div>
                     <div className="dr-name">{a.patient?.name || "Patient Record"}</div>
-                    <div className="dr-email">{a.patient?.email}</div>
+                    {isExpanded && <div className="dr-email">{a.patient?.email}</div>}
                     <div className="dr-id">REF: {a.appointmentId}</div>
                   </div>
                   <div style={{ textAlign: 'right' }}>
                     <div className={badgeClassByStatus(a.status)}>{a.status}</div>
-                    <div className="dr-id" style={{ marginTop: 8, fontWeight: 700 }}>{a.branch?.name}</div>
+                    {isExpanded && <div className="dr-id" style={{ marginTop: 8, fontWeight: 700 }}>{a.branch?.name}</div>}
                   </div>
                 </div>
 
-                <div className="dr-form-grid">
-                  <label className="dr-label">
+                <div className="dr-form-grid" style={{ marginTop: 12 }}>
+                  <label className="dr-label" onClick={(e) => e.stopPropagation()}>
                     <span>Scheduled Time</span>
                     <input
                       className="dr-input"
@@ -303,98 +319,120 @@ const DoctorAppointments = () => {
                   </label>
 
                   <div className="dr-label">
-                    <span>Queue Position</span>
+                    <span>Clinical Reason</span>
                     <div style={{ background: 'var(--background)', padding: '12px 14px', borderRadius: '12px', fontSize: '14px', border: '1.5px solid var(--border)' }}>
-                      {a.queueNumber ? `Queue #${a.queueNumber}` : "Not queued"}
+                      {a.reason || "N/A"}
                     </div>
                   </div>
                 </div>
 
-                <div className="dr-label" style={{ marginTop: 16 }}>
-                  <span>Clinical Reason</span>
-                  <div style={{ background: 'var(--background)', padding: '12px 14px', borderRadius: '12px', fontSize: '14px', border: '1.5px solid var(--border)' }}>
-                    {a.reason || "N/A"}
+                {!isExpanded && (
+                  <div className="dr-expand-hint">
+                    ▼ View details
                   </div>
-                </div>
+                )}
 
-                <div className="dr-form-grid" style={{ marginTop: 16 }}>
-                  <div className="dr-label">
-                    <span>Status Timeline</span>
-                    <div style={{ display: "grid", gap: 6 }}>
-                      {renderTimestamp("Visited", a.visitedAt)}
-                      {renderTimestamp("Queued", a.queuedAt)}
-                      {renderTimestamp("In Progress", a.inProgressAt)}
-                      {renderTimestamp("Completed", a.completedAt)}
-                      {renderTimestamp("No Show", a.noShowAt)}
-                    </div>
-                  </div>
-                  <div className="dr-label">
-                    <span>Branch and Department</span>
-                    <div style={{ display: "grid", gap: 6 }}>
-                      <div className="dr-line"><strong>Branch:</strong> {a.branch?.name || "N/A"}</div>
-                      <div className="dr-line"><strong>Department:</strong> {a.departmentName || "N/A"}</div>
-                      <div className="dr-line"><strong>DOB:</strong> {a.patient?.birthDate || "N/A"}</div>
-                    </div>
-                  </div>
-                </div>
+                {isExpanded && (
+                  <div className="dr-details-expanded" onClick={(e) => e.stopPropagation()} style={{ marginTop: 16, borderTop: "1.5px solid var(--border)", paddingTop: 16 }}>
+                    <div className="dr-form-grid">
+                      <div className="dr-label">
+                        <span>Queue Position</span>
+                        <div style={{ background: 'var(--background)', padding: '12px 14px', borderRadius: '12px', fontSize: '14px', border: '1.5px solid var(--border)' }}>
+                          {a.queueNumber ? `Queue #${a.queueNumber}` : "Not queued"}
+                        </div>
+                      </div>
 
-                <div className="dr-actions">
-                  {allowedActions(a.status).map((action) => (
-                    <button
-                      key={action.status}
-                      disabled={isSaving}
-                      onClick={() => handleStatusUpdate(a, action.status)}
-                      className="dr-btn dr-btn-primary"
-                    >
-                      {isSaving ? "Updating..." : action.label}
-                    </button>
-                  ))}
-                  {canManagePrescription(a.status) && (
-                    <button
-                      disabled={isSaving}
-                      onClick={() =>
-                        navigate(`/doctor/appointments/${a.appointmentId}/prescription`, {
-                          state: { appointment: a },
-                        })
-                      }
-                      className="dr-btn dr-btn-primary"
-                    >
-                      {a.hasPrescription ? "Edit Prescription" : "Create Prescription"}
-                    </button>
-                  )}
-                  {a.prescriptionDocumentStatus === "PENDING_GENERATION" || a.prescriptionDocumentStatus === "GENERATING" ? (
-                    <div className="dr-btn dr-btn-outline" style={{ cursor: "default" }}>
-                      Generating prescription...
+                      <div className="dr-label">
+                        <span>Patient DOB</span>
+                        <div style={{ background: 'var(--background)', padding: '12px 14px', borderRadius: '12px', fontSize: '14px', border: '1.5px solid var(--border)' }}>
+                          {a.patient?.birthDate || "N/A"}
+                        </div>
+                      </div>
                     </div>
-                  ) : null}
-                  {a.prescriptionDocumentStatus === "READY" && a.prescriptionDocumentUrl && (
-                    <a
-                      className="dr-btn dr-btn-outline"
-                      href={a.prescriptionDocumentUrl}
-                      target="_blank"
-                      rel="noreferrer"
-                      style={{ textDecoration: "none" }}
-                    >
-                      Open PDF
-                    </a>
-                  )}
-                  <button
-                    disabled={isSaving}
-                    onClick={() =>
-                      queryClient.invalidateQueries({
-                        queryKey: ["doctor-appointments", page, size],
-                      })
-                    }
-                    className="dr-btn dr-btn-outline"
-                  >
-                    Refresh
-                  </button>
-                  {a.status === "NO_SHOW" && (
-                    <div className="dr-btn dr-btn-outline" style={{ cursor: "default" }}>
-                      Patient did not check in
+
+                    <div className="dr-form-grid" style={{ marginTop: 16 }}>
+                      <div className="dr-label">
+                        <span>Status Timeline</span>
+                        <div style={{ display: "grid", gap: 6 }}>
+                          {renderTimestamp("Visited", a.visitedAt)}
+                          {renderTimestamp("Queued", a.queuedAt)}
+                          {renderTimestamp("In Progress", a.inProgressAt)}
+                          {renderTimestamp("Completed", a.completedAt)}
+                          {renderTimestamp("No Show", a.noShowAt)}
+                        </div>
+                      </div>
+                      <div className="dr-label">
+                        <span>Branch and Department</span>
+                        <div style={{ display: "grid", gap: 6 }}>
+                          <div className="dr-line"><strong>Branch:</strong> {a.branch?.name || "N/A"}</div>
+                          <div className="dr-line"><strong>Department:</strong> {a.departmentName || "N/A"}</div>
+                        </div>
+                      </div>
                     </div>
-                  )}
-                </div>
+
+                    <div className="dr-actions" style={{ marginTop: 24 }}>
+                      {allowedActions(a.status).map((action) => (
+                        <button
+                          key={action.status}
+                          disabled={isSaving}
+                          onClick={() => handleStatusUpdate(a, action.status)}
+                          className="dr-btn dr-btn-primary"
+                        >
+                          {isSaving ? "Updating..." : action.label}
+                        </button>
+                      ))}
+                      {canManagePrescription(a.status) && (
+                        <button
+                          disabled={isSaving}
+                          onClick={() =>
+                            navigate(`/doctor/appointments/${a.appointmentId}/prescription`, {
+                              state: { appointment: a },
+                            })
+                          }
+                          className="dr-btn dr-btn-primary"
+                        >
+                          {a.hasPrescription ? "Edit Prescription" : "Create Prescription"}
+                        </button>
+                      )}
+                      {a.prescriptionDocumentStatus === "PENDING_GENERATION" || a.prescriptionDocumentStatus === "GENERATING" ? (
+                        <div className="dr-btn dr-btn-outline" style={{ cursor: "default" }}>
+                          Generating prescription...
+                        </div>
+                      ) : null}
+                      {a.prescriptionDocumentStatus === "READY" && a.prescriptionDocumentUrl && (
+                        <a
+                          className="dr-btn dr-btn-outline"
+                          href={a.prescriptionDocumentUrl}
+                          target="_blank"
+                          rel="noreferrer"
+                          style={{ textDecoration: "none" }}
+                        >
+                          Open PDF
+                        </a>
+                      )}
+                      <button
+                        disabled={isSaving}
+                        onClick={() =>
+                          queryClient.invalidateQueries({
+                            queryKey: ["doctor-appointments", page, size],
+                          })
+                        }
+                        className="dr-btn dr-btn-outline"
+                      >
+                        Refresh
+                      </button>
+                      {a.status === "NO_SHOW" && (
+                        <div className="dr-btn dr-btn-outline" style={{ cursor: "default" }}>
+                          Patient did not check in
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="dr-expand-hint" style={{ marginTop: 20 }} onClick={() => setExpandedId(null)}>
+                      ▲ Click to collapse
+                    </div>
+                  </div>
+                )}
               </div>
             );
           })}
