@@ -61,4 +61,10 @@ public class Notification {
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
+
+    @Column(name = "event_type", length = 64)
+    private String eventType;
+
+    @Column(name = "external_event_id", length = 255, unique = true)
+    private String externalEventId;
 }
