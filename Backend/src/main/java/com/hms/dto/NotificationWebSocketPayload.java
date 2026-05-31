@@ -19,7 +19,7 @@ public class NotificationWebSocketPayload {
     private Long notificationId;
     private String title;
     private String message;
-    private String type;  // NotificationType as string
+    private NotificationType type;  // NotificationType as string
     private String appointmentId;
     private boolean read;
     private LocalDateTime createdAt;
