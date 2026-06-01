@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || "http://localhost:8080/api/v1";
+export const API_BASE_URL = import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || "http://localhost:8080/api/v1";
 const ACCESS_TOKEN_COOKIE = "hmsAccessToken";
 const REFRESH_TOKEN_COOKIE = "hmsRefreshToken";
 const COOKIE_MAX_AGE_SECONDS = 60 * 60 * 24 * 30;
@@ -23,6 +23,12 @@ const deleteCookie = (name) => {
 
 export const getAccessToken = () => getCookie(ACCESS_TOKEN_COOKIE) || localStorage.getItem("token");
 export const getRefreshToken = () => getCookie(REFRESH_TOKEN_COOKIE) || localStorage.getItem("refreshToken");
+export const getApiOrigin = () => {
+  if (import.meta.env.VITE_API_ORIGIN) {
+    return import.meta.env.VITE_API_ORIGIN.replace(/\/$/, "");
+  }
+  return new URL(API_BASE_URL, window.location.origin).origin;
+};
 
 export const saveAuthTokens = ({ token, refreshToken }) => {
   if (token) {
