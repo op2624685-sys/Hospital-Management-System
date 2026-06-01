@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { notificationAPI } from '../api/api';
 import { useAuth } from '../context/AuthContext';
+import { useNotificationWebSocket } from '../hooks/useNotificationWebSocket';
 
 const NotificationBell = ({ inMobileMenu = false, mobileMenuOpen = false, onNavigate }) => {
   const [open, setOpen] = useState(false);
@@ -12,25 +13,26 @@ const NotificationBell = ({ inMobileMenu = false, mobileMenuOpen = false, onNavi
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { hasRole } = useAuth();
-
-  const { data: unreadData } = useQuery({
-    queryKey: ['notifications-unread'],
-    queryFn: async () => (await notificationAPI.getUnreadCount()).data,
-    refetchInterval: 30000,
-  });
+  const {
+    unreadCount,
+    visibleNotifications,
+    mergeNotifications,
+    markNotificationRead,
+    markAllNotificationsRead,
+  } = useNotificationWebSocket();
 
   const listEnabled = open || (inMobileMenu && mobileMenuOpen);
 
-  const { data: notifications = [] } = useQuery({
+  const { data: serverNotifications = [] } = useQuery({
     queryKey: ['notifications-list'],
     queryFn: async () => (await notificationAPI.getList(12)).data,
     enabled: listEnabled,
-    refetchInterval: listEnabled ? 30000 : false,
   });
 
   const markReadMutation = useMutation({
     mutationFn: (id) => notificationAPI.markRead(id),
-    onSuccess: () => {
+    onSuccess: (_, id) => {
+      markNotificationRead(id);
       queryClient.invalidateQueries({ queryKey: ['notifications-list'] });
       queryClient.invalidateQueries({ queryKey: ['notifications-unread'] });
     },
@@ -39,6 +41,7 @@ const NotificationBell = ({ inMobileMenu = false, mobileMenuOpen = false, onNavi
   const markAllMutation = useMutation({
     mutationFn: () => notificationAPI.markAllRead(),
     onSuccess: () => {
+      markAllNotificationsRead();
       queryClient.invalidateQueries({ queryKey: ['notifications-list'] });
       queryClient.invalidateQueries({ queryKey: ['notifications-unread'] });
     },
@@ -64,6 +67,12 @@ const NotificationBell = ({ inMobileMenu = false, mobileMenuOpen = false, onNavi
   }, []);
 
   useEffect(() => {
+    if (serverNotifications.length > 0) {
+      mergeNotifications(serverNotifications);
+    }
+  }, [serverNotifications, mergeNotifications]);
+
+  useEffect(() => {
     const handleClickOutside = (event) => {
       if (panelRef.current && !panelRef.current.contains(event.target)) {
         setOpen(false);
@@ -75,7 +84,7 @@ const NotificationBell = ({ inMobileMenu = false, mobileMenuOpen = false, onNavi
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [open, inMobileMenu]);
 
-  const unreadCount = unreadData?.unreadCount || 0;
+  const notifications = visibleNotifications.slice(0, 12);
 
   const handleNotificationClick = (item) => {
     if (!item.read) {
