@@ -8,6 +8,7 @@ import com.hms.error.NotFoundException;
 import com.hms.repository.NotificationRepository;
 import com.hms.repository.UserRepository;
 import com.hms.service.NotificationService;
+import java.time.LocalDateTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.AccessDeniedException;
@@ -19,6 +20,8 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class NotificationServiceImpl implements NotificationService {
 
+    private static final long NOTIFICATION_TTL_HOURS = 24;
+
     private final NotificationRepository notificationRepository;
     private final UserRepository userRepository;
 
@@ -27,7 +30,8 @@ public class NotificationServiceImpl implements NotificationService {
     public List<NotificationResponseDto> getMyNotifications(int size) {
         Long userId = getAuthenticatedUserId();
         int safeSize = Math.min(Math.max(size, 1), 50);
-        return notificationRepository.findTop50ByRecipient_IdOrderByCreatedAtDesc(userId).stream()
+        LocalDateTime ttlThreshold = LocalDateTime.now().minusHours(NOTIFICATION_TTL_HOURS);
+        return notificationRepository.findTop50ByRecipient_IdAndCreatedAtAfterOrderByCreatedAtDesc(userId, ttlThreshold).stream()
                 .limit(safeSize)
                 .map(this::mapToDto)
                 .toList();
@@ -36,7 +40,8 @@ public class NotificationServiceImpl implements NotificationService {
     @Override
     @Transactional(readOnly = true)
     public long getMyUnreadCount() {
-        return notificationRepository.countByRecipient_IdAndIsReadFalse(getAuthenticatedUserId());
+        LocalDateTime ttlThreshold = LocalDateTime.now().minusHours(NOTIFICATION_TTL_HOURS);
+        return notificationRepository.countByRecipient_IdAndIsReadFalseAndCreatedAtAfter(getAuthenticatedUserId(), ttlThreshold);
     }
 
     @Override
@@ -80,6 +85,7 @@ public class NotificationServiceImpl implements NotificationService {
                 .appointmentId(n.getAppointmentId())
                 .read(n.isRead())
                 .createdAt(n.getCreatedAt())
+                .ttlExpiresAt(n.getCreatedAt().plusHours(NOTIFICATION_TTL_HOURS))
                 .build();
     }
 
