@@ -93,7 +93,7 @@ public class NotificationEventService {
                     .notificationId(notification.getId())
                     .title(notification.getTitle())
                     .message(notification.getMessage())
-                    .type(notification.getType().name())
+                    .type(notification.getType())
                     .appointmentId(notification.getAppointmentId())
                     .read(notification.isRead())
                     .createdAt(notification.getCreatedAt())
