@@ -21,4 +21,5 @@ public class NotificationResponseDto {
     private String appointmentId;
     private boolean read;
     private LocalDateTime createdAt;
+    private LocalDateTime ttlExpiresAt;
 }
