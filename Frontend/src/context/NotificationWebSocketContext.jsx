@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Client } from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
-import { getAccessToken, getApiOrigin, notificationAPI } from '../api/api';
+import { API_BASE_URL, getAccessToken, notificationAPI } from '../api/api';
 import { useAuth } from './AuthContext';
 import { NotificationWebSocketContext } from './notificationWebSocketContextValue';
 const TTL_HOURS = 24;
@@ -91,7 +91,7 @@ export const NotificationWebSocketProvider = ({ children }) => {
     if (!token) return undefined;
 
     const client = new Client({
-      webSocketFactory: () => new SockJS(`${getApiOrigin()}/ws`),
+      webSocketFactory: () => new SockJS(`${API_BASE_URL.replace(/\/$/, '')}/ws`),
       connectHeaders: {
         Authorization: `Bearer ${token}`,
       },
