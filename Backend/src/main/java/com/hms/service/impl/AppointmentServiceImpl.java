@@ -24,6 +24,7 @@ import com.hms.dto.Response.AppointmentResponseDto;
 import com.hms.dto.Response.BranchResponseDto;
 import com.hms.dto.Response.DoctorResponseDto;
 import com.hms.dto.Response.PatientResponseDto;
+import com.hms.config.KafkaConfig;
 import com.hms.dto.DepartmentDto;
 import com.hms.entity.Appointment;
 import com.hms.entity.Doctor;
@@ -51,6 +52,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.kafka.core.KafkaTemplate;
 
 @Service
 @RequiredArgsConstructor
@@ -66,6 +68,8 @@ public class AppointmentServiceImpl implements AppointmentService {
     private final DepartmentRepository departmentRepository;
     private final PrescriptionRepository prescriptionRepository;
     private final ApplicationEventPublisher eventPublisher;
+    private final KafkaConfig kafkaConfig;
+    private final KafkaTemplate<String, com.hms.event.AppointmentKafkaEvent> kafkaTemplate;
 
     @Override
     @Transactional
@@ -167,10 +171,24 @@ public class AppointmentServiceImpl implements AppointmentService {
 
         appointment = appointmentRepository.save(appointment);
         
-        eventPublisher.publishEvent(new AppointmentNotificationEvent(
-                appointment.getAppointmentId(),
-                AppointmentNotificationType.CREATED,
-                null));
+        // Publish appointment event to Kafka (async)
+        com.hms.event.AppointmentKafkaEvent event = com.hms.event.AppointmentKafkaEvent.builder()
+            .eventId(java.util.UUID.randomUUID().toString())
+            .eventType(com.hms.event.AppointmentEventType.CONFIRMED)
+            .eventTimestamp(java.time.LocalDateTime.now())
+            .appointmentId(appointment.getAppointmentId())
+            .patientId(patient.getId())
+            .doctorId(doctor.getId())
+            .appointmentTime(appointment.getAppointmentTime())
+            .reason(appointment.getReason())
+            .status(appointment.getStatus().name())
+            .amount(appointment.getAmount() != null ? Double.valueOf(appointment.getAmount()) : null)
+            .branchId(branchToUse != null ? branchToUse.getId() : null)
+            .departmentId(departmentToUse != null ? departmentToUse.getId() : null)
+            .build();
+
+        
+        kafkaTemplate.send(KafkaConfig.APPOINTMENT_CONFIRMED_TOPIC, appointment.getAppointmentId(), event);
 
         return mapToAppointmentResponseDto(appointment);
     }
