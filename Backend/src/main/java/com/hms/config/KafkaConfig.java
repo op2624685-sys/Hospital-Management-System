@@ -26,6 +26,9 @@ public class KafkaConfig {
     public static final String APPOINTMENT_RESCHEDULED_TOPIC = "appointment.rescheduled";
     public static final String APPOINTMENT_DLT_TOPIC = "appointment.dlt";
 
+    // Email outbox topic
+    public static final String EMAIL_OUTBOX_TOPIC = "email.outbox";
+
     // ==================== Existing Topic Definitions ====================
     @Bean
     public NewTopic doctorRatingTopic() {
@@ -88,6 +91,15 @@ public class KafkaConfig {
     public NewTopic appointmentDltTopic() {
         return TopicBuilder.name(APPOINTMENT_DLT_TOPIC)
                 .partitions(1)
+                .replicas((short) 1)
+                .build();
+    }
+
+    // ==================== Email Outbox Topic Definition ====================
+    @Bean
+    public NewTopic emailOutboxTopic() {
+        return TopicBuilder.name(EMAIL_OUTBOX_TOPIC)
+                .partitions(3)
                 .replicas((short) 1)
                 .build();
     }
