@@ -8,6 +8,8 @@ import com.hms.entity.Doctor;
 import com.hms.entity.type.NotificationType;
 import com.hms.event.AppointmentEventType;
 import com.hms.event.AppointmentKafkaEvent;
+import com.hms.event.EmailKafkaEvent;
+import com.hms.config.KafkaConfig;
 import com.hms.repository.NotificationRepository;
 import com.hms.repository.UserRepository;
 import com.hms.repository.AppointmentRepository;
@@ -18,6 +20,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.util.StringUtils;
+import org.springframework.kafka.core.KafkaTemplate;
 import java.time.LocalDateTime;
 
 /**
@@ -33,7 +36,7 @@ public class NotificationEventService {
     private final SimpMessagingTemplate simpMessagingTemplate;
     private final NotificationService notificationService;
     private final AppointmentRepository appointmentRepository;
-    private final EmailService emailService;
+    private final KafkaTemplate<String, EmailKafkaEvent> kafkaTemplate;
 
     @Value("${app.appointment-details-base-url}")
     private String appointmentDetailsBaseUrl;
@@ -237,7 +240,7 @@ public class NotificationEventService {
                     appointment.getReason(),
                     appointment.getStatus(),
                     getAppointmentLink(appointment));
-            sendSafely(patient.getEmail(), subject, body);
+            publishEmailEvent(patient.getEmail(), subject, body);
         }
 
         if (StringUtils.hasText(doctor.getEmail())) {
@@ -251,15 +254,23 @@ public class NotificationEventService {
                     appointment.getReason(),
                     appointment.getStatus(),
                     getAppointmentLink(appointment));
-            sendSafely(doctor.getEmail(), subject, body);
+            publishEmailEvent(doctor.getEmail(), subject, body);
         }
     }
 
-    private void sendSafely(String to, String subject, String body) {
+    /**
+     * Publish email event to Kafka "email.outbox" topic.
+     * EmailKafkaConsumer will pick it up and send via EmailService.
+     * This ensures zero-loss delivery with automatic retries.
+     */
+    private void publishEmailEvent(String to, String subject, String body) {
         try {
-            emailService.sendMail(to, subject, body);
+            EmailKafkaEvent event = EmailKafkaEvent.create(to, subject, body);
+            kafkaTemplate.send(KafkaConfig.EMAIL_OUTBOX_TOPIC, event.getEventId(), event);
+            log.info("Email event published to Kafka. Event ID: {}, Recipient: {}", event.getEventId(), to);
         } catch (Exception e) {
-            log.error("Failed to send email to: {}, Exception: {}", to, e.getMessage(), e);
+            log.error("Failed to publish email event to Kafka. Recipient: {}, Exception: {}", to, e.getMessage(), e);
+            // Log but don't throw - email publication failure shouldn't break appointment creation
         }
     }
 
