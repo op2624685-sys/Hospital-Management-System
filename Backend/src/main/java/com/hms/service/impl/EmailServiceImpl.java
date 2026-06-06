@@ -2,7 +2,6 @@ package com.hms.service.impl;
 
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import com.hms.service.EmailService;
@@ -17,7 +16,11 @@ public class EmailServiceImpl implements EmailService {
 
     private final JavaMailSender mailSender;
 
-    @Async("emailTaskExecutor")
+    /**
+     * Send OTP email synchronously.
+     * Note: No @Async annotation - callers should handle async dispatch
+     * (typically via EmailKafkaConsumer on a separate Kafka consumer thread)
+     */
     @Override
     public void sendOtpEmail(String toEmail, String otp) {
         try {
@@ -39,7 +42,14 @@ public class EmailServiceImpl implements EmailService {
         }
     }
 
-    @Async("emailTaskExecutor")
+    /**
+     * Send general email synchronously.
+     * Note: No @Async annotation - Kafka consumer (EmailKafkaConsumer) handles async delivery
+     * EmailKafkaConsumer runs on a separate Kafka consumer thread pool, providing:
+     * - Automatic retries on failure
+     * - Zero-loss message guarantee
+     * - Horizontal scalability
+     */
     @Override
     public void sendMail(String to, String subject, String body) {
         try {
@@ -55,7 +65,6 @@ public class EmailServiceImpl implements EmailService {
         }
     }
 
-    @Async("emailTaskExecutor")
     @Override
     public void sendPaymentSuccessEmail(String to, String subject, String body) {
         // later implement this 
