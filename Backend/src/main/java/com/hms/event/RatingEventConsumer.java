@@ -37,7 +37,12 @@ public class RatingEventConsumer {
 
     @KafkaListener(
             topics  = "doctor-rating-events",
-            groupId = "rating-aggregator"
+            groupId = "rating-aggregator",
+            properties = {
+                    "spring.json.value.default.type=com.hms.event.RatingEvent",
+                    "spring.json.trusted.packages=com.hms.event",
+                    "spring.json.use.type.headers=false"
+            }
     )
     @Transactional
     @Caching(evict = {
