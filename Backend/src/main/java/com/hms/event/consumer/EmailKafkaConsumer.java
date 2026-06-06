@@ -30,7 +30,15 @@ public class EmailKafkaConsumer {
      * Note: EmailService.sendMail() is now SYNCHRONOUS (no @Async)
      * because Kafka consumer already runs on a separate thread pool.
      */
-    @KafkaListener(topics = "email.outbox", groupId = "email-consumer-group")
+    @KafkaListener(
+            topics = "email.outbox",
+            groupId = "email-consumer-group",
+            properties = {
+                "spring.json.value.default.type=com.hms.event.EmailKafkaEvent",
+                "spring.json.trusted.packages=com.hms.event",
+                "spring.json.use.type.headers=false"
+            }
+    )
     public void consumeEmailEvent(EmailKafkaEvent event) {
         try {
             log.info("Processing email event: {} to recipient: {}", event.getEventId(), event.getTo());
