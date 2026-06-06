@@ -18,8 +18,16 @@ public class DoctorResponseDto implements Serializable {
     
     public DoctorResponseDto(Long id2, String name2, String specialization2, String email2,
             Set<DepartmentDto> mapDepartments, BranchResponseDto mapBranchResponse, Long consultationFee2,
-            Object object, String doctorStampUrl2) {
-
+            String profilePhoto2, String doctorStampUrl2) {
+        this.id = id2;
+        this.name = name2;
+        this.specialization = specialization2;
+        this.email = email2;
+        this.departments = mapDepartments;
+        this.branch = mapBranchResponse;
+        this.consultationFee = consultationFee2;
+        this.profilePhoto = profilePhoto2;
+        this.doctorStampUrl = doctorStampUrl2;
     }
     private Long id;
     private String name;
