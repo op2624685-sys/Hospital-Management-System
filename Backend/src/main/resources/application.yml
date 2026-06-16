@@ -119,7 +119,7 @@ management:
 
     endpoint:
         health:
-            show-details: when_authorized
+            show-details: when-authorized   # use always to show everyone
             probes:
                 enabled: true   # enables liveness + readiness
 
