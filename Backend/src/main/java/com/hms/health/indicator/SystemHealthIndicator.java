@@ -5,25 +5,34 @@ import org.springframework.boot.actuate.health.HealthIndicator;
 import org.springframework.stereotype.Component;
 
 @Component
-public class SystemHealthIndicator implements HealthIndicator{
-    
+public class SystemHealthIndicator implements HealthIndicator {
+
     public static final long MEMORY_THRESHOLD = 50 * 1024 * 1024;
 
     @Override
     public Health health() {
-        long freeMemory = Runtime.getRuntime().freeMemory();
+        Runtime rt = Runtime.getRuntime();
 
-        if (freeMemory < MEMORY_THRESHOLD) {
+        long free = rt.freeMemory();
+        long total = rt.totalMemory();
+        long max = rt.maxMemory();
+
+        long used = total - free;
+        long available = max - free;
+
+        if (available < MEMORY_THRESHOLD) {
             return Health.down()
-                    .withDetail("memory", "Low memory")
-                    .withDetail("free_memory", freeMemory)
+                    .withDetail("available_memory_mb", available / (1024 * 1024))
+                    .withDetail("used_memory_mb", used / (1024 * 1024))
+                    .withDetail("max_memory_mb", max / (1024 * 1024))
                     .build();
         }
-    
-    return Health.up()
-            .withDetail("free_memory", freeMemory)
-            .build();
-    }
 
+        return Health.up()
+                .withDetail("available_memory_mb", available / (1024 * 1024))
+                .withDetail("used_memory_mb", used / (1024 * 1024))
+                .withDetail("max_memory_mb", max / (1024 * 1024))
+                .build();
+    }
 
 }
