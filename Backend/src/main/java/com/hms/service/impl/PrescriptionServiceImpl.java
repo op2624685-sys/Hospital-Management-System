@@ -1,6 +1,7 @@
 package com.hms.service.impl;
 
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Set;
 
@@ -179,7 +180,13 @@ public class PrescriptionServiceImpl implements PrescriptionService {
     }
 
     private void markGenerationPending(Prescription prescription) {
-        LocalDateTime version = LocalDateTime.now();
+        // Truncate to microseconds to match PostgreSQL timestamp precision.
+        // Java's LocalDateTime.now() has nanosecond precision but PostgreSQL
+        // stores timestamps with microsecond precision. Without truncation the
+        // version stored in the DB differs from the value in the Kafka event,
+        // causing the idempotency check in generateDocument() to silently
+        // return and leave the status stuck at PENDING_GENERATION.
+        LocalDateTime version = LocalDateTime.now().truncatedTo(ChronoUnit.MICROS);
         prescription.setDocumentStatus(PrescriptionDocumentStatus.PENDING_GENERATION);
         prescription.setDocumentRequestVersion(version);
         prescription.setGenerationError(null);
