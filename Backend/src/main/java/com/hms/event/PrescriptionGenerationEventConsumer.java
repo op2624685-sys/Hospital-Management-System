@@ -21,6 +21,8 @@ public class PrescriptionGenerationEventConsumer {
             topics = KafkaConfig.PRESCRIPTION_GENERATION_TOPIC,
             groupId = "prescription-generator",
             properties = {
+                    "spring.json.use.type.headers=false",
+                    "spring.json.trusted.packages=com.hms.event",
                     "spring.json.value.default.type=com.hms.event.PrescriptionGenerationRequestedEvent"
             }
     )
