@@ -5,6 +5,7 @@ import com.hms.service.EmailService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.kafka.support.Acknowledgment;
 import org.springframework.stereotype.Service;
 
 /**
@@ -39,12 +40,15 @@ public class EmailKafkaConsumer {
                 "spring.json.use.type.headers=false"
             }
     )
-    public void consumeEmailEvent(EmailKafkaEvent event) {
+    public void consumeEmailEvent(EmailKafkaEvent event, Acknowledgment ack) {
         try {
             log.info("Processing email event: {} to recipient: {}", event.getEventId(), event.getTo());
             
             // Send email synchronously - Kafka handles async delivery
             emailService.sendMail(event.getTo(), event.getSubject(), event.getBody());
+            
+            // Manually acknowledge the message to commit offset
+            ack.acknowledge();
             
             log.info("Email sent successfully. Event ID: {}, Recipient: {}", event.getEventId(), event.getTo());
         } catch (Exception e) {
