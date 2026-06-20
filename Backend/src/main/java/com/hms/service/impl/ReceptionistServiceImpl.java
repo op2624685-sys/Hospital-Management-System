@@ -35,6 +35,11 @@ import com.hms.repository.AppointmentRepository;
 import com.hms.repository.PrescriptionRepository;
 import com.hms.repository.ReceptionistRepository;
 import com.hms.service.ReceptionistService;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Caching;
+import org.springframework.context.ApplicationEventPublisher;
+import com.hms.event.AppointmentNotificationEvent;
+import com.hms.event.AppointmentNotificationType;
 
 import lombok.RequiredArgsConstructor;
 
@@ -45,6 +50,7 @@ public class ReceptionistServiceImpl implements ReceptionistService {
     private final AppointmentRepository appointmentRepository;
     private final ReceptionistRepository receptionistRepository;
     private final PrescriptionRepository prescriptionRepository;
+    private final ApplicationEventPublisher eventPublisher;
 
 
     @Override
@@ -139,6 +145,13 @@ public class ReceptionistServiceImpl implements ReceptionistService {
 
     @Override
     @Transactional
+    @Caching(evict = {
+        @CacheEvict(value = "appointmentDetails", key = "#appointmentId"),
+        @CacheEvict(value = "doctorAppointments", allEntries = true),
+        @CacheEvict(value = "patientAppointments", allEntries = true),
+        @CacheEvict(value = "recentAdminAppointments", allEntries = true),
+        @CacheEvict(value = "bookedSlots", allEntries = true)
+    })
     public AppointmentResponseDto updateAppointmentStatus(String appointmentId, AppointmentStatusType targetStatus) {
         Receptionist receptionist = getAuthenticatedReceptionist();
         Appointment appointment = appointmentRepository.findByAppointmentIdAndBranch_IdAndDepartment_Id(
@@ -182,7 +195,12 @@ public class ReceptionistServiceImpl implements ReceptionistService {
             }
         }
 
-        return mapAppointmentResponseDto(appointmentRepository.save(appointment));
+        Appointment savedAppointment = appointmentRepository.save(appointment);
+        eventPublisher.publishEvent(new AppointmentNotificationEvent(
+                savedAppointment.getAppointmentId(),
+                AppointmentNotificationType.STATUS_CHANGED,
+                null));
+        return mapAppointmentResponseDto(savedAppointment);
     }
 
     @Override

@@ -33,6 +33,7 @@ import com.hms.entity.type.GenderType;
 import com.hms.error.ValidationException;
 import com.hms.repository.AppointmentRepository;
 import com.hms.repository.ReceptionistRepository;
+import org.springframework.context.ApplicationEventPublisher;
 
 @ExtendWith(MockitoExtension.class)
 class ReceptionistServiceImplTest {
@@ -42,6 +43,9 @@ class ReceptionistServiceImplTest {
 
     @Mock
     private ReceptionistRepository receptionistRepository;
+
+    @Mock
+    private ApplicationEventPublisher eventPublisher;
 
     @InjectMocks
     private ReceptionistServiceImpl receptionistService;

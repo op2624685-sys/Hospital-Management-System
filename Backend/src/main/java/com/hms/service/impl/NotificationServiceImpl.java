@@ -9,6 +9,9 @@ import com.hms.repository.NotificationRepository;
 import com.hms.repository.UserRepository;
 import com.hms.service.NotificationService;
 import java.time.LocalDateTime;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
+import com.hms.dto.NotificationWebSocketPayload;
+import lombok.extern.slf4j.Slf4j;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.AccessDeniedException;
@@ -18,12 +21,14 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class NotificationServiceImpl implements NotificationService {
 
     private static final long NOTIFICATION_TTL_HOURS = 24;
 
     private final NotificationRepository notificationRepository;
     private final UserRepository userRepository;
+    private final SimpMessagingTemplate simpMessagingTemplate;
 
     @Override
     @Transactional(readOnly = true)
@@ -73,7 +78,41 @@ public class NotificationServiceImpl implements NotificationService {
                 .appointmentId(appointmentId)
                 .isRead(false)
                 .build();
-        notificationRepository.save(notification);
+        Notification savedNotification = notificationRepository.save(notification);
+        pushNotificationWebSocket(savedNotification, recipientUserId);
+    }
+
+    private void pushNotificationWebSocket(Notification notification, Long recipientId) {
+        try {
+            LocalDateTime createdAt = notification.getCreatedAt() != null ? notification.getCreatedAt() : LocalDateTime.now();
+            LocalDateTime ttlExpiresAt = createdAt.plusHours(NOTIFICATION_TTL_HOURS);
+
+            NotificationWebSocketPayload payload = NotificationWebSocketPayload.builder()
+                    .notificationId(notification.getId())
+                    .title(notification.getTitle())
+                    .message(notification.getMessage())
+                    .type(notification.getType())
+                    .appointmentId(notification.getAppointmentId())
+                    .read(notification.isRead())
+                    .createdAt(createdAt)
+                    .ttlExpiresAt(ttlExpiresAt)
+                    .unreadCount(getUnreadCountWithinTTL(recipientId))
+                    .build();
+
+            simpMessagingTemplate.convertAndSendToUser(
+                    recipientId.toString(),
+                    "/queue/notifications",
+                    payload
+            );
+            log.info("Notification pushed via WebSocket to user: {}", recipientId);
+        } catch (Exception e) {
+            log.error("Failed to push notification via WebSocket to user: {}. Error: {}", recipientId, e.getMessage());
+        }
+    }
+
+    private Long getUnreadCountWithinTTL(Long userId) {
+        LocalDateTime ttlThreshold = LocalDateTime.now().minusHours(NOTIFICATION_TTL_HOURS);
+        return notificationRepository.countByRecipient_IdAndIsReadFalseAndCreatedAtAfter(userId, ttlThreshold);
     }
 
     private NotificationResponseDto mapToDto(Notification n) {

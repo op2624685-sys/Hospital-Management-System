@@ -4,6 +4,7 @@ import SockJS from 'sockjs-client';
 import { API_BASE_URL, getAccessToken, notificationAPI } from '../api/api';
 import { useAuth } from './AuthContext';
 import { NotificationWebSocketContext } from './notificationWebSocketContextValue';
+import { useQueryClient } from '@tanstack/react-query';
 const TTL_HOURS = 24;
 
 const toTtlExpiresAt = (notification) => {
@@ -44,6 +45,7 @@ const mergeById = (current, incoming) => {
 
 export const NotificationWebSocketProvider = ({ children }) => {
   const { isLoggedIn, user } = useAuth();
+  const queryClient = useQueryClient();
   const clientRef = useRef(null);
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
@@ -107,6 +109,13 @@ export const NotificationWebSocketProvider = ({ children }) => {
           } else if (!payload.read) {
             setUnreadCount((current) => current + 1);
           }
+
+          // Invalidate appointment related query caches to trigger real-time updates
+          queryClient.invalidateQueries({ queryKey: ["doctor-appointments"] });
+          queryClient.invalidateQueries({ queryKey: ["my-appointments"] });
+          if (payload.appointmentId) {
+            queryClient.invalidateQueries({ queryKey: ["appointment-details", payload.appointmentId] });
+          }
         });
       },
       onDisconnect: () => setConnected(false),
@@ -125,7 +134,7 @@ export const NotificationWebSocketProvider = ({ children }) => {
       }
       setConnected(false);
     };
-  }, [isLoggedIn, user?.id]);
+  }, [isLoggedIn, user?.id, queryClient]);
 
   const visibleNotifications = useMemo(
     () => notifications.filter(isVisibleWithinTtl),
