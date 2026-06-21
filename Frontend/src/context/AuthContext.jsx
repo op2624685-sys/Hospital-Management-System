@@ -2,7 +2,7 @@ import { createContext, useContext, useState, useEffect, useCallback, useRef } f
 import { authAPI, clearAuthTokens, getAccessToken, getRefreshToken, patientAPI, saveAuthTokens } from "../api/api";
 import API from "../api/api";
 import { queryClient } from "../lib/queryClient";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 
 const AuthContext = createContext();
@@ -11,7 +11,6 @@ const AuthContext = createContext();
 export const useAuth = () => useContext(AuthContext);
 
 export const AuthProvider = ({ children }) => {
-  const location = useLocation();
   const navigate = useNavigate();
   const oauthProcessingRef = useRef(false);
 
@@ -33,7 +32,6 @@ export const AuthProvider = ({ children }) => {
   // Fetch profile completion status on login
   useEffect(() => {
     const fetchProfileCompletionStatus = async () => {
-      if (location.pathname === "/profile") return;
       if (isLoggedIn && user?.id && user?.roles?.includes("PATIENT")) {
         try {
           const response = await patientAPI.getProfileCompletionStatus();
@@ -46,7 +44,7 @@ export const AuthProvider = ({ children }) => {
     };
 
     fetchProfileCompletionStatus();
-  }, [isLoggedIn, user?.id, user?.roles, rolesKey, location.pathname]);
+  }, [isLoggedIn, user?.id, rolesKey]);
 
   const clearSession = useCallback(() => {
     queryClient.clear();
