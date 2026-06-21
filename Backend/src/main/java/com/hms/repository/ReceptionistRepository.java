@@ -14,5 +14,8 @@ public interface ReceptionistRepository extends JpaRepository<Receptionist, Long
     @NonNull
     Optional<Receptionist> findById(Long id);
 
+    @EntityGraph(attributePaths = {"branch", "department", "user"})
+    Optional<Receptionist> findByDepartment_Id(Long departmentId);
+
     boolean existsByDepartment_Id(Long departmentId);
 }

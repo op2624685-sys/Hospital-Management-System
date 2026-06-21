@@ -43,6 +43,15 @@ const mergeById = (current, incoming) => {
   });
 };
 
+const mergeAppointmentById = (current, updatedAppointment) => {
+  if (!Array.isArray(current) || !updatedAppointment?.appointmentId) {
+    return current;
+  }
+  return current.map((item) =>
+    item.appointmentId === updatedAppointment.appointmentId ? { ...item, ...updatedAppointment } : item
+  );
+};
+
 export const NotificationWebSocketProvider = ({ children }) => {
   const { isLoggedIn, user } = useAuth();
   const queryClient = useQueryClient();
@@ -76,6 +85,9 @@ export const NotificationWebSocketProvider = ({ children }) => {
         setNotifications([]);
         setUnreadCount(0);
       });
+      queryClient.removeQueries({ queryKey: ["receptionist-queue"] });
+      queryClient.removeQueries({ queryKey: ["receptionist-appointments"] });
+      queryClient.removeQueries({ queryKey: ["receptionist-search"] });
       return;
     }
 
@@ -83,7 +95,10 @@ export const NotificationWebSocketProvider = ({ children }) => {
 
     notificationAPI.getUnreadCount()
       .then((response) => {
-        if (!cancelled) setUnreadCount(response.data?.unreadCount || 0);
+        if (!cancelled) {
+          const initialUnreadCount = response.data?.unreadCount || 0;
+          setUnreadCount((current) => Math.max(current, initialUnreadCount));
+        }
       })
       .catch(() => {
         if (!cancelled) setUnreadCount(0);
@@ -104,11 +119,12 @@ export const NotificationWebSocketProvider = ({ children }) => {
         client.subscribe('/user/queue/notifications', (message) => {
           const payload = normalizeNotification(JSON.parse(message.body));
           setNotifications((current) => mergeById(current, [payload]));
-          if (typeof payload.unreadCount === 'number') {
-            setUnreadCount(payload.unreadCount);
-          } else if (!payload.read) {
-            setUnreadCount((current) => current + 1);
-          }
+          setUnreadCount((current) => {
+            const nextCount = !payload.read ? current + 1 : current;
+            return typeof payload.unreadCount === 'number'
+              ? Math.max(nextCount, payload.unreadCount)
+              : nextCount;
+          });
 
           // Invalidate appointment related query caches to trigger real-time updates
           queryClient.invalidateQueries({ queryKey: ["doctor-appointments"] });
@@ -116,6 +132,34 @@ export const NotificationWebSocketProvider = ({ children }) => {
           if (payload.appointmentId) {
             queryClient.invalidateQueries({ queryKey: ["appointment-details", payload.appointmentId] });
           }
+          queryClient.invalidateQueries({ queryKey: ["notifications-list"] });
+          queryClient.invalidateQueries({ queryKey: ["notifications-unread"] });
+        });
+
+        client.subscribe('/user/queue/receptionist-queue', (message) => {
+          const payload = JSON.parse(message.body);
+          const queue = Array.isArray(payload?.queue) ? payload.queue : [];
+          queryClient.setQueryData(["receptionist-queue"], queue);
+          if (payload?.updatedAppointment?.appointmentId) {
+            queryClient.setQueriesData({ queryKey: ["receptionist-appointments"] }, (current) =>
+              mergeAppointmentById(current, payload.updatedAppointment)
+            );
+            queryClient.setQueriesData({ queryKey: ["doctor-appointments"] }, (current) =>
+              mergeAppointmentById(current, payload.updatedAppointment)
+            );
+            queryClient.setQueriesData({ queryKey: ["my-appointments"] }, (current) =>
+              mergeAppointmentById(current, payload.updatedAppointment)
+            );
+            queryClient.setQueryData(
+              ["appointment-details", payload.updatedAppointment.appointmentId],
+              payload.updatedAppointment
+            );
+          } else {
+            queryClient.invalidateQueries({ queryKey: ["receptionist-appointments"] });
+            queryClient.invalidateQueries({ queryKey: ["doctor-appointments"] });
+            queryClient.invalidateQueries({ queryKey: ["my-appointments"] });
+          }
+          queryClient.invalidateQueries({ queryKey: ["receptionist-search"] });
         });
       },
       onDisconnect: () => setConnected(false),
