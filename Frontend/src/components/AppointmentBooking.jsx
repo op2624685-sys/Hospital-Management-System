@@ -19,6 +19,7 @@ const AppointmentBooking = () => {
   const [branchId, setBranchId] = useState(state?.branchId || null);
   const [branchSuggestions, setBranchSuggestions] = useState([]);
   const [doctorName, setDoctorName] = useState(state?.doctorName || '');
+  const [doctorSpecialization, setDoctorSpecialization] = useState(state?.doctorSpecialization || '');
   const [doctorId, setDoctorId] = useState(state?.doctorId || null);
   const [doctorSuggestions, setDoctorSuggestions] = useState([]);
   const [doctorSearchTerm, setDoctorSearchTerm] = useState('');
@@ -170,6 +171,7 @@ const AppointmentBooking = () => {
     setBranchId(null);
     setBranchSuggestions([]);
     setDoctorName('');
+    setDoctorSpecialization('');
     setDoctorId(null);
     setDoctorSearchTerm('');
     setDebouncedDoctorSearchTerm('');
@@ -182,6 +184,7 @@ const AppointmentBooking = () => {
   const handleDoctorSearch = (e) => {
     const val = e.target.value;
     setDoctorName(val);
+    setDoctorSpecialization('');
     setDoctorSearchTerm(val);
     setDoctorId(null);
     setAvailableDepartments([]);
@@ -193,6 +196,7 @@ const AppointmentBooking = () => {
 
   const handleSelectDoctor = (doctor) => {
     setDoctorName(doctor.name);
+    setDoctorSpecialization(doctor.specialization || doctor.speciality || '');
     setDoctorId(doctor.id);
     
     const depts = doctor.departments || [];
@@ -260,7 +264,16 @@ const AppointmentBooking = () => {
       toast.info('Redirecting to secure payment page...');
       
       setTimeout(() => {
-        navigate("/payment", { state: { bookingPayload: payload, doctorId } });
+        navigate("/payment", {
+          state: {
+            bookingPayload: payload,
+            doctorId,
+            doctorName,
+            doctorSpecialization,
+            departmentName: availableDepartments.find((dept) => dept.id === selectedDepartmentId)?.name || "",
+            branchName,
+          },
+        });
       }, 500);
     } catch (error) {
       toast.error('Booking failed. Please try again.');
