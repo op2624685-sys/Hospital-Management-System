@@ -159,7 +159,7 @@ const Appointment = () => {
             <div ref={eyebrowRef} style={{ opacity: 0 }}>
               <span className="ap-eyebrow">
                 <div className="ap-live-dot" />
-                Sarda Heart Hospital · Appointments
+                National Medical Hospital · Appointments
               </span>
             </div>
 

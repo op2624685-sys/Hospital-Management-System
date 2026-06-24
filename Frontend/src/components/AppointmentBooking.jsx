@@ -35,6 +35,8 @@ const AppointmentBooking = () => {
   const turnstileRef = useRef(null);
   const doctorDropdownRef = useRef(null);
   const branchDropdownRef = useRef(null);
+  const debounceTimerRef = useRef(null);
+  const DEBOUNCE_DELAY = 400;
   const SLOT_MINUTES = 20;
   const START_HOUR = 10;
   const END_HOUR = 19; // exclusive
@@ -92,23 +94,27 @@ const AppointmentBooking = () => {
   });
 
   useEffect(() => {
-    if (!doctorSearchTerm.trim() || debouncedDoctorSearchTerm.trim().length < 2) {
-      setDoctorSuggestions((current) => current.length ? [] : current);
-      return;
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current);
     }
-    setDoctorSuggestions(searchedDoctors);
-  }, [searchedDoctors, doctorSearchTerm, debouncedDoctorSearchTerm]);
 
-  useEffect(() => {
     const term = doctorSearchTerm.trim();
+
     if (term.length < 2) {
       setDebouncedDoctorSearchTerm('');
+      setDoctorSuggestions([]);
       return;
     }
-    const timeoutId = window.setTimeout(() => {
+
+    debounceTimerRef.current = setTimeout(() => {
       setDebouncedDoctorSearchTerm(term);
-    }, 400);
-    return () => window.clearTimeout(timeoutId);
+    }, DEBOUNCE_DELAY);
+
+    return () => {
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
+      }
+    };
   }, [doctorSearchTerm]);
 
   useEffect(() => {
@@ -147,6 +153,14 @@ const AppointmentBooking = () => {
       document.removeEventListener('touchstart', handler);
     };
   }, []);
+
+  useEffect(() => {
+    if (!debouncedDoctorSearchTerm.trim() || debouncedDoctorSearchTerm.trim().length < 2) {
+      setDoctorSuggestions([]);
+      return;
+    }
+    setDoctorSuggestions(searchedDoctors);
+  }, [searchedDoctors, debouncedDoctorSearchTerm]);
 
   const handleBranchSearch = (e) => {
     const val = e.target.value;
@@ -198,7 +212,7 @@ const AppointmentBooking = () => {
     setDoctorName(doctor.name);
     setDoctorSpecialization(doctor.specialization || doctor.speciality || '');
     setDoctorId(doctor.id);
-    
+
     const depts = doctor.departments || [];
     setAvailableDepartments(depts);
     if (depts.length === 1) {
@@ -260,9 +274,9 @@ const AppointmentBooking = () => {
         cfTurnstileToken: turnstileToken,
       };
 
-      
+
       toast.info('Redirecting to secure payment page...');
-      
+
       setTimeout(() => {
         navigate("/payment", {
           state: {
@@ -572,7 +586,7 @@ const AppointmentBooking = () => {
                   required
                 />
               </div>
-              
+
               {doctorId && appointmentDate ? (
                 <div className="ab-slot-wrap">
                   {loadingSlots ? (
