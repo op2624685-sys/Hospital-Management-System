@@ -60,7 +60,6 @@ const ReceptionistAppointments = () => {
   const queueQuery = useQuery({
     queryKey: ["receptionist-queue"],
     queryFn: async () => (await appointmentApi.getDepartmentQueue()).data || [],
-    refetchInterval: 20000,
   });
 
   const searchQuery = useQuery({
