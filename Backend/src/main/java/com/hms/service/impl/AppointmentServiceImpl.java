@@ -35,6 +35,7 @@ import com.hms.entity.type.AppointmentStatusType;
 import com.hms.entity.type.RoleType;
 import com.hms.event.AppointmentNotificationEvent;
 import com.hms.event.AppointmentNotificationType;
+import com.hms.event.ReceptionistQueueUpdatedEvent;
 import com.hms.error.NotFoundException;
 import com.hms.error.ValidationException;
 import com.hms.repository.AppointmentRepository;
@@ -218,6 +219,13 @@ public class AppointmentServiceImpl implements AppointmentService {
                 savedAppointment.getAppointmentId(),
                 AppointmentNotificationType.UPDATED,
                 "Doctor was changed"));
+        if (savedAppointment.getQueueDate() != null) {
+            eventPublisher.publishEvent(new ReceptionistQueueUpdatedEvent(
+                    savedAppointment.getAppointmentId(),
+                    savedAppointment.getDepartment() != null ? savedAppointment.getDepartment().getId() : null,
+                    savedAppointment.getBranch() != null ? savedAppointment.getBranch().getId() : null,
+                    savedAppointment.getQueueDate()));
+        }
         return savedAppointment;
     }
 
@@ -285,6 +293,13 @@ public class AppointmentServiceImpl implements AppointmentService {
                 savedAppointment.getAppointmentId(),
                 AppointmentNotificationType.STATUS_CHANGED,
                 null));
+        if (savedAppointment.getQueueDate() != null) {
+            eventPublisher.publishEvent(new ReceptionistQueueUpdatedEvent(
+                    savedAppointment.getAppointmentId(),
+                    savedAppointment.getDepartment() != null ? savedAppointment.getDepartment().getId() : null,
+                    savedAppointment.getBranch() != null ? savedAppointment.getBranch().getId() : null,
+                    savedAppointment.getQueueDate()));
+        }
         return mapToAppointmentResponseDto(savedAppointment);
     }
 
@@ -316,6 +331,13 @@ public class AppointmentServiceImpl implements AppointmentService {
                 savedAppointment.getAppointmentId(),
                 AppointmentNotificationType.CANCELLED,
                 null));
+        if (savedAppointment.getQueueDate() != null) {
+            eventPublisher.publishEvent(new ReceptionistQueueUpdatedEvent(
+                    savedAppointment.getAppointmentId(),
+                    savedAppointment.getDepartment() != null ? savedAppointment.getDepartment().getId() : null,
+                    savedAppointment.getBranch() != null ? savedAppointment.getBranch().getId() : null,
+                    savedAppointment.getQueueDate()));
+        }
         return mapToAppointmentResponseDto(savedAppointment);
     }
 
@@ -353,6 +375,13 @@ public class AppointmentServiceImpl implements AppointmentService {
                     savedAppointment.getAppointmentId(),
                     AppointmentNotificationType.UPDATED,
                     changeSummary.toString()));
+            if (savedAppointment.getQueueDate() != null) {
+                eventPublisher.publishEvent(new ReceptionistQueueUpdatedEvent(
+                        savedAppointment.getAppointmentId(),
+                        savedAppointment.getDepartment() != null ? savedAppointment.getDepartment().getId() : null,
+                        savedAppointment.getBranch() != null ? savedAppointment.getBranch().getId() : null,
+                        savedAppointment.getQueueDate()));
+            }
         }
 
         return mapToAppointmentResponseDto(savedAppointment);

@@ -40,6 +40,7 @@ import org.springframework.cache.annotation.Caching;
 import org.springframework.context.ApplicationEventPublisher;
 import com.hms.event.AppointmentNotificationEvent;
 import com.hms.event.AppointmentNotificationType;
+import com.hms.event.ReceptionistQueueUpdatedEvent;
 
 import lombok.RequiredArgsConstructor;
 
@@ -200,6 +201,13 @@ public class ReceptionistServiceImpl implements ReceptionistService {
                 savedAppointment.getAppointmentId(),
                 AppointmentNotificationType.STATUS_CHANGED,
                 null));
+        if (savedAppointment.getQueueDate() != null) {
+            eventPublisher.publishEvent(new ReceptionistQueueUpdatedEvent(
+                    savedAppointment.getAppointmentId(),
+                    receptionist.getDepartment().getId(),
+                    receptionist.getBranch().getId(),
+                    savedAppointment.getQueueDate()));
+        }
         return mapAppointmentResponseDto(savedAppointment);
     }
 

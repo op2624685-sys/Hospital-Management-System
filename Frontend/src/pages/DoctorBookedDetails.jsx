@@ -1,9 +1,10 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useMemo, useState } from "react";
 import Header from "../components/Header";
 import appointmentApi from "../api/appointments";
 import { useAuth } from "../context/AuthContext";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { useQuery } from "@tanstack/react-query";
 
 const formatDateTime = (value) => {
   if (!value) return "—";
@@ -13,27 +14,21 @@ const formatDateTime = (value) => {
 
 const DoctorBookedDetails = () => {
   const { user } = useAuth();
-  const [appointments, setAppointments] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [query, setQuery] = useState("");
   const [expandedId, setExpandedId] = useState(null);
 
-  const loadAppointments = async () => {
-    setLoading(true);
-    try {
+  const { data: appointments = [], isFetching: loading, error } = useQuery({
+    queryKey: ["doctor-appointments", "booked-details"],
+    queryFn: async () => {
       const response = await appointmentApi.getDoctorAppointments();
-      setAppointments(response.data || []);
-    } catch (error) {
-      console.error(error);
-      toast.error("Failed to load booked appointments");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    loadAppointments();
-  }, []);
+      return response.data || [];
+    },
+    enabled: Boolean(user?.id),
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
+    retry: 3,
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
+  });
 
   const filtered = useMemo(() => {
     const term = query.toLowerCase().trim();
@@ -49,6 +44,12 @@ const DoctorBookedDetails = () => {
       );
     });
   }, [appointments, query]);
+
+  React.useEffect(() => {
+    if (!error) return;
+    console.error(error);
+    toast.error("Failed to load booked appointments");
+  }, [error]);
 
   const statusClass = (status) => {
     const value = (status || "").toUpperCase();
