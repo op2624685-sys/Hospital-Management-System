@@ -69,7 +69,6 @@ public class AppointmentServiceImpl implements AppointmentService {
     private final DepartmentRepository departmentRepository;
     private final PrescriptionRepository prescriptionRepository;
     private final ApplicationEventPublisher eventPublisher;
-    private final KafkaConfig kafkaConfig;
     private final KafkaTemplate<String, com.hms.event.AppointmentKafkaEvent> kafkaTemplate;
 
     @Override

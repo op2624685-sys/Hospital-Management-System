@@ -2,13 +2,13 @@ package com.hms.config;
 
 import io.github.resilience4j.ratelimiter.RateLimiter;
 import io.github.resilience4j.ratelimiter.RateLimiterRegistry;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -17,9 +17,9 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Component
 @Slf4j
+@RequiredArgsConstructor
 public class RateLimiterInterceptor implements HandlerInterceptor {
 
-    @Autowired
     private RateLimiterRegistry rateLimiterRegistry;
 
     @Override

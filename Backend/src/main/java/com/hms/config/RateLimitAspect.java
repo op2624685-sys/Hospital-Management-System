@@ -2,10 +2,11 @@ package com.hms.config;
 
 import io.github.resilience4j.ratelimiter.RateLimiter;
 import io.github.resilience4j.ratelimiter.RateLimiterRegistry;
+import lombok.RequiredArgsConstructor;
+
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
@@ -16,9 +17,9 @@ import org.springframework.stereotype.Component;
  */
 @Aspect
 @Component
+@RequiredArgsConstructor
 public class RateLimitAspect {
 
-    @Autowired
     private RateLimiterRegistry rateLimiterRegistry;
 
     @Around("@annotation(rateLimitProtected)")
