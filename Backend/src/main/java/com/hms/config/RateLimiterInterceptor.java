@@ -20,7 +20,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class RateLimiterInterceptor implements HandlerInterceptor {
 
-    private RateLimiterRegistry rateLimiterRegistry;
+    private final RateLimiterRegistry rateLimiterRegistry;
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {

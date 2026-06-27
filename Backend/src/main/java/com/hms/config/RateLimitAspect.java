@@ -20,7 +20,7 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class RateLimitAspect {
 
-    private RateLimiterRegistry rateLimiterRegistry;
+    private final RateLimiterRegistry rateLimiterRegistry;
 
     @Around("@annotation(rateLimitProtected)")
     public Object rateLimit(ProceedingJoinPoint joinPoint, RateLimitProtected rateLimitProtected) throws Throwable {
