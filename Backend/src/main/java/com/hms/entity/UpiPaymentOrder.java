@@ -64,6 +64,7 @@ public class UpiPaymentOrder {
 
     private String transactionId;
 
+    @Column(updatable = false, nullable = false)
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
