@@ -113,58 +113,85 @@ export const NotificationWebSocketProvider = ({ children }) => {
         Authorization: `Bearer ${token}`,
       },
       reconnectDelay: 5000,
-      debug: () => {},
+      debug: (str) => {
+        console.log("[STOMP Debug]", str);
+      },
       onConnect: () => {
         setConnected(true);
-        client.subscribe('/user/queue/notifications', (message) => {
-          const payload = normalizeNotification(JSON.parse(message.body));
-          setNotifications((current) => mergeById(current, [payload]));
-          setUnreadCount((current) => {
-            const nextCount = !payload.read ? current + 1 : current;
-            return typeof payload.unreadCount === 'number'
-              ? Math.max(nextCount, payload.unreadCount)
-              : nextCount;
-          });
+        console.log("WebSocket connected to STOMP Broker.");
 
-          // Invalidate appointment related query caches to trigger real-time updates
-          queryClient.invalidateQueries({ queryKey: ["doctor-appointments"] });
-          queryClient.invalidateQueries({ queryKey: ["my-appointments"] });
-          if (payload.appointmentId) {
-            queryClient.invalidateQueries({ queryKey: ["appointment-details", payload.appointmentId] });
+        client.subscribe('/user/queue/notifications', (message) => {
+          console.log("STOMP Received user notification:", message.body);
+          try {
+            const parsed = JSON.parse(message.body);
+            const payload = normalizeNotification(parsed);
+            
+            setNotifications((current) => mergeById(current, [payload]));
+            setUnreadCount((current) => {
+              const nextCount = !payload.read ? current + 1 : current;
+              return typeof payload.unreadCount === 'number'
+                ? Math.max(nextCount, payload.unreadCount)
+                : nextCount;
+            });
+
+            console.log("Invalidating react-query caches to trigger UI updates...");
+            // Invalidate appointment related query caches to trigger real-time updates
+            queryClient.invalidateQueries({ queryKey: ["doctor-appointments"] });
+            queryClient.invalidateQueries({ queryKey: ["my-appointments"] });
+            queryClient.invalidateQueries({ queryKey: ["receptionist-appointments"] });
+            if (payload.appointmentId) {
+              queryClient.invalidateQueries({ queryKey: ["appointment-details", payload.appointmentId] });
+            }
+            queryClient.invalidateQueries({ queryKey: ["notifications-list"] });
+            queryClient.invalidateQueries({ queryKey: ["notifications-unread"] });
+          } catch (err) {
+            console.error("Error handling notification message:", err);
           }
-          queryClient.invalidateQueries({ queryKey: ["notifications-list"] });
-          queryClient.invalidateQueries({ queryKey: ["notifications-unread"] });
         });
 
         client.subscribe('/user/queue/receptionist-queue', (message) => {
-          const payload = JSON.parse(message.body);
-          const queue = Array.isArray(payload?.queue) ? payload.queue : [];
-          queryClient.setQueryData(["receptionist-queue"], queue);
-          if (payload?.updatedAppointment?.appointmentId) {
-            queryClient.setQueriesData({ queryKey: ["receptionist-appointments"] }, (current) =>
-              mergeAppointmentById(current, payload.updatedAppointment)
-            );
-            queryClient.setQueriesData({ queryKey: ["doctor-appointments"] }, (current) =>
-              mergeAppointmentById(current, payload.updatedAppointment)
-            );
-            queryClient.setQueriesData({ queryKey: ["my-appointments"] }, (current) =>
-              mergeAppointmentById(current, payload.updatedAppointment)
-            );
-            queryClient.setQueryData(
-              ["appointment-details", payload.updatedAppointment.appointmentId],
-              payload.updatedAppointment
-            );
-          } else {
-            queryClient.invalidateQueries({ queryKey: ["receptionist-appointments"] });
-            queryClient.invalidateQueries({ queryKey: ["doctor-appointments"] });
-            queryClient.invalidateQueries({ queryKey: ["my-appointments"] });
+          console.log("STOMP Received receptionist queue message:", message.body);
+          try {
+            const payload = JSON.parse(message.body);
+            const queue = Array.isArray(payload?.queue) ? payload.queue : [];
+            queryClient.setQueryData(["receptionist-queue"], queue);
+            if (payload?.updatedAppointment?.appointmentId) {
+              queryClient.setQueriesData({ queryKey: ["receptionist-appointments"] }, (current) =>
+                mergeAppointmentById(current, payload.updatedAppointment)
+              );
+              queryClient.setQueriesData({ queryKey: ["doctor-appointments"] }, (current) =>
+                mergeAppointmentById(current, payload.updatedAppointment)
+              );
+              queryClient.setQueriesData({ queryKey: ["my-appointments"] }, (current) =>
+                mergeAppointmentById(current, payload.updatedAppointment)
+              );
+              queryClient.setQueryData(
+                ["appointment-details", payload.updatedAppointment.appointmentId],
+                payload.updatedAppointment
+              );
+            } else {
+              queryClient.invalidateQueries({ queryKey: ["receptionist-appointments"] });
+              queryClient.invalidateQueries({ queryKey: ["doctor-appointments"] });
+              queryClient.invalidateQueries({ queryKey: ["my-appointments"] });
+            }
+            queryClient.invalidateQueries({ queryKey: ["receptionist-search"] });
+          } catch (err) {
+            console.error("Error handling receptionist queue message:", err);
           }
-          queryClient.invalidateQueries({ queryKey: ["receptionist-search"] });
         });
       },
-      onDisconnect: () => setConnected(false),
-      onWebSocketClose: () => setConnected(false),
-      onStompError: () => setConnected(false),
+      onDisconnect: () => {
+        setConnected(false);
+        console.warn("WebSocket disconnected.");
+      },
+      onWebSocketClose: () => {
+        setConnected(false);
+        console.warn("WebSocket closed.");
+      },
+      onStompError: (frame) => {
+        setConnected(false);
+        console.error("STOMP error:", frame);
+      },
     });
 
     clientRef.current = client;
