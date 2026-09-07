@@ -57,7 +57,7 @@ public class WebSecurityConfig {
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowedOrigins(corsProperties.getAllowedOrigins());
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        config.setAllowedHeaders(List.of("*"));
+        config.setAllowedHeaders(List.of("Authorization", "Content-Type", "Accept", "X-Requested-With"));
         config.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
