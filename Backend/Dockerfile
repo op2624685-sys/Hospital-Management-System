@@ -34,6 +34,10 @@ RUN apk add --no-cache \
 # Create directories for temp files
 RUN mkdir -p /tmp/fonts /var/cache/fontconfig
 
+# Add entrypoint script for dynamic cert creation
+COPY entrypoint.sh /app/entrypoint.sh
+RUN chmod +x /app/entrypoint.sh
+
 # Copy the JAR from builder stage
 COPY --from=builder /app/target/*.jar app.jar
 
@@ -53,5 +57,5 @@ EXPOSE 8080
 HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
     CMD wget -q --spider http://localhost:8080/api/v1/actuator/health || exit 1
 
-# Run the application with the default Spring configuration
-ENTRYPOINT ["java", "-jar", "app.jar"]
+# Run the application via entrypoint script
+ENTRYPOINT ["/app/entrypoint.sh"]
