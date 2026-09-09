@@ -169,4 +169,4 @@ npm run dev
 ```
 
 ---
-**Developed by [Your Name]** | [LinkedIn](#) | [Portfolio](#) | [Email](#)
+**Developed by [OM PRAKASH]** | [LinkedIn](Not Persent) | [Portfolio](www.omprakashjavadev.in) | [Email](op2624685@gmail.com)
