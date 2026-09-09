@@ -7,142 +7,147 @@
 [![Redis](https://img.shields.io/badge/Redis-Cache-red?style=for-the-badge&logo=redis)](https://redis.io/)
 [![Kafka](https://img.shields.io/badge/Apache%20Kafka-Event--Driven-black?style=for-the-badge&logo=apachekafka)](https://kafka.apache.org/)
 
-**HMS** is a production-grade, full-stack healthcare ecosystem designed to eliminate operational inefficiencies in hospitals. It implements a **Distributed System approach** using a decoupled Frontend and Backend, leveraging event-driven architecture for scalability and real-time responsiveness.
+**HMS** is a production-ready, distributed healthcare ecosystem designed to digitize high-traffic hospital operations. It implements a **Decoupled Event-Driven Architecture**, ensuring that critical patient-facing services remain responsive while heavy computational tasks are handled asynchronously.
 
 ---
 
-## 🗺️ System Architecture (HLD)
+## 🗺️ High-Level Design (HLD) - Deep Dive
 
-The system is designed as a **Client-Server Architecture** with an asynchronous event layer.
+The system is designed to handle high concurrency and provide real-time updates using a multi-layered communication strategy.
 
-### 📐 High-Level Design (HLD)
+### 📐 System Architecture Diagram
 ```mermaid
 graph TD
-    User((User/Patient)) -->|HTTPS/WSS| FE[React 19 Frontend]
-    FE -->|REST API| API[Spring Boot API Gateway/Backend]
-    API -->|Auth/Session| Redis[(Redis Cache)]
-    API -->|Persistence| DB[(PostgreSQL)]
-    API -->|Events| Kafka{Apache Kafka}
-    Kafka -->|Async Task| MailSvc[Email Notification Service]
-    API -->|Uploads| Cloudinary[Cloudinary Media Store]
-    API -->|Payments| Stripe[Stripe/UPI Gateway]
+    subgraph "Client Layer (Frontend)"
+        User((User/Patient)) -->|HTTPS/WSS| FE[React 19 + Vite]
+        FE -->|TanStack Query| API[Spring Boot REST API]
+        FE -->|STOMP/SockJS| WS[WebSocket Server]
+    end
+
+    subgraph "Application Layer (Backend)"
+        API -->|Auth/Session| Redis[(Redis Cache)]
+        API -->|Business Logic| Svc[Service Layer]
+        WS -->|Real-time Alert| Svc
+        Svc -->|SQL Queries| DB[(PostgreSQL)]
+        Svc -->|Produce Events| Kafka{Apache Kafka}
+    end
+
+    subgraph "Asynchronous Worker Layer"
+        Kafka -->|Consume| EmailSvc[Email Consumer]
+        Kafka -->|Consume| PdfSvc[PDF Generation Service]
+        PdfSvc -->|Upload| Cloudinary[Cloudinary Storage]
+        EmailSvc -->|Send| SMTP[Email Gateway]
+    end
+
+    subgraph "Infrastructure & Observability"
+        Svc -->|Health Check| Actuator[Spring Boot Actuator]
+        Actuator -->|Custom Indicators| HealthInd[System/Stripe/Appointment Indicators]
+        Svc -->|External API| Stripe[Stripe Payment Gateway]
+    end
 ```
 
-### ⚙️ Architectural Pillars
-1.  **Scalability**: Used **Redis** for distributed caching to reduce database load and **Kafka** to decouple heavy tasks (like emailing PDFs) from the main request-response cycle.
-2.  **Reliability**: Implemented **Resilience4j** for rate limiting to prevent API abuse and **Flyway** for versioned database migrations.
-3.  **Real-time Communication**: Integrated **WebSockets (STOMP/SockJS)** to enable instant routing alerts from Receptionists to Doctors.
-4.  **Security**: A strict **RBAC (Role-Based Access Control)** model ensuring data isolation between Patients, Doctors, Receptionists, and Admins.
+### ⚙️ Core Architectural Pillars
+
+#### 1. Event-Driven Asynchronicity (The Kafka Engine)
+To prevent the "Request-Response Lag," the system offloads heavy tasks to **Apache Kafka**. 
+- **Scenario: Appointment Completion** $\rightarrow$ Instead of making the doctor wait while a PDF is generated and an email is sent, the system publishes an `AppointmentKafkaEvent`.
+- **Worker Flow**: 
+    1. `EmailKafkaConsumer` picks up the event.
+    2. `PrescriptionPdfService` generates a branded medical PDF using **OpenPDF**.
+    3. The PDF is streamed to **Cloudinary** for secure hosting.
+    4. A final email is dispatched with a secure, signed URL to the patient.
+
+#### 2. Real-time State Synchronization (WebSockets)
+The "Receptionist $\rightarrow$ Doctor" routing is handled via a **Push-based model** rather than polling.
+- When a receptionist routes a patient, a message is pushed to a specific Kafka topic $\rightarrow$ processed by `ReceptionistQueueNotificationListener` $\rightarrow$ dispatched via **WebSockets** to the Doctor's specific session.
+
+#### 3. Advanced Observability & Health Monitoring
+Unlike basic apps, HMS implements **Custom Health Indicators** via Spring Boot Actuator to monitor business-critical dependencies:
+- `StripeHealthIndicator`: Checks if the payment gateway is reachable.
+- `AppointmentHealthIndicator`: Monitors the health of the appointment scheduling engine.
+- `SystemHealthIndicator`: Tracks JVM memory, disk space, and database connection pool health.
+- **Outcome**: SREs can monitor the `/actuator/health` endpoint to detect failures *before* users do.
+
+#### 4. Performance Optimization (Caching & Rate Limiting)
+- **Distributed Caching**: **Redis** is used to cache Doctor profiles and Branch metadata, reducing PostgreSQL read latency for the most visited pages.
+- **Traffic Shaping**: **Resilience4j** implements Rate Limiting on sensitive endpoints (Payment/Login) to prevent brute-force attacks and API exhaustion.
 
 ---
 
 ## 🛠️ Low-Level Design (LLD)
 
-### 🖥️ Frontend Architecture (LLD)
-The frontend is built with a **Modular Component-Based Architecture** to ensure reusability and maintainability.
+### 🖥️ Frontend Engineering (React 19)
+The frontend is structured as a **Feature-Sliced Design** to maximize scalability.
 
-**Core Layers:**
-- **View Layer**: React 19 + Tailwind CSS 4. Utilizes **Three.js & GSAP** for an immersive, modern UX.
-- **State Management**: 
-    - **Server State**: **TanStack Query (React Query)** for caching API responses and handling optimistic updates.
-    - **Client State**: React Context API for user sessions and theme management.
-- **Networking**: Axios interceptors for centralized JWT handling and error logging.
-- **Real-time Layer**: StompJS client for listening to doctor-routing events.
+- **State Strategy**: 
+    - **Server State**: `TanStack Query` handles caching, deduplication, and background refetching of medical records.
+    - **Real-time State**: `StompJS` manages a persistent connection to the backend for instant alerts.
+- **UI/UX**: 
+    - **GSAP & Three.js**: Used for an enterprise-grade, immersive landing page and smooth dashboard transitions.
+    - **Tailwind CSS 4**: Utilizes a strict design system for consistent spacing and typography across the Patient and Admin portals.
 
-**Folder Structure Logic:**
-- `/pages`: Route-level components.
-- `/components`: Atomic UI elements (Buttons, Inputs, Modals).
-- `/hooks`: Custom business logic extracted from UI (e.g., `useAppointment()`).
-- `/services`: API call definitions.
+### ⚙️ Backend Engineering (Java 21)
+Following the **Clean Architecture** principles:
 
-### ⚙️ Backend Architecture (LLD)
-The backend follows the **Layered Architecture (N-Tier)** pattern to separate concerns.
-
-**Request Flow:**
-`HTTP Request` $\rightarrow$ `Controller` $\rightarrow$ `Service Interface` $\rightarrow$ `Service Implementation` $\rightarrow$ `Repository` $\rightarrow$ `Database`
-
-**Component Breakdown:**
-- **Controllers**: Handle request mapping, input validation (`@Valid`), and DTO mapping.
-- **Service Layer**: Contains the core business logic. Implements `@Transactional` to ensure ACID compliance.
-- **Repository Layer**: Spring Data JPA for type-safe database queries.
-- **Event Layer**: Kafka Producers publish `AppointmentEvent` when status changes, which are consumed by notification listeners.
-- **Security Layer**: JWT-based stateless authentication. Custom `UserDetailsService` for multi-role verification.
+- **Controller Layer**: Validates input via `@Valid` and maps Entities to **DTOs (Data Transfer Objects)** to prevent leaking internal database structures.
+- **Service Layer**: Implements business rules. Uses `@Transactional` to ensure that if a payment succeeds but an appointment fails, the system rolls back (Atomic transactions).
+- **Persistence Layer**: **Spring Data JPA** with **Flyway** migrations. Every DB change is versioned (`V1__...`, `V2__...`), ensuring consistency across Dev, Staging, and Production environments.
+- **Security**: Stateless **JWT (JSON Web Tokens)** with Role-Based Access Control (RBAC). Custom filters intercept every request to verify the user's role (Patient/Doctor/Admin).
 
 ---
 
-## 💾 Data Design & Schema
+## 💾 Data Architecture
 
-The system uses a **Normalized Relational Schema** to ensure zero data redundancy.
+The database is designed for **High Integrity (ACID)** using a 3rd Normal Form (3NF) approach.
 
-### 🗝️ Key Entities & Relations
-| Entity | Primary Key | Foreign Keys | Key Attributes |
-| :--- | :--- | :--- | :--- |
-| **User** | `user_id` | - | email, password, role, status |
-| **Patient** | `patient_id` | `user_id` | medical_history, blood_group, insurance_id |
-| **Doctor** | `doctor_id` | `user_id`, `branch_id` | specialization, consultation_fee, slots |
-| **Branch** | `branch_id` | - | location, branch_name, contact |
-| **Appointment** | `app_id` | `patient_id`, `doctor_id`, `branch_id` | date, time, status, reason |
-| **Prescription** | `presc_id` | `app_id`, `doctor_id` | medicines (JSON), notes, date |
-| **Payment** | `pay_id` | `app_id` | amount, transaction_id, method (Stripe/UPI) |
+### 🗝️ Entity Relationship Summary
+- **Users $\leftrightarrow$ Patients/Doctors**: One-to-One (User handles Auth, Patient/Doctor handles Profile).
+- **Branch $\leftrightarrow$ Doctors**: One-to-Many (A branch has many doctors).
+- **Appointment $\leftrightarrow$ Patient/Doctor/Branch**: Many-to-One (The central junction table).
+- **Appointment $\leftrightarrow$ Prescription**: One-to-One (Each completed appointment generates one prescription).
+- **Appointment $\leftrightarrow$ Payment**: One-to-One (Each appointment is linked to one financial transaction).
 
 ---
 
-## 🔄 End-to-End Business Workflows
+## 🔄 Deep-Dive Workflow Analysis
 
-### 1. The Patient Journey (Booking $\rightarrow$ Payment)
-1.  **Auth**: Patient signs up via **Magic Link/OAuth2** $\rightarrow$ JWT stored in HttpOnly Cookie.
-2.  **Discovery**:
-    *   **Path A**: Search by **Doctor Specialization** $\rightarrow$ View ratings $\rightarrow$ Select Doctor.
-    *   **Path B**: Select **Hospital Branch** $\rightarrow$ Select Department $\rightarrow$ View available Doctors.
-3.  **Scheduling**: Patient chooses an available slot $\rightarrow$ Enters "Reason for Visit".
-4.  **Transaction**: System calls **Stripe API** $\rightarrow$ Patient pays consultation fee $\rightarrow$ Payment verified.
-5.  **Confirmation**: Appointment created as `CONFIRMED` $\rightarrow$ Kafka event triggers a confirmation email.
+### 1. The "Smart Booking" Pipeline
+`Patient` $\rightarrow$ `Doctor Selection` $\rightarrow$ `Slot Validation` $\rightarrow$ `Stripe Payment` $\rightarrow$ `DB Persistence` $\rightarrow$ `Kafka Event` $\rightarrow$ `Email Confirmation`.
+- **Edge Case Handling**: Uses **Optimistic Locking** to ensure that if two patients try to book the same slot at the same millisecond, only one succeeds.
 
-### 2. The Receptionist Journey (Check-in $\rightarrow$ Routing)
-1.  **Intake**: Patient arrives at the physical branch.
-2.  **Verification**: Receptionist searches appointment via Patient ID/Email $\rightarrow$ Marks as `CHECKED_IN`.
-3.  **Routing**: Receptionist clicks **"Route to Doctor"**.
-4.  **Real-time Alert**: Backend sends a **WebSocket message** $\rightarrow$ Doctor's dashboard flashes "Patient [Name] is ready in the lobby".
+### 2. The "Patient Routing" Pipeline
+`Patient Arrival` $\rightarrow$ `Receptionist Check-in` $\rightarrow$ `WebSocket Push` $\rightarrow$ `Doctor Alert` $\rightarrow$ `Consultation Start`.
+- **Low Latency**: Bypasses the database for the notification, sending a direct message from the Receptionist's session to the Doctor's session.
 
-### 3. The Doctor Journey (Consultation $\rightarrow$ Prescription)
-1.  **Queue**: Doctor views the list of routed patients in real-time.
-2.  **Consult**: Doctor accesses patient's historical records $\rightarrow$ conducts consultation.
-3.  **Prescription**: Doctor enters medicines and dosage in the digital form.
-4.  **Generation**: System uses **OpenPDF** to generate a branded PDF $\rightarrow$ Uploaded to **Cloudinary**.
-5.  **Closing**: Doctor marks appointment as `COMPLETED` $\rightarrow$ Status change triggers an email to the patient with the PDF link.
-
-### 4. The Admin Journey (Governance $\rightarrow$ Analytics)
-- **Sub-Admin**: Manages branch-level doctor schedules and receptionist shifts.
-- **Admin**: Onboards new doctors, manages department mappings, and reviews audit logs.
-- **HeadAdmin**: 
-    *   **Financials**: Views global revenue charts (integrated with Stripe reports).
-    *   **Operations**: Monitors system latency via **Spring Boot Actuator**.
-    *   **Audit**: Reviews `AuditLog` entity to track who changed what and when.
+### 3. The "Digital Prescription" Pipeline
+`Consultation End` $\rightarrow$ `Prescription Data Entry` $\rightarrow$ `PDF Engine (OpenPDF)` $\rightarrow$ `Cloudinary Upload` $\rightarrow$ `Kafka Event` $\rightarrow$ `Email Delivery`.
+- **Durability**: The PDF is stored in the cloud (Cloudinary) rather than the DB to keep the database lean and improve load times.
 
 ---
 
-## 🚀 Engineering Highlights (Recruiter's Note)
+## 🚀 Engineering Highlights for Recruiters
 
-- **Concurrency Handling**: Used **Optimistic Locking** in JPA to prevent double-booking of the same time slot.
-- **Performance**: Implemented **Redis Caching** for Doctor profiles and Branch details, reducing API response time by $\approx 60\%$.
-- **Resilience**: Integrated **Resilience4j Rate Limiter** to protect the payment and auth endpoints from DDoS/Brute-force.
-- **Event-Driven**: Moved email and PDF generation to **Kafka consumers** to ensure the user doesn't wait for the email to be sent before getting a "Success" response.
+- **Complexity**: Handled Distributed Systems challenges (Eventual Consistency via Kafka).
+- **Modern Stack**: Leveraged the latest features of **Java 21 (Virtual Threads/Records)** and **React 19**.
+- **Observability**: Implemented custom Actuator health checks for proactive monitoring.
+- **Security**: Integrated OAuth2 and JWT for secure, scalable authentication.
+- **UX/UI**: Combined 3D elements (Three.js) with high-performance state management (React Query).
 
 ---
 
-## 🖼️ Visual Gallery (Placeholders)
+## 🖼️ Visual Gallery
 
-### 🖥️ User Interface
-| Dashboard | Screenshot Placeholder | Key Metric Shown |
+### 🖥️ Dashboards
+| Role | Screenshot | Feature Highlight |
 | :--- | :--- | :--- |
-| **Patient** | `![Patient](screenshots/patient.png)` | Next Appt, Digital Prescriptions |
-| **Doctor** | `![Doctor](screenshots/doctor.png)` | Today's Queue, Prescription Editor |
-| **Receptionist** | `![Receptionist](screenshots/receptionist.png)` | Patient Check-in, Route Button |
-| **Admin** | `![Admin](screenshots/admin.png)` | Staff Management, Branch Stats |
-| **HeadAdmin** | `![HeadAdmin](screenshots/headadmin.png)` | Global Revenue, System Health |
+| **Patient** | `![Patient](screenshots/patient.png)` | Smart Slot Booking & Digital Health Records |
+| **Doctor** | `![Doctor](screenshots/doctor.png)` | Real-time Patient Queue & PDF Prescriptions |
+| **Receptionist** | `![Receptionist](screenshots/receptionist.png)` | One-click Doctor Routing & Patient Intake |
+| **Admin** | `![Admin](screenshots/admin.png)` | Branch Resource Management & Audit Logs |
+| **HeadAdmin** | `![HeadAdmin](screenshots/headadmin.png)` | Global Revenue Analytics & System Health |
 
-### 🎥 Demo Clips
-- [Booking Flow Video](#) | [Receptionist Routing Video](#) | [Doctor Consultation Video](#)
+### 🎥 Technical Demos
+- [Full System Walkthrough](#) | [Kafka Async Flow Demo](#) | [Real-time Routing Demo](#)
 
 ---
 
@@ -151,10 +156,10 @@ The system uses a **Normalized Relational Schema** to ensure zero data redundanc
 ### Backend
 ```bash
 cd Backend
-# Setup env variables in .env
+# Configure .env with DB_URL, KAFKA_BOOTSTRAP, CLOUDINARY_URL, STRIPE_KEY
 ./mvnw spring-boot:run
 ```
-**API Docs**: `http://localhost:8080/swagger-ui/index.html`
+**API Specs**: `http://localhost:8080/swagger-ui/index.html` | **Health**: `http://localhost:8080/actuator/health`
 
 ### Frontend
 ```bash
