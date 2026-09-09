@@ -9,6 +9,8 @@
 
 **HMS** is a production-ready, distributed healthcare ecosystem designed to digitize high-traffic hospital operations. It implements a **Decoupled Event-Driven Architecture**, ensuring that critical patient-facing services remain responsive while heavy computational tasks are handled asynchronously.
 
+👉 **Live Demo**: [https://hms.omprakashjavadev.in/](https://hms.omprakashjavadev.in/)
+
 ---
 
 ## 🗺️ High-Level Design (HLD) - Deep Dive
@@ -169,4 +171,4 @@ npm run dev
 ```
 
 ---
-**Developed by [OM PRAKASH]** | [LinkedIn](Not Persent) | [Portfolio](www.omprakashjavadev.in) | [Email](op2624685@gmail.com)
+**Developed by OM PRAKASH** | [Portfolio](https://www.omprakashjavadev.in) | [Email](mailto:op2624685@gmail.com)
