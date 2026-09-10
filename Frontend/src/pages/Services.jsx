@@ -56,7 +56,7 @@ const Services = () => {
             Comprehensive Care
           </span>
 
-          <h1 ref={headingRef} className='text-3xl md:text-5xl lg:text-6xl font-black leading-tight mb-6' style={{ color: 'var(--foreground)' }}>
+          <h1 ref={headingRef} className='text-5xl md:text-7xl lg:text-8xl font-black leading-none tracking-tighter mb-8' style={{ color: 'var(--foreground)' }}>
             Our Medical{' '}
             <span className='text-transparent bg-clip-text'
               style={{ backgroundImage: 'linear-gradient(135deg, var(--primary), var(--chart-5))' }}>
@@ -64,7 +64,7 @@ const Services = () => {
             </span>
           </h1>
 
-          <p className='text-base md:text-lg max-w-2xl mx-auto' style={{ color: 'var(--muted-foreground)' }}>
+          <p className='text-lg md:text-xl max-w-2xl mx-auto leading-relaxed' style={{ color: 'var(--muted-foreground)' }}>
             We provide a wide range of medical services to ensure complete healthcare for all ages
           </p>
         </div>
