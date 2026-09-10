@@ -1,10 +1,66 @@
 import React, { useMemo, useState, useEffect, useRef } from 'react'
 import gsap from 'gsap'
+import {
+  ClipboardList, Users, Stethoscope, Zap, ShieldCheck, Radio, BarChart3,
+  Siren, Heart, Bed, Activity, Microscope, Image, FlaskConical, Pill,
+  Brain, Handshake, Telescope, Target, Star, CircleDot, Building2,
+  Phone, Baby, Droplets, Lightbulb, Sparkles, UserCheck
+} from 'lucide-react'
+
+const ICON_MAP = {
+  '📋': ClipboardList,
+  '👥': Users,
+  '⚕️': Stethoscope,
+  '⚡': Zap,
+  '🩺': Stethoscope,
+  '🏥': Building2,
+  '👨‍⚕️': UserCheck,
+  '🚨': Siren,
+  '🤝': Handshake,
+  '🏃': Activity,
+  '👶': Baby,
+  '📞': Phone,
+  '❤️': Heart,
+  '🛏️': Bed,
+  '🔬': Microscope,
+  '🖼️': Image,
+  '🧪': FlaskConical,
+  '💊': Pill,
+  '🧠': Brain,
+  '🎯': Target,
+  '🔭': Telescope,
+  '⭐': Star,
+  '🟢': CircleDot,
+  '💡': Lightbulb,
+  '✨': Sparkles,
+  'ClipboardList': ClipboardList,
+  'Users': Users,
+  'Stethoscope': Stethoscope,
+  'Zap': Zap,
+  'Siren': Siren,
+  'Heart': Heart,
+  'Bed': Bed,
+  'Activity': Activity,
+  'Microscope': Microscope,
+  'Image': Image,
+  'FlaskConical': FlaskConical,
+  'Pill': Pill,
+  'Brain': Brain,
+  'Handshake': Handshake,
+  'Telescope': Telescope,
+  'Target': Target,
+  'Star': Star,
+  'Building2': Building2,
+  'Phone': Phone,
+  'Baby': Baby,
+  'Droplets': Droplets,
+  'Lightbulb': Lightbulb,
+};
 
 const GenericDepartment = ({ name, icon, description, members, headDoctor, accent, imageUrl, sectionsJson }) => {
   const [active, setActive] = useState(0)
   const containerRef = useRef(null)
-  
+
   const sections = useMemo(() => {
     try {
       const parsed = sectionsJson ? JSON.parse(sectionsJson) : null
@@ -13,9 +69,9 @@ const GenericDepartment = ({ name, icon, description, members, headDoctor, accen
       // Fall back to default department sections.
     }
     return [
-      { title: 'Core Function', icon: '⚡', items: [description || 'Advanced clinical unit managing specialized medical protocols.'] },
-      { title: 'Authority', icon: '🛡️', items: [`Chief: ${headDoctor || 'Dr. Pending'}`, `Operational Force: ${members || 0} Staff`] },
-      { title: 'Methods', icon: '📡', items: ['Digital Diagnostics', 'Tele-consultation', 'Acute Care Management'] }
+      { title: 'Core Function', icon: 'Zap', items: [description || 'Advanced clinical unit managing specialized medical protocols.'] },
+      { title: 'Authority', icon: 'ShieldCheck', items: [`Chief: ${headDoctor || 'Dr. Pending'}`, `Operational Force: ${members || 0} Staff`] },
+      { title: 'Methods', icon: 'Radio', items: ['Digital Diagnostics', 'Tele-consultation', 'Acute Care Management'] }
     ]
   }, [sectionsJson, description, headDoctor, members])
 
@@ -30,6 +86,11 @@ const GenericDepartment = ({ name, icon, description, members, headDoctor, accen
     return () => ctx.revert()
   }, [])
 
+  const resolveIcon = (iconProp) => {
+    const IconComponent = ICON_MAP[iconProp] || Building2;
+    return <IconComponent size={24} />;
+  };
+
   return (
     <div ref={containerRef} className='w-full h-full flex flex-col md:flex-row relative bg-[var(--background)] overflow-hidden font-["Outfit"]'>
       {/* ── Background Aura ── */}
@@ -39,17 +100,19 @@ const GenericDepartment = ({ name, icon, description, members, headDoctor, accen
       {/* ── Left Control Panel (Metrics & Nav) ── */}
       <div className='w-full md:w-[400px] p-8 md:p-12 flex flex-col justify-between border-r border-[var(--border)] relative z-10'>
         <div className='gd-glass'>
-          <div className='inline-flex items-center gap-3 px-4 py-1.5 rounded-full mb-8 border transition-all duration-500' 
+          <div className='inline-flex items-center gap-3 px-4 py-1.5 rounded-full mb-8 border transition-all duration-500'
             style={{ background: `${ACCENT}10`, borderColor: `${ACCENT}25`, color: ACCENT }}>
             <span className='w-2 h-2 rounded-full animate-pulse' style={{ background: ACCENT }} />
             <span className='text-[10px] font-black uppercase tracking-[0.3em]'>System Core</span>
           </div>
-          
+
           <h2 className='text-4xl font-extrabold text-[var(--foreground)] tracking-tight mb-4 flex items-center gap-4'>
-            <span className='w-16 h-16 rounded-2xl flex items-center justify-center text-4xl shadow-2xl' style={{ background: 'var(--card)', border: `1px solid ${ACCENT}20` }}>{icon}</span>
+            <span className='w-16 h-16 rounded-2xl flex items-center justify-center text-4xl shadow-2xl' style={{ background: 'var(--card)', border: `1px solid ${ACCENT}20` }}>
+              {resolveIcon(icon)}
+            </span>
             {name}
           </h2>
-          <p className='text-sm text-[var(--muted-foreground)] leading-relaxed mb-12 font-medium opacity-60'>{description}</p>
+          <p className='text-sm text-[var(--muted-foreground)] leading-relaxed mb-12 font-medium opacity-60'>{description}</p
 
           <div className='space-y-4'>
             {sections.map((s, i) => (
@@ -57,13 +120,15 @@ const GenericDepartment = ({ name, icon, description, members, headDoctor, accen
                 key={i}
                 onClick={() => setActive(i)}
                 className='w-full group relative flex items-center justify-between p-4 rounded-2xl transition-all duration-500 overflow-hidden'
-                style={{ 
+                style={{
                    background: active === i ? 'var(--card)' : 'transparent',
                    border: `1px solid ${active === i ? ACCENT : 'transparent'}`
                 }}>
                 {active === i && <div className='absolute left-0 top-0 w-1 h-full' style={{ background: ACCENT }} />}
                 <div className='flex items-center gap-4'>
-                  <span className='text-2xl opacity-80 group-hover:scale-125 transition-transform'>{s.icon}</span>
+                  <div className='text-2xl opacity-80 group-hover:scale-125 transition-transform'>
+                    <div style={{ color: ACCENT }}>{resolveIcon(s.icon)}</div>
+                  </div>
                   <span className={`text-xs font-black uppercase tracking-[0.2em] transition-colors ${active === i ? 'text-[var(--foreground)]' : 'text-[var(--muted-foreground)] group-hover:text-[var(--foreground)]'}`}>
                     {s.title}
                   </span>
@@ -75,7 +140,9 @@ const GenericDepartment = ({ name, icon, description, members, headDoctor, accen
         </div>
 
         <div className='gd-glass pt-8 border-t border-[var(--border)] flex items-center gap-4'>
-           <div className='w-12 h-12 rounded-xl bg-[var(--card)] border border-[var(--border)] flex items-center justify-center text-xl'>📊</div>
+           <div className='w-12 h-12 rounded-xl bg-[var(--card)] border border-[var(--border)] flex items-center justify-center text-xl'>
+             <BarChart3 size={24} style={{ color: 'var(--primary)' }} />
+           </div>
            <div>
              <p className='text-[8px] font-black text-[var(--muted-foreground)] uppercase tracking-widest'>Operational Load</p>
              <p className='text-xs font-black text-emerald-500 uppercase tracking-widest'>Optimal Range</p>
@@ -104,7 +171,7 @@ const GenericDepartment = ({ name, icon, description, members, headDoctor, accen
         <div className='gd-glass mb-16'>
            <p className='text-[12px] font-black text-[var(--primary)] uppercase tracking-[0.5em] mb-6'>Department Active Data</p>
            <h4 className='text-5xl font-black text-[var(--foreground)] tracking-tighter mb-12'>{sections[active].title}</h4>
-           
+
            <div className='grid grid-cols-1 md:grid-cols-2 gap-8'>
              {sections[active].items.map((item, j) => (
                <div key={j} className='group flex flex-col p-8 rounded-[2.5rem] bg-[var(--card)] border border-[var(--border)] hover:border-[var(--primary)] transition-all duration-500 shadow-xl shadow-black/[0.02]'>

@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { Zap, Stethoscope, Building2, UserCheck, Activity, Handshake, Users, Bed, Droplets } from 'lucide-react'
 
 const ACCENT = '#10b981'
 const BG     = '#f0fdf4'
@@ -6,32 +7,32 @@ const BG     = '#f0fdf4'
 const sections = [
   {
     title: 'Services Offered',
-    icon: '⚡',
+    icon: Zap,
     items: ['Joint replacement surgery (knee, hip, shoulder)', 'Arthroscopic surgery', 'Spine surgery', 'Fracture fixation & management', 'Sports injury treatment', 'Physiotherapy & rehabilitation', 'Bone density testing', 'Platelet-rich plasma (PRP) therapy', 'Pediatric orthopedics', 'Limb reconstruction'],
   },
   {
     title: 'Conditions We Treat',
-    icon: '🩺',
+    icon: Stethoscope,
     items: ['Osteoarthritis & rheumatoid arthritis', 'Fractures & dislocations', 'Ligament & tendon tears (ACL, rotator cuff)', 'Spine disorders (scoliosis, herniated disc)', 'Osteoporosis', 'Bone tumors', 'Clubfoot & developmental disorders', 'Carpal tunnel syndrome', 'Tendinitis & bursitis', 'Sports injuries'],
   },
   {
     title: 'Facilities & Equipment',
-    icon: '🏥',
+    icon: Building2,
     items: ['Dedicated orthopedic OTs', 'Arthroscopy suites', 'Digital X-ray & bone scan', 'DEXA scan for bone density', '3D gait analysis lab', 'Physiotherapy & hydrotherapy pool', 'Sports medicine clinic', 'Plaster & cast room', 'Prosthetics & orthotics unit'],
   },
   {
     title: 'Orthopedic Team',
-    icon: '👨‍⚕️',
+    icon: UserCheck,
     items: ['Orthopedic Surgeons', 'Spine Surgeons', 'Sports Medicine Specialists', 'Physiotherapists', 'Occupational Therapists', 'Rheumatologists', 'Prosthetics & Orthotics Specialists', 'Pain Management Specialists'],
   },
   {
     title: 'Sports Medicine',
-    icon: '🏃',
+    icon: Activity,
     items: ['Sports injury assessment & treatment', 'Performance & fitness evaluation', 'Return-to-sport programs', 'Biomechanical analysis', 'Injury prevention workshops'],
   },
   {
     title: 'Patient Support',
-    icon: '🤝',
+    icon: Handshake,
     items: ['Pre & post-surgery rehabilitation', 'Home physiotherapy guidance', 'Dietary & bone health counseling', 'Long-term follow-up care', 'Insurance and billing assistance'],
   },
 ]
@@ -65,14 +66,14 @@ const Orthopedics = () => {
             <button key={i} onClick={() => setActive(i)}
               className='flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all duration-200 active:scale-95'
               style={{ background: active === i ? ACCENT : `${ACCENT}10`, color: active === i ? '#fff' : ACCENT }}>
-              {s.icon} {s.title}
+              <s.icon size={16} style={{ color: active === i ? '#fff' : ACCENT }} /> {s.title}
             </button>
           ))}
         </div>
 
         <div className='rounded-2xl p-5 md:p-6 flex-1' style={{ background: BG, border: `1px solid ${ACCENT}20` }}>
           <h3 className='font-black text-base md:text-lg mb-4 flex items-center gap-2' style={{ color: ACCENT }}>
-            {sections[active].icon} {sections[active].title}
+            <sections[active].icon size={20} /> {sections[active].title}
           </h3>
           <div className='grid grid-cols-1 sm:grid-cols-2 gap-3'>
             {sections[active].items.map((item, j) => (
@@ -113,13 +114,15 @@ const Orthopedics = () => {
 
         <div className='grid grid-cols-2 gap-3'>
           {[
-            { label: 'Team Members', value: '12', icon: '👥' },
-            { label: 'OT Suites', value: '4', icon: '🏥' },
-            { label: 'Rehab Pool', value: 'Yes', icon: '💧' },
-            { label: 'Sports Clinic', value: '24/7', icon: '🏃' },
+            { label: 'Team Members', value: '12', icon: Users },
+            { label: 'OT Suites', value: '4', icon: Bed },
+            { label: 'Rehab Pool', value: 'Yes', icon: Droplets },
+            { label: 'Sports Clinic', value: '24/7', icon: Activity },
           ].map((stat, i) => (
             <div key={i} className='bg-white rounded-xl p-4 shadow-sm text-center' style={{ border: `1px solid ${ACCENT}15` }}>
-              <p className='text-xl mb-1'>{stat.icon}</p>
+              <div className='flex justify-center mb-1'>
+                <stat.icon size={20} style={{ color: ACCENT }} />
+              </div>
               <p className='text-xl font-black' style={{ color: ACCENT }}>{stat.value}</p>
               <p className='text-xs text-gray-400 mt-0.5'>{stat.label}</p>
             </div>

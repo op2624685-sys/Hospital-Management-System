@@ -2,6 +2,7 @@ import React, { useRef, useLayoutEffect } from 'react';
 import { gsap } from 'gsap';
 import { Link } from 'react-router-dom';
 import Doctor3D from '../Doctor3D';
+import { UserCheck, Heart, Building2, Siren } from 'lucide-react';
 
 const HeroSection = () => {
   const heroRef = useRef();
@@ -32,10 +33,10 @@ const HeroSection = () => {
   }, []);
 
   const stats = [
-    { value: '50+', label: 'Expert Doctors', icon: '👨‍⚕️' },
-    { value: '10k+', label: 'Happy Patients', icon: '❤️' },
-    { value: '15+', label: 'Departments', icon: '🏥' },
-    { value: '24/7', label: 'Emergency Care', icon: '🚑' },
+    { value: '50+', label: 'Expert Doctors', icon: UserCheck },
+    { value: '10k+', label: 'Happy Patients', icon: Heart },
+    { value: '15+', label: 'Departments', icon: Building2 },
+    { value: '24/7', label: 'Emergency Care', icon: Siren },
   ];
 
   return (
@@ -102,7 +103,9 @@ const HeroSection = () => {
         <div ref={statsRef} className='flex flex-wrap lg:flex-nowrap gap-6 lg:gap-8'>
           {stats.map((stat, i) => (
             <div key={i} className='text-center'>
-              <p className='text-2xl mb-0.5'>{stat.icon}</p>
+              <div className='flex justify-center mb-1'>
+                <stat.icon size={24} style={{ color: 'var(--foreground)', opacity: 0.8 }} />
+              </div>
               <p className='text-2xl font-black' style={{ color: 'var(--foreground)' }}>{stat.value}</p>
               <p className='text-xs mt-0.5' style={{ color: 'var(--muted-foreground)' }}>{stat.label}</p>
             </div>

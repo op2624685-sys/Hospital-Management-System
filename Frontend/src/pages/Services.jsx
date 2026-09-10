@@ -1,20 +1,21 @@
 import React, { useLayoutEffect, useRef } from 'react';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { Siren, Microscope, Image, FlaskConical, Pill, Activity, HeartPulse, Brain, Users } from 'lucide-react';
 import Header from '../components/Header';
 
 gsap.registerPlugin(ScrollTrigger);
 
 const services = [
-  { title: 'Emergency Care', icon: '🚨', desc: 'Round-the-clock emergency services for critical conditions', details: ['24/7 Availability', 'Rapid response team', 'ICU support', 'Trauma care'], color: 'from-rose-400 to-rose-600' },
-  { title: 'General Surgery', icon: '🔬', desc: 'Advanced surgical procedures with expert surgeons', details: ['Laparoscopic surgery', 'Open surgery', 'Laser surgery', 'Post-op care'], color: 'from-amber-500 to-orange-600' },
-  { title: 'Diagnostic Imaging', icon: '🖼️', desc: 'State-of-the-art imaging technology for accurate diagnosis', details: ['MRI & CT Scans', 'X-Ray & Ultrasound', 'Digital Mammography', '3D Imaging'], color: 'from-amber-400 to-yellow-500' },
-  { title: 'Laboratory Services', icon: '🧪', desc: 'Comprehensive lab testing with quick results', details: ['Blood tests', 'Pathology', 'Microbiology', 'Biochemistry'], color: 'from-green-400 to-green-600' },
-  { title: 'Pharmacy', icon: '💊', desc: 'Full-service pharmacy with medications and consultation', details: ['Prescription filling', 'Generic alternatives', 'Drug counseling', 'Home delivery'], color: 'from-yellow-400 to-yellow-600' },
-  { title: 'Rehabilitation', icon: '🏃', desc: 'Physical therapy and rehabilitation programs', details: ['Physiotherapy', 'Occupational therapy', 'Speech therapy', 'Home programs'], color: 'from-orange-400 to-orange-600' },
-  { title: 'Cardiac Services', icon: '💓', desc: 'Specialized cardiac care and interventions', details: ['Angiography', 'Angioplasty', 'Heart valve surgery', 'Monitoring'], color: 'from-pink-400 to-rose-500' },
-  { title: 'Mental Health', icon: '🧠', desc: 'Psychiatric and psychological counseling services', details: ['Therapy sessions', 'Counseling', 'Support groups', 'Crisis intervention'], color: 'from-orange-400 to-amber-600' },
-  { title: 'Maternity Care', icon: '👨‍👩‍👧', desc: 'Full prenatal, natal, and postnatal care', details: ['Antenatal care', 'Delivery services', 'Postpartum support', 'Neonatal care'], color: 'from-stone-400 to-stone-600' },
+  { title: 'Emergency Care', icon: Siren, desc: 'Round-the-clock emergency services for critical conditions', details: ['24/7 Availability', 'Rapid response team', 'ICU support', 'Trauma care'], color: 'from-rose-400 to-rose-600' },
+  { title: 'General Surgery', icon: Microscope, desc: 'Advanced surgical procedures with expert surgeons', details: ['Laparoscopic surgery', 'Open surgery', 'Laser surgery', 'Post-op care'], color: 'from-amber-500 to-orange-600' },
+  { title: 'Diagnostic Imaging', icon: Image, desc: 'State-of-the-art imaging technology for accurate diagnosis', details: ['MRI & CT Scans', 'X-Ray & Ultrasound', 'Digital Mammography', '3D Imaging'], color: 'from-amber-400 to-yellow-500' },
+  { title: 'Laboratory Services', icon: FlaskConical, desc: 'Comprehensive lab testing with quick results', details: ['Blood tests', 'Pathology', 'Microbiology', 'Biochemistry'], color: 'from-green-400 to-green-600' },
+  { title: 'Pharmacy', icon: Pill, desc: 'Full-service pharmacy with medications and consultation', details: ['Prescription filling', 'Generic alternatives', 'Drug counseling', 'Home delivery'], color: 'from-yellow-400 to-yellow-600' },
+  { title: 'Rehabilitation', icon: Activity, desc: 'Physical therapy and rehabilitation programs', details: ['Physiotherapy', 'Occupational therapy', 'Speech therapy', 'Home programs'], color: 'from-orange-400 to-orange-600' },
+  { title: 'Cardiac Services', icon: HeartPulse, desc: 'Specialized cardiac care and interventions', details: ['Angiography', 'Angioplasty', 'Heart valve surgery', 'Monitoring'], color: 'from-pink-400 to-rose-500' },
+  { title: 'Mental Health', icon: Brain, desc: 'Psychiatric and psychological counseling services', details: ['Therapy sessions', 'Counseling', 'Support groups', 'Crisis intervention'], color: 'from-orange-400 to-amber-600' },
+  { title: 'Maternity Care', icon: Users, desc: 'Full prenatal, natal, and postnatal care', details: ['Antenatal care', 'Delivery services', 'Postpartum support', 'Neonatal care'], color: 'from-stone-400 to-stone-600' },
 ];
 
 const Services = () => {
@@ -79,8 +80,8 @@ const Services = () => {
               onMouseEnter={e => { e.currentTarget.style.boxShadow = '0 20px 48px color-mix(in srgb, var(--primary) 15%, transparent)'; e.currentTarget.style.borderColor = 'var(--ring)'; }}
               onMouseLeave={e => { e.currentTarget.style.boxShadow = 'none'; e.currentTarget.style.borderColor = 'var(--border)'; }}>
 
-              <div className={`w-14 lg:w-16 h-14 lg:h-16 bg-linear-to-br ${service.color} rounded-2xl flex items-center justify-center text-2xl lg:text-3xl mb-4 group-hover:scale-110 transition-transform duration-300`}>
-                {service.icon}
+              <div className={`w-14 lg:w-16 h-14 lg:h-16 bg-linear-to-br ${service.color} rounded-2xl flex items-center justify-center text-white mb-4 group-hover:scale-110 transition-transform duration-300`}>
+                <service.icon size={28} />
               </div>
 
               <h3 className='font-black text-lg lg:text-xl mb-2' style={{ color: 'var(--foreground)' }}>{service.title}</h3>

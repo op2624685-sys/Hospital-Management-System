@@ -343,7 +343,7 @@ export default function DepartmentControl() {
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 {/* Current Staff */}
                 <div>
-                  <h3 className="text-[10px] font-black text-[var(--muted-foreground)] uppercase tracking-widest mb-6">👥 Current Personnel</h3>
+                  <h3 className="text-[10px] font-black text-[var(--muted-foreground)] uppercase tracking-widest mb-6 flex items-center gap-2"><Users size={14} /> Current Personnel</h3>
                   <div className="bg-[var(--background)] rounded-3xl p-12 border-2 border-dashed border-[var(--border)] text-center">
                     <div className="w-16 h-16 bg-[var(--secondary)] rounded-2xl flex items-center justify-center mx-auto mb-6 border border-[var(--border)]">
                       <Users size={32} className="text-[var(--primary)] opacity-40" />

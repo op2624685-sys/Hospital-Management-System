@@ -1,16 +1,17 @@
 import React, { useRef, useLayoutEffect } from 'react';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { Siren, Microscope, Heart, Baby, Brain, Activity } from 'lucide-react';
 
 gsap.registerPlugin(ScrollTrigger);
 
 const services = [
-  { title: 'Emergency Care', desc: 'Round-the-clock emergency services for critical conditions', icon: '🚨', color: 'from-rose-400 to-rose-600' },
-  { title: 'Surgery', desc: 'Advanced surgical procedures with expert surgeons', icon: '🔬', color: 'from-amber-500 to-orange-600' },
-  { title: 'Cardiology', desc: 'Comprehensive heart care and cardiac treatments', icon: '❤️', color: 'from-pink-400 to-rose-500' },
-  { title: 'Pediatrics', desc: 'Specialized healthcare for infants and children', icon: '👶', color: 'from-amber-400 to-yellow-500' },
-  { title: 'Neurology', desc: 'Expert care for brain and nervous system disorders', icon: '🧠', color: 'from-orange-400 to-amber-600' },
-  { title: 'Orthopedics', desc: 'Bone, joint and muscle treatment and rehabilitation', icon: '🦴', color: 'from-stone-400 to-stone-600' },
+  { title: 'Emergency Care', desc: 'Round-the-clock emergency services for critical conditions', icon: Siren, color: 'from-rose-400 to-rose-600' },
+  { title: 'Surgery', desc: 'Advanced surgical procedures with expert surgeons', icon: Microscope, color: 'from-amber-500 to-orange-600' },
+  { title: 'Cardiology', desc: 'Comprehensive heart care and cardiac treatments', icon: Heart, color: 'from-pink-400 to-rose-500' },
+  { title: 'Pediatrics', desc: 'Specialized healthcare for infants and children', icon: Baby, color: 'from-amber-400 to-yellow-500' },
+  { title: 'Neurology', desc: 'Expert care for brain and nervous system disorders', icon: Brain, color: 'from-orange-400 to-amber-600' },
+  { title: 'Orthopedics', desc: 'Bone, joint and muscle treatment and rehabilitation', icon: Activity, color: 'from-stone-400 to-stone-600' },
 ];
 
 const ServicesSection = () => {
@@ -55,8 +56,8 @@ const ServicesSection = () => {
             onMouseEnter={e => { e.currentTarget.style.boxShadow = '0 20px 48px color-mix(in srgb, var(--primary) 15%, transparent)'; e.currentTarget.style.borderColor = 'var(--primary)'; }}
             onMouseLeave={e => { e.currentTarget.style.boxShadow = 'none'; e.currentTarget.style.borderColor = 'var(--border)'; }}>
 
-            <div className={`w-14 h-14 bg-linear-to-br ${service.color} rounded-2xl flex items-center justify-center text-2xl mb-4 shadow-lg group-hover:scale-110 transition-transform duration-300`}>
-              {service.icon}
+            <div className={`w-14 h-14 bg-linear-to-br ${service.color} rounded-2xl flex items-center justify-center text-white mb-4 shadow-lg group-hover:scale-110 transition-transform duration-300`}>
+              <service.icon size={28} />
             </div>
             <h3 className='font-black text-lg mb-2' style={{ color: 'var(--foreground)' }}>{service.title}</h3>
             <p className='text-sm leading-relaxed' style={{ color: 'var(--muted-foreground)' }}>{service.desc}</p>

@@ -1,4 +1,5 @@
 import React from "react";
+import { MapPin, Phone, Mail, Clock, Map } from 'lucide-react';
 
 const ContactInfo = () => {
   return (
@@ -15,15 +16,15 @@ const ContactInfo = () => {
       {/* Info Items */}
       <div className='flex flex-col gap-4'>
         {[
-          { icon: '📍', label: 'Address', value: '123 Health Street, Delhi, India', color: 'text-violet-400', bg: 'bg-violet-500/10' },
-          { icon: '📞', label: 'Phone', value: '+91 98765 43210', color: 'text-cyan-400', bg: 'bg-cyan-500/10' },
-          { icon: '📧', label: 'Email', value: 'info@deltacare.com', color: 'text-purple-400', bg: 'bg-purple-500/10' },
-          { icon: '🕒', label: 'Hours', value: 'Open 24/7', color: 'text-indigo-400', bg: 'bg-indigo-500/10' },
+          { icon: MapPin, label: 'Address', value: '123 Health Street, Delhi, India', color: 'text-violet-400', bg: 'bg-violet-500/10' },
+          { icon: Phone, label: 'Phone', value: '+91 98765 43210', color: 'text-cyan-400', bg: 'bg-cyan-500/10' },
+          { icon: Mail, label: 'Email', value: 'info@deltacare.com', color: 'text-purple-400', bg: 'bg-purple-500/10' },
+          { icon: Clock, label: 'Hours', value: 'Open 24/7', color: 'text-indigo-400', bg: 'bg-indigo-500/10' },
         ].map((item, i) => (
           <div key={i}
             className={`flex items-center gap-4 ${item.bg} backdrop-blur-sm border border-[var(--border)] rounded-2xl p-4 hover:-translate-y-0.5 hover:shadow-md transition-all duration-300`}>
-            <div className='w-10 h-10 bg-[var(--card)]/50 rounded-xl flex items-center justify-center text-lg shadow-sm shrink-0'>
-              {item.icon}
+            <div className='w-10 h-10 bg-[var(--card)]/50 rounded-xl flex items-center justify-center shadow-sm shrink-0'>
+              <item.icon size={20} style={{ color: item.color.replace('text-', '') }} />
             </div>
             <div>
               <p className={`text-xs font-bold ${item.color} uppercase tracking-wider`}>{item.label}</p>
@@ -58,7 +59,7 @@ const ContactInfo = () => {
       {/* Map placeholder */}
       <div className='backdrop-blur-sm border border-[var(--border)] rounded-2xl p-6 flex flex-col items-center justify-center text-center'
         style={{ background: 'linear-gradient(135deg, rgba(124,58,237,0.15) 0%, rgba(99,102,241,0.15) 100%)' }}>
-        <span className='text-4xl mb-2'>🗺️</span>
+        <Map size={40} className='mb-2 text-violet-400' />
         <p className='font-bold text-[var(--foreground)] text-sm'>123 Health Street</p>
         <p className='text-[var(--muted-foreground)] text-xs mt-0.5'>Delhi, India</p>
         <button className='mt-3 text-xs font-semibold text-violet-400 hover:text-violet-300 hover:underline transition-colors'>

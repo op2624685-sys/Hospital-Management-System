@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Mail, User, Upload, Briefcase, Stethoscope, AlertCircle, Loader, Heart, MapPin, Phone, Droplet, Calendar, Award, Building2, X, Save, Edit2 } from 'lucide-react';
+import { ArrowLeft, Mail, User, Upload, Briefcase, Stethoscope, AlertCircle, Loader, Heart, MapPin, Phone, Droplet, Calendar, Award, Building2, X, Save, Edit2, Lightbulb } from 'lucide-react';
 import { userAPI, doctorAPI, patientAPI, adminAPI, receptionistAPI } from '../api/api';
 import { toast } from 'react-toastify';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
@@ -1142,7 +1142,7 @@ const Profile = () => {
             color: 'var(--foreground)',
           }}>
           <p className='flex items-start gap-2'>
-            <span className='text-base sm:text-lg shrink-0 mt-0.5'>💡</span>
+            <Lightbulb size={20} className='shrink-0 mt-0.5' style={{ color: 'var(--primary)' }} />
             <span><strong>Pro Tip:</strong> Click the camera icon on your avatar to update your profile photo. Have a great day!</span>
           </p>
         </div>

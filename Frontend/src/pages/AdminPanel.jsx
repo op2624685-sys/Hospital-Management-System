@@ -5,12 +5,23 @@ import { gsap } from "gsap";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { 
-  AppointmentsTrendChart, 
-  DepartmentLoadChart, 
+import {
+  AppointmentsTrendChart,
+  DepartmentLoadChart,
   StatusDoughnut,
   PaymentsGrowthChart
 } from "../components/DashboardCharts";
+import {
+  UserCheck,
+  Building2,
+  CalendarDays,
+  Coins,
+  ClipboardList,
+  Users,
+  Stethoscope,
+  CreditCard,
+  UserRound
+} from 'lucide-react';
 
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -59,17 +70,17 @@ const deptColor = {
 const DEFAULT_DEPARTMENT_SECTIONS = [
   {
     title: "About",
-    icon: "📋",
+    icon: "ClipboardList",
     items: ["Department providing specialized medical services"],
   },
   {
     title: "Team",
-    icon: "👥",
+    icon: "Users",
     items: ["Head Doctor: TBD", "Total Members: 0", "Specialized medical professionals"],
   },
   {
     title: "Services",
-    icon: "⚕️",
+    icon: "Stethoscope",
     items: ["Specialized medical care", "Patient consultation", "Treatment and diagnosis", "Follow-up support"],
   },
 ];
@@ -539,10 +550,10 @@ const AdminPanel = () => {
           </div>
 
           <div className="admin-stats-grid">
-            <StatCard delay={0}    label="Total Doctors" value={stats.totalDoctors} sub={`${stats.activeDoctors} active`} icon="👨‍⚕️" accent="var(--primary)" />
-            <StatCard delay={0.08} label="Total Patients" value={(stats.totalPatients || 0).toLocaleString()} sub="Registered" icon="🏥" accent="var(--chart-5)" />
-            <StatCard delay={0.16} label="Today's Appointments" value={stats.todayAppointments || 0} sub={`${stats.pendingAppointments || 0} pending`} icon="📅" accent="var(--primary)" />
-            <StatCard delay={0.24} label="Total Revenue" value={fmt(stats.totalRevenue || 0)} sub="Gross earnings" icon="💰" accent="var(--chart-5)" />
+            <StatCard delay={0}    label="Total Doctors" value={stats.totalDoctors} sub={`${stats.activeDoctors} active`} icon={<UserCheck size={24} />} accent="var(--primary)" />
+            <StatCard delay={0.08} label="Total Patients" value={(stats.totalPatients || 0).toLocaleString()} sub="Registered" icon={<Building2 size={24} />} accent="var(--chart-5)" />
+            <StatCard delay={0.16} label="Today's Appointments" value={stats.todayAppointments || 0} sub={`${stats.pendingAppointments || 0} pending`} icon={<CalendarDays size={24} />} accent="var(--primary)" />
+            <StatCard delay={0.24} label="Total Revenue" value={fmt(stats.totalRevenue || 0)} sub="Gross earnings" icon={<Coins size={24} />} accent="var(--chart-5)" />
 
           </div>
 
@@ -613,9 +624,9 @@ const AdminPanel = () => {
                             onClick={() => setOnboardingSubTab(tab)}
                           >
                             <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                              {tab === "doctor" && "👨‍⚕️ Doctor"}
-                              {tab === "receptionist" && "👩‍💼 Receptionist"}
-                              {tab === "departments" && "🏥 Departments"}
+                              {tab === "doctor" && <><UserCheck size={14} /> Doctor</>}
+                              {tab === "receptionist" && <><UserRound size={14} /> Receptionist</>}
+                              {tab === "departments" && <><Building2 size={14} /> Departments</>}
                             </span>
                           </button>
                         ))}
@@ -867,7 +878,7 @@ const AdminPanel = () => {
                                       padding: '16px',
                                       transition: 'all .3s'
                                     }}>
-                                      <div style={{ fontSize: '20px', marginBottom: '8px' }}>{dept.icon || '🏥'}</div>
+                                      <div style={{ fontSize: '20px', marginBottom: '8px' }}>{dept.icon || <Building2 size={20} />}</div>
                                       <h5 style={{ fontSize: '13px', fontWeight: 800, color: 'var(--foreground)', margin: '0 0 4px' }}>{dept.name}</h5>
                                       <p style={{ fontSize: '11px', color: 'var(--muted-foreground)', margin: '0' }}>{dept.description?.substring(0, 50)}...</p>
                                     </div>
@@ -1049,7 +1060,7 @@ const AdminPanel = () => {
               <div className="admin-section full">
                 <Section title="Payments" subtitle="Transaction records across all appointments">
                   <div style={{ padding: "40px 0", textAlign: "center", color: "var(--muted-foreground)" }}>
-                    <div style={{ fontSize: 40, marginBottom: 12 }}>💳</div>
+                    <div style={{ fontSize: 40, marginBottom: 12, display: 'flex', justifyContent: 'center' }}><CreditCard size={40} style={{ color: 'var(--muted-foreground)' }} /></div>
                     <div style={{ fontWeight: 800, fontSize: 16, marginBottom: 8 }}>Payments Overview</div>
                     <div style={{ fontSize: 14 }}>Payment data is integrated with the appointments system. View appointment details for payment info.</div>
                   </div>
@@ -1109,7 +1120,7 @@ const AdminPanel = () => {
                         onMouseLeave={(e) => { e.currentTarget.style.transform = ""; }}
                       >
                         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                          <div style={{ fontSize: 32, lineHeight: 1 }}>{dept.icon && dept.icon.length <= 4 ? dept.icon : "🏥"}</div>
+                          <div style={{ fontSize: 32, lineHeight: 1 }}>{dept.icon && dept.icon.length <= 4 ? dept.icon : <Building2 size={32} />}</div>
                           <div>
                             <div style={{ fontWeight: 900, fontSize: 16, color: "var(--foreground)" }}>{dept.name}</div>
                             <div style={{ fontSize: 12, color: "var(--muted-foreground)", marginTop: 2 }}>Dept #{dept.id}</div>
@@ -1122,7 +1133,7 @@ const AdminPanel = () => {
                         )}
                         {dept.headDoctorName && (
                           <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 12px", background: "var(--secondary)", borderRadius: 12 }}>
-                            <span style={{ fontSize: 12, color: "var(--primary)", fontWeight: 700 }}>👨‍⚕️ Head: Dr. {dept.headDoctorName}</span>
+                            <span style={{ fontSize: 12, color: "var(--primary)", fontWeight: 700 }}><UserCheck size={14} /> Head: Dr. {dept.headDoctorName}</span>
                           </div>
                         )}
                       </div>

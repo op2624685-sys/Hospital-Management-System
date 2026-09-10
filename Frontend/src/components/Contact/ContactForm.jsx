@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import emailjs from '@emailjs/browser';
 import { useAuth } from '../../context/AuthContext';
 import { Link } from 'react-router-dom';
+import { Mail, Lock, PartyPopper } from 'lucide-react';
 
 const ContactForm = () => {
   const { isLoggedIn, user } = useAuth();
@@ -82,7 +83,7 @@ const ContactForm = () => {
         style={{ background: 'linear-gradient(135deg, var(--primary) 0%, var(--chart-5) 100%)' }}>
         <div className='flex items-center gap-3'>
           <div className='w-10 h-10 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center'>
-            <span className='text-white text-lg'>✉️</span>
+            <Mail size={20} className='text-white' />
           </div>
           <div>
             <h3 className='text-white font-black text-lg'>Send a Message</h3>
@@ -96,7 +97,7 @@ const ContactForm = () => {
           // ── Login Required State ──
           <div className='flex flex-col items-center justify-center py-12 text-center'>
             <div className='w-16 h-16 rounded-full flex items-center justify-center mb-4 shadow-inner' style={{ background: 'color-mix(in srgb, var(--primary) 10%, transparent)' }}>
-              <span className='text-3xl'>🔒</span>
+              <Lock size={32} className='text-[var(--primary)]' />
             </div>
             <h3 className='text-xl font-black text-[var(--foreground)] mb-2'>Login Required</h3>
             <p className='text-[var(--muted-foreground)] text-sm max-w-xs mb-6'>
@@ -118,7 +119,9 @@ const ContactForm = () => {
                 <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2.5} d='M5 13l4 4L19 7' />
               </svg>
             </div>
-            <h3 className='text-xl font-black text-[var(--foreground)] mb-2'>Message Sent! 🎉</h3>
+            <h3 className='text-xl font-black text-[var(--foreground)] mb-2 flex items-center justify-center gap-2'>
+              Message Sent! <PartyPopper size={20} className='text-yellow-500' />
+            </h3>
             <p className='text-[var(--muted-foreground)] text-sm max-w-xs'>
               Thank you for reaching out. We'll get back to you as soon as possible.
             </p>

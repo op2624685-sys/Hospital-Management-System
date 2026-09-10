@@ -268,8 +268,8 @@ const HeadAdminPanel = () => {
     bgColor: "var(--secondary)",
     icon: "DEPT",
     sections: [
-      { title: "Overview", icon: "📋", items: ["Specialized medical care"] },
-      { title: "Team", icon: "👥", items: ["Expert Doctors"] }
+      { title: "Overview", icon: "ClipboardList", items: ["Specialized medical care"] },
+      { title: "Team", icon: "Users", items: ["Expert Doctors"] }
     ],
   });
   const [departmentSubmitting, setDepartmentSubmitting] = useState(false);
@@ -323,8 +323,8 @@ const HeadAdminPanel = () => {
         bgColor: "var(--secondary)",
         icon: "DEPT",
         sections: [
-          { title: "Overview", icon: "📋", items: ["Specialized medical care"] },
-          { title: "Team", icon: "👥", items: ["Expert Doctors"] }
+          { title: "Overview", icon: "ClipboardList", items: ["Specialized medical care"] },
+          { title: "Team", icon: "Users", items: ["Expert Doctors"] }
         ],
       });
       refreshAll();
@@ -339,7 +339,7 @@ const HeadAdminPanel = () => {
   const addDeptSection = () => {
     setDepartmentForm({
       ...departmentForm,
-      sections: [...departmentForm.sections, { title: "New Section", icon: "✨", items: ["Service 1"] }]
+      sections: [...departmentForm.sections, { title: "New Section", icon: "Sparkles", items: ["Service 1"] }]
     });
   };
 

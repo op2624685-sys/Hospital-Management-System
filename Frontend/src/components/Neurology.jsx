@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { Zap, Stethoscope, Building2, UserCheck, Siren, Handshake, Users, Brain, Microscope, Phone } from 'lucide-react'
 
 const ACCENT = '#8b5cf6'
 const BG     = '#faf5ff'
@@ -6,32 +7,32 @@ const BG     = '#faf5ff'
 const sections = [
   {
     title: 'Services Offered',
-    icon: '⚡',
+    icon: Zap,
     items: ['EEG & nerve conduction studies', 'Brain MRI & CT imaging', 'Lumbar puncture', 'Botox therapy for migraines', 'Deep brain stimulation', 'Epilepsy monitoring', 'Stroke thrombolysis', 'Memory & cognitive assessments', 'Sleep studies', 'Neurovascular intervention'],
   },
   {
     title: 'Conditions We Treat',
-    icon: '🩺',
+    icon: Stethoscope,
     items: ['Stroke & TIA', 'Epilepsy & seizures', 'Migraine & headache disorders', "Parkinson's disease", 'Multiple sclerosis', "Alzheimer's & dementia", 'Neuropathy', 'Brain tumors', 'Meningitis', 'Movement disorders'],
   },
   {
     title: 'Facilities & Equipment',
-    icon: '🏥',
+    icon: Building2,
     items: ['Dedicated Stroke Unit', 'Advanced EEG lab', 'High-field MRI (3 Tesla)', 'Intraoperative neuromonitoring', 'Neurophysiology lab', 'Video-EEG epilepsy unit', 'Neurosurgery OT', 'Neurorehabilitation gym'],
   },
   {
     title: 'Neurology Team',
-    icon: '👨‍⚕️',
+    icon: UserCheck,
     items: ['Consultant Neurologists', 'Neurosurgeons', 'Epileptologists', 'Neuropsychologists', 'Neuroradiologists', 'Speech & Language Therapists', 'Physiotherapists', 'Occupational Therapists'],
   },
   {
     title: 'Stroke & Emergency Care',
-    icon: '🚨',
+    icon: Siren,
     items: ['24/7 Stroke Response Team', 'Rapid CT & MRI protocol', 'IV thrombolysis & thrombectomy', 'Stroke ICU (NICU)', 'Dedicated stroke helpline'],
   },
   {
     title: 'Patient Support',
-    icon: '🤝',
+    icon: Handshake,
     items: ['Neurorehabilitation programs', 'Caregiver counseling & training', 'Long-term follow-up clinics', "Support groups for Parkinson's & MS", 'Insurance and billing assistance'],
   },
 ]
@@ -71,14 +72,14 @@ const Neurology = () => {
                 background: active === i ? ACCENT : `${ACCENT}10`,
                 color:      active === i ? '#fff' : ACCENT,
               }}>
-              {s.icon} {s.title}
+              <s.icon size={16} style={{ color: active === i ? '#fff' : ACCENT }} /> {s.title}
             </button>
           ))}
         </div>
 
         <div className='rounded-2xl p-5 md:p-6 flex-1' style={{ background: BG, border: `1px solid ${ACCENT}20` }}>
           <h3 className='font-black text-base md:text-lg mb-4 flex items-center gap-2' style={{ color: ACCENT }}>
-            {sections[active].icon} {sections[active].title}
+            <sections[active].icon size={20} /> {sections[active].title}
           </h3>
           <div className='grid grid-cols-1 sm:grid-cols-2 gap-3'>
             {sections[active].items.map((item, j) => (
@@ -120,13 +121,15 @@ const Neurology = () => {
 
         <div className='grid grid-cols-2 gap-3'>
           {[
-            { label: 'Team Members', value: '15', icon: '👥' },
-            { label: 'Stroke Unit', value: '24/7', icon: '🧠' },
-            { label: 'MRI Tesla', value: '3T', icon: '🔬' },
-            { label: 'Helpline', value: '24/7', icon: '📞' },
+            { label: 'Team Members', value: '15', icon: Users },
+            { label: 'Stroke Unit', value: '24/7', icon: Brain },
+            { label: 'MRI Tesla', value: '3T', icon: Microscope },
+            { label: 'Helpline', value: '24/7', icon: Phone },
           ].map((stat, i) => (
             <div key={i} className='bg-white rounded-xl p-4 shadow-sm text-center' style={{ border: `1px solid ${ACCENT}15` }}>
-              <p className='text-xl mb-1'>{stat.icon}</p>
+              <div className='flex justify-center mb-1'>
+                <stat.icon size={20} style={{ color: ACCENT }} />
+              </div>
               <p className='text-xl font-black' style={{ color: ACCENT }}>{stat.value}</p>
               <p className='text-xs text-gray-400 mt-0.5'>{stat.label}</p>
             </div>

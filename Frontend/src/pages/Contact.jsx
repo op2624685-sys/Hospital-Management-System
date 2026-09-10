@@ -1,4 +1,5 @@
 import React from "react";
+import { CircleDot, Zap, Building2, Star } from 'lucide-react';
 import Header from "../components/Header";
 import ContactHero from "../components/Contact/ContactHero";
 import ContactInfo from "../components/Contact/ContactInfo";
@@ -11,22 +12,22 @@ const Contact = () => {
       {/* ── Floating Decorative Cards ── */}
       <div className='fixed top-32 left-8 bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-4 shadow-lg -z-5 hidden xl:block'
         style={{ boxShadow: '0 4px 24px rgba(124,58,237,0.25)' }}>
-        <p className='text-xs font-bold text-violet-300'>🟢 Online Support</p>
+        <p className='text-xs font-bold text-violet-300 flex items-center gap-1'><CircleDot size={12} /> Online Support</p>
         <p className='text-xs text-gray-400 mt-0.5'>Available 24/7</p>
       </div>
       <div className='fixed bottom-32 left-8 bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-4 shadow-lg -z-5 hidden xl:block'
         style={{ boxShadow: '0 4px 24px rgba(99,102,241,0.25)' }}>
-        <p className='text-xs font-bold text-indigo-300'>⚡ Fast Response</p>
+        <p className='text-xs font-bold text-indigo-300 flex items-center gap-1'><Zap size={12} /> Fast Response</p>
         <p className='text-xs text-gray-400 mt-0.5'>Within 24 hours</p>
       </div>
       <div className='fixed top-32 right-8 bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-4 shadow-lg -z-5 hidden xl:block'
         style={{ boxShadow: '0 4px 24px rgba(168,85,247,0.20)' }}>
-        <p className='text-xs font-bold text-purple-300'>🏥 DELTACARE</p>
+        <p className='text-xs font-bold text-purple-300 flex items-center gap-1'><Building2 size={12} /> DELTACARE</p>
         <p className='text-xs text-gray-400 mt-0.5'>Trusted by 10k+</p>
       </div>
       <div className='fixed bottom-32 right-8 bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-4 shadow-lg -z-5 hidden xl:block'
         style={{ boxShadow: '0 4px 24px rgba(6,182,212,0.20)' }}>
-        <p className='text-xs font-bold text-cyan-300'>⭐ 4.9 Rating</p>
+        <p className='text-xs font-bold text-cyan-300 flex items-center gap-1'><Star size={12} /> 4.9 Rating</p>
         <p className='text-xs text-gray-400 mt-0.5'>10k+ reviews</p>
       </div>
 

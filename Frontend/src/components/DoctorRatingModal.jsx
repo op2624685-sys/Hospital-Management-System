@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import reviewsAPI from "../api/reviews";
 import { toast } from "react-toastify";
+import { Star } from "lucide-react";
 
 /* ─── Star selector ─────────────────────────────────────────────────────────── */
 const StarSelector = ({ value, onChange }) => {
@@ -31,7 +32,7 @@ const StarSelector = ({ value, onChange }) => {
           }}
           aria-label={`Rate ${n} star${n > 1 ? "s" : ""}`}
         >
-          ★
+          <Star size={32} />
         </button>
       ))}
     </div>

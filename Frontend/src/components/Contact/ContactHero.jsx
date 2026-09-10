@@ -1,4 +1,5 @@
 import React from "react";
+import { Siren, Phone } from 'lucide-react';
 
 const ContactHero = () => {
   return (
@@ -25,7 +26,7 @@ const ContactHero = () => {
         <div className='bg-[var(--card)]/50 backdrop-blur-md border border-red-400/20 rounded-2xl px-6 py-4 flex flex-col sm:flex-row items-start sm:items-center justify-between shadow-sm gap-4 sm:gap-0'>
           <div className='flex items-center gap-3'>
             <div className='w-10 h-10 bg-red-500/20 rounded-xl flex items-center justify-center text-lg'>
-              🚨
+              <Siren size={20} className='text-red-500' />
             </div>
             <div className='flex flex-col'>
               <p className='font-bold text-[var(--foreground)] text-sm'>Medical Emergency?</p>
@@ -34,7 +35,7 @@ const ContactHero = () => {
           </div>
           <a href="tel:+919876543210"
             className='flex items-center gap-2 bg-red-500 text-white font-bold py-2.5 px-5 rounded-xl hover:scale-105 active:scale-95 transition-all duration-300 text-sm shadow-md shadow-red-200'>
-            📞 Call Now
+            <Phone size={16} /> Call Now
           </a>
         </div>
       </div>

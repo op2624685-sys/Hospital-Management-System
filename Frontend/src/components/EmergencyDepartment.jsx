@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { Zap, Stethoscope, Building2, UserCheck, Siren, Handshake, Users, Bed, Clock } from 'lucide-react'
 
 const ACCENT = '#ef4444'
 const BG     = '#fff5f5'
@@ -6,32 +7,32 @@ const BG     = '#fff5f5'
 const sections = [
   {
     title: 'Services Offered',
-    icon: '⚡',
+    icon: Zap,
     items: ['Rapid triage and patient assessment', 'Advanced cardiac life support (ACLS)', 'Trauma care and resuscitation', 'Emergency minor & major procedures', 'Suturing and wound management', 'Emergency intubation and ventilation', 'Emergency obstetric care', 'Pediatric emergency care'],
   },
   {
     title: 'Conditions We Treat',
-    icon: '🩺',
+    icon: Stethoscope,
     items: ['Chest pain & heart attack', 'Stroke symptoms', 'Severe breathing difficulties', 'Trauma & accidents', 'Fractures & dislocations', 'Severe bleeding', 'Burns', 'Poisoning & drug overdose', 'High fever with complications', 'Seizures'],
   },
   {
     title: 'Facilities & Equipment',
-    icon: '🏥',
+    icon: Building2,
     items: ['Fully equipped resuscitation bays', 'Cardiac monitors & defibrillators', 'Ventilators', 'Portable X-ray & ultrasound', 'CT scan access', 'Minor procedure room', 'Emergency pharmacy support', 'Dedicated trauma beds'],
   },
   {
     title: 'Emergency Team',
-    icon: '👨‍⚕️',
+    icon: UserCheck,
     items: ['Emergency Medicine Specialists', 'Trained Emergency Nurses', 'Trauma Surgeons (on-call)', 'Anesthesiologists (on-call)', 'Critical Care Specialists', 'Paramedical & Ambulance Team'],
   },
   {
     title: 'Ambulance Services',
-    icon: '🚑',
+    icon: Siren,
     items: ['24/7 ambulance availability', 'Basic & Advanced Life Support (BLS & ALS) ambulances', 'GPS-enabled rapid response'],
   },
   {
     title: 'Patient Support',
-    icon: '🤝',
+    icon: Handshake,
     items: ['Immediate admission to ICU if required', 'Coordination with specialty departments', 'Family counseling and updates', 'Insurance and billing assistance'],
   },
 ]
@@ -74,7 +75,7 @@ const EmergencyDepartment = () => {
                 background: active === i ? ACCENT : `${ACCENT}10`,
                 color:      active === i ? '#fff' : ACCENT,
               }}>
-              {s.icon} {s.title}
+              <s.icon size={16} style={{ color: active === i ? '#fff' : ACCENT }} /> {s.title}
             </button>
           ))}
         </div>
@@ -86,7 +87,7 @@ const EmergencyDepartment = () => {
           <h3
             className='font-black text-base md:text-lg mb-4 flex items-center gap-2'
             style={{ color: ACCENT }}>
-            {sections[active].icon} {sections[active].title}
+            <sections[active].icon size={20} /> {sections[active].title}
           </h3>
           <div className='grid grid-cols-1 sm:grid-cols-2 gap-3'>
             {sections[active].items.map((item, j) => (
@@ -136,13 +137,15 @@ const EmergencyDepartment = () => {
         {/* Stats */}
         <div className='grid grid-cols-2 gap-3'>
           {[
-            { label: 'Team Members', value: '10', icon: '👥' },
-            { label: 'Beds Available', value: '20', icon: '🛏️' },
-            { label: 'Response Time', value: '15m', icon: '⚡' },
-            { label: 'Availability', value: '24/7', icon: '🕐' },
+            { label: 'Team Members', value: '10', icon: Users },
+            { label: 'Beds Available', value: '20', icon: Bed },
+            { label: 'Response Time', value: '15m', icon: Zap },
+            { label: 'Availability', value: '24/7', icon: Clock },
           ].map((stat, i) => (
             <div key={i} className='bg-white rounded-xl p-4 shadow-sm text-center' style={{ border: `1px solid ${ACCENT}15` }}>
-              <p className='text-xl mb-1'>{stat.icon}</p>
+              <div className='flex justify-center mb-1'>
+                <stat.icon size={20} style={{ color: ACCENT }} />
+              </div>
               <p className='text-xl font-black' style={{ color: ACCENT }}>{stat.value}</p>
               <p className='text-xs text-gray-400 mt-0.5'>{stat.label}</p>
             </div>

@@ -1,10 +1,11 @@
 import React from "react";
+import { Target, Microscope, Handshake, Star } from 'lucide-react';
 
 const values = [
-  { icon: "🎯", title: "Patient First", desc: "Every decision we make puts the patient's wellbeing at the center." },
-  { icon: "🔬", title: "Innovation", desc: "We invest in the latest medical technologies for better outcomes." },
-  { icon: "🤝", title: "Compassion", desc: "We treat every patient with dignity, empathy and respect." },
-  { icon: "⭐", title: "Excellence", desc: "We hold ourselves to the highest standards of medical practice." },
+  { icon: Target, title: "Patient First", desc: "Every decision we make puts the patient's wellbeing at the center." },
+  { icon: Microscope, title: "Innovation", desc: "We invest in the latest medical technologies for better outcomes." },
+  { icon: Handshake, title: "Compassion", desc: "We treat every patient with dignity, empathy and respect." },
+  { icon: Star, title: "Excellence", desc: "We hold ourselves to the highest standards of medical practice." },
 ];
 
 const ValuesSection = () => {
@@ -31,7 +32,7 @@ const ValuesSection = () => {
             style={{ borderColor: 'var(--border)' }}>
             <div className='w-14 h-14 rounded-2xl flex items-center justify-center text-2xl mb-5 group-hover:scale-110 transition-transform duration-300'
                  style={{ background: 'color-mix(in srgb, var(--primary) 15%, transparent)' }}>
-              {value.icon}
+              <value.icon size={24} style={{ color: 'var(--primary)' }} />
             </div>
             <h3 className='font-black text-[var(--foreground)] text-lg mb-2'>{value.title}</h3>
             <p className='text-[var(--muted-foreground)] text-sm leading-relaxed'>{value.desc}</p>

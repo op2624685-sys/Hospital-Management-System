@@ -1,5 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
+import { Star } from "lucide-react";
 
 const doctors = [
   {
@@ -85,7 +86,7 @@ const DoctorsSection = () => {
                 <span className='text-sm font-bold px-3 py-1 rounded-xl' style={{ background: doctor.soft, color: doctor.text }}>
                   {doctor.specialization}
                 </span>
-                <span className='text-xs text-[var(--muted-foreground)] font-medium'>⭐ 4.9</span>
+                <span className='text-xs text-[var(--muted-foreground)] font-medium flex items-center gap-1'><Star size={12} /> 4.9</span>
               </div>
 
               <div className='flex items-center gap-2 text-[var(--muted-foreground)] text-sm mb-5'>

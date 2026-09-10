@@ -1,4 +1,5 @@
 import React from "react";
+import { Target, Telescope } from 'lucide-react';
 
 const MissionVision = () => {
   return (
@@ -14,7 +15,7 @@ const MissionVision = () => {
             style={{ background: 'radial-gradient(circle, var(--chart-5), transparent)' }}></div>
           <div className='relative z-10'>
             <div className='w-14 h-14 rounded-2xl flex items-center justify-center text-2xl mb-6 group-hover:scale-110 group-hover:-rotate-3 transition-transform duration-300' style={{ background: 'color-mix(in srgb, var(--primary) 15%, transparent)' }}>
-              🎯
+              <Target size={24} style={{ color: 'var(--primary)' }} />
             </div>
             <span className='text-[var(--primary)] text-xs font-black uppercase tracking-widest'>Our Mission</span>
             <h3 className='text-3xl font-black text-[var(--foreground)] mt-2 mb-4'>
@@ -37,7 +38,7 @@ const MissionVision = () => {
             style={{ background: 'radial-gradient(circle, var(--primary), transparent)' }}></div>
           <div className='relative z-10'>
             <div className='w-14 h-14 rounded-2xl flex items-center justify-center text-2xl mb-6 group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300' style={{ background: 'color-mix(in srgb, var(--chart-5) 15%, transparent)' }}>
-              🔭
+              <Telescope size={24} style={{ color: 'var(--chart-5)' }} />
             </div>
             <span className='text-[var(--chart-5)] text-xs font-black uppercase tracking-widest'>Our Vision</span>
             <h3 className='text-3xl font-black text-[var(--foreground)] mt-2 mb-4'>

@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { Zap, Stethoscope, Building2, UserCheck, Baby, Handshake, Users, Bed, Phone } from 'lucide-react'
 
 const ACCENT = '#f59e0b'
 const BG     = '#fffbeb'
@@ -6,32 +7,32 @@ const BG     = '#fffbeb'
 const sections = [
   {
     title: 'Services Offered',
-    icon: '⚡',
+    icon: Zap,
     items: ['Newborn care & neonatology', 'Routine well-child check-ups', 'Vaccination & immunization', 'Growth & developmental monitoring', 'Pediatric surgery', 'Child nutrition counseling', 'Allergy & asthma management', 'Pediatric cardiology', 'Pediatric neurology', 'Adolescent medicine'],
   },
   {
     title: 'Conditions We Treat',
-    icon: '🩺',
+    icon: Stethoscope,
     items: ['Fever & infections', 'Respiratory illnesses (asthma, bronchiolitis)', 'Diarrhea & dehydration', 'Malnutrition', 'Congenital disorders', 'Childhood diabetes', 'ADHD & behavioral issues', 'Developmental delays', 'Anemia', 'Ear & throat infections'],
   },
   {
     title: 'Facilities & Equipment',
-    icon: '🏥',
+    icon: Building2,
     items: ['Neonatal ICU (NICU)', 'Pediatric ICU (PICU)', 'Child-friendly ward & playroom', 'Pediatric OT & procedure room', 'Incubators & warmers', 'Pediatric ventilators', 'Dedicated pediatric pharmacy', 'Growth & nutrition clinic'],
   },
   {
     title: 'Pediatric Team',
-    icon: '👨‍⚕️',
+    icon: UserCheck,
     items: ['Consultant Pediatricians', 'Neonatologists', 'Pediatric Surgeons', 'Pediatric Cardiologists', 'Pediatric Neurologists', 'Child Psychologists', 'Pediatric Nurses', 'Nutritionists & Dieticians'],
   },
   {
     title: 'Neonatal Care',
-    icon: '👶',
+    icon: Baby,
     items: ['High-dependency NICU for premature babies', 'Kangaroo mother care support', 'Newborn screening programs', 'Phototherapy for jaundice', 'Breastfeeding support & lactation counseling'],
   },
   {
     title: 'Family Support',
-    icon: '🤝',
+    icon: Handshake,
     items: ['Parenting education & counseling', 'School health programs', 'Childhood vaccination schedules', '24/7 pediatric helpline', 'Insurance and billing assistance'],
   },
 ]
@@ -65,14 +66,14 @@ const Pediatrics = () => {
             <button key={i} onClick={() => setActive(i)}
               className='flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all duration-200 active:scale-95'
               style={{ background: active === i ? ACCENT : `${ACCENT}10`, color: active === i ? '#fff' : ACCENT }}>
-              {s.icon} {s.title}
+              <s.icon size={16} style={{ color: active === i ? '#fff' : ACCENT }} /> {s.title}
             </button>
           ))}
         </div>
 
         <div className='rounded-2xl p-5 md:p-6 flex-1' style={{ background: BG, border: `1px solid ${ACCENT}20` }}>
           <h3 className='font-black text-base md:text-lg mb-4 flex items-center gap-2' style={{ color: ACCENT }}>
-            {sections[active].icon} {sections[active].title}
+            <sections[active].icon size={20} /> {sections[active].title}
           </h3>
           <div className='grid grid-cols-1 sm:grid-cols-2 gap-3'>
             {sections[active].items.map((item, j) => (
@@ -113,13 +114,15 @@ const Pediatrics = () => {
 
         <div className='grid grid-cols-2 gap-3'>
           {[
-            { label: 'Team Members', value: '20', icon: '👥' },
-            { label: 'NICU Beds', value: '10', icon: '👶' },
-            { label: 'PICU Beds', value: '8', icon: '🏥' },
-            { label: 'Helpline', value: '24/7', icon: '📞' },
+            { label: 'Team Members', value: '20', icon: Users },
+            { label: 'NICU Beds', value: '10', icon: Baby },
+            { label: 'PICU Beds', value: '8', icon: Bed },
+            { label: 'Helpline', value: '24/7', icon: Phone },
           ].map((stat, i) => (
             <div key={i} className='bg-white rounded-xl p-4 shadow-sm text-center' style={{ border: `1px solid ${ACCENT}15` }}>
-              <p className='text-xl mb-1'>{stat.icon}</p>
+              <div className='flex justify-center mb-1'>
+                <stat.icon size={20} style={{ color: ACCENT }} />
+              </div>
               <p className='text-xl font-black' style={{ color: ACCENT }}>{stat.value}</p>
               <p className='text-xs text-gray-400 mt-0.5'>{stat.label}</p>
             </div>

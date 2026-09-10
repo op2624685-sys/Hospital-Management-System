@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { Zap, Stethoscope, Building2, UserCheck, Siren, Handshake, Users, Heart, Bed } from 'lucide-react'
 
 const ACCENT = '#f97316'
 const BG     = '#fff7ed'
@@ -6,32 +7,32 @@ const BG     = '#fff7ed'
 const sections = [
   {
     title: 'Services Offered',
-    icon: '⚡',
+    icon: Zap,
     items: ['Echocardiography & cardiac imaging', 'Coronary angiography & angioplasty', 'Cardiac catheterization', 'Pacemaker implantation', 'Electrophysiology studies', 'Heart failure management', 'Cardiac rehabilitation', 'Preventive cardiology', 'Holter monitoring', 'Stress testing'],
   },
   {
     title: 'Conditions We Treat',
-    icon: '🩺',
+    icon: Stethoscope,
     items: ['Coronary artery disease', 'Heart failure & cardiomyopathy', 'Arrhythmias & atrial fibrillation', 'Valvular heart disease', 'Congenital heart defects', 'Hypertension', 'Aortic disorders', 'Peripheral artery disease', 'Pericardial diseases', 'Cardiac infections'],
   },
   {
     title: 'Facilities & Equipment',
-    icon: '🏥',
+    icon: Building2,
     items: ['Cardiac ICU (CICU)', 'Cardiac catheterization lab', 'Electrophysiology lab', 'Echocardiography suite', 'Nuclear cardiology unit', 'Cardiac MRI & CT', '24-hour Holter monitoring', 'Treadmill stress test lab', 'Pacemaker clinic'],
   },
   {
     title: 'Cardiology Team',
-    icon: '👨‍⚕️',
+    icon: UserCheck,
     items: ['Interventional Cardiologists', 'Electrophysiologists', 'Cardiac Surgeons', 'Echocardiographers', 'Cardiac Nurses', 'Cardiac Rehabilitation Specialists', 'Cardiac Dieticians', 'Cardiac Physiologists'],
   },
   {
     title: 'Cardiac Emergency',
-    icon: '🚨',
+    icon: Siren,
     items: ['24/7 cardiac emergency team', 'Primary PCI for heart attacks', 'Emergency pacemaker insertion', 'Cardiac arrest resuscitation', 'Dedicated cardiac emergency helpline'],
   },
   {
     title: 'Patient Support',
-    icon: '🤝',
+    icon: Handshake,
     items: ['Cardiac rehabilitation programs', 'Lifestyle counseling', 'Medication management', 'Heart failure clinics', 'Insurance and billing assistance'],
   },
 ]
@@ -65,14 +66,14 @@ const Cardiology = () => {
             <button key={i} onClick={() => setActive(i)}
               className='flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all duration-200 active:scale-95'
               style={{ background: active === i ? ACCENT : `${ACCENT}10`, color: active === i ? '#fff' : ACCENT }}>
-              {s.icon} {s.title}
+              <s.icon size={16} style={{ color: active === i ? '#fff' : ACCENT }} /> {s.title}
             </button>
           ))}
         </div>
 
         <div className='rounded-2xl p-5 md:p-6 flex-1' style={{ background: BG, border: `1px solid ${ACCENT}20` }}>
           <h3 className='font-black text-base md:text-lg mb-4 flex items-center gap-2' style={{ color: ACCENT }}>
-            {sections[active].icon} {sections[active].title}
+            <sections[active].icon size={20} /> {sections[active].title}
           </h3>
           <div className='grid grid-cols-1 sm:grid-cols-2 gap-3'>
             {sections[active].items.map((item, j) => (
@@ -113,13 +114,15 @@ const Cardiology = () => {
 
         <div className='grid grid-cols-2 gap-3'>
           {[
-            { label: 'Team Members', value: '18', icon: '👥' },
-            { label: 'Cath Labs', value: '2', icon: '❤️' },
-            { label: 'CICU Beds', value: '15', icon: '🏥' },
-            { label: 'Emergency', value: '24/7', icon: '🚨' },
+            { label: 'Team Members', value: '18', icon: Users },
+            { label: 'Cath Labs', value: '2', icon: Heart },
+            { label: 'CICU Beds', value: '15', icon: Bed },
+            { label: 'Emergency', value: '24/7', icon: Siren },
           ].map((stat, i) => (
             <div key={i} className='bg-white rounded-xl p-4 shadow-sm text-center' style={{ border: `1px solid ${ACCENT}15` }}>
-              <p className='text-xl mb-1'>{stat.icon}</p>
+              <div className='flex justify-center mb-1'>
+                <stat.icon size={20} style={{ color: ACCENT }} />
+              </div>
               <p className='text-xl font-black' style={{ color: ACCENT }}>{stat.value}</p>
               <p className='text-xs text-gray-400 mt-0.5'>{stat.label}</p>
             </div>

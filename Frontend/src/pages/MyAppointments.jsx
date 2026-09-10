@@ -8,6 +8,7 @@ import PageLoader from "../components/PageLoader";
 import DoctorRatingModal from "../components/DoctorRatingModal";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "../context/AuthContext";
+import { Loader2, FileText, Star } from 'lucide-react';
 
 const MyAppointments = () => {
   const navigate = useNavigate();
@@ -534,8 +535,8 @@ const MyAppointments = () => {
 
                     {/* Prescription */}
                     {a.hasPrescription && (a.prescriptionDocumentStatus === "PENDING_GENERATION" || a.prescriptionDocumentStatus === "GENERATING") && (
-                      <div style={{ marginTop: 14, padding: "10px 14px", background: "var(--secondary)", borderRadius: 12, fontSize: 12, color: "var(--muted-foreground)", fontWeight: 700 }}>
-                        ⏳ Prescription is being generated...
+                      <div style={{ marginTop: 14, padding: "10px 14px", background: "var(--secondary)", borderRadius: 12, fontSize: 12, color: "var(--muted-foreground)", fontWeight: 700, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <Loader2 size={14} className="animate-spin" /> Prescription is being generated...
                       </div>
                     )}
                     {a.prescriptionDocumentStatus === "READY" && a.prescriptionDocumentUrl && (
@@ -548,7 +549,9 @@ const MyAppointments = () => {
                           style={{ display: "inline-flex" }}
                           onClick={(e) => e.stopPropagation()}
                         >
-                          📄 Download Prescription PDF
+                          <span className="flex items-center gap-2">
+                            <FileText size={14} /> Download Prescription PDF
+                          </span>
                         </a>
                       </div>
                     )}
@@ -556,7 +559,7 @@ const MyAppointments = () => {
                     {/* Edit Rating section (inside expanded, only for COMPLETED) */}
                     {a.status === "COMPLETED" && (
                       <div className="ux-rate-inline">
-                        <div className="ux-rate-inline-label">★ Rate Your Doctor</div>
+                        <div className="ux-rate-inline-label flex items-center gap-2"><Star size={14} /> Rate Your Doctor</div>
                         <p style={{ fontSize: 12, color: "var(--muted-foreground)", margin: "0 0 10px" }}>
                           Share feedback about Dr. {a.doctor?.name || "your doctor"} to help others.
                         </p>
@@ -567,7 +570,7 @@ const MyAppointments = () => {
                           }}
                           className="ux-btn ux-btn-rate"
                         >
-                          ★ Update / Edit Rating
+                          <span className="flex items-center gap-2"><Star size={14} /> Update / Edit Rating</span>
                         </button>
                       </div>
                     )}

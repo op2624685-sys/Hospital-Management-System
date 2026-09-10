@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { Zap, Stethoscope, Building2, UserCheck, Microscope, Handshake, Users, ClipboardList } from 'lucide-react'
 
 const ACCENT = '#14b8a6'
 const BG     = '#f0fdfa'
@@ -6,32 +7,32 @@ const BG     = '#f0fdfa'
 const sections = [
   {
     title: 'Services Offered',
-    icon: '⚡',
+    icon: Zap,
     items: ['Digital X-ray', 'CT scan (multi-slice)', 'MRI (1.5T & 3T)', 'Ultrasound & Doppler', 'PET-CT scan', 'Mammography', 'Bone densitometry (DEXA)', 'Interventional radiology', 'Fluoroscopy', 'Nuclear medicine imaging'],
   },
   {
     title: 'Conditions We Diagnose',
-    icon: '🩺',
+    icon: Stethoscope,
     items: ['Cancer & tumor detection', 'Fractures & bone injuries', 'Internal bleeding', 'Vascular diseases', 'Liver & kidney disorders', 'Brain & spinal abnormalities', 'Lung & chest diseases', 'Abdominal & pelvic conditions', 'Thyroid & gland disorders', 'Joint & soft tissue injuries'],
   },
   {
     title: 'Facilities & Equipment',
-    icon: '🏥',
+    icon: Building2,
     items: ['3 Tesla MRI scanner', '128-slice CT scanner', '3D mammography unit', 'Portable ultrasound & X-ray', 'Digital subtraction angiography (DSA)', 'PET-CT suite', 'Nuclear medicine gamma camera', 'Dedicated pediatric imaging room', 'PACS digital reporting system'],
   },
   {
     title: 'Radiology Team',
-    icon: '👨‍⚕️',
+    icon: UserCheck,
     items: ['Consultant Radiologists', 'Interventional Radiologists', 'Nuclear Medicine Specialists', 'Radiographers & Technologists', 'Sonographers', 'Medical Physicists', 'Radiology Nurses', 'Report Coordinators'],
   },
   {
     title: 'Interventional Radiology',
-    icon: '🔬',
+    icon: Microscope,
     items: ['Image-guided biopsies', 'Tumor ablation', 'Angioplasty & embolization', 'Drainage procedures', 'Pain management injections', 'TIPS procedure'],
   },
   {
     title: 'Patient Support',
-    icon: '🤝',
+    icon: Handshake,
     items: ['Online appointment booking', 'Same-day emergency reporting', 'Digital report delivery', 'Radiation safety protocols', 'Insurance and billing assistance'],
   },
 ]
@@ -65,14 +66,14 @@ const Radiology = () => {
             <button key={i} onClick={() => setActive(i)}
               className='flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all duration-200 active:scale-95'
               style={{ background: active === i ? ACCENT : `${ACCENT}10`, color: active === i ? '#fff' : ACCENT }}>
-              {s.icon} {s.title}
+              <s.icon size={16} style={{ color: active === i ? '#fff' : ACCENT }} /> {s.title}
             </button>
           ))}
         </div>
 
         <div className='rounded-2xl p-5 md:p-6 flex-1' style={{ background: BG, border: `1px solid ${ACCENT}20` }}>
           <h3 className='font-black text-base md:text-lg mb-4 flex items-center gap-2' style={{ color: ACCENT }}>
-            {sections[active].icon} {sections[active].title}
+            <sections[active].icon size={20} /> {sections[active].title}
           </h3>
           <div className='grid grid-cols-1 sm:grid-cols-2 gap-3'>
             {sections[active].items.map((item, j) => (
@@ -113,13 +114,15 @@ const Radiology = () => {
 
         <div className='grid grid-cols-2 gap-3'>
           {[
-            { label: 'Team Members', value: '14', icon: '👥' },
-            { label: 'MRI Tesla', value: '3T', icon: '🔬' },
-            { label: 'CT Slices', value: '128', icon: '⚡' },
-            { label: 'Same Day', value: 'Reports', icon: '📋' },
+            { label: 'Team Members', value: '14', icon: Users },
+            { label: 'MRI Tesla', value: '3T', icon: Microscope },
+            { label: 'CT Slices', value: '128', icon: Zap },
+            { label: 'Same Day', value: 'Reports', icon: ClipboardList },
           ].map((stat, i) => (
             <div key={i} className='bg-white rounded-xl p-4 shadow-sm text-center' style={{ border: `1px solid ${ACCENT}15` }}>
-              <p className='text-xl mb-1'>{stat.icon}</p>
+              <div className='flex justify-center mb-1'>
+                <stat.icon size={20} style={{ color: ACCENT }} />
+              </div>
               <p className='text-xl font-black' style={{ color: ACCENT }}>{stat.value}</p>
               <p className='text-xs text-gray-400 mt-0.5'>{stat.label}</p>
             </div>
