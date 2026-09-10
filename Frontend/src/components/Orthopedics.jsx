@@ -39,6 +39,7 @@ const sections = [
 
 const Orthopedics = () => {
   const [active, setActive] = useState(0)
+  const ActiveIcon = sections[active].icon;
 
   return (
     <div className='flex flex-col md:flex-row h-full overflow-y-auto md:overflow-visible'>
@@ -73,7 +74,7 @@ const Orthopedics = () => {
 
         <div className='rounded-2xl p-5 md:p-6 flex-1' style={{ background: BG, border: `1px solid ${ACCENT}20` }}>
           <h3 className='font-black text-base md:text-lg mb-4 flex items-center gap-2' style={{ color: ACCENT }}>
-            <sections[active].icon size={20} /> {sections[active].title}
+            <ActiveIcon size={20} /> {sections[active].title}
           </h3>
           <div className='grid grid-cols-1 sm:grid-cols-2 gap-3'>
             {sections[active].items.map((item, j) => (

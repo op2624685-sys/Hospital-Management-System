@@ -112,7 +112,7 @@ const GenericDepartment = ({ name, icon, description, members, headDoctor, accen
             </span>
             {name}
           </h2>
-          <p className='text-sm text-[var(--muted-foreground)] leading-relaxed mb-12 font-medium opacity-60'>{description}</p
+          <p className='text-sm text-[var(--muted-foreground)] leading-relaxed mb-12 font-medium opacity-60'>{description}</p>
 
           <div className='space-y-4'>
             {sections.map((s, i) => (
