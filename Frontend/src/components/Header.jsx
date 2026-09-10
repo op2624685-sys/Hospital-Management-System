@@ -173,13 +173,22 @@ const Header = () => {
                 <ProfileDropdown />
               </>
             ) : (
-              <RouterLink
-                to="/login"
-                className='group inline-flex h-9 items-center gap-1.5 rounded-full px-3.5 text-xs font-bold uppercase tracking-wide text-[var(--primary-foreground)] transition-all duration-300 hover:-translate-y-0.5 active:translate-y-0 shadow-sm hover:shadow-md'
-                style={{ background: 'linear-gradient(135deg, var(--primary), var(--chart-5))', boxShadow: '0 4px 12px color-mix(in srgb, var(--primary) 22%, transparent)' }}>
-                <LogIn size={13} className='transition-transform duration-300 group-hover:-rotate-12' />
-                <span>Login</span>
-              </RouterLink>
+              <div className='flex items-center gap-2'>
+                <RouterLink
+                  to="/signup"
+                  className='group inline-flex h-9 items-center gap-1.5 rounded-full px-3.5 text-xs font-bold uppercase tracking-wide text-[var(--primary)] transition-all duration-300 hover:-translate-y-0.5 active:translate-y-0 shadow-sm hover:shadow-md border border-[var(--primary)] bg-transparent hover:bg-[var(--primary)] hover:text-white'
+                  style={{}}>
+                  <UserPlus size={13} className='transition-transform duration-300 group-hover:rotate-12' />
+                  <span>Signup</span>
+                </RouterLink>
+                <RouterLink
+                  to="/login"
+                  className='group inline-flex h-9 items-center gap-1.5 rounded-full px-3.5 text-xs font-bold uppercase tracking-wide text-[var(--primary-foreground)] transition-all duration-300 hover:-translate-y-0.5 active:translate-y-0 shadow-sm hover:shadow-md'
+                  style={{ background: 'linear-gradient(135deg, var(--primary), var(--chart-5))', boxShadow: '0 4px 12px color-mix(in srgb, var(--primary) 22%, transparent)' }}>
+                  <LogIn size={13} className='transition-transform duration-300 group-hover:-rotate-12' />
+                  <span>Login</span>
+                </RouterLink>
+              </div>
             )}
             </div>
 
@@ -297,14 +306,24 @@ const Header = () => {
                   </button>
                 </>
               ) : (
-                <RouterLink
-                  to="/login"
-                  onClick={() => setMenuOpen(false)}
-                  className='mx-auto flex h-10 w-fit min-w-32 items-center justify-center gap-2 rounded-full px-5 text-sm font-semibold text-[var(--primary-foreground)] transition-all duration-300'
-                  style={{ background: 'linear-gradient(135deg, var(--primary), var(--chart-5))' }}>
-                  <LogIn size={15} />
-                  Login
-                </RouterLink>
+                <div className='flex flex-col items-center gap-3'>
+                  <RouterLink
+                    to="/signup"
+                    onClick={() => setMenuOpen(false)}
+                    className='flex h-10 w-full max-w-32 items-center justify-center gap-2 rounded-full px-5 text-sm font-semibold text-[var(--primary)] transition-all duration-300 border border-[var(--primary)]'
+                    style={{ background: 'transparent' }}>
+                    <UserPlus size={15} />
+                    Signup
+                  </RouterLink>
+                  <RouterLink
+                    to="/login"
+                    onClick={() => setMenuOpen(false)}
+                    className='flex h-10 w-full max-w-32 items-center justify-center gap-2 rounded-full px-5 text-sm font-semibold text-[var(--primary-foreground)] transition-all duration-300'
+                    style={{ background: 'linear-gradient(135deg, var(--primary), var(--chart-5))' }}>
+                    <LogIn size={15} />
+                    Login
+                  </RouterLink>
+                </div>
               )}
             </div>
           </div>
