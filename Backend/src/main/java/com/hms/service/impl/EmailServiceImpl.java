@@ -1,9 +1,12 @@
 package com.hms.service.impl;
 
-import org.springframework.mail.SimpleMailMessage;
-import org.springframework.mail.javamail.JavaMailSender;
+import java.util.*;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.*;
+import org.springframework.web.util.LinkedMultiValueMap;
+import org.springframework.web.util.MultiValueMap;
 
 import com.hms.service.EmailService;
 
@@ -18,59 +21,55 @@ public class EmailServiceImpl implements EmailService {
     @Value("${app.mail.from}")
     private String fromEmail;
 
-    private final JavaMailSender mailSender;
+    @Value("${app.resend.api-key}")
+    private String resendApiKey;
 
-    /**
-     * Send OTP email synchronously.
-     * Note: No @Async annotation - callers should handle async dispatch
-     * (typically via EmailKafkaConsumer on a separate Kafka consumer thread)
-     */
+    private final RestTemplate restTemplate;
+
+    private static final String RESEND_API_URL = "https://api.resend.com/emails";
+
     @Override
     public void sendOtpEmail(String toEmail, String otp) {
-        try {
-            SimpleMailMessage message = new SimpleMailMessage();
-            message.setFrom(fromEmail);
-            message.setTo(toEmail);
-            message.setSubject("Password Reset OTP - MediCore HMS");
-            message.setText("Your One-Time Password (OTP) for password reset is: " + otp + "\n\n" +
-                    "This OTP is valid for 10 minutes.\n\n" +
-                    "If you did not request this, please ignore this email.\n\n" +
-                    "Best regards,\n" +
-                    "MediCore HMS Team");
-            
-            mailSender.send(message);
-            log.info("OTP email sent successfully to: {}", toEmail);
-        } catch (Exception e) {
-            log.error("Failed to send OTP email to: {}", toEmail, e);
-            throw new RuntimeException("Failed to send OTP email", e);
-        }
+        String subject = "Password Reset OTP - MediCore HMS";
+        String body = "Your One-Time Password (OTP) for password reset is: " + otp + "\n\n" +
+                "This OTP is valid for 10 minutes.\n\n" +
+                "If you did not request this, please ignore this email.\n\n" +
+                "Best regards,\n" +
+                "MediCore HMS Team";
+
+        sendRestEmail(toEmail, subject, body);
     }
 
-    /**
-     * Send general email synchronously.
-     * Note: No @Async annotation - Kafka consumer (EmailKafkaConsumer) handles async delivery
-     * EmailKafkaConsumer runs on a separate Kafka consumer thread pool, providing:
-     * - Automatic retries on failure
-     * - Zero-loss message guarantee
-     * - Horizontal scalability
-     */
     @Override
     public void sendMail(String to, String subject, String body) {
-        try {
-            SimpleMailMessage mail = new SimpleMailMessage();
-            mail.setTo(to);
-            mail.setSubject(subject);
-            mail.setText(body);
-            mailSender.send(mail);
-            log.info("Email sent successfully to: {}", to);
-        } catch (Exception e) {
-            log.error("Error sending email to: {}", to, e);
-            throw new RuntimeException("Failed to send email", e);
-        }
+        sendRestEmail(to, subject, body);
     }
 
     @Override
     public void sendPaymentSuccessEmail(String to, String subject, String body) {
-        // later implement this 
+        sendRestEmail(to, subject, body);
+    }
+
+    private void sendRestEmail(String to, String subject, String body) {
+        try {
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            headers.setBearerAuth(resendApiKey);
+            headers.set("User-Agent", "MediCore-HMS");
+
+            Map<String, Object> requestBody = new HashMap<>();
+            requestBody.put("from", fromEmail);
+            requestBody.put("to", List.of(to));
+            requestBody.put("subject", subject);
+            requestBody.put("text", body);
+
+            HttpEntity<Map<String, Object>> entity = new HttpEntity<>(requestBody, headers);
+
+            restTemplate.postForEntity(RESEND_API_URL, entity, String.class);
+            log.info("Email sent successfully via Resend API to: {}", to);
+        } catch (RestClientException e) {
+            log.error("Error sending email via Resend API to: {}", to, e);
+            throw new RuntimeException("Failed to send email via Resend API", e);
+        }
     }
 }
