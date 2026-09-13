@@ -2,6 +2,7 @@ package com.hms.service.impl;
 
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import com.hms.service.EmailService;
@@ -14,6 +15,9 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class EmailServiceImpl implements EmailService {
 
+    @Value("${app.mail.from}")
+    private String fromEmail;
+
     private final JavaMailSender mailSender;
 
     /**
@@ -25,7 +29,7 @@ public class EmailServiceImpl implements EmailService {
     public void sendOtpEmail(String toEmail, String otp) {
         try {
             SimpleMailMessage message = new SimpleMailMessage();
-            message.setFrom("${MAIL_USERNAME}");
+            message.setFrom(fromEmail);
             message.setTo(toEmail);
             message.setSubject("Password Reset OTP - MediCore HMS");
             message.setText("Your One-Time Password (OTP) for password reset is: " + otp + "\n\n" +
