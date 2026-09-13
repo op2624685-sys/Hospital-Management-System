@@ -5,8 +5,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.*;
-import org.springframework.web.util.LinkedMultiValueMap;
-import org.springframework.web.util.MultiValueMap;
 
 import com.hms.service.EmailService;
 
