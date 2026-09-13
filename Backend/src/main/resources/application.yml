@@ -42,15 +42,18 @@ spring:
                 enabled: false
     mail:
         host: ${MAIL_HOST:smtp.resend.com}
-        port: ${MAIL_PORT:587}
+        port: ${MAIL_PORT:465}
         username: ${MAIL_USERNAME:resend}
         password: ${MAIL_PASSWORD:}
         properties:
             mail:
                 smtp:
                     auth: true
-                    starttls:
+                    ssl:
                         enable: true
+                    socketFactory:
+                        class: javax.net.ssl.SSLSocketFactory
+                        fallback-false: true
 
 # Swagger/OpenAPI Configuration
 springdoc:
