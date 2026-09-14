@@ -87,6 +87,7 @@ public class WebSecurityConfig {
                         .requestMatchers("/receptionist/**").hasRole(RECEPTIONIST.name())
                         .requestMatchers("/user/**").authenticated()
                         .requestMatchers(HttpMethod.POST, "/patients/register").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/patients/appointments/check/**").permitAll()
                         .requestMatchers("/patients/**", "/payments/**").hasRole(PATIENT.name())
                         .requestMatchers(HttpMethod.GET,  "/reviews/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/reviews/**").hasRole(PATIENT.name())
