@@ -52,11 +52,7 @@ const App = () => {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/appointment" element={<Appointment />} />
-          <Route path="/appointment/check" element={
-            <ProtectedRoute role="PATIENT" redirectTo="/profile">
-              <CheckAppointments />
-            </ProtectedRoute>
-          } />
+          <Route path="/appointment/check" element={<CheckAppointments />} />
           <Route path="/appointment/:appointmentId" element={
             <ProtectedRoute role="PATIENT" redirectTo="/profile">
               <AppointmentDetails />
