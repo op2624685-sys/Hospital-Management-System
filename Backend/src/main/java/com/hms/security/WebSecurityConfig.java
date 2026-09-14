@@ -73,7 +73,7 @@ public class WebSecurityConfig {
                 .sessionManagement(
                         sessionConfig -> sessionConfig.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/public/**", "/auth/**").permitAll()
+                        .requestMatchers("/public/**", "/auth/**", "/ping").permitAll()
                         .requestMatchers("/ws/**").permitAll()
                         .requestMatchers("/payments/stripe/webhook").permitAll()
                         .requestMatchers("/actuator/health/**").permitAll()
