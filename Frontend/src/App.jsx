@@ -53,11 +53,7 @@ const App = () => {
           <Route path="/" element={<Home />} />
           <Route path="/appointment" element={<Appointment />} />
           <Route path="/appointment/check" element={<CheckAppointments />} />
-          <Route path="/appointment/:appointmentId" element={
-            <ProtectedRoute role="PATIENT" redirectTo="/profile">
-              <AppointmentDetails />
-            </ProtectedRoute>
-          } />
+          <Route path="/appointment/:appointmentId" element={<AppointmentDetails />} />
           <Route path="/payment" element={
             <ProtectedRoute role="PATIENT" redirectTo="/profile">
               <PaymentPage />
