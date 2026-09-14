@@ -25,6 +25,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     private static final Set<String> PUBLIC_PATH_PREFIXES = Set.of(
             "/public/",
             "/auth/",
+            "/ping",
             "/swagger-ui/",
             "/v3/api-docs/"
     );
