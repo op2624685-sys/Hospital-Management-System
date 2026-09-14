@@ -99,11 +99,11 @@ export const AuthProvider = ({ children }) => {
 
   // Integrated OAuth Detection & Sync
   useEffect(() => {
-    const params = new URLSearchParams(location.search);
+    const params = new URLSearchParams(window.location.search);
     const token = params.get('token');
     const refreshToken = params.get('refreshToken');
 
-    if (token && !oauthProcessingRef.current) {
+    if (token && !oauthProcessingRef.current && window.location.pathname !== '/signup/complete') {
         oauthProcessingRef.current = true;
         saveAuthTokens({ token, refreshToken });
 
