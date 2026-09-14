@@ -24,10 +24,13 @@ const deleteCookie = (name) => {
 export const getAccessToken = () => getCookie(ACCESS_TOKEN_COOKIE) || localStorage.getItem("token");
 export const getRefreshToken = () => getCookie(REFRESH_TOKEN_COOKIE) || localStorage.getItem("refreshToken");
 export const getApiOrigin = () => {
+  let origin = "";
   if (import.meta.env.VITE_API_ORIGIN) {
-    return import.meta.env.VITE_API_ORIGIN.replace(/\/$/, "");
+    origin = import.meta.env.VITE_API_ORIGIN;
+  } else {
+    origin = new URL(API_BASE_URL, window.location.origin).origin;
   }
-  return new URL(API_BASE_URL, window.location.origin).origin;
+  return origin.trim().replace(/\/+$/, "");
 };
 
 export const saveAuthTokens = ({ token, refreshToken }) => {
