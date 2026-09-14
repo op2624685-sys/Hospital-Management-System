@@ -100,7 +100,7 @@ const PatientRegister = () => {
 
             <label className="auth-field auth-fade">
               <Mail size={16} />
-              <input type="email" placeholder="Email" name="email" value={formData.email} onChange={handleInputChange} required />
+              <input type="email" placeholder="Email" name="email" value={formData.email} readOnly required style={{ cursor: 'not-allowed', opacity: 0.8 }} />
             </label>
 
             <label className="auth-field auth-fade">

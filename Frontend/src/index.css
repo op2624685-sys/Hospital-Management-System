@@ -333,6 +333,11 @@ body {
     font-weight: 600;
 }
 
+.auth-field select option {
+    background-color: var(--auth-field-bg);
+    color: var(--auth-text);
+}
+
 .auth-field input::placeholder,
 .auth-field select::placeholder {
     color: color-mix(in srgb, var(--auth-muted) 78%, transparent);
