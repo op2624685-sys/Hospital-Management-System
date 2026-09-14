@@ -59,7 +59,6 @@ const statusConfig = {
 
 const initials = (n = '') => n.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2) || '??'
 
-/* â”€â”€ Loading screen â”€â”€ */
 const LoadingScreen = () => (
   <>
     <style>{`
@@ -72,7 +71,6 @@ const LoadingScreen = () => (
   </>
 )
 
-/* â”€â”€ Error screen â”€â”€ */
 const ErrorScreen = ({ onBack }) => (
   <>
     <style>{`
@@ -95,7 +93,7 @@ const AppointmentDetails = () => {
   const queryClient = useQueryClient()
   const { appointmentId } = useParams()
   const navigate = useNavigate()
-  const { user, hasRole } = useAuth()
+  const { user, hasRole, isLoggedIn } = useAuth()
 
   const [copied, setCopied]           = useState(false)
   const [cancelling, setCancelling]   = useState(false)
@@ -134,6 +132,7 @@ const AppointmentDetails = () => {
   }
 
   const canPatientCancel = Boolean(
+    isLoggedIn &&
     hasRole('PATIENT') &&
     appointment?.status !== 'CANCELLED' &&
     String(appointment?.patient?.id) === String(user?.id)
@@ -186,11 +185,9 @@ const AppointmentDetails = () => {
           width: 500px; height: 500px; bottom: -200px; right: -150px;
           background: radial-gradient(circle, var(--secondary), transparent);
         }
-
-        /* layout */
         .ad-container {
           position: relative; z-index: 1;
-          max-width: 680px; margin: 0 auto;
+          max-width: 720px; margin: 0 auto;
           padding: 112px 24px 80px;
           animation: adIn .65s ease both;
         }
@@ -221,9 +218,9 @@ const AppointmentDetails = () => {
         .ad-heading em { font-style: italic; color: var(--primary); font-family: serif; }
         .ad-subhead { font-size: 15px; color: var(--muted-foreground); font-weight: 500; }
 
-        /* â”€â”€ TICKET CARD â”€â”€ */
+        /* ── TICKET CARD ── */
         .ad-ticket {
-          border-radius: 28px; overflow: hidden;
+          border-radius: 32px; overflow: hidden;
           border: 1px solid var(--border);
           box-shadow: 0 40px 100px -20px rgba(0,0,0,0.1);
           animation: adIn .6s .2s ease both; opacity: 0;
@@ -335,6 +332,16 @@ const AppointmentDetails = () => {
         }
         .ad-date-small { font-size: 11px; color: var(--muted-foreground); font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
 
+        /* payment box */
+        .ad-payment-box {
+          background: color-mix(in srgb, var(--primary) 5%, transparent);
+          border: 1px solid color-mix(in srgb, var(--primary) 20%, transparent);
+          border-radius: 16px; padding: 16px 20px;
+          margin-bottom: 28px; display: flex; justify-content: space-between; align-items: center;
+        }
+        .ad-pay-label { font-size: 12px; font-weight: 700; color: var(--muted-foreground); text-transform: uppercase; letter-spacing: .05em; }
+        .ad-pay-amount { font-size: 20px; font-weight: 900; color: var(--primary); }
+
         /* reason block */
         .ad-reason-box {
           background: var(--sidebar);
@@ -360,6 +367,27 @@ const AppointmentDetails = () => {
           word-break: break-word;
         }
 
+        /* Instructions section */
+        .ad-instructions {
+          margin-top: 32px; padding: 24px;
+          background: var(--sidebar); border-radius: 24px;
+          border: 1px solid var(--border);
+        }
+        .ad-inst-title {
+          display: flex; align-items: center; gap: 8px;
+          font-size: 14px; font-weight: 800; color: var(--foreground);
+          margin-bottom: 16px; text-transform: uppercase; letter-spacing: .05em;
+        }
+        .ad-inst-list { list-style: none; padding: 0; display: flex; flex-direction: column; gap: 12px; }
+        .ad-inst-item {
+          display: flex; gap: 12px; font-size: 13px; color: var(--muted-foreground); line-height: 1.5;
+        }
+        .ad-inst-num {
+          background: var(--primary); color: #fff; width: 18px; height: 18px;
+          border-radius: 50%; display: flex; align-items: center; justify-content: center;
+          font-size: 10px; font-weight: 800; shrink: 0; margin-top: 2px;
+        }
+
         /* buttons */
         .ad-actions { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; }
         .ad-btn {
@@ -382,60 +410,29 @@ const AppointmentDetails = () => {
           text-align: center; margin-top: 32px;
           font-size: 13px; color: var(--muted-foreground); font-weight: 600;
         }
-        
+
         @media (max-width: 540px) {
           .ad-info-grid { grid-template-columns: 1fr; }
           .ad-date-band { flex-direction: column; }
           .ad-date-block { border-right: none; border-bottom: 1.5px solid var(--border); width: 100%; }
         }
-
         @page { size: A4 portrait; margin: 8mm; }
         @media print {
           * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
           html, body { background: #fff !important; }
-
           .ad-page { min-height: auto; background: #fff; }
-          .ad-page > header,
-          .ad-ambient,
-          .ad-success-header,
-          .ad-actions,
-          .ad-footer {
-            display: none !important;
-          }
-
-          .ad-container {
-            max-width: 100%;
-            padding: 0;
-            margin: 0;
-            animation: none;
-          }
-
-          .ad-ticket {
-            border-radius: 14px;
-            box-shadow: none;
-            overflow: visible;
-            break-inside: avoid;
-            page-break-inside: avoid;
-          }
-
+          .ad-page > header, .ad-ambient, .ad-success-header, .ad-actions, .ad-footer { display: none !important; }
+          .ad-container { max-width: 100%; padding: 0; margin: 0; animation: none; }
+          .ad-ticket { border-radius: 14px; box-shadow: none; overflow: visible; break-inside: avoid; page-break-inside: avoid; }
           .ad-ticket-banner { padding: 16px 18px; }
           .ad-tbn-title { font-size: 1.25rem; }
           .ad-tbn-subtitle { font-size: 11px; margin-top: 4px; }
-          .ad-tbn-status {
-            font-size: 10px; padding: 6px 10px;
-            backdrop-filter: none !important;
-            box-shadow: none !important;
-          }
-          .ad-tbn-ring, .ad-glow, .ad-tbn-bg {
-            filter: none !important;
-            backdrop-filter: none !important;
-            box-shadow: none !important;
-          }
+          .ad-tbn-status { font-size: 10px; padding: 6px 10px; backdrop-filter: none !important; box-shadow: none !important; }
+          .ad-tbn-ring, .ad-glow, .ad-tbn-bg { filter: none !important; backdrop-filter: none !important; box-shadow: none !important; }
           .ad-perf { display: none !important; }
           .ad-perf::before, .ad-perf::after { width: 18px; height: 18px; top: -9px; }
           .ad-perf::before { left: -9px; }
           .ad-perf::after  { right: -9px; }
-
           .ad-ticket-body { padding: 14px 16px 12px; }
           .ad-id-box { margin-bottom: 12px; padding: 12px; }
           .ad-id-label { margin-bottom: 4px; font-size: 10px; }
@@ -445,13 +442,12 @@ const AppointmentDetails = () => {
           .ad-date-block { padding: 12px; }
           .ad-date-big { font-size: 1.05rem; margin-bottom: 4px; }
           .ad-date-small { font-size: 10px; letter-spacing: .04em; }
-
           .ad-info-grid { gap: 10px; margin-bottom: 0; }
           .ad-info-cell { border-radius: 12px; padding: 12px; }
           .ad-cell-avatar { width: 30px; height: 30px; margin-bottom: 8px; font-size: .8rem; }
           .ad-cell-lbl { font-size: 9px; margin-bottom: 8px !important; }
           .ad-cell-name { font-size: 12px; margin-bottom: 2px; }
-          .ad-cell-meta { font-size: 10px; line-height: 1.35; }
+          .ad-cell-meta { font-size: 10px; line-height: 1.3; }
           .ad-reason-box { margin-top: 10px; margin-bottom: 10px; border-radius: 12px; padding: 10px 12px; }
           .ad-reason-label { font-size: 9px; margin-bottom: 4px; }
           .ad-reason-text { font-size: 10px; line-height: 1.4; }
@@ -532,7 +528,6 @@ const AppointmentDetails = () => {
                   </div>
                   <div className="ad-cell-name">Dr. {appointment?.doctor?.name || 'Not Assigned'}</div>
                   <div className="ad-cell-meta">
-                    {appointment?.doctor?.specialization || 'General Physician'}<br/>
                     {appointment.departmentName || 'General Medicine'}
                   </div>
                 </div>
@@ -548,6 +543,11 @@ const AppointmentDetails = () => {
                     {appointment?.patient?.gender || 'Not specified'}
                   </div>
                 </div>
+              </div>
+
+              <div className="ad-payment-box">
+                <span className="ad-pay-label">Consultation Fee</span>
+                <span className="ad-pay-amount">₹{appointment.amount || '0'}</span>
               </div>
 
               <div className="ad-reason-box">
@@ -569,9 +569,11 @@ const AppointmentDetails = () => {
                     Download Prescription
                   </a>
                 )}
-                <button className="ad-btn ad-btn-primary" onClick={() => navigate('/my-appointments')}>
-                  My Appointments
-                </button>
+                {isLoggedIn && (
+                  <button className="ad-btn ad-btn-primary" onClick={() => navigate('/my-appointments')}>
+                    My Appointments
+                  </button>
+                )}
                 {canPatientCancel && (
                   <button className="ad-btn ad-btn-outline" style={{ borderColor: 'var(--destructive)', color: 'var(--destructive)' }} onClick={handleCancelByPatient} disabled={cancelling}>
                     {cancelling ? '...' : 'Cancel'}
@@ -579,6 +581,33 @@ const AppointmentDetails = () => {
                 )}
               </div>
             </div>
+          </div>
+
+          <div className="ad-instructions">
+            <div className="ad-inst-title">
+              <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{marginRight: 8}}>
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              Patient Guidelines
+            </div>
+            <ul className="ad-inst-list">
+              <li className="ad-inst-item">
+                <span className="ad-inst-num">1</span>
+                <span>Please arrive at the clinic 15 minutes before your scheduled slot.</span>
+              </li>
+              <li className="ad-inst-item">
+                <span className="ad-inst-num">2</span>
+                <span>Carry a valid government-issued photo ID for verification at the front desk.</span>
+              </li>
+              <li className="ad-inst-item">
+                <span className="ad-inst-num">3</span>
+                <span>If you have any previous medical reports, please bring them along.</span>
+              </li>
+              <li className="ad-inst-item">
+                <span className="ad-inst-num">4</span>
+                <span>To reschedule or cancel, please do so at least 24 hours in advance.</span>
+              </li>
+            </ul>
           </div>
 
           <p className="ad-footer">
@@ -591,4 +620,3 @@ const AppointmentDetails = () => {
 }
 
 export default AppointmentDetails
-
