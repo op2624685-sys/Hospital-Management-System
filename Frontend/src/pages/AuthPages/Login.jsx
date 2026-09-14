@@ -1,5 +1,5 @@
 import React, { useLayoutEffect, useRef, useState } from 'react';
-import API from '../../api/api';
+import API, { getApiOrigin } from '../../api/api';
 import { Link, useNavigate } from 'react-router-dom';
 import { ToastContainer, toast, Bounce } from 'react-toastify';
 import { Eye, EyeOff, Lock, UserRound, Github } from 'lucide-react';
@@ -167,9 +167,9 @@ const Login = () => {
           </div>
 
           <div className="auth-social-grid">
-            <button 
-              className="auth-social-btn auth-fade" 
-              onClick={() => window.location.href = `${import.meta.env.VITE_API_URL || 'http://localhost:8080/api/v1'}/oauth2/authorization/google`}
+            <button
+              className="auth-social-btn auth-fade"
+              onClick={() => window.location.href = `${getApiOrigin()}/oauth2/authorization/google`}
             >
               <svg viewBox="0 0 24 24" width="18" height="18" xmlns="http://www.w3.org/2000/svg">
                 <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
@@ -179,9 +179,9 @@ const Login = () => {
               </svg>
               Google
             </button>
-            <button 
-              className="auth-social-btn auth-fade" 
-              onClick={() => window.location.href = `${import.meta.env.VITE_API_URL || 'http://localhost:8080/api/v1'}/oauth2/authorization/github`}
+            <button
+              className="auth-social-btn auth-fade"
+              onClick={() => window.location.href = `${getApiOrigin()}/oauth2/authorization/github`}
             >
               <Github size={18} />
               GitHub

@@ -71,7 +71,7 @@ public class WebSecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(csrfConfig -> csrfConfig.disable())
                 .sessionManagement(
-                        sessionConfig -> sessionConfig.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                        sessionConfig -> sessionConfig.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/public/**", "/auth/**").permitAll()
                         .requestMatchers("/ws/**").permitAll()
