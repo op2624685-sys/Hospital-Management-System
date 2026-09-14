@@ -142,6 +142,11 @@ const Profile = () => {
   const handlePhotoChange = (e) => {
     const file = e.target.files?.[0];
     if (file) {
+      if (file.size > 500 * 1024) {
+        toast.error('Image size must be less than 500KB');
+        e.target.value = ''; // Reset input
+        return;
+      }
       setProfilePhoto(file);
       // Create preview URL
       const reader = new FileReader();

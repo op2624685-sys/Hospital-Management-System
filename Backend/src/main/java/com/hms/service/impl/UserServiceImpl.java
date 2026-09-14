@@ -26,7 +26,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
 
-    private static final long MAX_FILE_SIZE_BYTES = 5L * 1024L * 1024L;
+    private static final long MAX_FILE_SIZE_BYTES = 500L * 1024L;
     private static final int MIN_DIMENSION_PX = 128;
     private static final Set<String> ALLOWED_CONTENT_TYPES = Set.of(
             "image/jpeg",
@@ -60,7 +60,7 @@ public class UserServiceImpl implements UserService {
             throw new ValidationException("Profile image is required");
         }
         if (profilePhoto.getSize() > MAX_FILE_SIZE_BYTES) {
-            throw new ValidationException("Profile image must be 5 MB or less");
+            throw new ValidationException("Profile image must be 500 KB or less");
         }
 
         String contentType = profilePhoto.getContentType();
