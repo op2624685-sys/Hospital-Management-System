@@ -1,5 +1,5 @@
-import React, { useState, useRef } from 'react'
-import { Link } from 'react-router-dom'
+import React, { useState, useRef, useEffect } from 'react'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import appointmentApi from '../api/appointments'
 import Header from '../components/Header'
 
@@ -55,6 +55,29 @@ const CheckAppointment = () => {
   const [shake, setShake]                 = useState(false)
   const resultRef = useRef(null)
 
+  const navigate = useNavigate()
+  const [searchParams, setSearchParams] = useSearchParams()
+  const urlId = searchParams.get('id')
+
+  useEffect(() => {
+    if (urlId) {
+      setAppointmentId(urlId)
+      fetchAppointment(urlId)
+    }
+  }, [urlId])
+
+  const fetchAppointment = async (id) => {
+    setLoading(true); setError(null); setAppointment(null)
+    try {
+      const res = await appointmentApi.getByAppointmentId(id)
+      setAppointment(res.data)
+      setTimeout(() => resultRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 120)
+    } catch {
+      setError('No appointment found. Please verify your ID and try again.')
+      setShake(true); setTimeout(() => setShake(false), 500)
+    } finally { setLoading(false) }
+  }
+
   const handlePaste = async () => {
     try {
       const text = await navigator.clipboard.readText()
@@ -66,18 +89,16 @@ const CheckAppointment = () => {
 
   const handleCheck = async (e) => {
     e.preventDefault()
-    setLoading(true); setError(null); setAppointment(null)
-    try {
-      const res = await appointmentApi.getByAppointmentId(appointmentId)
-      setAppointment(res.data)
-      setTimeout(() => resultRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 120)
-    } catch {
-      setError('No appointment found. Please verify your ID and try again.')
-      setShake(true); setTimeout(() => setShake(false), 500)
-    } finally { setLoading(false) }
+    if (!appointmentId.trim()) return
+    setSearchParams({ id: appointmentId.trim() })
   }
 
-  const reset = () => { setAppointment(null); setAppointmentId(''); setError(null) }
+  const reset = () => {
+    setAppointment(null);
+    setAppointmentId('');
+    setError(null);
+    setSearchParams({})
+  }
 
   const formattedDate = appointment
     ? new Date(appointment.appointmentTime).toLocaleString('en-IN', { dateStyle: 'long', timeStyle: 'short' })
