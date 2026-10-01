@@ -16,6 +16,7 @@ const Profile = () => {
   const [profilePhoto, setProfilePhoto] = useState(null);
   const [isLoadingPhoto, setIsLoadingPhoto] = useState(false);
   const [previewUrl, setPreviewUrl] = useState(user?.profilePhoto || null);
+  const [isPhotoViewerOpen, setIsPhotoViewerOpen] = useState(false);
   const [doctorStamp, setDoctorStamp] = useState(null);
   const [doctorStampPreview, setDoctorStampPreview] = useState(null);
   const [isLoadingStamp, setIsLoadingStamp] = useState(false);
@@ -36,6 +37,19 @@ const Profile = () => {
       navigate('/login');
     }
   }, [isLoggedIn, navigate]);
+
+  useEffect(() => {
+    if (!isPhotoViewerOpen) return undefined;
+
+    const handleKeyDown = (event) => {
+      if (event.key === 'Escape') {
+        setIsPhotoViewerOpen(false);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isPhotoViewerOpen]);
 
   const roleDataQuery = useQuery({
     queryKey: ['profile-role-data', user?.id, (user?.roles || []).join('|')],
@@ -322,7 +336,17 @@ const Profile = () => {
             {/* Avatar Container */}
             <div className='relative shrink-0'>
               <div
-                className='w-28 h-28 sm:w-36 sm:h-36 md:w-40 md:h-40 rounded-full flex items-center justify-center text-white font-bold text-3xl sm:text-4xl md:text-5xl shadow-md sm:shadow-xl md:shadow-2xl relative border-3 sm:border-4'
+                className={`w-28 h-28 sm:w-36 sm:h-36 md:w-40 md:h-40 rounded-full flex items-center justify-center text-white font-bold text-3xl sm:text-4xl md:text-5xl shadow-md sm:shadow-xl md:shadow-2xl relative border-3 sm:border-4 ${previewUrl ? 'cursor-zoom-in transition-transform hover:scale-[1.02] focus:outline-none focus:ring-4 focus:ring-white/50' : ''}`}
+                role={previewUrl ? 'button' : undefined}
+                tabIndex={previewUrl ? 0 : undefined}
+                aria-label={previewUrl ? 'View profile photo' : undefined}
+                onClick={() => previewUrl && setIsPhotoViewerOpen(true)}
+                onKeyDown={(event) => {
+                  if (previewUrl && (event.key === 'Enter' || event.key === ' ')) {
+                    event.preventDefault();
+                    setIsPhotoViewerOpen(true);
+                  }
+                }}
                 style={{
                   background: previewUrl
                     ? `url(${previewUrl}) center/cover`
@@ -334,6 +358,7 @@ const Profile = () => {
                 {/* Upload Button */}
                 <label
                   htmlFor='photo-upload'
+                  onClick={(event) => event.stopPropagation()}
                   className='absolute -bottom-1 -right-1 sm:-bottom-2 sm:-right-2 p-2 sm:p-3 rounded-full cursor-pointer transition-all duration-300 shadow-md hover:scale-110 active:scale-95'
                   style={{
                     background: 'var(--primary)',
@@ -1152,6 +1177,32 @@ const Profile = () => {
           </p>
         </div>
       </div>
+
+      {isPhotoViewerOpen && previewUrl && (
+        <div
+          className='fixed inset-0 z-[60] flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm'
+          role='dialog'
+          aria-modal='true'
+          aria-label='Profile photo preview'
+          onMouseDown={() => setIsPhotoViewerOpen(false)}
+        >
+          <div className='relative max-h-full max-w-full' onMouseDown={(event) => event.stopPropagation()}>
+            <img
+              src={previewUrl}
+              alt={`${user?.username || 'User'} profile photo`}
+              className='max-h-[85vh] max-w-[92vw] rounded-lg object-contain shadow-2xl'
+            />
+            <button
+              type='button'
+              onClick={() => setIsPhotoViewerOpen(false)}
+              className='absolute -right-3 -top-3 flex h-10 w-10 items-center justify-center rounded-full bg-white text-slate-900 shadow-lg transition-transform hover:scale-110 focus:outline-none focus:ring-4 focus:ring-white/50'
+              aria-label='Close profile photo preview'
+            >
+              <X size={20} />
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
