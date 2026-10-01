@@ -1186,11 +1186,11 @@ const Profile = () => {
           aria-label='Profile photo preview'
           onMouseDown={() => setIsPhotoViewerOpen(false)}
         >
-          <div className='relative max-h-full max-w-full' onMouseDown={(event) => event.stopPropagation()}>
+          <div className='relative flex items-center justify-center' onMouseDown={(event) => event.stopPropagation()}>
             <img
               src={previewUrl}
               alt={`${user?.username || 'User'} profile photo`}
-              className='max-h-[85vh] max-w-[92vw] rounded-lg object-contain shadow-2xl'
+              className='h-64 w-64 sm:h-72 sm:w-72 md:h-80 md:w-80 rounded-full object-cover object-center shadow-2xl'
             />
             <button
               type='button'
