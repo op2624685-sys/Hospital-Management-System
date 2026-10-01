@@ -219,10 +219,33 @@ const DoctorDetails = () => {
           .dd-hero-actions { width: 100% !important; justify-content: center !important; }
           .dd-main-grid { grid-template-columns: 1fr !important; }
           .dd-hero-gradient { border-radius: 0 0 24px 24px; }
+          .dd-stats-row {
+            display: grid !important;
+            grid-template-columns: repeat(3, 1fr) !important;
+            gap: 8px !important;
+          }
+          .dd-stat-tile {
+            padding: 10px 4px !important;
+            flex-direction: column !important;
+            justify-content: center !important;
+            text-align: center !important;
+            gap: 6px !important;
+          }
+          .dd-stat-icon {
+            width: 32px !important;
+            height: 32px !important;
+          }
+          .dd-stat-tile div:first-child {
+            font-size: 14px !important;
+          }
+          .dd-stat-tile div:last-child {
+            font-size: 10px !important;
+            line-height: 1 !important;
+          }
         }
       `}</style>
 
-      <div className="dd-hero-gradient">
+      <div className="dd-hero-gradient" style={{ paddingTop: "80px" }}>
         <div className="max-w-5xl mx-auto px-6">
           <Link to="/doctors" className="inline-flex items-center gap-2 text-sm text-[var(--muted-foreground)] mb-6 hover:text-[var(--primary)] transition-colors">
             <ArrowLeft size={16} /> Back to doctors
@@ -280,7 +303,7 @@ const DoctorDetails = () => {
       <div className="max-w-5xl mx-auto px-6 pt-16 pb-16" style={{ display: "flex", flexDirection: "column", gap: 32 }}>
 
         {/* ── Quick Stats Strip ── */}
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 16 }}>
+        <div className="dd-stats-row" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 16 }}>
           <div className="dd-stat-tile">
             <div className="dd-stat-icon"><Star size={20} /></div>
             <div>
