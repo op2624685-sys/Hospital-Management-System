@@ -3,10 +3,10 @@ import { MapPin, Phone, Navigation, Calendar, Eye } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 
 const tagColors = {
-  Flagship: 'bg-amber-100 text-amber-700',
-  '24×7': 'bg-emerald-100 text-emerald-700',
-  ICU: 'bg-rose-100 text-rose-700',
-  New: 'bg-violet-100 text-violet-700',
+  Flagship: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
+  '24×7': 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400',
+  ICU: 'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400',
+  New: 'bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-400',
 }
 
 const BranchCard = ({ branch, index }) => {
@@ -39,8 +39,8 @@ const BranchCard = ({ branch, index }) => {
           to   { opacity: 1; transform: translateY(0); }
         }
         .card-inner {
-          background: #fff;
-          border: 1.5px solid #ebebeb;
+          background: var(--card);
+          border: 1.5px solid var(--border);
           border-radius: 24px;
           padding: 18px;
           height: 100%;
@@ -53,22 +53,22 @@ const BranchCard = ({ branch, index }) => {
         }
         .card-inner:hover {
           transform: translateY(-6px);
-          box-shadow: 0 22px 60px rgba(100,74,64,.15);
-          border-color: #644a40;
+          box-shadow: 0 22px 60px rgba(0,0,0,0.1);
+          border-color: var(--primary);
         }
         .card-hero {
           position: relative;
           height: 150px;
           border-radius: 18px;
           overflow: hidden;
-          background: #f1f5f9;
-          border: 1px solid #e2e8f0;
+          background: var(--secondary);
+          border: 1px solid var(--border);
         }
         .card-hero::after {
           content: '';
           position: absolute;
           inset: 0;
-          background: linear-gradient(180deg, rgba(15,23,42,0.0) 40%, rgba(15,23,42,0.55) 100%);
+          background: linear-gradient(180deg, rgba(0,0,0,0.0) 40%, rgba(0,0,0,0.55) 100%);
         }
         .card-hero-img {
           position: absolute;
@@ -146,13 +146,13 @@ const BranchCard = ({ branch, index }) => {
           align-items: flex-start;
           gap: 8px;
           font-size: 13px;
-          color: #555;
+          color: var(--foreground);
           line-height: 1.5;
         }
-        .info-row svg { flex-shrink: 0; color: #e42320; margin-top: 2px; }
+        .info-row svg { flex-shrink: 0; color: var(--primary); margin-top: 2px; }
         .info-label {
           font-weight: 600;
-          color: #999;
+          color: var(--muted-foreground);
           font-size: 11px;
           text-transform: uppercase;
           letter-spacing: .05em;
@@ -173,8 +173,8 @@ const BranchCard = ({ branch, index }) => {
           align-items: center;
           justify-content: center;
           gap: 7px;
-          background: #644a40;
-          color: #fff;
+          background: var(--primary);
+          color: var(--primary-foreground);
           border: none;
           border-radius: 12px;
           padding: 11px 16px;
@@ -184,7 +184,7 @@ const BranchCard = ({ branch, index }) => {
           cursor: pointer;
           transition: background .2s, transform .15s;
         }
-        .btn-primary:hover { background: #4a3728; transform: scale(1.02); }
+        .btn-primary:hover { background: color-mix(in srgb, var(--primary) 80%, transparent); transform: scale(1.02); }
         .btn-primary:active { transform: scale(.97); }
         .btn-secondary {
           display: flex;
@@ -192,8 +192,8 @@ const BranchCard = ({ branch, index }) => {
           justify-content: center;
           gap: 7px;
           background: transparent;
-          color: #1a1a1a;
-          border: 1.5px solid #e0e0e0;
+          color: var(--foreground);
+          border: 1.5px solid var(--border);
           border-radius: 12px;
           padding: 11px 16px;
           font-family: 'DM Sans', sans-serif;
@@ -204,10 +204,30 @@ const BranchCard = ({ branch, index }) => {
           white-space: nowrap;
         }
         .btn-secondary:hover {
-          border-color: #1a1a1a;
-          background: #1a1a1a;
-          color: #fff;
+          border-color: var(--primary);
+          background: var(--secondary);
+          color: var(--foreground);
           transform: scale(1.02);
+        }
+        @media (max-width: 768px) {
+          .card-inner {
+            padding: 12px;
+            gap: 10px;
+          }
+          .hero-title {
+            font-size: 0.95rem;
+          }
+          .info-row {
+            font-size: 12px;
+            gap: 6px;
+          }
+          .card-actions {
+            gap: 8px;
+          }
+          .btn-primary, .btn-secondary {
+            padding: 8px 12px;
+            font-size: 12px;
+          }
         }
       `}</style>
 
