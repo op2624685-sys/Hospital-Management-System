@@ -72,18 +72,43 @@ const Branch = () => {
             onChange={(e) => setQuery(e.target.value)}
           />
         </div>
-        <div className="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
-          <div className="rounded-2xl px-4 py-3" style={{ border: '1px solid var(--border)', background: 'var(--card)' }}>
-            <div className="text-xs uppercase tracking-widest" style={{ color: 'var(--muted-foreground)' }}>Total Branches</div>
-            <div className="mt-1 text-2xl font-semibold" style={{ color: 'var(--foreground)' }}>{stats.total}</div>
+        <style>{`
+          .branch-stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+          }
+          @media (max-width: 768px) {
+            .branch-stats-grid {
+              grid-template-columns: repeat(3, 1fr) !important;
+              gap: 8px !important;
+            }
+            .branch-stat-tile {
+              padding: 10px 4px !important;
+              text-align: center !important;
+            }
+            .branch-stat-label {
+              font-size: 9px !important;
+              white-space: nowrap !important;
+            }
+            .branch-stat-value {
+              font-size: 16px !important;
+            }
+          }
+        `}</style>
+
+        <div className="mt-6 branch-stats-grid text-sm">
+          <div className="branch-stat-tile rounded-2xl px-4 py-3" style={{ border: '1px solid var(--border)', background: 'var(--card)' }}>
+            <div className="branch-stat-label text-xs uppercase tracking-widest" style={{ color: 'var(--muted-foreground)' }}>Total</div>
+            <div className="branch-stat-value mt-1 text-2xl font-semibold" style={{ color: 'var(--foreground)' }}>{stats.total}</div>
           </div>
-          <div className="rounded-2xl px-4 py-3" style={{ border: '1px solid var(--border)', background: 'var(--card)' }}>
-            <div className="text-xs uppercase tracking-widest" style={{ color: 'var(--muted-foreground)' }}>24x7 Ready</div>
-            <div className="mt-1 text-2xl font-semibold" style={{ color: 'var(--foreground)' }}>{stats.openAllDay}</div>
+          <div className="branch-stat-tile rounded-2xl px-4 py-3" style={{ border: '1px solid var(--border)', background: 'var(--card)' }}>
+            <div className="branch-stat-label text-xs uppercase tracking-widest" style={{ color: 'var(--muted-foreground)' }}>24x7</div>
+            <div className="branch-stat-value mt-1 text-2xl font-semibold" style={{ color: 'var(--foreground)' }}>{stats.openAllDay}</div>
           </div>
-          <div className="rounded-2xl px-4 py-3" style={{ border: '1px solid var(--border)', background: 'var(--card)' }}>
-            <div className="text-xs uppercase tracking-widest" style={{ color: 'var(--muted-foreground)' }}>ICU Support</div>
-            <div className="mt-1 text-2xl font-semibold" style={{ color: 'var(--foreground)' }}>{stats.icuReady}</div>
+          <div className="branch-stat-tile rounded-2xl px-4 py-3" style={{ border: '1px solid var(--border)', background: 'var(--card)' }}>
+            <div className="branch-stat-label text-xs uppercase tracking-widest" style={{ color: 'var(--muted-foreground)' }}>ICU</div>
+            <div className="branch-stat-value mt-1 text-2xl font-semibold" style={{ color: 'var(--foreground)' }}>{stats.icuReady}</div>
           </div>
         </div>
         <div className="mt-6 text-sm" style={{ color: 'var(--muted-foreground)' }}>

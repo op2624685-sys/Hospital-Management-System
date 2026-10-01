@@ -308,21 +308,21 @@ const DoctorDetails = () => {
             <div className="dd-stat-icon"><Star size={20} /></div>
             <div>
               <div style={{ fontSize: 18, fontWeight: 800, color: "var(--foreground)" }}>{avg.toFixed(1)} / 5.0</div>
-              <div style={{ fontSize: 12, color: "var(--muted-foreground)" }}>Patient Rating</div>
+              <div style={{ fontSize: 12, color: "var(--muted-foreground)" }}>Ratings</div>
             </div>
           </div>
           <div className="dd-stat-tile">
             <div className="dd-stat-icon"><Users size={20} /></div>
             <div>
               <div style={{ fontSize: 18, fontWeight: 800, color: "var(--foreground)" }}>{totalReviews}</div>
-              <div style={{ fontSize: 12, color: "var(--muted-foreground)" }}>Verified Reviews</div>
+              <div style={{ fontSize: 12, color: "var(--muted-foreground)" }}>Reviews</div>
             </div>
           </div>
           <div className="dd-stat-tile">
             <div className="dd-stat-icon"><Award size={20} /></div>
             <div>
               <div style={{ fontSize: 18, fontWeight: 800, color: "var(--foreground)" }}>{doctor.isHead ? "Dept Head" : "Consultant"}</div>
-              <div style={{ fontSize: 12, color: "var(--muted-foreground)" }}>Professional Rank</div>
+              <div style={{ fontSize: 12, color: "var(--muted-foreground)" }}>Rank</div>
             </div>
           </div>
         </div>
