@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   ArrowLeft,
   Building2,
@@ -7,6 +7,9 @@ import {
   MapPin,
   Phone,
   User2,
+  Heart,
+  Search,
+  Eye,
 } from "lucide-react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import Header from "../components/Header";
@@ -19,18 +22,22 @@ const BranchDetails = () => {
   const navigate = useNavigate();
   const [branch, setBranch] = useState(null);
   const [departments, setDepartments] = useState([]);
+  const [doctors, setDoctors] = useState([]);
+  const [selectedDeptId, setSelectedDeptId] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [departmentError, setDepartmentError] = useState("");
+  const [doctorError, setDoctorError] = useState("");
 
   useEffect(() => {
     const fetchDetails = async () => {
       setLoading(true);
       setError("");
       try {
-        const [branchRes, deptRes] = await Promise.allSettled([
+        const [branchRes, deptRes, docRes] = await Promise.allSettled([
           API.get("/public/branches"),
           API.get("/departments"),
+          API.get("/public/doctors"),
         ]);
 
         if (branchRes.status !== "fulfilled") throw branchRes.reason;
@@ -44,6 +51,7 @@ const BranchDetails = () => {
         if (!selected) {
           setBranch(null);
           setDepartments([]);
+          setDoctors([]);
           setError("Branch not found");
           return;
         }
@@ -63,6 +71,22 @@ const BranchDetails = () => {
           setDepartments([]);
           setDepartmentError("Department data is temporarily unavailable.");
         }
+
+        if (docRes.status === "fulfilled") {
+          const allDoctors = Array.isArray(docRes.value.data)
+            ? docRes.value.data
+            : [];
+          // Filter doctors for this branch
+          const branchDoctors = allDoctors.filter(
+            (doctor) => doctor.branch?.id === selected.id
+          );
+          setDoctors(branchDoctors);
+          setDoctorError("");
+        } else {
+          console.error("Failed to load doctor data:", docRes.reason);
+          setDoctors([]);
+          setDoctorError("Doctor data is temporarily unavailable.");
+        }
       } catch (err) {
         console.error("Failed to load branch details:", err);
         setError("Failed to load branch details");
@@ -80,24 +104,15 @@ const BranchDetails = () => {
     [branch]
   );
 
-  const summary = useMemo(() => {
-    const deptCount = departments.length;
-    const doctorCount = departments.reduce(
-      (sum, d) => sum + (d.memberCount || 0),
-      0
-    );
-    const maxMembers = Math.max(
-      1,
-      ...departments.map((d) => d.memberCount || 0)
-    );
-    return { deptCount, doctorCount, maxMembers };
-  }, [departments]);
-
   const handleBookAppointment = () => {
     if (!branch) return;
     navigate("/appointment", {
       state: { branchName: branch.name, branchId: branch.id },
     });
+  };
+
+  const handleViewDepartmentDoctors = (deptId) => {
+    setSelectedDeptId(deptId);
   };
 
   /* ── shared styles ── */
@@ -360,7 +375,7 @@ const BranchDetails = () => {
     btnSecondary: {
       display: "flex",
       alignItems: "center",
-      justifyContent: "center",
+      justifyCenter: "center",
       gap: 8,
       width: "100%",
       padding: "10px 16px",
@@ -385,6 +400,43 @@ const BranchDetails = () => {
     },
     summaryKey: { color: "var(--muted-foreground)" },
     summaryVal: { fontWeight: 600, color: "var(--foreground)" },
+    // ── Doctor card ──
+    doctorCard: {
+      background: "var(--background)",
+      border: "1px solid var(--border)",
+      borderRadius: 12,
+      padding: 16,
+      marginBottom: 12,
+    },
+    doctorName: {
+      fontSize: 16,
+      fontWeight: 600,
+      color: "var(--foreground)",
+      marginBottom: 4,
+    },
+    doctorSpec: {
+      fontSize: 14,
+      color: "var(--muted-foreground)",
+      marginBottom: 8,
+    },
+    doctorFee: {
+      fontSize: 15,
+      fontWeight: 600,
+      color: "var(--primary)",
+      marginBottom: 8,
+    },
+    doctorDept: {
+      fontSize: 13,
+      color: "var(--primary)",
+      marginBottom: 4,
+    },
+    doctorPhoto: {
+      width: 60,
+      height: 60,
+      borderRadius: "50%",
+      objectFit: "cover",
+      marginBottom: 12,
+    },
     // ── Error / empty ──
     errorBox: {
       background: "var(--card)",
@@ -469,9 +521,19 @@ const BranchDetails = () => {
           .bd-span2 { grid-column:span 1 !important; }
           .bd-hero-info-grid { grid-template-columns:1fr !important; max-width:100% !important; }
           .bd-contact-grid { grid-template-columns:1fr !important; }
+          .doctor-grid { grid-template-columns:1fr !important; }
         }
         @media(max-width:480px){
           .bd-hero-info-grid { grid-template-columns:1fr !important; }
+        }
+        .doctor-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+          gap: 16px;
+        }
+        .doctor-card:hover {
+          transform: translateY(-4px);
+          box-shadow: 0 8px 25px rgba(0,0,0,0.15);
         }
       `}</style>
 
@@ -531,14 +593,14 @@ const BranchDetails = () => {
           <div className="bd-span2" style={styles.card}>
             <div style={styles.deptHeader}>
               <div>
-                <div style={styles.cardTitle}>Department Snapshot</div>
+                <div style={styles.cardTitle}>Departments</div>
                 <div style={styles.cardSub}>
-                  Doctors per department and leadership overview.
+                  Click on a department to see doctors
                 </div>
               </div>
               <div style={styles.deptCountBadge}>
                 <span style={styles.deptCountLabel}>Departments</span>
-                <span style={styles.deptCountNum}>{summary.deptCount}</span>
+                <span style={styles.deptCountNum}>{departments.length}</span>
               </div>
             </div>
 
@@ -551,43 +613,95 @@ const BranchDetails = () => {
                 No departments are assigned to this branch yet.
               </div>
             ) : (
-              departments.map((dept) => {
-                const members = dept.memberCount || 0;
-                const widthPct = `${Math.round(
-                  (members / summary.maxMembers) * 100
-                )}%`;
-                return (
-                  <div key={dept.id} style={styles.deptItem}>
-                    <div style={styles.deptRow}>
-                      <div>
-                        <div style={styles.deptName}>{dept.name}</div>
-                        <div style={styles.deptHead}>
-                          Head: {dept.headDoctorName || "TBD"}
-                        </div>
-                      </div>
-                      <div style={styles.deptCountRight}>
-                        <div style={styles.deptCountRightLabel}>Doctors</div>
-                        <div style={styles.deptCountRightNum}>{members}</div>
+              departments.map((dept) => (
+                <div
+                  key={dept.id}
+                  style={styles.deptItem}
+                  onClick={() => handleViewDepartmentDoctors(dept.id)}
+                  className="cursor-pointer hover:shadow-md transition-shadow"
+                >
+                  <div style={styles.deptRow}>
+                    <div>
+                      <div style={styles.deptName}>{dept.name}</div>
+                      <div style={styles.deptHead}>
+                        Head: {dept.headDoctorName || "TBD"}
                       </div>
                     </div>
-                    <div style={styles.barTrack}>
-                      <div
-                        style={{
-                          height: "100%",
-                          width: widthPct,
-                          borderRadius: 3,
-                          background:
-                            "linear-gradient(90deg, var(--primary), var(--secondary))",
-                          transition: "width 0.4s ease",
-                        }}
-                      />
+                    <div style={styles.deptCountRight}>
+                      <div style={styles.deptCountRightLabel}>Doctors</div>
+                      <div style={styles.deptCountRightNum}>
+                        {dept.memberCount}
+                      </div>
                     </div>
-                    {dept.description && (
-                      <p style={styles.deptDesc}>{dept.description}</p>
-                    )}
                   </div>
-                );
-              })
+                  {dept.description && (
+                    <p style={styles.deptDesc}>{dept.description}</p>
+                  )}
+                </div>
+              ))
+            )}
+          </div>
+
+          {/* Doctors Section */}
+          <div className="bd-span2" style={styles.card}>
+            {selectedDeptId ? (
+              <>
+                <div style={{ ...styles.cardTitle, marginBottom: 14 }}>
+                  Doctors in {departments.find(d => d.id === selectedDeptId)?.name || "Selected Department"}
+                </div>
+
+                {doctorError && (
+                  <div style={styles.warningBox}>{doctorError}</div>
+                )}
+
+                {selectedDeptId && doctors.length > 0 ? (
+                  <>
+                    <div className="doctor-grid">
+                      {doctors
+                        .filter(doctor =>
+                          doctor.departments?.some(dept => dept.id === selectedDeptId)
+                        )
+                        .map((doctor) => (
+                          <div key={doctor.id} style={styles.doctorCard}>
+                            {doctor.profilePhoto && (
+                              <img
+                                src={doctor.profilePhoto}
+                                alt={`${doctor.name} photo`}
+                                style={styles.doctorPhoto}
+                              />
+                            )}
+                            <div style={styles.doctorName}>{doctor.name}</div>
+                            <div style={styles.doctorSpec}>{doctor.specialization}</div>
+                            <div style={styles.doctorFee}>₹{doctor.consultationFee?.toLocaleString('en-IN') || 'N/A'}</div>
+                            <div style={styles.doctorDept}>
+                              {doctor.departments
+                                ?.filter(dept => dept.id === selectedDeptId)
+                                .map(dept => dept.name)
+                                .join(', ')}
+                            </div>
+                          </div>
+                        ))}
+                    </div>
+
+                    {doctors
+                      .filter(doctor =>
+                        doctor.departments?.some(dept => dept.id === selectedDeptId)
+                      ).length === 0 && (
+                      <div style={styles.emptyBox}>
+                        No doctors found in this department yet.
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <div style={styles.emptyBox}>
+                    Select a department to see doctors
+                  </div>
+                )}
+              </>
+            ) : (
+              <div style={{ ...styles.cardTitle, marginBottom: 14 }}>
+                Select a department to see doctors
+              </div>
             )}
           </div>
 
@@ -620,46 +734,25 @@ const BranchDetails = () => {
               </a>
             </div>
 
-            {/* Branch Summary */}
+            {/* Branch Contacts */}
             <div style={styles.card}>
               <div style={{ ...styles.cardTitle, marginBottom: 12 }}>
-                Branch Summary
+                Branch Contacts
               </div>
-              <div style={styles.summaryRow}>
-                <span style={styles.summaryKey}>Departments</span>
-                <span style={styles.summaryVal}>{summary.deptCount}</span>
-              </div>
-              <div style={styles.summaryRow}>
-                <span style={styles.summaryKey}>Doctors (total)</span>
-                <span style={styles.summaryVal}>{summary.doctorCount}</span>
-              </div>
-              <div style={{ ...styles.summaryRow, borderBottom: "none" }}>
-                <span style={styles.summaryKey}>Branch Head</span>
-                <span style={{ ...styles.summaryVal, fontSize: 12 }}>
-                  {branch.admin?.name || "Not Assigned"}
-                </span>
-              </div>
-            </div>
-          </div>
-
-          {/* Branch Contacts */}
-          <div className="bd-span2" style={styles.card}>
-            <div style={{ ...styles.cardTitle, marginBottom: 14 }}>
-              Branch Contacts
-            </div>
-            <div className="bd-contact-grid" style={styles.contactGrid}>
-              <div style={styles.contactItem}>
-                <div style={styles.contactLabel}>Phone</div>
-                <div style={styles.contactVal}>
-                  <Phone size={14} color={iconColor} />
-                  {branch.contactNumber || "N/A"}
+              <div style={styles.contactGrid}>
+                <div style={styles.contactItem}>
+                  <div style={styles.contactLabel}>Phone</div>
+                  <div style={styles.contactVal}>
+                    <Phone size={14} color={iconColor} />
+                    {branch.contactNumber || "N/A"}
+                  </div>
                 </div>
-              </div>
-              <div style={styles.contactItem}>
-                <div style={styles.contactLabel}>Email</div>
-                <div style={styles.contactVal}>
-                  <Mail size={14} color={iconColor} />
-                  {branch.email || "N/A"}
+                <div style={styles.contactItem}>
+                  <div style={styles.contactLabel}>Email</div>
+                  <div style={styles.contactVal}>
+                    <Mail size={14} color={iconColor} />
+                    {branch.email || "N/A"}
+                  </div>
                 </div>
               </div>
             </div>
