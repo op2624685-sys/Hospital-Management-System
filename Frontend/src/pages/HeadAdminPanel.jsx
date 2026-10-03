@@ -45,13 +45,14 @@ const FontLoader = () => (
 
     /* ── Hero banner ── */
     .had-hero {
-      background: var(--card);
-      border: 1px solid var(--border);
+      background: color-mix(in srgb, var(--card) 80%, transparent);
+      backdrop-filter: blur(12px);
+      border: 1px solid color-mix(in srgb, var(--border) 50%, transparent);
       border-radius: 26px;
       padding: 36px 40px;
       position: relative;
       overflow: hidden;
-      box-shadow: 0 26px 70px rgba(0,0,0,0.05);
+      box-shadow: 0 20px 50px rgba(0,0,0,0.03);
     }
     .had-hero::after {
       content: '';
@@ -59,7 +60,7 @@ const FontLoader = () => (
       inset: -40% -30% auto auto;
       height: 200px;
       width: 300px;
-      background: radial-gradient(circle, color-mix(in srgb, var(--primary) 10%, transparent) 0%, transparent 70%);
+      background: radial-gradient(circle, color-mix(in srgb, var(--primary) 15%, transparent) 0%, transparent 70%);
       opacity: 0.7;
       animation: heroFloat 6s ease-in-out infinite;
     }
@@ -101,24 +102,32 @@ const FontLoader = () => (
       transition: all 0.25s ease;
       font-family: 'Outfit', sans-serif;
     }
+    .had-refresh-btn:hover {
+      background: var(--primary);
+      color: var(--primary-foreground);
+      transform: translateY(-2px);
+    }
 
     /* ── Stat cards ── */
     .had-stat-grid {
       display: grid;
-      grid-template-columns: repeat(4, 1fr);
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
       gap: 16px;
     }
     .had-stat {
-      background: var(--card);
-      border: 1px solid var(--border);
+      background: color-mix(in srgb, var(--card) 70%, transparent);
+      backdrop-filter: blur(8px);
+      border: 1px solid color-mix(in srgb, var(--border) 60%, transparent);
       border-radius: var(--radius);
       padding: 22px 24px;
-      transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
     .had-stat:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 16px 40px rgba(0,0,0,0.05);
+      transform: translateY(-5px) scale(1.02);
+      box-shadow: 0 20px 40px rgba(0,0,0,0.06);
       border-color: var(--primary);
+      background: var(--card);
+    }
     }
     .had-stat-icon {
       width: 44px; height: 44px;
@@ -137,20 +146,23 @@ const FontLoader = () => (
 
     /* ── Cards etc ── */
     .had-card {
-      background: var(--card);
-      border: 1px solid var(--border);
+      background: color-mix(in srgb, var(--card) 85%, transparent);
+      backdrop-filter: blur(10px);
+      border: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
       border-radius: 22px;
       padding: 28px 32px;
       box-shadow: 0 10px 36px rgba(0,0,0,0.03);
     }
     .had-table th { color: var(--muted-foreground); border-bottom: 1px solid var(--border); }
     .had-table td { border-bottom: 1px solid var(--border); color: var(--foreground); }
-    .had-table tbody tr:hover { background: var(--secondary); }
+    .had-table tbody tr { transition: all 0.2s ease; }
+    .had-table tbody tr:hover { background: color-mix(in srgb, var(--secondary) 50%, transparent); transform: scale(1.005); }
     .had-badge-teal { background: var(--secondary); color: var(--primary); border: 1px solid color-mix(in srgb, var(--primary) 20%, transparent); }
-    
+
     .had-form-card {
-      background: var(--card);
-      border: 1px solid var(--border);
+      background: color-mix(in srgb, var(--card) 90%, transparent);
+      backdrop-filter: blur(10px);
+      border: 1px solid color-mix(in srgb, var(--border) 80%, transparent);
       border-radius: 24px;
       padding: 32px;
       box-shadow: 0 10px 30px rgba(0,0,0,0.03);
@@ -214,14 +226,38 @@ const FontLoader = () => (
     @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
     @keyframes heroFloat { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
 
-    .had-tabs { display: flex; gap: 8px; margin-bottom: 32px; overflow-x: auto; padding-bottom: 4px; }
+    .had-tabs { display: flex; gap: 8px; margin-bottom: 32px; overflow-x: auto; padding-bottom: 4px; scrollbar-width: none; -ms-overflow-style: none; }
+    .had-tabs::-webkit-scrollbar { display: none; }
     .had-tab { padding: 10px 20px; border-radius: 12px; font-size: 13px; font-weight: 800; cursor: pointer; border: 1.5px solid var(--border); transition: all 0.2s; white-space: nowrap; color: var(--muted); }
     .had-tab.active { background: var(--gold); color: white; border-color: var(--gold); }
 
-    @media (max-width: 768px) {
-      .had-stat-grid { grid-template-columns: repeat(2, 1fr); }
-      .had-detail-grid { grid-template-columns: 1fr; }
-    }
+    /* ── MOBILE-FIRST RESPONSIVE BREAKPOINTS ── */
+        @media (max-width: 1024px) {
+          .had-stat-grid { grid-template-columns: repeat(2, 1fr); }
+          .had-detail-grid { grid-template-columns: 1fr; }
+        }
+        @media (max-width: 768px) {
+          .had-stat-grid { grid-template-columns: repeat(2, 1fr); }
+          .had-detail-grid { grid-template-columns: 1fr; }
+          .had-hero { padding: 28px 24px; }
+          .had-form-card { padding: 24px 20px; }
+          .had-card { padding: 24px 20px; }
+          .had-table td { padding: 12px 10px; font-size: 13px; }
+          .had-table th { padding: 12px 10px; font-size: 9px; }
+          .had-branch-name { font-size: 14px; }
+          .had-branch-addr { font-size: 10px; }
+        }
+        @media (max-width: 480px) {
+          .had-stat-grid { grid-template-columns: 1fr; }
+          .had-hero-title { font-size: 1.8rem; }
+          .had-hero { padding: 22px 18px; }
+          .had-form-card { padding: 20px 16px; }
+          .had-card { padding: 20px 16px; }
+          .had-table td { padding: 10px 8px; font-size: 12px; }
+          .had-table th { padding: 10px 8px; font-size: 8px; }
+          .had-field-input { padding: 12px 14px; font-size: 13px; }
+          .had-btn-teal, .had-btn-slate { padding: 12px 20px; font-size: 13px; }
+        }
   `}</style>
 );
 
@@ -462,7 +498,7 @@ const HeadAdminPanel = () => {
           {/* Left: Branches Table */}
           <div className="lg:col-span-8 space-y-10">
             <div className="had-card">
-              <div className="flex justify-between items-center mb-6">
+              <div className="flex justify-between items-center mb-6 flex-wrap gap-4">
                 <h2 className="had-section-title !mb-0"><div className="had-section-title-dot" /> Branch List & Performance</h2>
                 <div className="flex gap-4">
                   <div className="flex items-center gap-2">
@@ -479,6 +515,7 @@ const HeadAdminPanel = () => {
                 </div>
               </div>
 
+              <div className="overflow-x-auto -mx-2 px-2">
               <table className="had-table">
                 <thead>
                   <tr>
@@ -491,17 +528,21 @@ const HeadAdminPanel = () => {
                 <tbody>
                   {overview.map(b => (
                     <tr key={b.branchId} onClick={() => setSelectedBranchId(b.branchId)} className={selectedBranchId === b.branchId ? "had-table-row-active" : ""}>
-                      <td>
-                        <div className="had-branch-name">{b.branchName}</div>
-                        <div className="had-branch-addr truncate max-w-[200px]">{b.branchAddress}</div>
+                      <td className="flex items-center justify-between gap-4">
+                        <div>
+                          <div className="had-branch-name">{b.branchName}</div>
+                          <div className="had-branch-addr">{b.branchAddress}</div>
+                        </div>
+                        <ChevronRight size={14} className="text-muted-foreground opacity-50" />
                       </td>
-                      <td>{b.adminCount}</td>
-                      <td>{b.doctorCount}</td>
+                      <td className="text-center">{b.adminCount}</td>
+                      <td className="text-center">{b.doctorCount}</td>
                       <td className="had-revenue">₹{b.estimatedRevenue?.toLocaleString()}</td>
                     </tr>
                   ))}
                 </tbody>
               </table>
+              </div>
             </div>
 
             {/* Selected Branch Details */}
