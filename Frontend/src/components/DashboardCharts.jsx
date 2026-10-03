@@ -60,13 +60,25 @@ const NoDataOverlay = ({ message = "No data available yet" }) => (
 
 export const AppointmentsTrendChart = ({ data = [] }) => {
   const colors = getThemeColors();
-  const hasData = data.length > 0 && data.some(d => d.count > 0);
+  const normalizedData = useMemo(() => (
+    Array.isArray(data)
+      ? data.map((item, index) => ({
+        day: item?.day || item?.label || item?.date || `Day ${index + 1}`,
+        count: Number(item?.count ?? item?.appointments ?? item?.value ?? 0) || 0,
+      }))
+      : []
+  ), [data]);
+  const hasData = normalizedData.some((item) => item.count > 0);
   
   const chartData = useMemo(() => ({
-    labels: data.length > 0 ? data.map(d => d.day) : ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+    labels: normalizedData.length > 0
+      ? normalizedData.map((item) => item.day)
+      : ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
     datasets: [{
       label: 'Appointments',
-      data: data.length > 0 ? data.map(d => d.count) : [0, 0, 0, 0, 0, 0, 0],
+      data: normalizedData.length > 0
+        ? normalizedData.map((item) => item.count)
+        : [0, 0, 0, 0, 0, 0, 0],
       fill: true,
       backgroundColor: colors.primary + '15',
       borderColor: colors.primary,
@@ -78,7 +90,7 @@ export const AppointmentsTrendChart = ({ data = [] }) => {
       pointHoverRadius: 6,
       tension: 0.4,
     }],
-  }), [data, colors.primary]);
+  }), [normalizedData, colors.primary]);
 
   const options = useMemo(() => {
     const opts = commonOptions(colors);
