@@ -107,7 +107,7 @@ const EMPTY_STATS = {
 };
 
 // ── Stat Card ─────────────────────────────────────────────────────────────────
-const StatCard = ({ label, value, sub, icon, accent, delay }) => {
+const StatCard = ({ label, value, icon, accent, delay }) => {
   const ref = useRef(null);
   useEffect(() => {
     gsap.fromTo(ref.current,
@@ -122,7 +122,6 @@ const StatCard = ({ label, value, sub, icon, accent, delay }) => {
       <div className="admin-stat-body">
         <span className="admin-stat-label">{label}</span>
         <span className="admin-stat-value">{value}</span>
-        {sub && <span className="admin-stat-sub">{sub}</span>}
       </div>
       <div className="admin-stat-glow" />
     </div>
@@ -712,6 +711,65 @@ const AdminPanel = () => {
             min-height: 44px;
           }
         }
+        .admin-stat-body { min-width: 0; }
+        .admin-realtime-chart {
+          width: 100%;
+          min-height: 420px;
+          height: 420px;
+          margin-top: 20px;
+          position: relative;
+          display: flex;
+          align-items: stretch;
+          justify-content: center;
+          overflow: hidden;
+        }
+        .admin-realtime-chart canvas {
+          display: block;
+          width: 100% !important;
+          height: 100% !important;
+        }
+        @media (max-width: 768px) {
+          .admin-stats-grid {
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 8px;
+            width: 100%;
+          }
+          .admin-stat-card {
+            min-width: 0;
+            min-height: 92px;
+            padding: 12px 5px;
+            border-radius: 14px;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            text-align: center;
+          }
+          .admin-stat-card:hover { transform: none; }
+          .admin-stat-icon { display: none; }
+          .admin-stat-label {
+            max-width: 100%;
+            margin: 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            font-size: 8px;
+            letter-spacing: .02em;
+          }
+          .admin-stat-value { font-size: clamp(15px, 4.5vw, 22px); }
+          .admin-realtime-chart {
+            min-height: 300px;
+            height: 300px;
+            margin-top: 12px;
+            padding: 8px;
+          }
+        }
+        @media (max-width: 380px) {
+          .admin-stats-grid { gap: 6px; }
+          .admin-stat-card { min-height: 84px; padding-inline: 3px; }
+          .admin-stat-label { font-size: 7px; }
+          .admin-realtime-chart { min-height: 260px; height: 260px; }
+        }
       `}</style>
 
       <div className="admin-page">
@@ -737,10 +795,10 @@ const AdminPanel = () => {
           </div>
 
           <div className="admin-stats-grid">
-            <StatCard delay={0}    label="Doctors" value={stats.totalDoctors} sub={`${stats.activeDoctors} active`} icon={<UserCheck size={24} />} accent="var(--primary)" />
-            <StatCard delay={0.08} label="Patients" value={(stats.totalPatients || 0).toLocaleString()} sub="Registered" icon={<Building2 size={24} />} accent="var(--chart-5)" />
-            <StatCard delay={0.16} label="Appointments" value={stats.todayAppointments || 0} sub={`${stats.pendingAppointments || 0} pending`} icon={<CalendarDays size={24} />} accent="var(--primary)" />
-            <StatCard delay={0.24} label="Revenue" value={fmt(stats.totalRevenue || 0)} sub="Gross" icon={<Coins size={24} />} accent="var(--chart-5)" />
+            <StatCard delay={0}    label="Doctors" value={stats.totalDoctors} icon={<UserCheck size={24} />} accent="var(--primary)" />
+            <StatCard delay={0.08} label="Patients" value={(stats.totalPatients || 0).toLocaleString()} icon={<Building2 size={24} />} accent="var(--chart-5)" />
+            <StatCard delay={0.16} label="Appointments" value={stats.todayAppointments || 0} icon={<CalendarDays size={24} />} accent="var(--primary)" />
+            <StatCard delay={0.24} label="Revenue" value={fmt(stats.totalRevenue || 0)} icon={<Coins size={24} />} accent="var(--chart-5)" />
 
           </div>
 
@@ -751,7 +809,7 @@ const AdminPanel = () => {
                   <>
                 <div className="admin-section full">
                   <Section title="Real-time Activity" subtitle="Weekly performance insights">
-                    <div className="admin-chart-container" style={{ minHeight: '360px', height: '360px', marginTop: '20px', position: 'relative', width: '100%' }}>
+                    <div className="admin-chart-container admin-realtime-chart">
                       <AppointmentsTrendChart key={`atc-${weeklyAppointments.length}`} data={weeklyAppointments} />
                     </div>
                   </Section>
