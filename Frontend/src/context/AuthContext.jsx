@@ -44,7 +44,7 @@ export const AuthProvider = ({ children }) => {
     };
 
     fetchProfileCompletionStatus();
-  }, [isLoggedIn, user?.id, rolesKey]);
+  }, [isLoggedIn, user?.id, user?.roles, rolesKey]);
 
   const clearSession = useCallback(() => {
     queryClient.clear();
@@ -155,7 +155,7 @@ export const AuthProvider = ({ children }) => {
 
         syncOAuthProfile();
     }
-  }, [location.search, login, navigate]);
+  }, [login, navigate]);
 
   const logout = useCallback(async () => {
     const refreshToken = getRefreshToken();
