@@ -88,15 +88,32 @@ const GLOBAL_CSS = `
     .dd-summary-row {
       display: grid !important;
       grid-template-columns: repeat(2, 1fr) !important;
-      gap: 10px !important;
+      gap: 8px !important;
     }
     .dd-pill {
-      padding: 12px !important;
+      padding: 10px !important;
       justify-content: center !important;
     }
     .dd-pill div:last-child {
       text-align: center !important;
     }
+  }
+  @media (max-width: 640px) {
+    .dd-summary-row {
+      display: grid !important;
+      grid-template-columns: 1fr !important;
+    }
+    .dd-pill {
+      padding: 12px !important;
+    }
+    .dd-card-name { font-size: 1.5rem; }
+    .dd-stat-blue, .dd-stat-teal { padding: 3px; }
+    .dd-btn { padding: 14px 20px; font-size: 0.9rem; }
+  }
+  @media (max-width: 480px) {
+    .dd-card { padding: 12px; }
+    .dd-icon-wrap { width: 16px; height: 16px; }
+    .dd-icon-wrap Building2 { width: 14px; height: 14px; }
   }
 `;
 
@@ -180,40 +197,40 @@ const DoctorDepartment = () => {
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-32 pb-24 relative z-10">
 
                 {/* ── Header Section ── */}
-                <div className="mb-20 text-center">
-                    <div className="dd-fadeup dd-fadeup-1 inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[var(--card)] border border-[var(--border)] shadow-sm mb-6">
-                        <Sparkles size={16} className="text-[var(--primary)]" />
-                        <span className="text-[var(--primary)] font-bold text-xs uppercase tracking-[0.2em]">Clinical Operations</span>
+                <div className="mb-16 text-center">
+                    <div className="dd-fadeup dd-fadeup-1 inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[var(--card)] border border-[var(--border)] shadow-sm mb-4 text-xs">
+                        <Sparkles size={12} className="text-[var(--primary)]" />
+                        <span className="text-[var(--primary)] font-bold text-[10px] uppercase tracking-[0.15em]">Clinical Operations</span>
                     </div>
-                    <h1 className="dd-fadeup dd-fadeup-2 text-5xl md:text-7xl font-black text-[var(--foreground)] tracking-tight mb-8">
+                    <h1 className="dd-fadeup dd-fadeup-2 text-3xl md:text-4xl font-black text-[var(--foreground)] tracking-tight mb-4 px-2">
                         My <span className="text-[var(--primary)]">Departments</span>
                     </h1>
-                    <p className="dd-fadeup dd-fadeup-3 text-lg md:text-xl text-[var(--muted-foreground)] max-w-2xl mx-auto leading-relaxed">
+                    <p className="dd-fadeup dd-fadeup-3 text-sm md:text-base text-[var(--muted-foreground)] max-w-xl mx-auto leading-relaxed px-4">
                         Centrally manage your clinical jurisdictions, specialized teams, and administrative protocols.
                     </p>
                 </div>
 
                 {/* ── Search & Summary ── */}
-                <div className="dd-fadeup dd-fadeup-3 flex flex-col md:flex-row items-center justify-between gap-6 mb-16">
+                <div className="dd-fadeup dd-fadeup-3 flex flex-col-lg md:flex-row items-center justify-between gap-4 mb-12">
                     <div className="relative w-full md:w-[480px] group">
-                        <div className="absolute left-5 top-1/2 -translate-y-1/2 text-[var(--muted-foreground)] group-hover:text-[var(--primary)] transition-colors">
-                            <Search size={22} />
+                        <div className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--muted-foreground)] group-hover:text-[var(--primary)] transition-colors">
+                            <Search size={18} />
                         </div>
                         <input
                             type="text"
-                            placeholder="Filter your departments by name or description..."
-                            className="dd-search w-full pl-14 pr-6 py-5 rounded-2xl bg-[var(--card)] border border-[var(--border)] text-[var(--foreground)] text-base font-semibold shadow-xl shadow-black/[0.03] transition-all"
+                            placeholder="Filter departments by name or description..."
+                            className="dd-search w-full pl-12 pr-5 py-4 rounded-xl bg-[var(--card)] border border-[var(--border)] text-[var(--foreground)] text-base font-semibold shadow-lg shadow-black/[0.03] transition-all"
                             value={query}
                             onChange={(e) => setQuery(e.target.value)}
                         />
                     </div>
 
-                    <div className="flex gap-4 scroll-hide overflow-x-auto w-full md:w-auto pb-2">
+                    <div className="flex gap-3 scroll-hide overflow-x-auto w-full md:w-auto pb-2">
                         {[
                             { label: 'Jurisdictions', count: departments.length, icon: Building2 },
                             { label: 'Active Personnel', count: departments.reduce((acc, d) => acc + (d.doctorCount || 0), 0), icon: Users }
                         ].map((s, idx) => (
-                            <div key={idx} className="dd-pill flex items-center gap-3 px-6 py-4 rounded-2xl bg-[var(--card)] border border-[var(--border)] shadow-sm whitespace-nowrap">
+                            <div key={idx} className="dd-pill flex items-center gap-2.5 px-4 py-3 rounded-xl bg-[var(--card)] border border-[var(--border)] shadow-sm whitespace-nowrap">
                                 <div className="p-2 rounded-xl bg-[var(--secondary)] text-[var(--primary)]">
                                     <s.icon size={20} />
                                 </div>
