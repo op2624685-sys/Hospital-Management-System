@@ -83,7 +83,23 @@ const GLOBAL_CSS = `
   /* Summary pill hover */
   .dd-pill { transition: transform .25s, box-shadow .25s; }
   .dd-pill:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(0,0,0,.08) !important; border-color: var(--primary) !important; }
+
+  @media (max-width: 768px) {
+    .dd-summary-row {
+      display: grid !important;
+      grid-template-columns: repeat(2, 1fr) !important;
+      gap: 10px !important;
+    }
+    .dd-pill {
+      padding: 12px !important;
+      justify-content: center !important;
+    }
+    .dd-pill div:last-child {
+      text-align: center !important;
+    }
+  }
 `;
+
 
 /* ════════════════════════════════════════════════════════════════
    STABLE PARTICLES
