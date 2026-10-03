@@ -142,18 +142,29 @@ export default function DepartmentControl() {
         }
         .dc-input:focus { border-color: var(--primary); box-shadow: 0 0 0 4px color-mix(in srgb, var(--primary) 12%, transparent); }
         
-        .dc-btn-primary { 
-          background: var(--primary); 
-          color: #fff; 
-          border: none; 
-          padding: 12px 24px; 
-          border-radius: 14px; 
-          font-weight: 700; 
-          cursor: pointer; 
-          transition: all 0.2s; 
-          box-shadow: 0 10px 25px -5px color-mix(in srgb, var(--primary) 40%, transparent); 
+        .dc-btn-primary {
+          background: var(--primary);
+          color: #fff;
+          border: none;
+          padding: 12px 24px;
+          border-radius: 14px;
+          font-weight: 700;
+          cursor: pointer;
+          transition: all 0.2s;
+          box-shadow: 0 10px 25px -5px color-mix(in srgb, var(--primary) 40%, transparent);
+          min-height: 44px;
         }
         .dc-btn-primary:hover { transform: translateY(-2px); filter: brightness(1.1); }
+        @media (max-width: 768px) {
+          .dc-btn-primary { padding: 14px 20px; font-size: 14px; min-height: 48px; }
+          .dc-input { padding: 14px 16px; font-size: 16px; } /* Prevent iOS zoom */
+          .dc-root .p-8, .dc-root .md\:p-12 { padding-left: 16px; padding-right: 16px; }
+        }
+        @media (max-width: 640px) {
+          .dc-root .max-w-7xl { padding-left: 12px; padding-right: 12px; }
+          .dc-btn-primary { width: 100%; }
+          .dc-input { font-size: 16px; }
+        }
       `}</style>
 
       <div className="max-w-7xl mx-auto px-4 lg:px-8">
@@ -215,10 +226,10 @@ export default function DepartmentControl() {
         </div>
 
         {/* Action Tabs */}
-        <div className="flex gap-3 mb-8 animate-fade-scale" style={{ animationDelay: '0.2s' }}>
+        <div className="flex flex-wrap gap-3 mb-8 animate-fade-scale" style={{ animationDelay: '0.2s' }}>
           <button 
             onClick={() => setActiveTab('overview')}
-            className={`px-8 py-4 rounded-2xl font-bold text-xs uppercase tracking-widest transition-all duration-300 flex items-center gap-2 border ${
+            className={`flex-1 sm:flex-none px-8 py-4 rounded-2xl font-bold text-xs uppercase tracking-widest transition-all duration-300 flex items-center justify-center gap-2 border min-h-[48px] ${
               activeTab === 'overview' 
                 ? 'glow-gradient text-white shadow-lg border-transparent' 
                 : 'bg-[var(--card)] text-[var(--muted-foreground)] border-[var(--border)] hover:bg-[var(--sidebar)]'
@@ -229,7 +240,7 @@ export default function DepartmentControl() {
           </button>
           <button 
             onClick={() => setActiveTab('doctors')}
-            className={`px-8 py-4 rounded-2xl font-bold text-xs uppercase tracking-widest transition-all duration-300 flex items-center gap-2 border ${
+            className={`flex-1 sm:flex-none px-8 py-4 rounded-2xl font-bold text-xs uppercase tracking-widest transition-all duration-300 flex items-center justify-center gap-2 border min-h-[48px] ${
               activeTab === 'doctors' 
                 ? 'glow-gradient text-white shadow-lg border-transparent' 
                 : 'bg-[var(--card)] text-[var(--muted-foreground)] border-[var(--border)] hover:bg-[var(--sidebar)]'
@@ -366,7 +377,7 @@ export default function DepartmentControl() {
                       <p className="text-[var(--muted-foreground)] text-sm mb-8 leading-relaxed font-medium">Assign available specialists to your department's unit.</p>
                     </div>
                     
-                    <div className="flex gap-2 mt-auto">
+                    <div className="flex gap-2 mt-auto flex-col sm:flex-row">
                       <input className="dc-input" placeholder="Staff Name or ID" />
                       <button className="dc-btn-primary whitespace-nowrap">Assign Unit</button>
                     </div>

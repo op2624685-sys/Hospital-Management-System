@@ -507,8 +507,9 @@ const AdminPanel = () => {
         .admin-progress-track { height: 8px; background: var(--secondary); border-radius: 999px; overflow: hidden; margin-top: 8px; }
         .admin-progress-fill { height: 100%; transition: width 1s ease-out; }
         /* Onboarding Sub-tabs */
-        .admin-onboarding-tabs { display: flex; gap: 8px; margin-bottom: 24px; background: transparent; padding: 0; border-radius: 0; border: none; overflow-x: auto; }
-        .admin-onboarding-tab { padding: 10px 20px; border-radius: 12px; border: 1.5px solid var(--border); background: transparent; font-size: 12px; font-weight: 800; color: var(--muted-foreground); cursor: pointer; transition: all .3s; text-transform: capitalize; }
+        .admin-onboarding-tabs { display: flex; gap: 8px; margin-bottom: 24px; background: transparent; padding: 0; border-radius: 0; border: none; overflow-x: auto; scrollbar-width: none; -ms-overflow-style: none; }
+        .admin-onboarding-tabs::-webkit-scrollbar { display: none; }
+        .admin-onboarding-tab { padding: 10px 20px; border-radius: 12px; border: 1.5px solid var(--border); background: transparent; font-size: 12px; font-weight: 800; color: var(--muted-foreground); cursor: pointer; transition: all .3s; text-transform: capitalize; white-space: nowrap; }
         .admin-onboarding-tab.active { background: var(--primary); color: var(--primary-foreground); border-color: var(--primary); }
         .admin-onboarding-tab:hover { border-color: var(--primary); background: color-mix(in srgb, var(--primary) 10%, transparent); }
         /* Form styling improvements */
@@ -523,13 +524,63 @@ const AdminPanel = () => {
         .admin-submit-btn:disabled { opacity: 0.6; cursor: not-allowed; }
         /* Chart improvements */
         .admin-chart-container { background: linear-gradient(135deg, color-mix(in srgb, var(--primary) 5%, transparent) 0%, color-mix(in srgb, var(--primary) 2%, transparent) 100%); border-radius: 20px; padding: 20px; }
-        @media (max-width: 1200px) { .admin-stats-grid { grid-template-columns: repeat(2, 1fr); } .admin-sections-grid { grid-template-columns: 1fr; } .admin-form-group { grid-template-columns: 1fr; } }
-        @media (max-width: 768px) { .admin-onboarding-tabs { flex-wrap: wrap; } .admin-onboarding-tab { padding: 8px 16px; font-size: 11px; } .admin-form-group { grid-template-columns: 1fr; } .admin-stats-grid { grid-template-columns: 1fr; } }
+        /* ── MOBILE-FIRST RESPONSIVE BREAKPOINTS ── */
+        @media (max-width: 1200px) {
+          .admin-stats-grid { grid-template-columns: repeat(2, 1fr); }
+          .admin-sections-grid { grid-template-columns: 1fr; }
+          .admin-form-group { grid-template-columns: 1fr; }
+        }
+        @media (max-width: 1024px) {
+          .admin-tabs { gap: 8px; }
+          .admin-tab { padding: 10px 20px; font-size: 12px; }
+          .admin-stat-card { padding: 24px; }
+        }
+        @media (max-width: 768px) {
+          .admin-onboarding-tabs { flex-wrap: nowrap; gap: 8px; }
+          .admin-onboarding-tab { padding: 10px 16px; font-size: 11px; }
+          .admin-form-group { grid-template-columns: 1fr; }
+          .admin-stats-grid { grid-template-columns: 1fr; }
+          .admin-container { padding: 80px 20px 60px; max-width: 100%; }
+          .admin-section { padding: 20px 16px; margin: 0; border-radius: 24px; }
+          .admin-section.full { grid-column: span 1; }
+          .admin-topbar { margin-bottom: 32px; }
+          .admin-eyebrow { font-size: 10px; padding: 6px 16px; }
+          .admin-date { font-size: 12px; }
+          .admin-badge { padding: 8px 14px; font-size: 11px; }
+          .admin-refresh-btn { padding: 10px 20px; font-size: 12px; }
+          .admin-tabs { gap: 6px; margin-bottom: 32px; padding: 6px; }
+          .admin-tab { padding: 10px 16px; font-size: 11px; min-height: 44px; }
+        }
+        @media (max-width: 640px) {
+          .admin-stats-grid { gap: 14px; }
+          .admin-stat-card { padding: 18px; flex-direction: column; gap: 12px; }
+          .admin-stat-icon { width: 48px; height: 48px; font-size: 22px; }
+          .admin-stat-label { font-size: 10px; }
+          .admin-stat-value { font-size: 24px; }
+          .admin-title { font-size: clamp(1.8rem, 7vw, 2.8rem); }
+          .admin-section-header { flex-direction: column; align-items: flex-start; gap: 12px; }
+        }
+        @media (max-width: 480px) {
+          .admin-container { padding: 70px 16px 50px; }
+          .admin-stat-card { padding: 16px; }
+          .admin-input { padding: 14px 16px; font-size: 16px; } /* Prevent zoom on iOS */
+          .admin-submit-btn { padding: 14px 24px; font-size: 14px; width: 100%; min-height: 48px; }
+          .admin-chart-container { padding: 16px; }
+          .admin-table th, .admin-table td { padding: 12px 10px; font-size: 12px; }
+          .admin-status-pill { padding: 8px 12px; font-size: 11px; }
+          .admin-view-all { font-size: 12px; padding: 8px 12px; }
+        }
+        /* Touch-friendly targets */
+        @media (hover: none) and (pointer: coarse) {
+          .admin-tab, .admin-onboarding-tab, .admin-submit-btn, .admin-refresh-btn {
+            min-height: 44px;
+          }
+        }
       `}</style>
 
       <div className="admin-page">
         <Header />
-        <div className="admin-container" ref={headerRef} style={{ opacity: 0 }}>
+        <div className="admin-container" ref={headerRef}>
           <div className="admin-topbar">
             <div className="admin-topbar-left">
               <div className="admin-eyebrow"><div className="admin-live" />HMS Hospital · Admin Panel {overviewQuery.isLoading && "(Loading Data...)"}</div>
@@ -866,7 +917,7 @@ const AdminPanel = () => {
                               <h4 style={{ fontSize: '14px', fontWeight: 800, marginBottom: '12px', color: 'var(--foreground)' }}>
                                 Existing Departments ({departments.length})
                               </h4>
-                              <div style={{ display: 'grid', grid: 'repeat(auto-fill, minmax(240px, 1fr))', gap: '16px' }}>
+                              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: '16px' }}>
                                 {departments.length === 0 ? (
                                   <p style={{ color: 'var(--muted-foreground)', gridColumn: '1 / -1' }}>No departments yet</p>
                                 ) : (
@@ -1012,49 +1063,52 @@ const AdminPanel = () => {
               </div>
             )}
 
-            {activeTab === "patients" && (
-              <div className="admin-section full">
-                <Section title="Patients" subtitle="Registered patients in the system">
-                  {patientsQuery.isLoading && <p style={{ color: "var(--muted-foreground)", padding: "20px 0" }}>Loading patients...</p>}
-                  {!patientsQuery.isLoading && (patients || []).length === 0 && (
-                    <p style={{ color: "var(--muted-foreground)", fontStyle: "italic", padding: "20px 0" }}>No patients found.</p>
-                  )}
-                  <table className="admin-table">
-                    <thead>
-                      <tr>
-                        <th>Name</th>
-                        <th>Email</th>
-                        <th>Gender</th>
-                        <th>Blood Group</th>
-                        <th>Date of Birth</th>
-                        <th>Phone</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {(patients || []).map((p, i) => (
-                        <tr key={p.id || i}>
-                          <td style={{ fontWeight: 700 }}>{p.name || "—"}</td>
-                          <td style={{ color: "var(--muted-foreground)", fontSize: 13 }}>{p.email || "—"}</td>
-                          <td>{p.gender || "—"}</td>
-                          <td><span className="admin-status-pill" style={{ background: "var(--secondary)", color: "var(--primary)" }}>{p.bloodGroup || "—"}</span></td>
-                          <td style={{ color: "var(--muted-foreground)", fontSize: 13 }}>{p.birthDate || "—"}</td>
-                          <td style={{ color: "var(--muted-foreground)", fontSize: 13 }}>{p.phone || p.mobileNumber || "—"}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                  {(patients || []).length > 0 && (
-                    <div style={{ display: "flex", gap: 12, justifyContent: "center", marginTop: 24 }}>
-                      <button className="admin-submit-btn" style={{ background: "var(--secondary)", color: "var(--foreground)", border: "1.5px solid var(--border)" }}
-                        onClick={() => setCurrentPage((p) => Math.max(0, p - 1))} disabled={currentPage === 0}>← Previous</button>
-                      <span style={{ display: "flex", alignItems: "center", fontSize: 13, fontWeight: 800, color: "var(--muted-foreground)" }}>Page {currentPage + 1}</span>
-                      <button className="admin-submit-btn" style={{ background: "var(--secondary)", color: "var(--foreground)", border: "1.5px solid var(--border)" }}
-                        onClick={() => setCurrentPage((p) => p + 1)} disabled={(patients || []).length < 10}>Next →</button>
-                    </div>
-                  )}
-                </Section>
-              </div>
-            )}
+                    {/* Patients Table */}
+                    {activeTab === "patients" && (
+                      <div className="admin-section full">
+                        <Section title="Patients" subtitle="Registered patients in the system">
+                          {patientsQuery.isLoading && <p style={{ color: "var(--muted-foreground)", padding: "20px 0" }}>Loading patients...</p>}
+                          {!patientsQuery.isLoading && (patients || []).length === 0 && (
+                            <p style={{ color: "var(--muted-foreground)", fontStyle: "italic", padding: "20px 0" }}>No patients found.</p>
+                          )}
+                          <div className="overflow-x-auto">
+                            <table className="admin-table">
+                              <thead>
+                                <tr>
+                                  <th>Name</th>
+                                  <th>Email</th>
+                                  <th>Gender</th>
+                                  <th>Blood Group</th>
+                                  <th>Date of Birth</th>
+                                  <th>Phone</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {(patients || []).map((p, i) => (
+                                  <tr key={p.id || i}>
+                                    <td style={{ fontWeight: 700 }}>{p.name || "—"}</td>
+                                    <td style={{ color: "var(--muted-foreground)", fontSize: 13 }}>{p.email || "—"}</td>
+                                    <td>{p.gender || "—"}</td>
+                                    <td><span className="admin-status-pill" style={{ background: "var(--secondary)", color: "var(--primary)" }}>{p.bloodGroup || "—"}</span></td>
+                                    <td style={{ color: "var(--muted-foreground)", fontSize: 13 }}>{p.birthDate || "—"}</td>
+                                    <td style={{ color: "var(--muted-foreground)", fontSize: 13 }}>{p.phone || p.mobileNumber || "—"}</td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
+                          {(patients || []).length > 0 && (
+                            <div style={{ display: "flex", gap: 12, justifyContent: "center", marginTop: 24 }}>
+                              <button className="admin-submit-btn" style={{ background: "var(--secondary)", color: "var(--foreground)", border: "1.5px solid var(--border)" }}
+                                onClick={() => setCurrentPage((p) => Math.max(0, p - 1))} disabled={currentPage === 0}>← Previous</button>
+                              <span style={{ display: "flex", alignItems: "center", fontSize: 13, fontWeight: 800, color: "var(--muted-foreground)" }}>Page {currentPage + 1}</span>
+                              <button className="admin-submit-btn" style={{ background: "var(--secondary)", color: "var(--foreground)", border: "1.5px solid var(--border)" }}
+                                onClick={() => setCurrentPage((p) => p + 1)} disabled={(patients || []).length < 10}>Next →</button>
+                            </div>
+                          )}
+                        </Section>
+                      </div>
+                    )}
 
             {activeTab === "payments" && (
               <div className="admin-section full">
@@ -1065,6 +1119,7 @@ const AdminPanel = () => {
                     <div style={{ fontSize: 14 }}>Payment data is integrated with the appointments system. View appointment details for payment info.</div>
                   </div>
                   {(payments || []).length > 0 ? (
+                    <div className="overflow-x-auto -mx-2 px-2">
                     <table className="admin-table">
                       <thead>
                         <tr>
@@ -1091,6 +1146,7 @@ const AdminPanel = () => {
                         ))}
                       </tbody>
                     </table>
+                    </div>
                   ) : null}
                 </Section>
               </div>
