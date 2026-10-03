@@ -473,9 +473,162 @@ const AdminPanel = () => {
 
   return (
     <>
-      <style>{`
-        .admin-root, .admin-root * { font-family: 'Outfit', sans-serif; box-sizing: border-box; }
-        .admin-page { min-height: 100vh; background: transparent; color: var(--foreground); overflow-x: hidden; position: relative; }
+    .admin-stats-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+    .admin-stat-card {
+      position: relative;
+      background: color-mix(in srgb, var(--card) 80%, transparent);
+      backdrop-filter: blur(10px);
+      border: 1px solid color-mix(in srgb, var(--border) 60%, transparent);
+      padding: 28px;
+      border-radius: 24px;
+      display: flex;
+      align-items: flex-start;
+      gap: 20px;
+      overflow: hidden;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .admin-stat-card:hover {
+      transform: translateY(-5px) scale(1.02);
+      background: var(--card);
+      border-color: var(--primary);
+      box-shadow: 0 20px 40px rgba(0,0,0,0.06);
+    }
+    .admin-stat-icon { width: 52px; height: 52px; border-radius: 16px; background: var(--secondary); display: flex; align-items: center; justify-content: center; font-size: 24px; }
+    .admin-stat-label { font-size: 11px; font-weight: 800; text-transform: uppercase; color: var(--muted-foreground); margin-bottom: 4px; }
+    .admin-stat-value { font-size: 28px; font-weight: 900; color: var(--foreground); line-height: 1; }
+    .admin-sections-grid { display: grid; grid-template-columns: repeat(12, 1fr); gap: 32px; }
+    .admin-section {
+      grid-column: span 6;
+      background: color-mix(in srgb, var(--card) 85%, transparent);
+      backdrop-filter: blur(10px);
+      border: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
+      border-radius: 32px;
+      padding: 32px;
+      transition: all 0.3s ease;
+    }
+    .admin-section:hover {
+      border-color: var(--primary);
+      background: var(--card);
+    }
+    .admin-section.full { grid-column: span 12; }
+    .admin-section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; padding-bottom: 20px; border-bottom: 1.5px solid var(--border); }
+    .admin-section-title { font-size: 20px; font-weight: 900; color: var(--foreground); }
+    .admin-table { width: 100%; border-collapse: collapse; }
+    .admin-table th { text-align: left; padding: 16px; font-size: 11px; font-weight: 800; color: var(--muted-foreground); text-transform: uppercase; border-bottom: 1.5px solid var(--border); }
+    .admin-table td { padding: 18px 16px; border-bottom: 1.5px solid var(--border); }
+    .admin-status-pill { padding: 6px 12px; border-radius: 20px; font-size: 11px; font-weight: 800; }
+    .admin-input { width: 100%; padding: 12px 14px; border-radius: 14px; border: 1.5px solid var(--border); background: var(--background); color: var(--foreground); }
+    .admin-progress-track { height: 8px; background: var(--secondary); border-radius: 999px; overflow: hidden; margin-top: 8px; }
+    .admin-progress-fill { height: 100%; transition: width 1s ease-out; }
+    /* Onboarding Sub-tabs */
+    .admin-onboarding-tabs { display: flex; gap: 8px; margin-bottom: 24px; background: transparent; padding: 0; border-radius: 0; border: none; overflow-x: auto; scrollbar-width: none; -ms-overflow-style: none; }
+    .admin-onboarding-tabs::-webkit-scrollbar { display: none; }
+    .admin-onboarding-tab { padding: 10px 20px; border-radius: 12px; border: 1.5px solid var(--border); background: transparent; font-size: 12px; font-weight: 800; color: var(--muted-foreground); cursor: pointer; transition: all .3s; text-transform: capitalize; white-space: nowrap; }
+    .admin-onboarding-tab.active { background: var(--primary); color: var(--primary-foreground); border-color: var(--primary); }
+    .admin-onboarding-tab:hover { border-color: var(--primary); background: color-mix(in srgb, var(--primary) 10%, transparent); }
+    /* Form styling improvements */
+    .admin-onboarding-form { display: grid; gap: 16px; }
+    .admin-form-group { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
+    .admin-form-group.full { grid-template-columns: 1fr; }
+    .admin-form-input-wrapper { display: flex; flex-direction: column; gap: 6px; }
+    .admin-form-input-wrapper label { font-size: 11px; font-weight: 800; text-transform: uppercase; color: var(--muted-foreground); }
+    .admin-input:focus { outline: none; border-color: var(--primary); background: color-mix(in srgb, var(--primary) 5%, var(--background)); }
+    .admin-submit-btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; background: var(--primary); color: var(--primary-foreground); border: none; padding: 12px 28px; border-radius: 14px; font-size: 12px; font-weight: 800; cursor: pointer; transition: all .3s; box-shadow: 0 10px 25px -5px color-mix(in srgb, var(--primary) 40%, transparent); }
+    .admin-submit-btn:hover { transform: translateY(-2px); box-shadow: 0 10px 25px -5px color-mix(in srgb, var(--primary) 40%, transparent); }
+    .admin-submit-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+    /* Chart improvements */
+    .admin-chart-container { background: linear-gradient(135deg, color-mix(in srgb, var(--primary) 5%, transparent) 0%, color-mix(in srgb, var(--primary) 2%, transparent) 100%); border-radius: 20px; padding: 20px; }
+
+    .patients-responsive-container { width: 100%; position: relative; }
+    .desktop-only { display: table; }
+    .patients-mobile-cards { display: none; gap: 16px; }
+    .patient-card { background: var(--background); border: 1.5px solid var(--border); border-radius: 20px; padding: 20px; transition: all .2s; }
+    .patient-card:hover { border-color: var(--primary); transform: translateY(-2px); }
+    .patient-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
+    .patient-card-name { font-weight: 800; font-size: 16px; color: var(--foreground); }
+    .patient-card-body { display: grid; gap: 12px; }
+    .patient-card-item { display: flex; justify-content: space-between; align-items: center; font-size: 13px; }
+    .patient-card-item .label { color: var(--muted-foreground); font-weight: 600; }
+    .patient-card-item .value { color: var(--foreground); font-weight: 700; }
+
+    /* ── MOBILE-FIRST RESPONSIVE BREAKPOINTS ── */
+    @media (max-width: 1200px) {
+
+      .admin-stats-grid { grid-template-columns: repeat(2, 1fr); }
+      .admin-sections-grid { grid-template-columns: 1fr; }
+      .admin-form-group { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 1024px) {
+      .admin-tabs { gap: 8px; }
+      .admin-tab { padding: 10px 20px; font-size: 12px; }
+      .admin-stat-card { padding: 24px; }
+    }
+    @media (max-width: 768px) {
+      .admin-onboarding-tabs { flex-wrap: nowrap; gap: 8px; }
+      .admin-onboarding-tab { padding: 10px 16px; font-size: 11px; }
+      .admin-form-group { grid-template-columns: 1fr; }
+      .admin-stats-grid {
+        display: flex;
+        overflow-x: auto;
+        gap: 12px;
+        padding-bottom: 10px;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+      }
+      .admin-stats-grid::-webkit-scrollbar { display: none; }
+      .admin-stat-card {
+        flex: 0 0 200px;
+        padding: 16px;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        gap: 12px;
+      }
+      .admin-stat-icon { margin-bottom: 0; }
+      .admin-stat-label { font-size: 10px; }
+      .admin-stat-value { font-size: 22px; }
+      .admin-container { padding: 80px 20px 60px; max-width: 100%; }
+      .admin-section { padding: 20px 16px; margin: 0; border-radius: 24px; }
+      .admin-section.full { grid-column: span 1; }
+      .admin-topbar { margin-bottom: 32px; }
+      .admin-eyebrow { font-size: 10px; padding: 6px 16px; }
+      .admin-date { font-size: 12px; }
+      .admin-badge { padding: 8px 14px; font-size: 11px; }
+      .admin-refresh-btn { padding: 10px 20px; font-size: 12px; }
+      .admin-tabs { gap: 6px; margin-bottom: 32px; padding: 6px; }
+      .admin-tab { padding: 10px 16px; font-size: 11px; min-height: 44px; }
+    }
+    @media (max-width: 640px) {
+      .admin-stats-grid { gap: 14px; }
+      .admin-stat-card { padding: 16px; flex-direction: column; gap: 12px; }
+      .admin-stat-icon { width: 48px; height: 48px; font-size: 22px; }
+      .admin-stat-label { font-size: 10px; }
+      .admin-stat-value { font-size: 24px; }
+      .admin-title { font-size: clamp(1.8rem, 7vw, 2.8rem); }
+      .admin-section-header { flex-direction: column; align-items: flex-start; gap: 12px; }
+    }
+    @media (max-width: 480px) {
+      .admin-container { padding: 70px 16px 50px; }
+      .admin-stat-card { padding: 16px; }
+      .admin-input { padding: 14px 16px; font-size: 16px; } /* Prevent zoom on iOS */
+      .admin-submit-btn { padding: 14px 24px; font-size: 14px; width: 100%; min-height: 48px; }
+      .admin-chart-container { padding: 16px; }
+      .admin-table th, .admin-table td { padding: 12px 10px; font-size: 12px; }
+      .admin-status-pill { padding: 8px 12px; font-size: 11px; }
+      .admin-view-all { font-size: 12px; padding: 8px 12px; }
+    }
+    /* Touch-friendly targets */
+    @media (hover: none) and (pointer: coarse) {
+      .admin-tab, .admin-onboarding-tab, .admin-submit-btn, .admin-refresh-btn {
+        min-height: 44px;
+      }
+    }
+  `}</style> 100vh; background: transparent; color: var(--foreground); overflow-x: hidden; position: relative; }
         .admin-container { position: relative; z-index: 10; max-width: 1400px; margin: 0 auto; padding: 120px 48px 80px; }
         .admin-topbar { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 48px; gap: 24px; flex-wrap: wrap; }
         .admin-eyebrow { display: inline-flex; align-items: center; gap: 10px; padding: 8px 20px; border-radius: 999px; background: var(--secondary); border: 1.5px solid color-mix(in srgb, var(--primary) 20%, transparent); color: var(--primary); font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 16px; }
@@ -601,10 +754,10 @@ const AdminPanel = () => {
           </div>
 
           <div className="admin-stats-grid">
-            <StatCard delay={0}    label="Total Doctors" value={stats.totalDoctors} sub={`${stats.activeDoctors} active`} icon={<UserCheck size={24} />} accent="var(--primary)" />
-            <StatCard delay={0.08} label="Total Patients" value={(stats.totalPatients || 0).toLocaleString()} sub="Registered" icon={<Building2 size={24} />} accent="var(--chart-5)" />
-            <StatCard delay={0.16} label="Today's Appointments" value={stats.todayAppointments || 0} sub={`${stats.pendingAppointments || 0} pending`} icon={<CalendarDays size={24} />} accent="var(--primary)" />
-            <StatCard delay={0.24} label="Total Revenue" value={fmt(stats.totalRevenue || 0)} sub="Gross earnings" icon={<Coins size={24} />} accent="var(--chart-5)" />
+            <StatCard delay={0}    label="Doctors" value={stats.totalDoctors} sub={`${stats.activeDoctors} active`} icon={<UserCheck size={24} />} accent="var(--primary)" />
+            <StatCard delay={0.08} label="Patients" value={(stats.totalPatients || 0).toLocaleString()} sub="Registered" icon={<Building2 size={24} />} accent="var(--chart-5)" />
+            <StatCard delay={0.16} label="Appointments" value={stats.todayAppointments || 0} sub={`${stats.pendingAppointments || 0} pending`} icon={<CalendarDays size={24} />} accent="var(--primary)" />
+            <StatCard delay={0.24} label="Revenue" value={fmt(stats.totalRevenue || 0)} sub="Gross" icon={<Coins size={24} />} accent="var(--chart-5)" />
 
           </div>
 
@@ -1063,52 +1216,79 @@ const AdminPanel = () => {
               </div>
             )}
 
-                    {/* Patients Table */}
-                    {activeTab === "patients" && (
-                      <div className="admin-section full">
-                        <Section title="Patients" subtitle="Registered patients in the system">
-                          {patientsQuery.isLoading && <p style={{ color: "var(--muted-foreground)", padding: "20px 0" }}>Loading patients...</p>}
-                          {!patientsQuery.isLoading && (patients || []).length === 0 && (
-                            <p style={{ color: "var(--muted-foreground)", fontStyle: "italic", padding: "20px 0" }}>No patients found.</p>
-                          )}
-                          <div className="overflow-x-auto">
-                            <table className="admin-table">
-                              <thead>
-                                <tr>
-                                  <th>Name</th>
-                                  <th>Email</th>
-                                  <th>Gender</th>
-                                  <th>Blood Group</th>
-                                  <th>Date of Birth</th>
-                                  <th>Phone</th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                {(patients || []).map((p, i) => (
-                                  <tr key={p.id || i}>
-                                    <td style={{ fontWeight: 700 }}>{p.name || "—"}</td>
-                                    <td style={{ color: "var(--muted-foreground)", fontSize: 13 }}>{p.email || "—"}</td>
-                                    <td>{p.gender || "—"}</td>
-                                    <td><span className="admin-status-pill" style={{ background: "var(--secondary)", color: "var(--primary)" }}>{p.bloodGroup || "—"}</span></td>
-                                    <td style={{ color: "var(--muted-foreground)", fontSize: 13 }}>{p.birthDate || "—"}</td>
-                                    <td style={{ color: "var(--muted-foreground)", fontSize: 13 }}>{p.phone || p.mobileNumber || "—"}</td>
-                                  </tr>
-                                ))}
-                              </tbody>
-                            </table>
-                          </div>
-                          {(patients || []).length > 0 && (
-                            <div style={{ display: "flex", gap: 12, justifyContent: "center", marginTop: 24 }}>
-                              <button className="admin-submit-btn" style={{ background: "var(--secondary)", color: "var(--foreground)", border: "1.5px solid var(--border)" }}
-                                onClick={() => setCurrentPage((p) => Math.max(0, p - 1))} disabled={currentPage === 0}>← Previous</button>
-                              <span style={{ display: "flex", alignItems: "center", fontSize: 13, fontWeight: 800, color: "var(--muted-foreground)" }}>Page {currentPage + 1}</span>
-                              <button className="admin-submit-btn" style={{ background: "var(--secondary)", color: "var(--foreground)", border: "1.5px solid var(--border)" }}
-                                onClick={() => setCurrentPage((p) => p + 1)} disabled={(patients || []).length < 10}>Next →</button>
-                            </div>
-                          )}
-                        </Section>
-                      </div>
-                    )}
+    {activeTab === "patients" && (
+      <div className="admin-section full">
+        <Section title="Patients" subtitle="Registered patients in the system">
+          {patientsQuery.isLoading && <p style={{ color: "var(--muted-foreground)", padding: "20px 0" }}>Loading patients...</p>}
+          {!patientsQuery.isLoading && (patients || []).length === 0 && (
+            <p style={{ color: "var(--muted-foreground)", fontStyle: "italic", padding: "20px 0" }}>No patients found.</p>
+          )}
+          <div className="patients-responsive-container">
+            <table className="admin-table desktop-only">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Email</th>
+                  <th>Gender</th>
+                  <th>Blood Group</th>
+                  <th>Date of Birth</th>
+                  <th>Phone</th>
+                </tr>
+              </thead>
+              <tbody>
+                {(patients || []).map((p, i) => (
+                  <tr key={p.id || i}>
+                    <td style={{ fontWeight: 700 }}>{p.name || "—"}</td>
+                    <td style={{ color: "var(--muted-foreground)", fontSize: 13 }}>{p.email || "—"}</td>
+                    <td>{p.gender || "—"}</td>
+                    <td><span className="admin-status-pill" style={{ background: "var(--secondary)", color: "var(--primary)" }}>{p.bloodGroup || "—"}</span></td>
+                    <td style={{ color: "var(--muted-foreground)", fontSize: 13 }}>{p.birthDate || "—"}</td>
+                    <td style={{ color: "var(--muted-foreground)", fontSize: 13 }}>{p.phone || p.mobileNumber || "—"}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            <div className="patients-mobile-cards">
+              {(patients || []).map((p, i) => (
+                <div key={p.id || i} className="patient-card">
+                  <div className="patient-card-header">
+                    <div className="patient-card-name">{p.name || "—"}</div>
+                    <span className="admin-status-pill" style={{ background: "var(--secondary)", color: "var(--primary)" }}>{p.bloodGroup || "—"}</span>
+                  </div>
+                  <div className="patient-card-body">
+                    <div className="patient-card-item">
+                      <span className="label">Email:</span>
+                      <span className="value">{p.email || "—"}</span>
+                    </div>
+                    <div className="patient-card-item">
+                      <span className="label">Phone:</span>
+                      <span className="value">{p.phone || p.mobileNumber || "—"}</span>
+                    </div>
+                    <div className="patient-card-item">
+                      <span className="label">Gender:</span>
+                      <span className="value">{p.gender || "—"}</span>
+                    </div>
+                    <div className="patient-card-item">
+                      <span className="label">DOB:</span>
+                      <span className="value">{p.birthDate || "—"}</span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+          {(patients || []).length > 0 && (
+            <div style={{ display: "flex", gap: 12, justifyContent: "center", marginTop: 24 }}>
+              <button className="admin-submit-btn" style={{ background: "var(--secondary)", color: "var(--foreground)", border: "1.5px solid var(--border)" }}
+                onClick={() => setCurrentPage((p) => Math.max(0, p - 1))} disabled={currentPage === 0}>← Previous</button>
+              <span style={{ display: "flex", alignItems: "center", fontSize: 13, fontWeight: 800, color: "var(--muted-foreground)" }}>Page {currentPage + 1}</span>
+              <button className="admin-submit-btn" style={{ background: "var(--secondary)", color: "var(--foreground)", border: "1.5px solid var(--border)" }}
+                onClick={() => setCurrentPage((p) => p + 1)} disabled={(patients || []).length < 10}>Next →</button>
+            </div>
+          )}
+        </Section>
+      </div>
+    )}
 
             {activeTab === "payments" && (
               <div className="admin-section full">
