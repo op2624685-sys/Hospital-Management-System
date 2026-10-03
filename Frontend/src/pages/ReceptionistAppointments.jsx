@@ -89,9 +89,9 @@ const ReceptionistAppointments = () => {
     },
   });
 
-  const appointments = appointmentQuery.data || [];
+  const appointments = useMemo(() => appointmentQuery.data || [], [appointmentQuery.data]);
   const searchResults = searchQuery.data || [];
-  const departmentQueue = queueQuery.data || [];
+  const departmentQueue = useMemo(() => queueQuery.data || [], [queueQuery.data]);
 
   const doctorOptions = useMemo(() => {
     const map = new Map();

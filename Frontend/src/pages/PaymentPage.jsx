@@ -52,7 +52,7 @@ const PaymentPage = () => {
     } catch {
       return null;
     }
-  }, [location.key, location.search]);
+  }, []);
 
   const paymentContext = location.state ?? cachedContext ?? {};
   const bookingPayload = paymentContext.bookingPayload;

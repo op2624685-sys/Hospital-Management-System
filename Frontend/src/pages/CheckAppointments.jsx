@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react'
-import { Link, useNavigate, useSearchParams } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import appointmentApi from '../api/appointments'
 import Header from '../components/Header'
 
@@ -55,7 +55,6 @@ const CheckAppointment = () => {
   const [shake, setShake]                 = useState(false)
   const resultRef = useRef(null)
 
-  const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
   const urlId = searchParams.get('id')
 

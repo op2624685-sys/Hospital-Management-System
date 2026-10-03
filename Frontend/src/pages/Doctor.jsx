@@ -4,10 +4,8 @@ import DoctorCard from '../components/DoctorCard'
 import API from '../api/api'
 import PageLoader from '../components/PageLoader'
 import { useQuery } from '@tanstack/react-query'
-import { useAuth } from '../context/AuthContext'
 
 const Doctor = () => {
-  const { isLoggedIn, user } = useAuth()
   const [search, setSearch] = useState('')
   const [debouncedSearch, setDebouncedSearch] = useState('')
   const [page, setPage] = useState(0)

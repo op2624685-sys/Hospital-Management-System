@@ -158,7 +158,7 @@ export default function DepartmentControl() {
         @media (max-width: 768px) {
           .dc-btn-primary { padding: 14px 20px; font-size: 14px; min-height: 48px; }
           .dc-input { padding: 14px 16px; font-size: 16px; } /* Prevent iOS zoom */
-          .dc-root .p-8, .dc-root .md\:p-12 { padding-left: 16px; padding-right: 16px; }
+          .dc-root .p-8, .dc-root .md\\:p-12 { padding-left: 16px; padding-right: 16px; }
         }
         @media (max-width: 640px) {
           .dc-root .max-w-7xl { padding-left: 12px; padding-right: 12px; }
