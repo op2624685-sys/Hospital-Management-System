@@ -43,7 +43,7 @@ const getThemeColors = () => ({
   border: getCSSVar('--border', '#d8d8d8'),
 });
 
-const commonOptions = (colors) => ({
+const commonOptions = () => ({
   responsive: true,
   maintainAspectRatio: false,
   animation: { duration: 750 },
@@ -143,7 +143,12 @@ export const DepartmentLoadChart = ({ data = [] }) => {
 
 export const StatusDoughnut = ({ stats = {} }) => {
   const colors = getThemeColors();
-  const values = [stats.pendingAppointments || 0, stats.confirmedAppointments || 0, stats.completedAppointments || 0, stats.cancelledAppointments || 0];
+  const values = useMemo(() => [
+    stats.pendingAppointments || 0,
+    stats.confirmedAppointments || 0,
+    stats.completedAppointments || 0,
+    stats.cancelledAppointments || 0
+  ], [stats.pendingAppointments, stats.confirmedAppointments, stats.completedAppointments, stats.cancelledAppointments]);
   const hasData = values.some(v => v > 0);
   
   const chartData = useMemo(() => ({
