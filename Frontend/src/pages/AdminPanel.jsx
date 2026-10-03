@@ -236,9 +236,7 @@ const AdminPanel = () => {
   const [stats, setStats] = useState(EMPTY_STATS);
   const [appointments, setAppointments] = useState([]);
   const [appointmentsLoading, setAppointmentsLoading] = useState(false);
-  const [appointmentsError, setAppointmentsError] = useState("");
   const [appointmentsPage, setAppointmentsPage] = useState(0);
-  const [overviewDoctors, setOverviewDoctors] = useState([]);
   const [departmentLoad, setDepartmentLoad] = useState([]);
   const [weeklyAppointments, setWeeklyAppointments] = useState([]);
   const [revenueGrowth, setRevenueGrowth] = useState([]);
@@ -251,7 +249,6 @@ const AdminPanel = () => {
   const [payments] = useState([]);
   const [patients, setPatients] = useState([]);
   const [activeTab, setActiveTab] = useState("overview");
-  const [loading, setLoading] = useState(false);
   const [showDepartmentForm, setShowDepartmentForm] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
@@ -262,19 +259,7 @@ const AdminPanel = () => {
     icon: "DEPT",
     sections: DEFAULT_DEPARTMENT_SECTIONS,
   });
-  const [headDoctorName, setHeadDoctorName] = useState("");
-  const [headDoctorSuggestions, setHeadDoctorSuggestions] = useState([]);
-  const [headDoctorError, setHeadDoctorError] = useState("");
-  const [departmentDoctorName, setDepartmentDoctorName] = useState("");
-  const [departmentDoctorSuggestions, setDepartmentDoctorSuggestions] = useState([]);
-  const [selectedDepartmentDoctors, setSelectedDepartmentDoctors] = useState([]);
   const [departments, setDepartments] = useState([]);
-  const [departmentsLoading, setDepartmentsLoading] = useState(false);
-  const [departmentsError, setDepartmentsError] = useState("");
-  const [departmentTemplates, setDepartmentTemplates] = useState([]);
-  const [templatesLoading, setTemplatesLoading] = useState(false);
-  const [templatesError, setTemplatesError] = useState("");
-  const [selectedTemplateId, setSelectedTemplateId] = useState("");
   const [doctorForm, setDoctorForm] = useState({
     username: "",
     name: "",
@@ -289,7 +274,6 @@ const AdminPanel = () => {
     departmentId: "",
   });
   const [doctorSubmitting, setDoctorSubmitting] = useState(false);
-  const [doctorMessage, setDoctorMessage] = useState("");
   const [currentPage, setCurrentPage] = useState(0);
   const [_totalPatients, _setTotalPatients] = useState(0);
   const [onboardingSubTab, setOnboardingSubTab] = useState("doctor");
@@ -347,7 +331,7 @@ const AdminPanel = () => {
     enabled: activeTab === "departments" || activeTab === "overview" || activeTab === "onboarding",
   });
 
-  const templatesQuery = useQuery({
+  useQuery({
     queryKey: ["admin-department-templates"],
     queryFn: async () => {
       const response = await adminApi.getDepartmentTemplates();
@@ -391,7 +375,6 @@ const AdminPanel = () => {
           ...data.stats
         }));
       }
-      setOverviewDoctors(data.recentDoctors || []);
       setDepartmentLoad(data.departmentLoad || []);
       setWeeklyAppointments(data.weeklyAppointments || []);
       setRevenueGrowth(data.revenueGrowth || []);
@@ -408,7 +391,6 @@ const AdminPanel = () => {
 
   useEffect(() => {
     if (activeTab !== "patients") return;
-    setLoading(patientsQuery.isFetching);
     if (!patientsQuery.data) return;
     setPatients(patientsQuery.data.content || patientsQuery.data);
     _setTotalPatients(patientsQuery.data.totalElements || (patientsQuery.data || []).length || 0);
@@ -473,6 +455,7 @@ const AdminPanel = () => {
 
   return (
     <>
+    <style>{`
     .admin-stats-grid {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
@@ -628,7 +611,7 @@ const AdminPanel = () => {
         min-height: 44px;
       }
     }
-  `}</style> 100vh; background: transparent; color: var(--foreground); overflow-x: hidden; position: relative; }
+  `}</style><style>{` .admin-page { min-height: 100vh; background: transparent; color: var(--foreground); overflow-x: hidden; position: relative; }
         .admin-container { position: relative; z-index: 10; max-width: 1400px; margin: 0 auto; padding: 120px 48px 80px; }
         .admin-topbar { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 48px; gap: 24px; flex-wrap: wrap; }
         .admin-eyebrow { display: inline-flex; align-items: center; gap: 10px; padding: 8px 20px; border-radius: 999px; background: var(--secondary); border: 1.5px solid color-mix(in srgb, var(--primary) 20%, transparent); color: var(--primary); font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 16px; }
@@ -780,7 +763,7 @@ const AdminPanel = () => {
                         <DepartmentLoadChart key={`dlc-${departmentLoad.length}`} data={departmentLoad} />
                       </div>
                       <div style={{ flex: 1 }}>
-                        {departmentLoad.slice(0, 5).map((d, idx) => (
+                        {departmentLoad.slice(0, 5).map((d) => (
                           <div key={d.name} style={{ marginBottom: '18px' }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', fontWeight: 800, marginBottom: '6px', alignItems: 'center' }}>
                               <span style={{ color: deptColor[d.name] || deptColor.default, display: 'flex', alignItems: 'center', gap: '6px' }}>
