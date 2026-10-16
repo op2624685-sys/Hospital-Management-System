@@ -11,6 +11,7 @@ import Login from "./pages/AuthPages/Login";
 import Signup from "./pages/AuthPages/Signup";
 import SignupComplete from "./pages/AuthPages/SignupComplete";
 import ForgotPassword from "./pages/AuthPages/ForgotPassword";
+import NotFound from "./pages/NotFound";
 
 
 // ── Lazy loaded (heavy / role-gated pages) ──────────────────────────────────
@@ -190,6 +191,7 @@ const App = () => {
               </ProtectedRoute>
             }
           />
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </Suspense>
     </div>
