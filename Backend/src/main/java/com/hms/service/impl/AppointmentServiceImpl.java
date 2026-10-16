@@ -188,7 +188,7 @@ public class AppointmentServiceImpl implements AppointmentService {
             .build();
 
         
-        kafkaTemplate.send(KafkaConfig.APPOINTMENT_CONFIRMED_TOPIC, appointment.getAppointmentId(), event);
+        kafkaTemplate.send(KafkaConfig.APPOINTMENT_EVENTS_TOPIC, appointment.getAppointmentId(), event);
 
         return mapToAppointmentResponseDto(appointment);
     }

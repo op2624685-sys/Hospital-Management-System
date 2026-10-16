@@ -28,13 +28,7 @@ public class NotificationEventConsumer {
      * Topics: appointment.pending, appointment.confirmed, appointment.cancelled, appointment.refund, appointment.rescheduled
      */
     @KafkaListener(
-        topics = {
-            "appointment.pending",
-            "appointment.confirmed",
-            "appointment.cancelled",
-            "appointment.refund",
-            "appointment.rescheduled"
-        },
+        topics = { com.hms.config.KafkaConfig.APPOINTMENT_EVENTS_TOPIC },
         groupId = "notification-consumer-group",
         properties = {
             "spring.json.value.default.type=com.hms.event.AppointmentKafkaEvent",
