@@ -51,11 +51,21 @@ public class AuthController {
     }
 
     @PostMapping("/refresh")
+    @Operation(summary = "Refresh Access Token", description = "Issues a new access token using a valid refresh token")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Access token refreshed successfully", content = @Content(schema = @Schema(implementation = LoginResponseDto.class))),
+        @ApiResponse(responseCode = "401", description = "Refresh token is invalid or expired")
+    })
     public ResponseEntity<LoginResponseDto> refreshToken(@RequestBody @Valid RefreshTokenRequestDto refreshTokenRequestDto) {
         return ResponseEntity.ok(authService.refreshToken(refreshTokenRequestDto.getRefreshToken()));
     }
     
     @PostMapping("/logout")
+    @Operation(summary = "Log Out User", description = "Invalidates the supplied refresh token and ends the current session")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "User logged out successfully"),
+        @ApiResponse(responseCode = "400", description = "Invalid refresh token")
+    })
     public ResponseEntity<?> logout(@RequestBody @Valid RefreshTokenRequestDto refreshTokenRequestDto) {
         authService.logout(refreshTokenRequestDto.getRefreshToken());
         return ResponseEntity.ok("Logged out");

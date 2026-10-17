@@ -19,20 +19,30 @@ import com.hms.entity.type.AppointmentStatusType;
 import com.hms.service.ReceptionistService;
 
 import lombok.RequiredArgsConstructor;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
 @RestController
 @RequestMapping("/receptionist")
 @RequiredArgsConstructor
+@Tag(name = "Reception Operations", description = "Receptionist endpoints for appointment management and doctor queue visibility")
 public class ReceptionistController {
 
     private final ReceptionistService receptionistService;
 
     @GetMapping("/profile")
+    @Operation(summary = "Get Receptionist Profile", description = "Returns the profile of the authenticated receptionist")
+    @ApiResponses({ @ApiResponse(responseCode = "200", description = "Receptionist profile retrieved successfully"), @ApiResponse(responseCode = "404", description = "Receptionist profile not found") })
     public ResponseEntity<ReceptionistResponseDto> getProfile() {
         return ResponseEntity.ok(receptionistService.getProfile());
     }
 
     @GetMapping("/appointments")
+    @Operation(summary = "List Department Appointments", description = "Returns filtered and paginated appointments for the receptionist's department")
+    @ApiResponses({ @ApiResponse(responseCode = "200", description = "Appointments retrieved successfully"), @ApiResponse(responseCode = "400", description = "Invalid filter or pagination parameters") })
     public ResponseEntity<List<AppointmentResponseDto>> getAppointments(
             @RequestParam(name = "date", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
             @RequestParam(name = "status", required = false) AppointmentStatusType status,
@@ -44,6 +54,8 @@ public class ReceptionistController {
     }
 
     @GetMapping("/appointments/search")
+    @Operation(summary = "Search Appointments", description = "Searches appointments by appointment ID, patient name, or date of birth")
+    @ApiResponses({ @ApiResponse(responseCode = "200", description = "Matching appointments retrieved successfully"), @ApiResponse(responseCode = "400", description = "Invalid search parameters") })
     public ResponseEntity<List<AppointmentResponseDto>> searchAppointments(
             @RequestParam(name = "appointmentId", required = false) String appointmentId,
             @RequestParam(name = "patientName", required = false) String patientName,
@@ -52,11 +64,15 @@ public class ReceptionistController {
     }
 
     @GetMapping("/appointments/{appointmentId}")
+    @Operation(summary = "Get Appointment Details", description = "Retrieves complete details for a specific appointment")
+    @ApiResponses({ @ApiResponse(responseCode = "200", description = "Appointment details retrieved successfully"), @ApiResponse(responseCode = "404", description = "Appointment not found") })
     public ResponseEntity<AppointmentResponseDto> getAppointment(@PathVariable String appointmentId) {
         return ResponseEntity.ok(receptionistService.getAppointmentDetails(appointmentId));
     }
 
     @PutMapping("/appointments/{appointmentId}/status")
+    @Operation(summary = "Update Appointment Status", description = "Updates the status of an appointment managed by reception")
+    @ApiResponses({ @ApiResponse(responseCode = "200", description = "Appointment status updated successfully"), @ApiResponse(responseCode = "400", description = "Invalid appointment status"), @ApiResponse(responseCode = "404", description = "Appointment not found") })
     public ResponseEntity<AppointmentResponseDto> updateStatus(
             @PathVariable String appointmentId,
             @RequestParam(name = "status") AppointmentStatusType status) {
@@ -64,12 +80,16 @@ public class ReceptionistController {
     }
 
     @GetMapping("/queue")
+    @Operation(summary = "Get Department Queue", description = "Returns the appointment queue for the receptionist's department")
+    @ApiResponse(responseCode = "200", description = "Department queue retrieved successfully")
     public ResponseEntity<List<DoctorQueueSummaryDto>> getDepartmentQueue(
             @RequestParam(name = "date", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
         return ResponseEntity.ok(receptionistService.getDepartmentQueue(date));
     }
 
     @GetMapping("/queue/doctors/{doctorId}")
+    @Operation(summary = "Get Doctor Queue", description = "Returns the queue for a specific doctor")
+    @ApiResponses({ @ApiResponse(responseCode = "200", description = "Doctor queue retrieved successfully"), @ApiResponse(responseCode = "404", description = "Doctor not found") })
     public ResponseEntity<DoctorQueueSummaryDto> getDoctorQueue(
             @PathVariable Long doctorId,
             @RequestParam(name = "date", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {

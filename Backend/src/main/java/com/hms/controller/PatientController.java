@@ -33,11 +33,14 @@ import org.springframework.web.bind.annotation.PutMapping;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.Parameter;
 import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/patients")
+@Tag(name = "Patient Operations", description = "Authenticated endpoints for patient registration, profiles, appointments, insurance, and prescriptions")
 public class PatientController {
 
     private final PatientService patientService;
@@ -46,16 +49,22 @@ public class PatientController {
     private final PrescriptionService prescriptionService;
 
     @PostMapping("/appointments")
+    @Operation(summary = "Book Appointment", description = "Creates a confirmed appointment for the authenticated patient")
+    @ApiResponses({ @ApiResponse(responseCode = "201", description = "Appointment created successfully"), @ApiResponse(responseCode = "400", description = "Invalid appointment data"), @ApiResponse(responseCode = "409", description = "Requested appointment slot is unavailable") })
     public ResponseEntity<AppointmentResponseDto> createNewAppointment(@Valid @RequestBody CreateAppointmentRequestDto createAppointmentRequestDto) {
         return ResponseEntity.status(HttpStatus.CREATED).body(appointmentService.createConfirmedAppointment(createAppointmentRequestDto));
     }
 
     @GetMapping("/appointments/check/{appointmentId}")
+    @Operation(summary = "Get Appointment", description = "Retrieves appointment details using its appointment identifier")
+    @ApiResponses({ @ApiResponse(responseCode = "200", description = "Appointment retrieved successfully"), @ApiResponse(responseCode = "404", description = "Appointment not found") })
     public ResponseEntity<AppointmentResponseDto> getAppointmentByAppointmentId(@PathVariable(name = "appointmentId") String appointmentId) {
         return ResponseEntity.ok(appointmentService.getAppointmentByAppointmentId(appointmentId));
     }
 
     @GetMapping("/appointments")
+    @Operation(summary = "List My Appointments", description = "Returns a paginated list of appointments belonging to the authenticated patient")
+    @ApiResponses({ @ApiResponse(responseCode = "200", description = "Appointments retrieved successfully"), @ApiResponse(responseCode = "400", description = "Invalid pagination parameters") })
     public ResponseEntity<List<AppointmentResponseDto>> getAllAppointmentsOfLoggedInPatient(
             @RequestParam(name = "page", defaultValue = "0") int page,
             @RequestParam(name = "size", defaultValue = "10") int size) {
@@ -64,16 +73,22 @@ public class PatientController {
     }
 
     @PutMapping("/appointments/{appointmentId}/cancel")
+    @Operation(summary = "Cancel Appointment", description = "Cancels an appointment belonging to the authenticated patient")
+    @ApiResponses({ @ApiResponse(responseCode = "200", description = "Appointment cancelled successfully"), @ApiResponse(responseCode = "404", description = "Appointment not found"), @ApiResponse(responseCode = "409", description = "Appointment cannot be cancelled") })
     public ResponseEntity<AppointmentResponseDto> cancelAppointmentByPatient(@PathVariable(name = "appointmentId") String appointmentId) {
         return ResponseEntity.ok(appointmentService.cancelAppointmentByPatient(appointmentId));
     }
 
     @GetMapping("/appointments/{appointmentId}/prescription")
+    @Operation(summary = "View Prescription", description = "Retrieves the prescription associated with a patient appointment")
+    @ApiResponses({ @ApiResponse(responseCode = "200", description = "Prescription retrieved successfully"), @ApiResponse(responseCode = "404", description = "Prescription or appointment not found") })
     public ResponseEntity<PrescriptionResponseDto> getPrescription(@PathVariable(name = "appointmentId") String appointmentId) {
         return ResponseEntity.ok(prescriptionService.getPrescription(appointmentId));
     }
 
     @PostMapping("/insurance")
+    @Operation(summary = "Add Insurance", description = "Creates insurance information for the authenticated patient")
+    @ApiResponses({ @ApiResponse(responseCode = "201", description = "Insurance information created successfully"), @ApiResponse(responseCode = "400", description = "Invalid insurance data") })
     public ResponseEntity<InsuranceDto> createInsurance(@Valid @RequestBody CreateInsuranceRequestDto createInsuranceRequestDto) {
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         return ResponseEntity.status(HttpStatus.CREATED)
@@ -95,12 +110,16 @@ public class PatientController {
     }
     
     @GetMapping("/profile")
+    @Operation(summary = "Get Patient Profile", description = "Returns the profile of the authenticated patient")
+    @ApiResponses({ @ApiResponse(responseCode = "200", description = "Patient profile retrieved successfully"), @ApiResponse(responseCode = "404", description = "Patient profile not found") })
     public ResponseEntity<PatientDto> getPatientProfile() {
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         return ResponseEntity.ok().body(patientService.getPatientById(user.getId()));
     }
     
     @PutMapping("/profile")
+    @Operation(summary = "Update Patient Profile", description = "Updates editable profile information for the authenticated patient")
+    @ApiResponses({ @ApiResponse(responseCode = "200", description = "Patient profile updated successfully"), @ApiResponse(responseCode = "400", description = "Invalid profile data") })
     public ResponseEntity<PatientDto> updatePatientProfile(@Valid @RequestBody PatientUpdateRequest patientUpdateRequest) {
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         PatientDto updatedPatient = patientService.updatePatientProfileWithEditLimit(user.getId(), patientUpdateRequest);
@@ -108,6 +127,8 @@ public class PatientController {
     }
     
     @GetMapping("/profile/completion-status")
+    @Operation(summary = "Get Profile Completion Status", description = "Returns completion progress for the authenticated patient's profile")
+    @ApiResponse(responseCode = "200", description = "Profile completion status retrieved successfully")
     public ResponseEntity<ProfileCompletionStatusDto> getProfileCompletionStatus() {
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         ProfileCompletionStatusDto completionStatus = patientService.getProfileCompletionStatus(user.getId());
